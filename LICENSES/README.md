@@ -1,0 +1,1 @@
+Licenses of code portions which were used to exemplify/test the functionality of Mulib are located here.

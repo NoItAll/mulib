@@ -1,0 +1,39 @@
+plugins {
+    id 'java'
+    id 'application'
+}
+
+group 'de.wwu.mulib'
+version '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+//    maven {
+//        url "http://logicrunch.research.it.uu.se/maven/" // Required for princess
+//    }
+}
+
+dependencies {
+    implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
+    implementation group: 'org.ow2.asm', name: 'asm', version: '9.1'
+    implementation group: 'org.ow2.asm', name: 'asm-analysis', version: '9.1'
+    implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
+    implementation group: 'com.google.code.gson', name: 'gson', version: '2.8.8'
+    implementation (group: 'org.sosy-lab', name: 'java-smt', version: '3.7.0') {
+        // Exclude external dependency required by princess
+        exclude group: "uuverifiers", module: "princess_2.13"
+    }
+    // z3
+    implementation files('lib/z3-4.8.8-x64-ubuntu-16.04/bin/com.microsoft.z3.jar')
+}
+
+mainClassName = 'de.wwu.mulib.examples.ExamplesExecutor'
+run {
+    if (System.getProperty("exec.args") != null) {
+        args System.getProperty("exec.args").split()
+    }
+}
+
+test {
+    useJUnitPlatform()
+}
