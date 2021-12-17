@@ -7,13 +7,13 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Lt extends AbstractTwoSidedNumericConstraint {
 
-    private Lt(NumericExpression lhs, NumericExpression rhs) {
+    public Lt(NumericExpression lhs, NumericExpression rhs) {
         super(lhs, rhs);
     }
 
     public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
-            return Sbool.ConcSbool.newConcSbool(NumberUtil.lt((ConcSnumber) lhs, (ConcSnumber) rhs));
+            return Sbool.concSbool(NumberUtil.lt((ConcSnumber) lhs, (ConcSnumber) rhs));
         } else {
             return new Lt(lhs, rhs);
         }

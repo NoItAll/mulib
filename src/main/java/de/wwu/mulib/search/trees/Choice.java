@@ -66,7 +66,7 @@ public final class Choice extends TreeNode {
         private byte state;
         public final int choiceOptionNumber;
         // This constraint must be fulfilled to further evaluate the ChoiceOption
-        public final Constraint optionConstraint;
+        private Constraint optionConstraint;
         // The possible child of this ChoiceOption is set after evaluating the option.
         private TreeNode child = null;
 
@@ -91,6 +91,18 @@ public final class Choice extends TreeNode {
 
         public Choice getChoice() {
             return Choice.this;
+        }
+
+        public Constraint getOptionConstraint() {
+            return optionConstraint;
+        }
+
+        public void setOptionConstraint(Constraint optionConstraint) {
+            if (child != null || state == EVALUATED) {
+                throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
+                        " evaluated cannot be changed");
+            }
+            this.optionConstraint = optionConstraint;
         }
 
         public TreeNode getChild() {

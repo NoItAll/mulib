@@ -4,6 +4,7 @@ import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -20,11 +21,12 @@ public class InfiniteLoop {
         TestUtility.getAllSolutions(this::_checkConcreteInfiniteLoop, "infiniteConcrete");
     }
 
-    private List<PathSolution> _checkConcreteInfiniteLoop(MulibConfig config) {
+    private List<PathSolution> _checkConcreteInfiniteLoop(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "infiniteConcrete",
                 InfiniteLoop.class,
-                config
+                mb,
+                false
         );
         assertEquals(0, result.size());
         return result;
@@ -34,7 +36,7 @@ public class InfiniteLoop {
         SymbolicExecution se = SymbolicExecution.get();
         Sint i = se.concSint(0);
         while (se.boolChoice(Sbool.TRUE)) {
-            se.add(i, se.concSint(1), Sint.class);
+            se.add(i, se.concSint(1));
         }
     }
 
@@ -43,13 +45,15 @@ public class InfiniteLoop {
         TestUtility.getAllSolutions(this::_checkSymbolicInfiniteLoop, "infiniteSymbolic");
     }
 
-    private List<PathSolution> _checkSymbolicInfiniteLoop(MulibConfig config) {
+    private List<PathSolution> _checkSymbolicInfiniteLoop(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "infiniteSymbolic",
                 InfiniteLoop.class,
-                config
+                mb,
+                false
         );
         assertTrue(result.size() > 0);
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
     }
 
@@ -57,7 +61,7 @@ public class InfiniteLoop {
         SymbolicExecution se = SymbolicExecution.get();
         Sint i = se.concSint(0);
         while (se.boolChoice(se.symSbool())) {
-            se.add(i, se.concSint(1), Sint.class);
+            se.add(i, se.concSint(1));
         }
     }
 
@@ -66,11 +70,12 @@ public class InfiniteLoop {
         TestUtility.getAllSolutions(this::_checkSymbolicInfiniteLoopAlt, "infiniteSymbolicAlt");
     }
 
-    private List<PathSolution> _checkSymbolicInfiniteLoopAlt(MulibConfig config) {
+    private List<PathSolution> _checkSymbolicInfiniteLoopAlt(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "infiniteSymbolicAlt",
                 InfiniteLoop.class,
-                config
+                mb,
+                false
         );
         assertEquals(0, result.size());
         return result;
@@ -84,7 +89,7 @@ public class InfiniteLoop {
             throw new Fail();
         }
         while (se.boolChoice(b)) {
-            se.add(i, se.concSint(1), Sint.class);
+            se.add(i, se.concSint(1));
         }
     }
 
@@ -93,11 +98,12 @@ public class InfiniteLoop {
         TestUtility.getAllSolutions(this::_checkSymbolicInfiniteLoopAlt2, "infiniteSymbolicAlt2");
     }
 
-    private List<PathSolution> _checkSymbolicInfiniteLoopAlt2(MulibConfig config) {
+    private List<PathSolution> _checkSymbolicInfiniteLoopAlt2(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "infiniteSymbolicAlt2",
                 InfiniteLoop.class,
-                config
+                mb,
+                false
         );
         assertEquals(0, result.size());
         return result;
@@ -112,7 +118,7 @@ public class InfiniteLoop {
             if (!se.boolChoice(b)) {
                 throw new Fail();
             }
-            se.add(i, se.concSint(1), Sint.class);
+            se.add(i, se.concSint(1));
         } while (se.boolChoice(b));
     }
 

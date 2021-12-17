@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 
 import java.util.ArrayList;
 
+// Mirrors GraphColoring in https://github.com/wwu-pi/muli/tree/master/examples/sac22_mulib_benchmark
 public class GraphColoring {
 
     int n = 35;    // number of nodes
@@ -24,7 +25,7 @@ public class GraphColoring {
 
     public void generateColoring(){
         for(int i=0; i<n; i++) {
-            int color = Mulib.trackedFreeInt("" + i);
+            int color = Mulib.namedFreeInt("" + i);
             if (!(color > 0 && color <= c))
                 throw Mulib.fail();
             else colors[i] = color; } }

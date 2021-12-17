@@ -7,13 +7,13 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Eq extends AbstractTwoSidedNumericConstraint {
 
-    private Eq(NumericExpression lhs, NumericExpression rhs) {
+    public Eq(NumericExpression lhs, NumericExpression rhs) {
         super(lhs, rhs);
     }
 
     public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
-            return Sbool.ConcSbool.newConcSbool(NumberUtil.eq((ConcSnumber) lhs, (ConcSnumber) rhs));
+            return Sbool.concSbool(NumberUtil.eq((ConcSnumber) lhs, (ConcSnumber) rhs));
         } else {
             return new Eq(lhs, rhs);
         }

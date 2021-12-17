@@ -6,7 +6,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 
-// The following example has been heavily adapted. All primitive values have been changed to the (potentially) symbolic
+// HW: The following example has been heavily adapted. All primitive values have been changed to the (potentially) symbolic
 // types of the Mulib library
 /**
  * Copyright (c) 2011, Regents of the University of California All rights reserved.
@@ -49,7 +49,7 @@ public class TspSolver {
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                Sint next = se.trackedSymSint(i + "," + j);
+                Sint next = se.namedSymSint(i + "," + j);
                 if(next.ltChoice(se.concSint(1), se)) throw Mulib.fail();
                 D[i][j] = next;
             }

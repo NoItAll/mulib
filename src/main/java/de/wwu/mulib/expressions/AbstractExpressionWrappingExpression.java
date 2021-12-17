@@ -1,22 +1,20 @@
 package de.wwu.mulib.expressions;
 
-import de.wwu.mulib.substitutions.primitives.ConcSnumber;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
-public abstract class AbstractExpressionWrappingExpression implements NumericExpression {
+public abstract class AbstractExpressionWrappingExpression implements NumericExpression, Sym {
 
     protected final NumericExpression wrapped;
 
     protected AbstractExpressionWrappingExpression(NumericExpression toWrap) {
+        assert toWrap instanceof Sym;
         this.wrapped = toWrap instanceof SymNumericExpressionSprimitive ?
                 ((SymNumericExpressionSprimitive) toWrap).getRepresentedExpression()
                 :
                 toWrap;
     }
 
-    protected static boolean isConcrete(NumericExpression expression) {
-        return expression instanceof ConcSnumber;
-    }
 
     @Override
     public boolean isFp() {

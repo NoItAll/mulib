@@ -5,17 +5,13 @@ import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 
-import java.lang.invoke.MethodHandles;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.search.executors.SearchStrategy.*;
-import static org.junit.jupiter.api.Assertions.fail;
 
 public final class TestUtility {
 
@@ -27,6 +23,7 @@ public final class TestUtility {
 
     public static final long TEST_FIXED_POSSIBLE_CP_BUDGET = 1000;
     public static final long TEST_FIXED_ACTUAL_CP_BUDGET = 500;
+    public static final String TEST_BUILD_PATH = "build/classes/java/test/";
     
     private static List<MulibConfig.MulibConfigBuilder> quickCheck() {
         return List.of(
@@ -50,11 +47,14 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(6)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
+                        .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
         );
@@ -70,6 +70,7 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
+                        .assumeMulibDefaultValueRanges()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
@@ -77,11 +78,8 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(IDDFS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(IDDFS, IDDFS)
                         .setINCR_ACTUAL_CP_BUDGET(3)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
-                MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
@@ -89,12 +87,8 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
-                MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS)
-                        .setGLOBAL_SEARCH_STRATEGY(BFS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
@@ -104,8 +98,8 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS, DSAS, IDDFS)
+                        .assumeMulibDefaultValueRanges()
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setINCR_ACTUAL_CP_BUDGET(8)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -124,6 +118,8 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
@@ -138,6 +134,8 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -149,9 +147,11 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(1)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
-                        .setINCR_ACTUAL_CP_BUDGET(2)
+                        .setINCR_ACTUAL_CP_BUDGET(16)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
@@ -160,6 +160,8 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
         );
     }
@@ -182,25 +184,22 @@ public final class TestUtility {
     }
 
     public static List<List<PathSolution>> getAllSolutions(
-            Function<MulibConfig, List<PathSolution>> mulibConfigToList,
+            Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mbToList,
             String testedMethodName) {
-        return getAllSolutions(b -> b, mulibConfigToList, testedMethodName);
+        return getAllSolutions(b -> b, mbToList, testedMethodName);
     }
 
     public static List<List<PathSolution>> getAllSolutions(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig, List<PathSolution>> mulibConfigToList,
+            Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mulibConfigToList,
             String testedMethodName) {
         final List<MulibConfig.MulibConfigBuilder> executeTestsWith = initBuilders();
         return
             executeTestsWith.parallelStream().map(mcb -> {
-                long startTime = System.nanoTime();
-                MulibConfig config = adjustment.apply(mcb).build();
-                Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + config);
-                List<PathSolution> pathSolutions = mulibConfigToList.apply(config);
-                long endTime = System.nanoTime();
-                Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + config
-                        + "\r\nRequired time: " + (endTime - startTime) * 1e-6 + "ms");
+                MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
+                Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
+                List<PathSolution> pathSolutions = mulibConfigToList.apply(mb);
+                Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
                 return pathSolutions;
             }).collect(Collectors.toList());
     }
@@ -217,12 +216,7 @@ public final class TestUtility {
         List<Optional<PathSolution>> result = new ArrayList<>();
         for (MulibConfig.MulibConfigBuilder mulibConfigBuilder : executeTestsWith) {
             MulibConfig config = adjustment.apply(mulibConfigBuilder).build();
-            long startTime = System.nanoTime();
-            Mulib.log.log(java.util.logging.Level.INFO, "Started with config " + config);
             result.add(mulibConfigToPossibleSolution.apply(config));
-            long endTime = System.nanoTime();
-            Mulib.log.log(java.util.logging.Level.INFO, "Returns with config " + config
-                    + "\r\nRequired time: " + (endTime - startTime) * 1e-6 + "ms\r\n\r\n");
         }
         return result;
     }
@@ -230,38 +224,31 @@ public final class TestUtility {
     public static List<PathSolution> executeMulib(
             String methodName,
             Class<?> containingClass,
-            MulibConfig config) {
-        return executeMulib(methodName, containingClass, 2, config);
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired) {
+        return executeMulib(methodName, containingClass, 2, mb, transformationRequired);
     }
 
     public static List<PathSolution> executeMulib(
             String methodName,
             Class<?> containingClass,
             int maxNumberOfSolutionsForEachPath,
-            MulibConfig config) {
-        Method method = null;
-        try {
-            method = containingClass.getDeclaredMethod(methodName);
-        } catch (NoSuchMethodException e) {
-            fail(e);
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired) {
+        MulibContext mc;
+        if (transformationRequired) {
+            mc = Mulib.getMulibContext(methodName, containingClass, mb, new Class<?>[0], new Object[0]);
+        } else {
+            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, new Class<?>[0]);
         }
-        try {
-            MulibContext mc = Mulib.generateWithoutTransformation(
-                    MethodHandles.lookup().unreflect(method),
-                    config
-            );
-            List<PathSolution> result = mc.getAllPathSolutions();
+        List<PathSolution> result = mc.getAllPathSolutions();
 
-            if (maxNumberOfSolutionsForEachPath > 1) {
-                for (PathSolution ps : result) {
-                    mc.getUpToNSolutions(ps, maxNumberOfSolutionsForEachPath);
-                }
+        if (maxNumberOfSolutionsForEachPath > 1) {
+            for (PathSolution ps : result) {
+                mc.getUpToNSolutions(ps, maxNumberOfSolutionsForEachPath);
             }
-            return result;
-        } catch (IllegalAccessException e) {
-            fail(e);
         }
-        return Collections.emptyList();
+        return result;
     }
 
     public static Optional<PathSolution> executeMulibForOne(
@@ -269,27 +256,13 @@ public final class TestUtility {
             Class<?> containingClass,
             int maxNumberOfSolutionsForEachPath,
             MulibConfig config) {
-        Method method = null;
-        try {
-            method = containingClass.getDeclaredMethod(methodName);
-        } catch (NoSuchMethodException e) {
-            fail(e);
-        }
-        try {
-            MulibContext mc = Mulib.generateWithoutTransformation(
-                    MethodHandles.lookup().unreflect(method),
-                    config
-            );
-            Optional<PathSolution> result = mc.getPathSolution();
+        MulibContext mc = Mulib.generateWithoutTransformation(methodName, containingClass, new Class<?>[0], new Object[0], config);
+        Optional<PathSolution> result = mc.getPathSolution();
 
-            if (!result.isEmpty()) {
-                mc.getUpToNSolutions(result.get(), maxNumberOfSolutionsForEachPath);
-            }
-            return result;
-        } catch (IllegalAccessException e) {
-            fail(e);
+        if (!result.isEmpty()) {
+            mc.getUpToNSolutions(result.get(), maxNumberOfSolutionsForEachPath);
         }
-        return Optional.empty();
+        return result;
     }
 
 }

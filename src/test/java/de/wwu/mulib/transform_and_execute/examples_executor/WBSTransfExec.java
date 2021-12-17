@@ -1,69 +1,93 @@
 package de.wwu.mulib.transform_and_execute.examples_executor;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.transform_and_execute.examples.WBSTransf;
-import de.wwu.mulib.transformer.MulibTransformer;
+import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.transform_and_execute.examples.apache2_examples.WBSTransf;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.function.Function;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class WBSTransfExec {
 
     @Test
     public void testWBSTransf() {
-        MulibConfig config =
-                MulibConfig.builder()
-                        .setTRANSF_WRITE_TO_FILE(true)
-                        .setTRANSF_VALIDATE_TRANSFORMATION(true)
-                        .setTRANSF_REGARD_SPECIAL_CASE(List.of(WBSTransf.class))
-                        .build();
-        MulibTransformer transformer = new MulibTransformer(config);
-        transformer.transformAndLoadClasses(WBSTransf.class);
-        Class<?> transformedClass = transformer.getTransformedClass(WBSTransf.class);
-        try {
-            String className = transformedClass.getSimpleName();
-            assertTrue(className.startsWith("__mulib__"));
-            // There should always be an empty constructor
-            Constructor<?> cons = transformedClass.getDeclaredConstructor(SymbolicExecution.class);
-            Object o = cons.newInstance(new Object[] { null });
-            assertNotNull(o);
-        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            fail("Exception should not have been thrown");
-        }
-        Function<MulibConfig, List<PathSolution>> toTestFunction = (mulibConfig) -> _testWBS(transformedClass, mulibConfig);
-
-        List<List<PathSolution>> solutions = TestUtility.getAllSolutions(toTestFunction, "launch");
+        List<List<PathSolution>> solutions =
+                TestUtility.getAllSolutions(this::_testWBSTransf, "launch");
     }
 
-    private List<PathSolution> _testWBS(Class<?> toExecuteOn, MulibConfig config) {
+    private List<PathSolution> _testWBSTransf(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "launch",
-                toExecuteOn,
+                WBSTransf.class,
                 1,
-                config
+                mb,
+                true
         );
-//        assertFalse(
-//                result.parallelStream().anyMatch(ps -> {
-//                    for (PathSolution psInner : result) {
-//                        if (psInner == ps) continue;
-//                        if (ps.getInitialSolution().labels.getIdentifiersToValues().equals(
-//                                psInner.getInitialSolution().labels.getIdentifiersToValues())) {
-//                            return true;
-//                        }
-//                    }
-//                    return false;
-//                })
-//        );
         assertEquals(13824, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        return result;
+    }
+
+    @Test
+    public void testUpdate0() {
+        List<List<PathSolution>> solutions =
+                TestUtility.getAllSolutions(this::_testUpdate0, "update0");
+    }
+
+    private List<PathSolution> _testUpdate0(MulibConfig.MulibConfigBuilder mb) {
+        List<PathSolution> result = Mulib.executeMulib("update0", WBSTransf.class, mb, new Class[] { WBSTransf.class }, new WBSTransf());
+        assertEquals(24, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        return result;
+    }
+
+    @Test
+    public void testUpdate1() {
+        TestUtility.getAllSolutions(this::_testUpdate1, "update1");
+    }
+
+    private List<PathSolution> _testUpdate1(MulibConfig.MulibConfigBuilder mb) {
+        List<PathSolution> result = Mulib.executeMulib("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), 1, true, false);
+        assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
+        assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
+        assertEquals(6, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
+        assertEquals(2, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        return result;
+    }
+
+    @Test
+    public void testUpdate1FindMethodWithoutArgTypes() {
+        TestUtility.getAllSolutions(this::_testUpdate1FindMethodWithoutArgTypes, "update1");
+    }
+
+    private List<PathSolution> _testUpdate1FindMethodWithoutArgTypes(MulibConfig.MulibConfigBuilder mb) {
+        List<PathSolution> result = Mulib.executeMulib("update1", WBSTransf.class, mb, new WBSTransf(), 1, true, false);
+        assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
+        assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
+        assertEquals(6, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        result = Mulib.executeMulib("update1", WBSTransf.class, mb, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
+        assertEquals(2, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
     }
 }

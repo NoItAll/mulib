@@ -1,11 +1,12 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -53,12 +54,13 @@ public abstract class MulibExecutor {
 
     public abstract Optional<Choice.ChoiceOption> chooseNextChoiceOption(Choice choice);
 
-    public abstract Object concretize(SubstitutedVar substitutedVar);
+    public abstract Object concretize(Sprimitive substitutedVar);
 
     public void setTerminated(boolean terminated) {
         this.terminated = terminated;
     }
 
-    // TODO Refactor
-    public abstract List<PathSolution> runForSolutions(List<Object> arguments);
+    public void addNewConstraint(Constraint c) {
+        solverManager.addConstraint(c);
+    }
 }

@@ -4,7 +4,8 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
-import de.wwu.mulib.search.values.ValueFactory;
+import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.*;
 
@@ -15,22 +16,29 @@ public abstract class MulibExecutorManager {
     protected final List<MulibExecutor> mulibExecutors;
     protected final ChoicePointFactory choicePointFactory;
     protected final ValueFactory valueFactory;
+    protected final CalculationFactory calculationFactory;
     protected final GlobalExecutionBudgetManager globalExecutionManagerBudgetManager;
+    protected final MulibValueTransformer prototypicalMulibValueTransformer;
 
     protected MulibExecutorManager(
             MulibConfig config,
             List<MulibExecutor> mulibExecutorsList,
             SearchTree observedTree,
             ChoicePointFactory choicePointFactory,
-            ValueFactory valueFactory) {
+            ValueFactory valueFactory,
+            CalculationFactory calculationFactory,
+            MulibValueTransformer mulibValueTransformer) {
         this.config = config;
         this.observedTree = observedTree;
         this.choicePointFactory = choicePointFactory;
         this.valueFactory = valueFactory;
+        this.calculationFactory = calculationFactory;
         this.mulibExecutors = mulibExecutorsList;
+        this.prototypicalMulibValueTransformer = mulibValueTransformer;
         mulibExecutors.add(new GenericExecutor(
                 observedTree.root.getOption(0),
                 this,
+                prototypicalMulibValueTransformer,
                 config,
                 config.GLOBAL_SEARCH_STRATEGY
         ));
@@ -40,9 +48,6 @@ public abstract class MulibExecutorManager {
     public abstract Optional<PathSolution> getSolution();
 
     public abstract List<PathSolution> getAllSolutions();
-
-    // TODO Refactor
-    public abstract List<PathSolution> getAllSolutions(List<Object> args);
 
     public final void addToFails(Fail fail) {
         this.observedTree.addToFails(fail);
@@ -75,15 +80,6 @@ public abstract class MulibExecutorManager {
         List<PathSolution> result = new ArrayList<>();
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
             List<PathSolution> solutions  = executorToDispatch.runForSolutions();
-            result.addAll(solutions);
-        }
-        return result;
-    }
-
-    protected final List<PathSolution> getAllSolutions(MulibExecutor executorToDispatch, List<Object> arguments) {
-        List<PathSolution> result = new ArrayList<>();
-        while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
-            List<PathSolution> solutions  = executorToDispatch.runForSolutions(arguments);
             result.addAll(solutions);
         }
         return result;

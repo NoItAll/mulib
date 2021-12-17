@@ -2,6 +2,7 @@ package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
+import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
 public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpressionConstraint {
 
@@ -9,8 +10,14 @@ public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpre
     protected final NumericExpression rhsExpr;
 
     protected AbstractTwoSidedNumericConstraint(NumericExpression lhsExpr, NumericExpression rhsExpr) {
-        this.lhsExpr = lhsExpr;
-        this.rhsExpr = rhsExpr;
+        this.lhsExpr = lhsExpr instanceof SymNumericExpressionSprimitive ?
+                ((SymNumericExpressionSprimitive) lhsExpr).getRepresentedExpression()
+                :
+                lhsExpr;
+        this.rhsExpr = rhsExpr instanceof SymNumericExpressionSprimitive ?
+                ((SymNumericExpressionSprimitive) rhsExpr).getRepresentedExpression()
+                :
+                rhsExpr;
     }
 
     protected static boolean bothExprAreConcrete(NumericExpression lhs, NumericExpression rhs) {

@@ -11,8 +11,8 @@ public class NQueensTransf {
         QueenTransf[] qs = new QueenTransf[n];
         for (int i = 0; i < n; i++) {
             QueenTransf q = new QueenTransf();
-            q.x = Mulib.trackedFreeInt("q.x" + i);
-            q.y = Mulib.trackedFreeInt("q.y" + i);
+            q.x = Mulib.namedFreeInt("q.x" + i);
+            q.y = Mulib.namedFreeInt("q.y" + i);
             qs[i] = q;
         }
         for (int i = 0; i < n; i++) {
@@ -37,7 +37,7 @@ public class NQueensTransf {
         for (int i = 0; i < n; i++) {
             QueenTransf q = new QueenTransf();
             q.x = i;
-            q.y = Mulib.trackedFreeInt("y" + i);
+            q.y = Mulib.namedFreeInt("y" + i);
             qs[i] = q;
         }
         for (int i = 0; i < n; i++) {

@@ -1,6 +1,6 @@
 package de.wwu.mulib.expressions;
 
-public interface NumericExpression extends Expression {
+public interface NumericExpression {
 
     default boolean isPrimitive() {
         return false;

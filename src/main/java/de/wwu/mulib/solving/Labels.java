@@ -1,28 +1,26 @@
 package de.wwu.mulib.solving;
 
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sdouble;
-import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.Map;
 
 public interface Labels {
 
-    Object getForTrackedSubstitutedVar(SubstitutedVar sv);
+    Object getLabelForNamedSubstitutedVar(SubstitutedVar sv);
 
-    Integer getForTrackedSubstitutedVar(Sint i);
+    Object getLabelForId(String id);
 
-    Double getForTrackedSubstitutedVar(Sdouble d);
+    SubstitutedVar getNamedVar(String id);
 
-    Boolean getForTrackedSubstitutedVar(Sbool b);
+    SubstitutedVar[] getNamedVars();
 
-    Object getForTrackedVar(String identifier);
+    Sprimitive[] getNamedPrimitiveVars();
 
-    SubstitutedVar[] getTrackedVariables();
+    Map<String, SubstitutedVar> getIdToNamedVar();
 
-    Map<String, Object> getIdentifiersToSVars();
+    Map<String, Sprimitive> getIdToNamedPrimitiveVar();
 
-    Map<String, Object> getIdentifiersToValues();
+    Map<String, Object> getIdToLabel();
 
 }

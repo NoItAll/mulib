@@ -2,7 +2,7 @@ package de.wwu.mulib.transformer.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.transformer.CustomException1;
-import de.wwu.mulib.transformer.MulibTransformer;
+import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformer.examples.CustomException0;
 import de.wwu.mulib.transformer.examples.CustomRuntimeException;
 import de.wwu.mulib.transformer.examples.TryCatchThrow;
@@ -10,8 +10,6 @@ import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;

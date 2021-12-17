@@ -7,7 +7,8 @@ import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.search.values.ValueFactory;
+import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.*;
 import java.util.concurrent.ExecutorService;
@@ -28,8 +29,11 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             MulibConfig config,
             SearchTree observedTree,
             ChoicePointFactory choicePointFactory,
-            ValueFactory valueFactory) {
-        super(config, Collections.synchronizedList(new ArrayList<>()), observedTree, choicePointFactory, valueFactory);
+            ValueFactory valueFactory,
+            CalculationFactory calculationFactory,
+            MulibValueTransformer mulibValueTransformer) {
+        super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
+                choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer);
         this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.mainExecutor = this.mulibExecutors.get(0);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
@@ -176,12 +180,13 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                         MulibExecutor finalNextExecutor = new GenericExecutor(
                                 observedTree.root.getOption(0),
                                 this,
+                                prototypicalMulibValueTransformer,
                                 config,
                                 searchStrategy
                         );
                         finalNextExecutor
                                 .solverManager
-                                .addConstraintAfterNewBacktrackingPoint(observedTree.root.getOption(0).optionConstraint);
+                                .addConstraintAfterNewBacktrackingPoint(observedTree.root.getOption(0).getOptionConstraint());
                         mulibExecutors.add(finalNextExecutor);
                         addToPathSolutions(finalNextExecutor);
                         idle.add(finalNextExecutor);
@@ -199,13 +204,5 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         assert failureInThread != null;
         assert this.failureInThread == null;
         this.failureInThread = failureInThread;
-    }
-
-    @Override
-    public List<PathSolution> getAllSolutions(List<Object> args) {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-        List<PathSolution> result = super.getAllSolutions(mulibExecutors.get(0), args);
-        Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
-        return result;
     }
 }

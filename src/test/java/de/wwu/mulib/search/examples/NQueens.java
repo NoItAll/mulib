@@ -5,18 +5,16 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class NQueens {
     private final static int dimension = 8;
@@ -27,14 +25,16 @@ public class NQueens {
         TestUtility.getAllSolutions(this::_checkExecute, "solve");
     }
 
-    private List<PathSolution> _checkExecute(MulibConfig config) {
+    private List<PathSolution> _checkExecute(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "solve",
                 NQueens.class,
                 1,
-                config
+                mb,
+                false
         );
         assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
     }
 
@@ -43,13 +43,16 @@ public class NQueens {
         TestUtility.getAllSolutions(this::_checkExecuteAlt, "solveAlt");
     }
 
-    private List<PathSolution> _checkExecuteAlt(MulibConfig config) {
+    private List<PathSolution> _checkExecuteAlt(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "solveAlt",
                 NQueens.class,
                 95, // Only 92 solutions are possible
-                config);
+                mb,
+                false
+        );
         assertEquals(1, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         assertEquals(92, result.get(0).getCurrentlyInitializedSolutions().size());
         return result;
     }
@@ -133,7 +136,7 @@ public class NQueens {
         Board board = new Board(dimension);
         Queen[] qs = new Queen[dimension];
         for (int i = 0; i < dimension; i++) {
-            qs[i] = new Queen(se.trackedSymSint("x" + i), se.trackedSymSint("y" + i));
+            qs[i] = new Queen(se.namedSymSint("x" + i), se.namedSymSint("y" + i));
         }
         for (int i = 0; i < dimension; i++) {
             boolean valid = board.isOnBoard(qs[i]);
@@ -156,7 +159,7 @@ public class NQueens {
         Board board = new Board(dimension);
         Queen[] qs = new Queen[dimension];
         for (int i = 0; i < dimension; i++) {
-            qs[i] = new Queen(se.concSint(i), se.trackedSymSint("y" + i));
+            qs[i] = new Queen(se.concSint(i), se.namedSymSint("y" + i));
         }
         for (int i = 0; i < dimension; i++) {
             boolean valid = board.isOnBoard(qs[i]);
@@ -176,7 +179,7 @@ public class NQueens {
             for (int j = i+1; j < dimension; j++) {
                 boolean threatens = board.threatens(qs[i], qs[j]);
                 if (threatens) {
-                    Sbool b1 = se.trackedSymSbool("notImportant");
+                    Sbool b1 = se.namedSymSbool("notImportant");
                     if (se.boolChoice(b1)) {
                         throw new Fail();
                     }
@@ -195,7 +198,7 @@ public class NQueens {
         Board board = new Board(higherDimension);
         Queen[] qs = new Queen[higherDimension];
         for (int i = 0; i < higherDimension; i++) {
-            qs[i] = new Queen(se.concSint(i), se.trackedSymSint("y" + i));
+            qs[i] = new Queen(se.concSint(i), se.namedSymSint("y" + i));
         }
         Sbool valid = se.concSbool(true);
         for (int i = 0; i < higherDimension; i++) {

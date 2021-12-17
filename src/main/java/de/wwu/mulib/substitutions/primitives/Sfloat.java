@@ -1,53 +1,124 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
 public abstract class Sfloat extends Sfpnumber {
+    public static final ConcSfloat ZERO = new ConcSfloat(0);
+    public static final ConcSfloat ONE = new ConcSfloat(1);
+    public static final ConcSfloat MINUS_ONE = new ConcSfloat(-1);
 
     private Sfloat() {}
 
-    public static ConcSfloat newConcSfloat(float d) {
+    public static Sfloat concSfloat(float d) {
         return new ConcSfloat(d);
     }
 
-    public static ConcSfloat newConcSfloat(int i) {
-        return new ConcSfloat(i);
-    }
-
-    public static SymSfloat newInputSymbolicSfloat() {
+    public static Sfloat newInputSymbolicSfloat() {
         return new SymSfloat();
     }
 
-    public static SymSfloat newExpressionSymbolicSfloat(NumericExpression representedExpression) {
+    public static Sfloat newExpressionSymbolicSfloat(NumericExpression representedExpression) {
         return new SymSfloat(representedExpression);
     }
 
 
     public final Sfloat add(Sfloat rhs, SymbolicExecution se) {
-        return se.add(this, rhs, Sfloat.class);
+        return se.add(this, rhs);
     }
 
     public final Sfloat sub(Sfloat rhs, SymbolicExecution se) {
-        return se.sub(this, rhs, Sfloat.class);
+        return se.sub(this, rhs);
     }
 
     public final Sfloat div(Sfloat rhs, SymbolicExecution se) {
-        return se.div(this, rhs, Sfloat.class);
+        return se.div(this, rhs);
     }
 
     public final Sfloat mul(Sfloat rhs, SymbolicExecution se) {
-        return se.mul(this, rhs, Sfloat.class);
+        return se.mul(this, rhs);
     }
 
     public final Sfloat mod(Sfloat rhs, SymbolicExecution se) {
-        return se.mod(this, rhs, Sfloat.class);
+        return se.mod(this, rhs);
     }
 
     public final Sfloat neg(SymbolicExecution se) {
-        return se.neg(this, Sfloat.class);
+        return se.neg(this);
     }
+
+    public final Sbool lt(Sfloat rhs, SymbolicExecution se) {
+        return se.lt(this, rhs);
+    }
+
+    public final Sbool lte(Sfloat rhs, SymbolicExecution se) {
+        return se.lte(this, rhs);
+    }
+
+    public final Sbool gt(Sfloat rhs, SymbolicExecution se) {
+        return se.gt(this, rhs);
+    }
+
+    public final Sbool gte(Sfloat rhs, SymbolicExecution se) {
+        return se.gte(this, rhs);
+    }
+
+    public final Sbool eq(Sfloat rhs, SymbolicExecution se) {
+        return se.eq(this, rhs);
+    }
+
+    public final Sint cmp(Sfloat rhs, SymbolicExecution se) {
+        return se.cmp(this, rhs);
+    }
+
+    public final boolean ltChoice(SymbolicExecution se) {
+        return se.ltChoice(this);
+    }
+
+    public final boolean lteChoice(SymbolicExecution se) {
+        return se.lteChoice(this);
+    }
+
+    public final boolean eqChoice(SymbolicExecution se) {
+        return se.eqChoice(this);
+    }
+
+    public final boolean notEqChoice(SymbolicExecution se) {
+        return se.notEqChoice(this);
+    }
+
+    public final boolean gtChoice(SymbolicExecution se) {
+        return se.gtChoice(this);
+    }
+
+    public final boolean gteChoice(SymbolicExecution se) {
+        return se.gteChoice(this);
+    }
+
+    public final boolean ltChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.ltChoice(this, rhs);
+    }
+
+    public final boolean lteChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.lteChoice(this, rhs);
+    }
+
+    public final boolean eqChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.eqChoice(this, rhs);
+    }
+
+    public final boolean notEqChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.notEqChoice(this, rhs);
+    }
+
+    public final boolean gtChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.gtChoice(this, rhs);
+    }
+
+    public final boolean gteChoice(Sfloat rhs, SymbolicExecution se) {
+        return se.gteChoice(this, rhs);
+    }
+
 
     public static final class ConcSfloat extends Sfloat implements ConcSnumber {
         private final float value;
@@ -100,9 +171,6 @@ public abstract class Sfloat extends Sfpnumber {
         }
 
         private SymSfloat(NumericExpression representedExpression) {
-            if (!representedExpression.isFp()) {
-                throw new MulibRuntimeException("Represented NumericExpression must be a double.");
-            }
             this.representedExpression = representedExpression;
         }
 

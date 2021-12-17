@@ -1,70 +1,168 @@
 package de.wwu.mulib.search.choice_points;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.Choice;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Snumber;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Function;
 
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
-    @Override
-    public boolean ltChoice(SymbolicExecution se, Snumber lhs, Snumber rhs) {
-        return boolChoice(se, se.lt(lhs, rhs));
+    // TODO Lt, gt, etc. of Sdouble, Sfloat, and Slong are not used! However, in the future we might want to
+    //  optionally collapse XCMPs into gt etc.
+
+    SymbolicChoicePointFactory(MulibConfig config) {}
+
+    public static SymbolicChoicePointFactory getInstance(MulibConfig config) {
+        return new SymbolicChoicePointFactory(config);
     }
 
     @Override
-    public boolean gtChoice(SymbolicExecution se, Snumber lhs, Snumber rhs) {
-        return boolChoice(se, se.gt(lhs, rhs));
+    public boolean ltChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
     }
 
     @Override
-    public boolean eqChoice(SymbolicExecution se, Snumber lhs, Snumber rhs) {
-        return boolChoice(se, se.eq(lhs, rhs));
+    public boolean gtChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.gt(lhs, rhs));
     }
 
     @Override
-    public boolean gteChoice(SymbolicExecution se, Snumber lhs, Snumber rhs) {
-        return boolChoice(se, se.gte(lhs, rhs));
+    public boolean eqChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
     }
 
     @Override
-    public boolean lteChoice(SymbolicExecution se, Snumber lhs, Snumber rhs) {
-        return boolChoice(se, se.lte(lhs, rhs));
+    public boolean notEqChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.gte(lhs, rhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.gt(lhs, rhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.gte(lhs, rhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.gt(lhs, rhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.gte(lhs, rhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.gt(lhs, rhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.gte(lhs, rhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean negatedBoolChoice(SymbolicExecution se, Sbool b) {
+        return threeCaseDistinctionTemplate(se, se.not(b));
     }
 
     @Override
     public boolean boolChoice(final SymbolicExecution se, final Sbool b) {
-        return threeCaseDistinctionTemplate(
-                se,
-                b,
-                b instanceof Sbool.ConcSbool,
-                Sbool.ConcSbool::isTrue,
-                sb -> sb
-        );
+        return threeCaseDistinctionTemplate(se, b);
     }
-
-    @SuppressWarnings("unchecked")
-    private <P, C> boolean threeCaseDistinctionTemplate(
+    
+    private boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
-            P p,
-            boolean isConcrete,
-            Function<C, Boolean> concreteCase,
-            Function<P, Constraint> newConstraintCase) {
+            Constraint b) {
         ExecutionBudgetManager ebm = se.getExecutionBudgetManager();
         // Case 1: No actual choice, only concrete values
         if (ebm.fixedPossibleChoicePointBudgetIsExceeded()) {
             throw new ChoicePointExceededBudget(ebm.getFixedPossibleChoicePointBudget());
         }
-        if (isConcrete) {
-            return concreteCase.apply((C) p);
+        if (b instanceof Sbool.ConcSbool) {
+            return ((Sbool.ConcSbool) b).isTrue();
         }
 
         // This choice option must be stored either way to be set as a parent later on
@@ -79,7 +177,12 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         assert !currentChoiceOption.isEvaluated() : "Should not occur";
 
         // Case 3: We are not on the known path. A new Choice is added. Potentially, we backtrack
-        return determineBooleanWithNewBinaryChoice(se, newConstraintCase.apply(p), currentChoiceOption);
+        return determineBooleanWithNewBinaryChoice(
+                se,
+                b,
+                Not.newInstance(b),
+                currentChoiceOption
+        );
     }
 
     private Optional<Boolean> checkIfStillOnKnownPath(SymbolicExecution se) {
@@ -100,9 +203,10 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     private boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
             Constraint constraint,
+            Constraint otherConstraint,
             Choice.ChoiceOption currentChoiceOption) {
         // Create Choice with ChoiceOptions (true false)
-        Choice newChoice = new Choice(currentChoiceOption, constraint, Not.newInstance(constraint));
+        Choice newChoice = new Choice(currentChoiceOption, constraint, otherConstraint);
         // First, let the Executor of the current SymbolicExecution decide which choice is to be.
         // This also adds the constraint to the SolverManager's stack
         Optional<Choice.ChoiceOption> possibleNextChoiceOption = decideOnChoiceOption(se, newChoice);
@@ -125,7 +229,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         if (possibleNextChoiceOption.isEmpty()) {
             throw new Backtrack();
         } else {
-            Constraint newCpConstraint = possibleNextChoiceOption.get().optionConstraint;
+            Constraint newCpConstraint = possibleNextChoiceOption.get().getOptionConstraint();
             return newCpConstraint == constraint;
         }
     }

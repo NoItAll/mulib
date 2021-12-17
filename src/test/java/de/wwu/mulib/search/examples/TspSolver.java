@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -11,11 +12,10 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.junit.jupiter.api.Assertions.*;
 
 
-// The following example has been heavily adapted. All primitive values have been changed to the (potentially) symbolic
+// HW: The following example has been heavily adapted. All primitive values have been changed to the (potentially) symbolic
 // types of the Mulib library
 /**
  * Copyright (c) 2011, Regents of the University of California All rights reserved.
@@ -58,7 +58,7 @@ public class TspSolver {
 
         for (int i = 0; i < N; i++) {
             for (int j = 0; j < N; j++) {
-                Sint next = se.trackedSymSint(i + "," + j);
+                Sint next = se.namedSymSint(i + "," + j);
                 if(next.ltChoice(se.concSint(1), se)) throw Mulib.fail();
                 D[i][j] = next;
             }
@@ -118,19 +118,20 @@ public class TspSolver {
         TestUtility.getAllSolutions(this::_checkExec, "exec");
     }
 
-    private List<PathSolution> _checkExec(MulibConfig config) {
+    private List<PathSolution> _checkExec(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 TspSolver.class,
                 1,
-                config
+                mb,
+                false
         );
         assertFalse(
                 result.parallelStream().anyMatch(ps -> {
                     for (PathSolution psInner : result) {
                         if (psInner == ps) continue;
-                        if (ps.getInitialSolution().labels.getIdentifiersToValues().equals(
-                                psInner.getInitialSolution().labels.getIdentifiersToValues())) {
+                        if (ps.getInitialSolution().labels.getIdToLabel().equals(
+                                psInner.getInitialSolution().labels.getIdToLabel())) {
                             return true;
                         }
                     }
@@ -138,6 +139,7 @@ public class TspSolver {
                 })
         );
         assertEquals(970, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
     }
 }

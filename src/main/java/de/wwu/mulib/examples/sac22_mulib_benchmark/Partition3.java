@@ -2,6 +2,7 @@ package de.wwu.mulib.examples.sac22_mulib_benchmark;
 
 import de.wwu.mulib.Mulib;
 
+// Mirrors Partition3 in https://github.com/wwu-pi/muli/tree/master/examples/sac22_mulib_benchmark
 public class Partition3 {
     int n;
     int m;
@@ -24,7 +25,7 @@ public class Partition3 {
     public int[] generateMapping(){
         mapping = new int[n];
         for(int i=0; i<n; i++) {
-            int triple = Mulib.trackedFreeInt("triple" + i);
+            int triple = Mulib.namedFreeInt("triple" + i);
             if (triple <= 0 || triple > m)
                 throw Mulib.fail();
             else mapping[i] = triple;

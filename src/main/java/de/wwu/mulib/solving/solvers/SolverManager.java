@@ -1,18 +1,16 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.ArrayDeque;
 import java.util.List;
-import java.util.Map;
 
 public interface SolverManager {
 
-    void addConstraintAfterNewBacktrackingPoint(Constraint constraint);
+    void addConstraint(Constraint constraint);
 
-    void addConstraintsAfterNewBacktrackingPoint(List<Constraint> constraints);
+    void addConstraintAfterNewBacktrackingPoint(Constraint constraint);
 
     boolean checkWithNewConstraint(Constraint c);
 
@@ -24,9 +22,9 @@ public interface SolverManager {
 
     void backtrackAll();
 
-    Labels getLabels(Map<String, Object> primitivesToLabel);
-
-    Object getLabel(SubstitutedVar var);
+    Object getLabel(Sprimitive var);
 
     ArrayDeque<Constraint> getConstraints();
+
+    int getLevel();
 }

@@ -2,7 +2,7 @@ package de.wwu.mulib.transformer.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.transformer.MulibTransformer;
+import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformer.examples.CallsNonSubstitutedToBeConcretized;
 import de.wwu.mulib.transformer.examples.NonSubstitutedToBeConcretized;
 import org.junit.jupiter.api.Test;

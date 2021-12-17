@@ -2,6 +2,8 @@ package de.wwu.mulib.examples;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;

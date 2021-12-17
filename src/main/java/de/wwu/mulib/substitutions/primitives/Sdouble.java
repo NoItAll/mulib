@@ -5,48 +5,120 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
 public abstract class Sdouble extends Sfpnumber {
+    public static final ConcSdouble ZERO = new ConcSdouble(0);
+    public static final ConcSdouble ONE = new ConcSdouble(1);
+    public static final ConcSdouble MINUS_ONE = new ConcSdouble(-1);
 
     private Sdouble() {}
 
-    public static ConcSdouble newConcSdouble(double d) {
+    public static Sdouble concSdouble(double d) {
         return new ConcSdouble(d);
     }
 
-    public static ConcSdouble newConcSdouble(int i) {
-        return new ConcSdouble(i);
-    }
-
-    public static SymSdouble newInputSymbolicSdouble() {
+    public static Sdouble newInputSymbolicSdouble() {
         return new SymSdouble();
     }
 
-    public static SymSdouble newExpressionSymbolicSdouble(NumericExpression representedExpression) {
+    public static Sdouble newExpressionSymbolicSdouble(NumericExpression representedExpression) {
         return new SymSdouble(representedExpression);
     }
 
     public final Sdouble add(Sdouble rhs, SymbolicExecution se) {
-        return se.add(this, rhs, Sdouble.class);
+        return se.add(this, rhs);
     }
 
     public final Sdouble sub(Sdouble rhs, SymbolicExecution se) {
-        return se.sub(this, rhs, Sdouble.class);
+        return se.sub(this, rhs);
     }
 
     public final Sdouble div(Sdouble rhs, SymbolicExecution se) {
-        return se.div(this, rhs, Sdouble.class);
+        return se.div(this, rhs);
     }
 
     public final Sdouble mul(Sdouble rhs, SymbolicExecution se) {
-        return se.mul(this, rhs, Sdouble.class);
+        return se.mul(this, rhs);
     }
 
     public final Sdouble mod(Sdouble rhs, SymbolicExecution se) {
-        return se.mod(this, rhs, Sdouble.class);
+        return se.mod(this, rhs);
     }
 
     public final Sdouble neg(SymbolicExecution se) {
-        return se.neg(this, Sdouble.class);
+        return se.neg(this);
     }
+
+    public final Sbool lt(Sdouble rhs, SymbolicExecution se) {
+        return se.lt(this, rhs);
+    }
+
+    public final Sbool lte(Sdouble rhs, SymbolicExecution se) {
+        return se.lte(this, rhs);
+    }
+
+    public final Sbool gt(Sdouble rhs, SymbolicExecution se) {
+        return se.gt(this, rhs);
+    }
+
+    public final Sbool gte(Sdouble rhs, SymbolicExecution se) {
+        return se.gte(this, rhs);
+    }
+
+    public final Sbool eq(Sdouble rhs, SymbolicExecution se) {
+        return se.eq(this, rhs);
+    }
+
+    public final Sint cmp(Sdouble rhs, SymbolicExecution se) {
+        return se.cmp(this, rhs);
+    }
+
+    public final boolean ltChoice(SymbolicExecution se) {
+        return se.ltChoice(this);
+    }
+
+    public final boolean lteChoice(SymbolicExecution se) {
+        return se.lteChoice(this);
+    }
+
+    public final boolean eqChoice(SymbolicExecution se) {
+        return se.eqChoice(this);
+    }
+
+    public final boolean notEqChoice(SymbolicExecution se) {
+        return se.notEqChoice(this);
+    }
+
+    public final boolean gtChoice(SymbolicExecution se) {
+        return se.gtChoice(this);
+    }
+
+    public final boolean gteChoice(SymbolicExecution se) {
+        return se.gteChoice(this);
+    }
+
+    public final boolean ltChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.ltChoice(this, rhs);
+    }
+
+    public final boolean lteChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.lteChoice(this, rhs);
+    }
+
+    public final boolean eqChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.eqChoice(this, rhs);
+    }
+
+    public final boolean notEqChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.notEqChoice(this, rhs);
+    }
+
+    public final boolean gtChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.gtChoice(this, rhs);
+    }
+
+    public final boolean gteChoice(Sdouble rhs, SymbolicExecution se) {
+        return se.gteChoice(this, rhs);
+    }
+
 
     public static final class ConcSdouble extends Sdouble implements ConcSnumber {
         private final double value;

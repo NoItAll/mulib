@@ -7,13 +7,13 @@ import java.util.List;
 
 public class And extends AbstractTwoSidedConstraint {
 
-    private And(Constraint lhs, Constraint rhs) {
+    public And(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 
     public static Constraint newInstance(Constraint lhs, Constraint rhs) {
         if (bothConstraintsAreConcrete(lhs, rhs)) {
-            return Sbool.ConcSbool.newConcSbool(((Sbool.ConcSbool) lhs).isTrue() && ((Sbool.ConcSbool) rhs).isTrue());
+            return Sbool.concSbool(((Sbool.ConcSbool) lhs).isTrue() && ((Sbool.ConcSbool) rhs).isTrue());
         } else {
             return new And(lhs, rhs);
         }

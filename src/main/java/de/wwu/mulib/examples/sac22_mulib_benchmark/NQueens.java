@@ -2,6 +2,7 @@ package de.wwu.mulib.examples.sac22_mulib_benchmark;
 
 import de.wwu.mulib.Mulib;
 
+// Mirrors NQueens in https://github.com/wwu-pi/muli/tree/master/examples/sac22_mulib_benchmark
 public class NQueens {
 
     public static Queen[] solve() {
@@ -10,8 +11,8 @@ public class NQueens {
         Queen[] qs = new Queen[n];
         for (int i = 0; i < n; i++) {
             Queen q = new Queen();
-            q.x = Mulib.trackedFreeInt("q.x" + i);
-            q.y = Mulib.trackedFreeInt("q.y" + i);
+            q.x = Mulib.namedFreeInt("q.x" + i);
+            q.y = Mulib.namedFreeInt("q.y" + i);
             qs[i] = q;
         }
         for (int i = 0; i < n; i++) {

@@ -3,7 +3,6 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -11,16 +10,15 @@ import de.wwu.mulib.search.ExceededBudget;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
-import de.wwu.mulib.search.trees.Choice;
-import de.wwu.mulib.search.trees.ChoiceOptionDeque;
-import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.search.values.ValueFactory;
+import de.wwu.mulib.search.trees.*;
+import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.solving.LabelService;
 import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.lang.invoke.MethodHandle;
 import java.lang.reflect.Array;
 import java.util.*;
 import java.util.function.Function;
@@ -32,10 +30,12 @@ public final class GenericExecutor extends MulibExecutor {
     private final Choice rootChoiceOfSearchTree;
     private long dsasMissed;
     private final boolean labelResultValue;
+    private final MulibValueTransformer prototypicalMulibValueTransformer;
 
     public GenericExecutor(
             Choice.ChoiceOption rootChoiceOption,
             MulibExecutorManager mulibExecutorManager,
+            MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
             SearchStrategy searchStrategy) {
         super(mulibExecutorManager, config, searchStrategy);
@@ -58,6 +58,7 @@ public final class GenericExecutor extends MulibExecutor {
             throw new NotYetImplementedException();
         }
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
+        this.prototypicalMulibValueTransformer = mulibValueTransformer;
     }
 
     @Override
@@ -110,23 +111,28 @@ public final class GenericExecutor extends MulibExecutor {
         return mulibExecutorManager.valueFactory;
     }
 
-    private MethodHandle getMethodHandle() {
-        return mulibExecutorManager.observedTree.representedMethod;
+    private CalculationFactory getCalculationFactory() {
+        return mulibExecutorManager.calculationFactory;
+    }
+
+    private Object invokeSearchRegion() throws Throwable {
+        return mulibExecutorManager.observedTree.invokeSearchRegion(currentSymbolicExecution.getMulibValueTransformer());
     }
 
     @Override
     public Optional<PathSolution> runForSingleSolution() {
         while (!getDeque().isEmpty() && !terminated) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
-                    createExecution(getDeque(), getChoicePointFactory(), getValueFactory());
+                    createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 try {
-                    Object solutionValue = getMethodHandle().invoke();
+                    Object solutionValue = invokeSearchRegion();
                     PathSolution solution;
                     try {
                         solution = generateSolution(solutionValue, symbolicExecution, false);
                     } catch (Throwable t) {
+                        t.printStackTrace();
                         throw new MulibRuntimeException(t);
                     }
                     this.mulibExecutorManager.addToPathSolutions(solution);
@@ -148,7 +154,7 @@ public final class GenericExecutor extends MulibExecutor {
                 } catch (MulibException e) {
                     e.printStackTrace();
                     throw e;
-                } catch (Exception e) {
+                } catch (Exception | AssertionError e) {
                     PathSolution solution = generateSolution(e, symbolicExecution, true);
                     return Optional.of(solution);
                 } catch (Throwable t) {
@@ -165,11 +171,26 @@ public final class GenericExecutor extends MulibExecutor {
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
         Choice.ChoiceOption choiceOption = symbolicExecution.getCurrentChoiceOption();
-        if (solutionValue != null && labelResultValue && !solutionValue.getClass().isArray() && solutionValue instanceof SubstitutedVar) {
-            symbolicExecution.addTrackedVariable("return", solutionValue);
+        if (solutionValue != null
+                && labelResultValue
+                && !solutionValue.getClass().isArray()
+                && solutionValue instanceof SubstitutedVar) {
+            symbolicExecution.addNamedVariable("return", (SubstitutedVar) solutionValue);
         }
-        Labels labels = solverManager.getLabels(symbolicExecution.getTrackedVariables());
+
+        Labels labels = LabelService.getLabels(
+                solverManager,
+                symbolicExecution.getMulibValueTransformer(),
+                symbolicExecution.getNamedVariables()
+        );
         PathSolution solution;
+        if (labelResultValue) {
+            if (solutionValue != null && solutionValue.getClass().isArray()) {
+                solutionValue = transformArray(solutionValue, labels, symbolicExecution); // TODO Free arrays
+            } else if (solutionValue instanceof SubstitutedVar) {
+                solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
+            }
+        }
         if (isThrownException) {
             solution = choiceOption.setExceptionSolution(
                     (Throwable) solutionValue,
@@ -177,13 +198,6 @@ public final class GenericExecutor extends MulibExecutor {
                     solverManager.getConstraints().toArray(new Constraint[0])
             );
         } else {
-            if (labelResultValue) {
-                if (solutionValue != null && solutionValue.getClass().isArray()) {
-                    solutionValue = transformArray(solutionValue, labels);
-                } else if (solutionValue instanceof SubstitutedVar) {
-                    solutionValue = transformOneValue((SubstitutedVar) solutionValue, labels);
-                }
-            }
             solution = choiceOption.setSolution(
                     solutionValue,
                     labels,
@@ -193,19 +207,21 @@ public final class GenericExecutor extends MulibExecutor {
         return solution;
     }
 
-    private Object transformArray(Object o, Labels l) {
+    private Object transformArray(Object o, Labels l, SymbolicExecution symbolicExecution) {
         Class<?> componentType = o.getClass().getComponentType();
         int length = Array.getLength(o);
         Object[] result = new Object[length];
         if (componentType.isArray()) {
             for (int i = 0; i < length; i++) {
-                result[i] = transformArray(Array.get(o, i), l);
+                result[i] = transformArray(Array.get(o, i), l, symbolicExecution);
             }
         } else {
             for (int i = 0; i < length; i++) {
                 Object val = Array.get(o, i);
-                if (val instanceof SubstitutedVar) {
-                    result[i] = transformOneValue((SubstitutedVar) val, l);
+                if (val instanceof PartnerClass) {
+                    result[i] = symbolicExecution.getMulibValueTransformer().labelValue(val, solverManager);
+                } else if (val instanceof Sprimitive) {
+                    result[i] = transformOneValue((Sprimitive) val, l);
                 } else {
                     return o;
                 }
@@ -215,11 +231,38 @@ public final class GenericExecutor extends MulibExecutor {
     }
 
     private Object transformOneValue(SubstitutedVar o, Labels l) {
+        if (o instanceof Sbool) {
+            if (o instanceof Sbool.ConcSbool) {
+                return ((Sbool.ConcSbool) o).isTrue();
+            } else if (o instanceof Sbool.SymSbool) {
+                return l.getLabelForNamedSubstitutedVar(o);
+            } else {
+                throw new NotYetImplementedException();
+
+            }
+        }
         if (o instanceof Sint) {
+            if (o instanceof Sshort) {
+                if (o instanceof Sshort.ConcSshort) {
+                    return ((Sshort.ConcSshort) o).shortVal();
+                } else if (o instanceof Sshort.SymSshort) {
+                    return l.getLabelForNamedSubstitutedVar(o);
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else if (o instanceof Sbyte) {
+                if (o instanceof Sbyte.ConcSbyte) {
+                    return ((Sbyte.ConcSbyte) o).byteVal();
+                } else if (o instanceof Sbyte.SymSbyte) {
+                    return l.getLabelForNamedSubstitutedVar(o);
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            }
             if (o instanceof Sint.ConcSint) {
                 return ((Sint.ConcSint) o).intVal();
             } else if (o instanceof Sint.SymSint) {
-                return l.getForTrackedSubstitutedVar(o);
+                return l.getLabelForNamedSubstitutedVar(o);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -227,7 +270,7 @@ public final class GenericExecutor extends MulibExecutor {
             if (o instanceof Sdouble.ConcSdouble) {
                 return ((Sdouble.ConcSdouble) o).doubleVal();
             } else if (o instanceof Sdouble.SymSdouble) {
-                return l.getForTrackedSubstitutedVar(o);
+                return l.getLabelForNamedSubstitutedVar(o);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -235,7 +278,7 @@ public final class GenericExecutor extends MulibExecutor {
             if (o instanceof Sfloat.ConcSfloat) {
                 return ((Sfloat.ConcSfloat) o).floatVal();
             } else if (o instanceof Sfloat.SymSfloat) {
-                return l.getForTrackedSubstitutedVar(o);
+                return l.getLabelForNamedSubstitutedVar(o);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -243,31 +286,7 @@ public final class GenericExecutor extends MulibExecutor {
             if (o instanceof Slong.ConcSlong) {
                 return ((Slong.ConcSlong) o).longVal();
             } else if (o instanceof Slong.SymSlong) {
-                return l.getForTrackedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Sshort) {
-            if (o instanceof Sshort.ConcSshort) {
-                return ((Sshort.ConcSshort) o).shortVal();
-            } else if (o instanceof Sshort.SymSshort) {
-                return l.getForTrackedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Sbyte) {
-            if (o instanceof Sbyte.ConcSbyte) {
-                return ((Sbyte.ConcSbyte) o).byteVal();
-            } else if (o instanceof Sbyte.SymSbyte) {
-                return l.getForTrackedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Sbool) {
-            if (o instanceof Sbool.ConcSbool) {
-                return ((Sbool.ConcSbool) o).isTrue();
-            } else if (o instanceof Sbool.SymSbool) {
-                return l.getForTrackedSubstitutedVar(o);
+                return l.getLabelForNamedSubstitutedVar(o);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -285,26 +304,28 @@ public final class GenericExecutor extends MulibExecutor {
     private Optional<SymbolicExecution> createExecution(
             ChoiceOptionDeque deque,
             ChoicePointFactory choicePointFactory,
-            ValueFactory valueFactory) {
+            ValueFactory valueFactory,
+            CalculationFactory calculationFactory) {
         Choice.ChoiceOption optionToBeEvaluated;
         while (!terminated && !deque.isEmpty() && !mulibExecutorManager.globalBudgetExceeded()) {
             Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
-            if (!optionalChoiceOption.isPresent()) { // !isPresent to be compatible with Java 8
+            if (optionalChoiceOption.isEmpty()) {
                 continue;
             }
             optionToBeEvaluated = optionalChoiceOption.get();
             assert !optionToBeEvaluated.isUnsatisfiable();
             adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-            currentChoiceOption = optionToBeEvaluated.getParent();
             if (isSatisfiable(optionToBeEvaluated)) {
-                assert currentChoiceOption.getDepth() == (solverManager.getConstraints().size() - 1) :
+                assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1) :
                         "Should not occur";
                 currentSymbolicExecution = new SymbolicExecution(
                         this,
                         choicePointFactory,
                         valueFactory,
+                        calculationFactory,
                         optionToBeEvaluated,
-                        prototypicalExecutionBudgetManager.copyFromPrototype()
+                        prototypicalExecutionBudgetManager.copyFromPrototype(),
+                        prototypicalMulibValueTransformer.copyFromPrototype()
                 );
                 return Optional.of(currentSymbolicExecution);
             }
@@ -343,15 +364,14 @@ public final class GenericExecutor extends MulibExecutor {
         assert currentChoiceOption == null ||
                 currentChoiceOption.getChild() instanceof Choice
                         && ((Choice) currentChoiceOption.getChild()).getChoiceOptions().stream()
-                        .anyMatch(co -> {
-                            return choiceOption == co;
-                        });
+                        .anyMatch(co -> choiceOption == co);
         if (choiceOption.isSatisfiable()) {
             addAfterBacktrackingPoint(choiceOption);
             return true;
         } else if (choiceOption.isUnsatisfiable()) {
             return false;
         }
+        /* TODO Not valid any longer for all instances since domain-constraints on numerics can yield unsatisfiable restrictions
         // otherNumber is only valid if there is a binary choice.
         int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
         if (choiceOption.getChoice().getChoiceOptions().size() == 2
@@ -362,17 +382,18 @@ public final class GenericExecutor extends MulibExecutor {
             // of the first choice.
             Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
             assert other != choiceOption;
-            Constraint c0 = other.optionConstraint;
-            Constraint c1 = choiceOption.optionConstraint;
+            Constraint c0 = other.getOptionConstraint();
+            Constraint c1 = choiceOption.getOptionConstraint();
             if ((c1 instanceof Not && c0 == ((Not) c1).getConstraint())
                 || (c0 instanceof Not && c1 == ((Not) c0).getConstraint())) {
                 choiceOption.setSatisfiable();
                 heuristicSatEvals++;
+                choiceOption.setOptionConstraint(Sbool.TRUE);
                 addAfterBacktrackingPoint(choiceOption);
                 assert solverManager.isSatisfiable();
                 return true;
             }
-        }
+        }*/
 
         addAfterBacktrackingPoint(choiceOption);
         if (solverManager.isSatisfiable()) {
@@ -382,6 +403,9 @@ public final class GenericExecutor extends MulibExecutor {
         } else {
             choiceOption.setUnsatisfiable();
             unsatEvals++;
+            // Needed during chooseNextChoiceOption(Choice) for when one is unsatisfiable. This way
+            // calling isSatisfiable(ChoiceOption) always leaves the MulibExecutor on a satisfiable
+            // ChoiceOption.
             backtrackOnce();
             return false;
         }
@@ -396,19 +420,19 @@ public final class GenericExecutor extends MulibExecutor {
     }
 
     private void addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
-        solverManager.addConstraintAfterNewBacktrackingPoint(choiceOption.optionConstraint);
+        solverManager.addConstraintAfterNewBacktrackingPoint(choiceOption.getOptionConstraint());
         addedAfterBacktrackingPoint++;
         currentChoiceOption = choiceOption;
     }
 
     @Override
-    public Object concretize (SubstitutedVar substitutedVar){
+    public Object concretize (Sprimitive sprimitive){
         // TODO this should also be constrained in the subsequent execution
-        Object label = solverManager.getLabel(substitutedVar);
+        Object label = solverManager.getLabel(sprimitive);
         return label;
     }
 
-    private void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated){
+    private void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
         Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
         int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
@@ -416,51 +440,9 @@ public final class GenericExecutor extends MulibExecutor {
         solverBacktrack += depthDifference;
         ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
         for (Choice.ChoiceOption co : getPathBetween) {
-            solverManager.addConstraintAfterNewBacktrackingPoint(co.optionConstraint);
+            solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
             addedAfterBacktrackingPoint++;
         }
+        currentChoiceOption = optionToBeEvaluated.getParent();
     }
-
-    // TODO Refactor
-    @Override
-    public List<PathSolution> runForSolutions(List<Object> arguments) {
-        while (!getDeque().isEmpty() && !terminated) {
-            Optional<SymbolicExecution> possibleSymbolicExecution =
-                    createExecution(getDeque(), getChoicePointFactory(), getValueFactory());
-            if (possibleSymbolicExecution.isPresent()) {
-                SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
-                try {
-                    Object solutionValue = getMethodHandle().invoke();
-                    PathSolution solution = generateSolution(solutionValue, symbolicExecution, false);
-                    this.mulibExecutorManager.addToPathSolutions(solution);
-                    return Collections.singletonList(solution);
-                } catch (Backtrack b) {
-                    // We assume that Backtracking is only executed in a ChoicePointFactory.
-                    // In the ChoicePointFactory, ChoiceOptions are not "swallowed" by backtracking, i.e.,
-                    // we do not have to add back ChoiceOptions to the SearchTree's queue, this is taken care of
-                    // in the ChoicePointFactory.
-                } catch (Fail f) {
-                    de.wwu.mulib.search.trees.Fail fail = symbolicExecution.getCurrentChoiceOption().setExplicitlyFailed();
-                    this.mulibExecutorManager.addToFails(fail);
-                } catch (ExceededBudget be) {
-                    assert !be.getExceededBudget().isIncremental() : "Should not occur anymore, we throw a normal Backtracking in this case";
-                    // The newly encountered choice option triggering the exception is set in the ChoicePointFactory
-                    de.wwu.mulib.search.trees.ExceededBudget exceededBudget =
-                            symbolicExecution.getCurrentChoiceOption().setBudgetExceeded(be.getExceededBudget());
-                    this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
-                } catch (MulibException e) {
-                    e.printStackTrace();
-                    throw e;
-                } catch (Exception e) {
-                    PathSolution solution = generateSolution(e, symbolicExecution, true);
-                    return Collections.singletonList(solution);
-                } catch (Throwable t) {
-                    t.printStackTrace();
-                    throw new MulibRuntimeException(t);
-                }
-            }
-        }
-        return Collections.emptyList();
-    }
-
 }

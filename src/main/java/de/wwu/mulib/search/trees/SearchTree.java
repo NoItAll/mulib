@@ -3,16 +3,16 @@ package de.wwu.mulib.search.trees;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
+import java.util.function.Function;
 
 public final class SearchTree {
 
-    public final MethodHandle representedMethod;
+    private final MethodHandle representedMethod;
+    private final Function<MulibValueTransformer, Object[]> argsSupplier;
     public final Choice root;
     private final List<PathSolution> solutionsList;
     private final List<Fail> failsList;
@@ -24,22 +24,37 @@ public final class SearchTree {
     public SearchTree(
             MulibConfig config,
             MethodHandle methodHandle,
-            boolean synchronizedLists) {
+            Function<MulibValueTransformer, Object[]> argsProvider) {
         this.indentBy = config.TREE_INDENTATION;
         this.enlistLeaves = config.ENLIST_LEAVES;
         this.representedMethod = methodHandle;
+        this.argsSupplier = argsProvider;
         this.root = new Choice(null, Sbool.TRUE);
         this.root.getOption(0).setSatisfiable();
-        if (synchronizedLists) {
-            solutionsList = Collections.synchronizedList(new ArrayList<>());
-            failsList = Collections.synchronizedList(new ArrayList<>());
-            exceededBudgetList = Collections.synchronizedList(new ArrayList<>());
-            throw new NotYetImplementedException();
+        if (enlistLeaves) {
+            if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
+                solutionsList = Collections.synchronizedList(new ArrayList<>());
+                failsList = Collections.synchronizedList(new ArrayList<>());
+                exceededBudgetList = Collections.synchronizedList(new ArrayList<>());
+            } else {
+                solutionsList = new ArrayList<>();
+                failsList = new ArrayList<>();
+                exceededBudgetList = new ArrayList<>();
+            }
         } else {
-            solutionsList = new ArrayList<>();
-            failsList = new ArrayList<>();
-            exceededBudgetList = new ArrayList<>();
-            choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
+            solutionsList = null;
+            failsList = null;
+            exceededBudgetList = null;
+        }
+        choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
+    }
+
+    public Object invokeSearchRegion(MulibValueTransformer mulibValueTransformer) throws Throwable {
+        Object[] args = argsSupplier.apply(mulibValueTransformer);
+        if (args.length == 0) {
+            return representedMethod.invoke();
+        } else {
+            return representedMethod.invokeWithArguments(Arrays.asList(args));
         }
     }
 
@@ -85,19 +100,11 @@ public final class SearchTree {
         if (getFrom == getTo) {
             return result;
         }
-        Choice.ChoiceOption start;
-        Choice.ChoiceOption end;
-        // Determine start (has higher depth) and end.
-        if (getFrom.getDepth() > getTo.getDepth()) {
-            start = getFrom;
-            end = getTo;
-        } else {
-            start = getTo;
-            end = getFrom;
-        }
+        assert getTo.getDepth() > getFrom.getDepth();
+        Choice.ChoiceOption start = getTo;
         start = start.getParent();
         // Construct path by following parent-path from start to end
-        while (start != end) {
+        while (start != getFrom) {
             result.addFirst(start);
             start = start.getParent();
         }
@@ -115,11 +122,11 @@ public final class SearchTree {
             Choice choice = (Choice) currentNode;
             for (Choice.ChoiceOption co : choice.getChoiceOptions()) {
                 sb.append(indentBy.repeat(currentNode.depth));
-                sb.append("- ChoiceOption: ").append(co.optionConstraint).append("\r\n");
+                sb.append("- ChoiceOption: ").append(co.getOptionConstraint()).append("\r\n");
                 if (co.isEvaluated()) {
                     sb.append(printTree(co.getChild(), indentBy));
                 } else {
-                    sb.append("Unevaluated\r\n");
+                    sb.append(indentBy.repeat(currentNode.depth + 1)).append("Unevaluated\r\n");
                 }
             }
         } else {

@@ -4,13 +4,13 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Or extends AbstractTwoSidedConstraint {
 
-    protected Or(Constraint lhs, Constraint rhs) {
+    public Or(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 
     public static Constraint newInstance(Constraint lhs, Constraint rhs) {
         if (bothConstraintsAreConcrete(lhs, rhs)) {
-            return Sbool.ConcSbool.newConcSbool(((Sbool.ConcSbool) lhs).isTrue() || ((Sbool.ConcSbool) rhs).isTrue());
+            return Sbool.concSbool(((Sbool.ConcSbool) lhs).isTrue() || ((Sbool.ConcSbool) rhs).isTrue());
         } else {
             return new Or(lhs, rhs);
         }
@@ -33,6 +33,6 @@ public class Or extends AbstractTwoSidedConstraint {
 
     @Override
     public String toString() {
-        return "(" + lhs + "||" + rhs + ")";
+        return "(" + lhs + " || " + rhs + ")";
     }
 }

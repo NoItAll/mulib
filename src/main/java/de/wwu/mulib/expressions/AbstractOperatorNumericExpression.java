@@ -1,19 +1,15 @@
 package de.wwu.mulib.expressions;
 
-import de.wwu.mulib.substitutions.primitives.ConcSnumber;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
-public abstract class AbstractOperatorNumericExpression implements NumericExpression {
+public abstract class AbstractOperatorNumericExpression implements NumericExpression, Sym {
 
     protected final NumericExpression expr0;
     protected final NumericExpression expr1;
-    protected final boolean explicitlyTreatAsInteger;
 
     protected AbstractOperatorNumericExpression(NumericExpression expr0, NumericExpression expr1) {
-        this(expr0, expr1, false);
-    }
-
-    protected AbstractOperatorNumericExpression(NumericExpression expr0, NumericExpression expr1, boolean explicitlyTreatAsInteger) {
+        assert expr0 instanceof Sym || expr1 instanceof Sym;
         this.expr0 = expr0 instanceof SymNumericExpressionSprimitive ?
                 ((SymNumericExpressionSprimitive) expr0).getRepresentedExpression()
                 :
@@ -22,11 +18,6 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
                 ((SymNumericExpressionSprimitive) expr1).getRepresentedExpression()
                 :
                 expr1;
-        this.explicitlyTreatAsInteger = explicitlyTreatAsInteger;
-    }
-
-    protected static boolean bothExprAreConcrete(NumericExpression expr0, NumericExpression expr1) {
-        return expr0 instanceof ConcSnumber && expr1 instanceof ConcSnumber;
     }
 
     public final NumericExpression getExpr0() {
@@ -37,9 +28,13 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
         return expr1;
     }
 
+    private byte cachedIsFp = -1;
     @Override
-    public final boolean isFp() {
-        return !explicitlyTreatAsInteger && (expr0.isFp() || expr1.isFp());
+    public boolean isFp() {
+        if (cachedIsFp == -1) {
+            cachedIsFp = (byte) ((expr0.isFp() || expr1.isFp()) ? 1 : 0);
+        }
+        return cachedIsFp == 1;
     }
 
     @Override
@@ -47,7 +42,6 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
         return this.getClass().getSimpleName() + "{"
                 + "expr0=" + expr0
                 + ",expr1=" + expr1
-                + ",explicitlyTreatAsInt=" + explicitlyTreatAsInteger
                 + ",isFp=" + isFp()
                 + "}";
     }
@@ -64,8 +58,12 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
         return this.getExpr0().equals(oc.getExpr0()) && this.getExpr1().equals(oc.getExpr1());
     }
 
+    private int cachedHash = -1;
     @Override
     public int hashCode() {
-        return getExpr0().hashCode() + getExpr1().hashCode();
+        if (cachedHash == -1) {
+            cachedHash = getExpr0().hashCode() + getExpr1().hashCode();
+        }
+        return cachedHash;
     }
 }

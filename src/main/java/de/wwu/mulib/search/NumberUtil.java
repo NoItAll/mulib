@@ -2,7 +2,6 @@ package de.wwu.mulib.search;
 
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.search.values.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.function.BiFunction;
@@ -105,54 +104,20 @@ public class NumberUtil {
                 n;
     }
 
-    public static Snumber newWrappingSnumberDependingOnLhsAndRhs(
-            Snumber lhs, Snumber rhs,
-            NumericExpression expressionToWrap,
-            ValueFactory valueFactory) {
-        if (lhs instanceof Sintegernumber && rhs instanceof Sintegernumber) {
-            return valueFactory.wrappingSymSint(expressionToWrap);
-        } else if (lhs instanceof Sdouble || rhs instanceof Sdouble) {
-            return valueFactory.wrappingSymSdouble(expressionToWrap);
-        } else if (lhs instanceof Sfloat || rhs instanceof Sfloat) {
-            return valueFactory.wrappingSymSfloat(expressionToWrap);
-        } else if (lhs instanceof Slong || rhs instanceof Slong) {
-            return valueFactory.wrappingSymSlong(expressionToWrap);
-        } else {
-            throw new NotYetImplementedException();
-        }
-    }
-
-    public static Snumber newWrappingSnumberDependingOnSnumber(
-            Snumber n,
-            NumericExpression expressionToWrap,
-            ValueFactory valueFactory) {
-        if (n instanceof Sdouble) {
-            return valueFactory.wrappingSymSdouble(expressionToWrap);
-        } else if (n instanceof Sfloat) {
-            return valueFactory.wrappingSymSfloat(expressionToWrap);
-        } else if (n instanceof Sintegernumber) {
-            return valueFactory.wrappingSymSint(expressionToWrap);
-        } else if (n instanceof Slong) {
-            return valueFactory.wrappingSymSlong(expressionToWrap);
-        } else {
-            throw new NotYetImplementedException();
-        }
-    }
-
     private static Snumber newConcsNumberViaOperator(
             ConcSnumber lhs, ConcSnumber rhs,
             BiFunction<Integer, Integer, Integer> integerOperatorFunction,
             BiFunction<Long, Long, Long> longOperatorFunction,
             BiFunction<Float, Float, Float> floatOperatorFunction,
             BiFunction<Double, Double, Double> doubleOperatorFunction) {
-        if (lhs instanceof Sintegernumber && rhs instanceof Sintegernumber) {
-            return Sint.newConcSint(integerOperatorFunction.apply(lhs.intVal(), rhs.intVal()));
+        if (lhs instanceof Sint && rhs instanceof Sint) {
+            return Sint.concSint(integerOperatorFunction.apply(lhs.intVal(), rhs.intVal()));
         } else if (lhs instanceof Sdouble || rhs instanceof Sdouble) {
-            return Sdouble.newConcSdouble(doubleOperatorFunction.apply(lhs.doubleVal(), rhs.doubleVal()));
+            return Sdouble.concSdouble(doubleOperatorFunction.apply(lhs.doubleVal(), rhs.doubleVal()));
         } else if (lhs instanceof Sfloat || rhs instanceof Sfloat) {
-            return Sfloat.newConcSfloat(floatOperatorFunction.apply(lhs.floatVal(), rhs.floatVal()));
+            return Sfloat.concSfloat(floatOperatorFunction.apply(lhs.floatVal(), rhs.floatVal()));
         } else if (lhs instanceof Slong || rhs instanceof Slong) {
-            return Slong.newConcSlong(longOperatorFunction.apply(lhs.longVal(), rhs.longVal()));
+            return Slong.concSlong(longOperatorFunction.apply(lhs.longVal(), rhs.longVal()));
         } else {
             throw new NotYetImplementedException();
         }
@@ -164,14 +129,14 @@ public class NumberUtil {
             Function<Long, Long> longOperatorFunction,
             Function<Float, Float> floatOperatorFunction,
             Function<Double, Double> doubleOperatorFunction) {
-        if (n instanceof Sintegernumber) {
-            return Sint.newConcSint(integerOperatorFunction.apply(n.intVal()));
+        if (n instanceof Sint) {
+            return Sint.concSint(integerOperatorFunction.apply(n.intVal()));
         } else if (n instanceof Slong) {
-            return Slong.ConcSlong.newConcSlong(longOperatorFunction.apply(n.longVal()));
+            return Slong.ConcSlong.concSlong(longOperatorFunction.apply(n.longVal()));
         } else if (n instanceof Sdouble) {
-            return Sdouble.newConcSdouble(doubleOperatorFunction.apply(n.doubleVal()));
+            return Sdouble.concSdouble(doubleOperatorFunction.apply(n.doubleVal()));
         } else if (n instanceof Sfloat) {
-            return Sfloat.newConcSfloat(floatOperatorFunction.apply(n.floatVal()));
+            return Sfloat.concSfloat(floatOperatorFunction.apply(n.floatVal()));
         } else {
             throw new NotYetImplementedException();
         }
@@ -213,7 +178,7 @@ public class NumberUtil {
     public static int compareConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
         Number nlhs;
         Number nrhs;
-        if (lhs instanceof Sintegernumber && rhs instanceof Sintegernumber) {
+        if (lhs instanceof Sint && rhs instanceof Sint) {
             nlhs = lhs.intVal();
             nrhs = rhs.intVal();
         } else if (lhs instanceof Sfpnumber || rhs instanceof Sfpnumber) {

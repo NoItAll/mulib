@@ -1,5 +1,6 @@
 package de.wwu.mulib.examples.sac22_mulib_benchmark;
 
+// Mirrors NQueens.Board in https://github.com/wwu-pi/muli/tree/master/examples/sac22_mulib_benchmark
 public class Board {
     final int dim;
 

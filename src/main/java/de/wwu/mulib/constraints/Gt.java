@@ -13,7 +13,7 @@ public class Gt extends AbstractTwoSidedNumericConstraint {
 
     public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
-            return Sbool.ConcSbool.newConcSbool(NumberUtil.gt((ConcSnumber) lhs, (ConcSnumber) rhs));
+            return Sbool.concSbool(NumberUtil.gt((ConcSnumber) lhs, (ConcSnumber) rhs));
         } else {
             return new Gt(lhs, rhs);
         }

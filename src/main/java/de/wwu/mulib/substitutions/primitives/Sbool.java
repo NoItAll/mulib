@@ -1,17 +1,12 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
-import java.util.concurrent.atomic.AtomicLong;
+public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
-public abstract class Sbool implements Sprimitive, Constraint {
-    private static AtomicLong nextId = new AtomicLong(0);
-    private final long id;
-
-    private Sbool() {
-        id = nextId.incrementAndGet();
-    }
+    private Sbool() {}
 
     public final static ConcSbool TRUE;
     public final static ConcSbool FALSE;
@@ -20,11 +15,11 @@ public abstract class Sbool implements Sprimitive, Constraint {
         FALSE = new ConcSbool(false);
     }
 
-    public static ConcSbool newConcSbool(boolean b) {
+    public static Sbool concSbool(boolean b) {
         return b ? TRUE : FALSE;
     }
 
-    public static SymSbool newInputSymbolicSbool() {
+    public static Sbool newInputSymbolicSbool() {
         return new SymSbool();
     }
 
@@ -52,7 +47,15 @@ public abstract class Sbool implements Sprimitive, Constraint {
     }
 
     public final boolean negatedBoolChoice(SymbolicExecution se) {
-        return se.boolChoice(se.not(this));
+        return se.negatedBoolChoice(this);
+    }
+
+    public final boolean boolChoice(Sbool other, SymbolicExecution se) {
+        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))));
+    }
+
+    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se) {
+        return se.boolChoice(se.or(se.and(this, other), se.and(se.not(this), se.not(other))));
     }
 
     @Override
@@ -62,12 +65,7 @@ public abstract class Sbool implements Sprimitive, Constraint {
                 + "}";
     }
 
-    @Override
-    public final long getId() {
-        return id;
-    }
-
-    public static final class ConcSbool extends Sbool implements ConcSprimitive {
+    public static final class ConcSbool extends Sbool implements ConcSnumber {
 
         private final boolean value;
         private ConcSbool(final boolean value) {
@@ -82,7 +80,7 @@ public abstract class Sbool implements Sprimitive, Constraint {
             return !value;
         }
 
-        public Sbool.ConcSbool negate() {
+        public Sbool negate() {
             return isTrue() ? FALSE : TRUE;
         }
 
@@ -98,12 +96,42 @@ public abstract class Sbool implements Sprimitive, Constraint {
 
         @Override
         public int hashCode() {
-            return isTrue() ? 1 : 0;
+            return intVal();
+        }
+
+        @Override
+        public int intVal() {
+            return value ? 1 : 0;
+        }
+
+        @Override
+        public double doubleVal() {
+            return intVal();
+        }
+
+        @Override
+        public float floatVal() {
+            return intVal();
+        }
+
+        @Override
+        public long longVal() {
+            return intVal();
+        }
+
+        @Override
+        public short shortVal() {
+            return (short) intVal();
+        }
+
+        @Override
+        public byte byteVal() {
+            return (byte) intVal();
         }
     }
 
-    public static class SymSbool extends Sbool implements SymSprimitive {
-        private final Constraint representedConstraint;
+    public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
+        protected final Constraint representedConstraint;
 
         private SymSbool() {
             representedConstraint = this;
@@ -127,9 +155,10 @@ public abstract class Sbool implements Sprimitive, Constraint {
                     :
                     "";
         }
-    }
 
-    public final <T extends Sprimitive> T castTo(Class<T> castToClass, SymbolicExecution se) {
-        return se.castTo(this, castToClass);
+        @Override
+        public NumericExpression getRepresentedExpression() {
+            return this;
+        }
     }
 }

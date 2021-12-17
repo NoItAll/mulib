@@ -1,21 +1,24 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
 public abstract class Slong extends AbstractSnumber {
+    public static final ConcSlong ZERO = new ConcSlong(0);
+    public static final ConcSlong ONE = new ConcSlong(1);
+    public static final ConcSlong MINUS_ONE = new ConcSlong(-1);
+
     private Slong() {}
 
-    public static ConcSlong newConcSlong(long l) {
+    public static Slong concSlong(long l) {
         return new ConcSlong(l);
     }
 
-    public static SymSlong newInputSymbolicSlong() {
+    public static Slong newInputSymbolicSlong() {
         return new SymSlong();
     }
 
-    public static SymSlong newExpressionSymbolicSlong(NumericExpression representedExpression) {
+    public static Slong newExpressionSymbolicSlong(NumericExpression representedExpression) {
         return new SymSlong(representedExpression);
     }
 
@@ -25,27 +28,98 @@ public abstract class Slong extends AbstractSnumber {
     }
 
     public final Slong add(Slong rhs, SymbolicExecution se) {
-        return se.add(this, rhs, Slong.class);
+        return se.add(this, rhs);
     }
 
     public final Slong sub(Slong rhs, SymbolicExecution se) {
-        return se.sub(this, rhs, Slong.class);
+        return se.sub(this, rhs);
     }
 
     public final Slong div(Slong rhs, SymbolicExecution se) {
-        return se.div(this, rhs, Slong.class);
+        return se.div(this, rhs);
     }
 
     public final Slong mul(Slong rhs, SymbolicExecution se) {
-        return se.mul(this, rhs, Slong.class);
+        return se.mul(this, rhs);
     }
 
     public final Slong mod(Slong rhs, SymbolicExecution se) {
-        return se.mod(this, rhs, Slong.class);
+        return se.mod(this, rhs);
     }
 
     public final Slong neg(SymbolicExecution se) {
-        return se.neg(this, Slong.class);
+        return se.neg(this);
+    }
+
+    public final Sbool lt(Slong rhs, SymbolicExecution se) {
+        return se.lt(this, rhs);
+    }
+
+    public final Sbool lte(Slong rhs, SymbolicExecution se) {
+        return se.lte(this, rhs);
+    }
+
+    public final Sbool gt(Slong rhs, SymbolicExecution se) {
+        return se.gt(this, rhs);
+    }
+
+    public final Sbool gte(Slong rhs, SymbolicExecution se) {
+        return se.gte(this, rhs);
+    }
+
+    public final Sbool eq(Slong rhs, SymbolicExecution se) {
+        return se.eq(this, rhs);
+    }
+
+    public final Sint cmp(Slong rhs, SymbolicExecution se) {
+        return se.cmp(this, rhs);
+    }
+
+    public final boolean ltChoice(SymbolicExecution se) {
+        return se.ltChoice(this);
+    }
+
+    public final boolean lteChoice(SymbolicExecution se) {
+        return se.lteChoice(this);
+    }
+
+    public final boolean eqChoice(SymbolicExecution se) {
+        return se.eqChoice(this);
+    }
+
+    public final boolean notEqChoice(SymbolicExecution se) {
+        return se.notEqChoice(this);
+    }
+
+    public final boolean gtChoice(SymbolicExecution se) {
+        return se.gtChoice(this);
+    }
+
+    public final boolean gteChoice(SymbolicExecution se) {
+        return se.gteChoice(this);
+    }
+    public final boolean ltChoice(Slong rhs, SymbolicExecution se) {
+        return se.ltChoice(this, rhs);
+    }
+
+    public final boolean lteChoice(Slong rhs, SymbolicExecution se) {
+        return se.lteChoice(this, rhs);
+    }
+
+    public final boolean eqChoice(Slong rhs, SymbolicExecution se) {
+        return se.eqChoice(this, rhs);
+    }
+
+    public final boolean notEqChoice(Slong rhs, SymbolicExecution se) {
+        return se.notEqChoice(this, rhs);
+    }
+
+    public final boolean gtChoice(Slong rhs, SymbolicExecution se) {
+        return se.gtChoice(this, rhs);
+    }
+
+    public final boolean gteChoice(Slong rhs, SymbolicExecution se) {
+        return se.gteChoice(this, rhs);
     }
 
     public static final class ConcSlong extends Slong implements ConcSnumber {
@@ -91,7 +165,7 @@ public abstract class Slong extends AbstractSnumber {
         }
     }
 
-    public static final class SymSlong extends Slong implements SymNumericExpressionSprimitive {
+    public static class SymSlong extends Slong implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
         private SymSlong() {
@@ -99,9 +173,6 @@ public abstract class Slong extends AbstractSnumber {
         }
 
         private SymSlong(NumericExpression representedExpression) {
-            if (representedExpression.isFp()) {
-                throw new MulibRuntimeException("Represented NumericExpression must be an integer.");
-            }
             this.representedExpression = representedExpression;
         }
 

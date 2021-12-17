@@ -11,7 +11,7 @@ public class Xor extends AbstractTwoSidedConstraint {
         if (bothConstraintsAreConcrete(lhs, rhs)) {
             boolean lhsIsTrue = ((Sbool.ConcSbool) lhs).isTrue();
             boolean rhsIsTrue = ((Sbool.ConcSbool) rhs).isTrue();
-            return Sbool.ConcSbool.newConcSbool((lhsIsTrue && !rhsIsTrue) || (!lhsIsTrue && rhsIsTrue));
+            return Sbool.concSbool((lhsIsTrue && !rhsIsTrue) || (!lhsIsTrue && rhsIsTrue));
         } else {
             return new Xor(lhs, rhs);
         }

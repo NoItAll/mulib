@@ -3,6 +3,7 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -11,8 +12,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
-
-
+import static org.junit.jupiter.api.Assertions.assertTrue;
 // Taken from https://github.com/SymbolicPathFinder/jpf-symbc/blob/master/src/examples/WBS.java and https://github.com/sosy-lab/sv-benchmarks/blob/master/java/java-ranger-regression/WBS/impl/WBS.java
 
 /*
@@ -32,8 +32,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
  * See the License for the specific language governing permissions and
  * limitations under the License.
  */
- // Redacted: The class has been renamed and altered to fit Mulib.
-
+// HW: The class has been renamed and altered to fit Mulib.
 public class WBS {
 
     //Internal state
@@ -47,12 +46,12 @@ public class WBS {
     private Sint Sys_Mode;
 
     public WBS() {
-        WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sint.newConcSint(0);
-        WBS_Node_WBS_BSCU_rlt_PRE1 = Sint.newConcSint(0);
-        WBS_Node_WBS_rlt_PRE2 = Sint.newConcSint(100);
-        Nor_Pressure = Sint.newConcSint(0);
-        Alt_Pressure = Sint.newConcSint(0);
-        Sys_Mode = Sint.newConcSint(0);
+        WBS_Node_WBS_BSCU_SystemModeSelCmd_rlt_PRE = Sint.concSint(0);
+        WBS_Node_WBS_BSCU_rlt_PRE1 = Sint.concSint(0);
+        WBS_Node_WBS_rlt_PRE2 = Sint.concSint(100);
+        Nor_Pressure = Sint.concSint(0);
+        Alt_Pressure = Sint.concSint(0);
+        Sys_Mode = Sint.concSint(0);
     }
 
     public void update(Sint PedalPos, Sbool AutoBrake,
@@ -272,17 +271,17 @@ public class WBS {
 
     }
 
-    public static void launch() { // Now using library types as a method callable from Mulib
+    public static void launch() {
         SymbolicExecution se = SymbolicExecution.get();
-        Sint pedal1 = se.trackedSymSint("pedal1");
-        Sbool auto1 = se.trackedSymSbool("auto1");
-        Sbool skid1 = se.trackedSymSbool("skid1");
-        Sint pedal2 = se.trackedSymSint("pedal2");
-        Sbool auto2 = se.trackedSymSbool("auto2");
-        Sbool skid2 = se.trackedSymSbool("skid2");
-        Sint pedal3 = se.trackedSymSint("pedal3");
-        Sbool auto3 = se.trackedSymSbool("auto3");
-        Sbool skid3 = se.trackedSymSbool("skid3");
+        Sint pedal1 = se.namedSymSint("pedal1");
+        Sbool auto1 = se.namedSymSbool("auto1");
+        Sbool skid1 = se.namedSymSbool("skid1");
+        Sint pedal2 = se.namedSymSint("pedal2");
+        Sbool auto2 = se.namedSymSbool("auto2");
+        Sbool skid2 = se.namedSymSbool("skid2");
+        Sint pedal3 = se.namedSymSint("pedal3");
+        Sbool auto3 = se.namedSymSbool("auto3");
+        Sbool skid3 = se.namedSymSbool("skid3");
         WBS wbs = new WBS();
         wbs.update(pedal1, auto1, skid1);
         wbs.update(pedal2, auto2, skid2);
@@ -294,14 +293,16 @@ public class WBS {
         TestUtility.getAllSolutions(this::_checkLaunch, "launch");
     }
 
-    private List<PathSolution> _checkLaunch(MulibConfig config) {
+    private List<PathSolution> _checkLaunch(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "launch",
                 WBS.class,
                 1,
-                config
+                mb,
+                false
         );
         assertEquals(13824, result.size());
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
     }
 }

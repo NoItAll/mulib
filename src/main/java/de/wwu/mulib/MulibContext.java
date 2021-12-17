@@ -1,10 +1,18 @@
 package de.wwu.mulib;
 
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.choice_points.SymbolicChoicePointFactory;
 import de.wwu.mulib.search.executors.MulibExecutorManager;
+import de.wwu.mulib.search.executors.MultiExecutorsManager;
+import de.wwu.mulib.search.executors.SingleExecutorManager;
+import de.wwu.mulib.search.executors.SymbolicCalculationFactory;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.substitutions.primitives.SymbolicValueFactory;
+import de.wwu.mulib.solving.LabelService;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
@@ -12,14 +20,18 @@ import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformer.MulibTransformer;
+import de.wwu.mulib.transformations.MulibTransformer;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
-import java.util.function.Supplier;
+import java.util.function.Function;
+import java.util.logging.Level;
 
 public class MulibContext {
     @SuppressWarnings("all")
@@ -28,50 +40,169 @@ public class MulibContext {
     private final MethodHandle methodHandle;
     private final MulibExecutorManager mulibExecutorManager;
     private final SolverManager solverManager;
-    private final Supplier<List<Object>> argumentsSupplier;
-    private final DeepCopyService deepCopyService;
+    private final Function<MulibValueTransformer, Object[]> argsSupplier;
     private final MulibTransformer mulibTransformer;
+    private final MulibValueTransformer mulibValueTransformer;
 
     protected MulibContext(
-            MethodHandle methodHandle,
-            MulibExecutorManager mulibExecutorManager,
-            MulibConfig mulibConfig) {
-        this.methodHandle = methodHandle;
-        this.mulibExecutorManager = mulibExecutorManager;
-        this.mulibConfig = mulibConfig;
-        this.solverManager = Solvers.getSolverManager(mulibConfig);
-        this.argumentsSupplier = null;
-        this.deepCopyService = null;
-        this.mulibTransformer = null;
-    }
+            String methodName,
+            Class<?> owningMethodClass,
+            MulibConfig config,
+            boolean transformationRequired,
+            Class<?>[] argTypes,
+            Object[] args) {
+        Class<?> possiblyTransformedMethodClass;
+        Object[] searchRegionArgs;
+        Class<?>[] searchRegionArgTypes;
+        if (argTypes == null) {
+            argTypes = findMethodFittingToArgs(args, methodName, owningMethodClass);
+        }
+        if (transformationRequired) {
+            this.mulibTransformer = new MulibTransformer(config);
+            this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
+            possiblyTransformedMethodClass = this.mulibTransformer.getTransformedClass(owningMethodClass);
+            this.mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer, true);
+            searchRegionArgs = transformArguments(mulibValueTransformer, args);
+            searchRegionArgTypes = transformArgumentTypes(mulibValueTransformer, argTypes);
+        } else {
+            this.mulibTransformer = null;
+            this.mulibValueTransformer = new MulibValueTransformer(config, null, false);
+            possiblyTransformedMethodClass = owningMethodClass;
+            searchRegionArgs = args;
+            searchRegionArgTypes = argTypes;
+        }
 
-    protected MulibContext(
-            MethodHandle methodHandle,
-            MulibExecutorManager mulibExecutorManager,
-            MulibConfig mulibConfig,
-            List<Object> arguments, // With arguments
-            MulibTransformer mulibTransformer) {
-        this.methodHandle = methodHandle;
-        this.mulibExecutorManager = mulibExecutorManager;
-        this.mulibConfig = mulibConfig;
-        this.solverManager = Solvers.getSolverManager(mulibConfig);
-        this.deepCopyService = new DeepCopyService();
-        this.argumentsSupplier = () -> {
-            Object[] args = new Object[arguments.size()];
-            for (int i = 0; i < arguments.size(); i++) {
-                args[i] = deepCopyService.deepCopy(arguments.get(i));
+        this.mulibConfig = config;
+        this.solverManager = Solvers.getSolverManager(config);
+        this.argsSupplier = (mulibValueTransformer) -> {
+            Object[] arguments = new Object[searchRegionArgs.length];
+            for (int i = 0; i < arguments.length; i++) {
+                arguments[i] = mulibValueTransformer.copySearchRegionRepresentation(searchRegionArgs[i]);
             }
-            return Arrays.asList(args);
+            return arguments;
         };
-        this.mulibTransformer = mulibTransformer;
+
+        try {
+            Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, searchRegionArgTypes);
+            this.methodHandle = MethodHandles.lookup().unreflect(method);
+        } catch (NoSuchMethodException | IllegalAccessException e) {
+            throw new MulibRuntimeException(e);
+        } catch (VerifyError t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
+        }
+        SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
+        SymbolicChoicePointFactory symbolicChoicePointFactory = SymbolicChoicePointFactory.getInstance(config);
+        SymbolicValueFactory symbolicValueFactory = SymbolicValueFactory.getInstance(config);
+        SymbolicCalculationFactory symbolicCalculationFactory = SymbolicCalculationFactory.getInstance(config);
+        this.mulibExecutorManager = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
+                new SingleExecutorManager(
+                        config,
+                        searchTree,
+                        symbolicChoicePointFactory,
+                        symbolicValueFactory,
+                        symbolicCalculationFactory,
+                        mulibValueTransformer
+                )
+                :
+                new MultiExecutorsManager(
+                        config,
+                        searchTree,
+                        symbolicChoicePointFactory,
+                        symbolicValueFactory,
+                        symbolicCalculationFactory,
+                        mulibValueTransformer
+                );
     }
 
-    public synchronized List<PathSolution> getAllPathSolutionsWithArguments() {
-        return mulibExecutorManager.getAllSolutions(argumentsSupplier.get());
+    private static Class<?>[] findMethodFittingToArgs(Object[] args, String methodName, Class<?> owningMethodClass) {
+        Class<?>[] directTypesOfArgs = new Class[args.length];
+        for (int i = 0; i < args.length; i++) {
+            if (args[i] == null) {
+                directTypesOfArgs[i] = null;
+            } else {
+                directTypesOfArgs[i] = args[i].getClass();
+            }
+        }
+
+        Method[] candidates = Arrays.stream(owningMethodClass.getDeclaredMethods())
+                .filter(m -> m.getName().equals(methodName))
+                .toArray(Method[]::new);
+
+        for (Method m : candidates) {
+            if (m.getParameterTypes().length != args.length) {
+                continue;
+            }
+            Class<?>[] potentialResult = new Class<?>[directTypesOfArgs.length];
+            Class<?>[] paramTypes = m.getParameterTypes();
+            boolean valid = true;
+            for (int i = 0; i < directTypesOfArgs.length; i++) {
+                if (directTypesOfArgs[i] == null) {
+                    if (!paramTypes[i].isPrimitive()) {
+                        potentialResult[i] = paramTypes[i];
+                        continue;
+                    } else {
+                        valid = false;
+                        break;
+                    }
+                }
+                if (!paramTypes[i].isAssignableFrom(directTypesOfArgs[i])) {
+                    if (paramTypes[i].isPrimitive() && isWrapperOfType(paramTypes[i], directTypesOfArgs[i])) {
+                        continue;
+                    }
+                    valid = false;
+                    break;
+                }
+            }
+
+            if (valid) {
+                return m.getParameterTypes();
+            }
+        }
+        throw new MulibRuntimeException("Method that fits the argument types: " + Arrays.toString(directTypesOfArgs) +
+                " while having the name " + methodName + " cannot be found in class " + owningMethodClass.getName());
+    }
+
+    private static boolean isWrapperOfType(Class<?> type, Class<?> checkIfWrapper) {
+        Class<?> mulibWrapper;
+        Class<?> javaWrapper;
+        if (type == int.class) {
+            mulibWrapper = Sint.class;
+            javaWrapper = Integer.class;
+        } else if (type == long.class) {
+            mulibWrapper = Slong.class;
+            javaWrapper = Long.class;
+        } else if (type == double.class) {
+            mulibWrapper = Sdouble.class;
+            javaWrapper = Double.class;
+        } else if (type == float.class) {
+            mulibWrapper = Sfloat.class;
+            javaWrapper = Float.class;
+        } else if (type == short.class) {
+            mulibWrapper = Sshort.class;
+            javaWrapper = Short.class;
+        } else if (type == byte.class) {
+            mulibWrapper = Sbyte.class;
+            javaWrapper = Byte.class;
+        } else if (type == boolean.class) {
+            mulibWrapper = Sbool.class;
+            javaWrapper = Boolean.class;
+        } else if (type == String.class) {
+            mulibWrapper = String.class;
+            javaWrapper = String.class;
+        } else {
+            throw new NotYetImplementedException();
+        }
+        // TODO Arrays
+        return mulibWrapper.isAssignableFrom(checkIfWrapper) || javaWrapper == checkIfWrapper;
     }
 
     public synchronized List<PathSolution> getAllPathSolutions() {
-        return mulibExecutorManager.getAllSolutions();
+        long startTime = System.nanoTime();
+        List<PathSolution> result = mulibExecutorManager.getAllSolutions();
+        long endTime = System.nanoTime();
+        Mulib.log.log(Level.INFO, "Took " + (endTime - startTime) + "ns");
+        return result;
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {
@@ -82,6 +213,25 @@ public class MulibContext {
         return getUpToNSolutions(pathSolution, Integer.MAX_VALUE);
     }
 
+    private static Object[] transformArguments(
+            MulibValueTransformer mulibValueTransformer,
+            Object[] args) {
+        Object[] result = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = mulibValueTransformer.transformValue(args[i]);
+        }
+        return result;
+    }
+
+    private static Class<?>[] transformArgumentTypes(
+            MulibValueTransformer mulibValueTransformer,
+            Class<?>[] argTypes) {
+        Class<?>[] result = new Class[argTypes.length];
+        for (int i = 0; i < argTypes.length; i++) {
+            result[i] = mulibValueTransformer.transformType(argTypes[i]);
+        }
+        return result;
+    }
 
     public synchronized List<Solution> getUpToNSolutions(PathSolution pathSolution, int N) {
         if (pathSolution.getCurrentlyInitializedSolutions().size() >= N) {
@@ -91,21 +241,21 @@ public class MulibContext {
         List<Constraint> constraintList = new ArrayList<>();
         constraintList.add(Sbool.TRUE);
         constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
-        solverManager.addConstraintsAfterNewBacktrackingPoint(constraintList);
+        solverManager.addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
         List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
         while (solverManager.isSatisfiable() && solutions.size() < N) {
             Solution latestSolution = pathSolution.getLatestSolution();
             Constraint[] latestSolutionConstraint = latestSolution.additionalConstraints;
             Labels l = latestSolution.labels;
-            if (l.getTrackedVariables().length == 0) {
-                return solutions; // No tracked variables --> nothing to negate.
+            if (l.getNamedVars().length == 0) {
+                return solutions; // No named variables --> nothing to negate.
             }
 
-            SubstitutedVar[] trackedVars = l.getTrackedVariables();
-            Constraint[] disjunctionConstraints = new Constraint[trackedVars.length];
-            for (int i = 0; i < trackedVars.length; i++) {
-                SubstitutedVar sv = trackedVars[i];
-                Constraint disjunctionConstraint = getNeq(sv, l.getForTrackedSubstitutedVar(sv));
+            SubstitutedVar[] namedVars = l.getNamedVars();
+            Constraint[] disjunctionConstraints = new Constraint[namedVars.length];
+            for (int i = 0; i < namedVars.length; i++) {
+                SubstitutedVar sv = namedVars[i];
+                Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
                 disjunctionConstraints[i] = disjunctionConstraint;
             }
 
@@ -115,10 +265,14 @@ public class MulibContext {
             additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
             solverManager.addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (solverManager.isSatisfiable()) {
-                Labels newLabels = solverManager.getLabels(l.getIdentifiersToSVars());
+                Labels newLabels = LabelService.getLabels(
+                        solverManager,
+                        mulibValueTransformer.copyFromPrototype(),
+                        l.getIdToNamedVar()
+                );
                 Object solutionValue = pathSolution.getLatestSolution().value;
                 if (solutionValue instanceof Sym) {
-                    solutionValue = l.getForTrackedSubstitutedVar((SubstitutedVar) solutionValue);
+                    solutionValue = l.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
                 }
                 Solution newSolution = new Solution(
                         solutionValue,
@@ -138,22 +292,29 @@ public class MulibContext {
         if (sv instanceof Conc) {
             return Sbool.FALSE;
         }
+        if (sv instanceof Sbool) {
+            Sbool bv = (Sbool) sv;
+            Sbool bvv = Sbool.concSbool((boolean) value);
+            return Xor.newInstance(bv, bvv);
+        }
         if (sv instanceof Snumber) {
             Snumber wrappedPreviousValue;
             if (value instanceof Integer) {
-                wrappedPreviousValue = Sint.newConcSint((Integer) value);
+                wrappedPreviousValue = Sint.concSint((Integer) value);
             } else if (value instanceof Double) {
-                wrappedPreviousValue = Sdouble.newConcSdouble((Double) value);
+                wrappedPreviousValue = Sdouble.concSdouble((Double) value);
             } else if (value instanceof Float) {
-                wrappedPreviousValue = Sfloat.newConcSfloat((Float) value);
+                wrappedPreviousValue = Sfloat.concSfloat((Float) value);
+            } else if (value instanceof Long) {
+                wrappedPreviousValue = Slong.concSlong((Long) value);
+            } else if (value instanceof Short) {
+                wrappedPreviousValue = Sshort.concSshort((Short) value);
+            } else if (value instanceof Byte) {
+                wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
             } else {
                 throw new NotYetImplementedException();
             }
             return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
-        } else if (sv instanceof Sbool) {
-            Sbool bv = (Sbool) sv;
-            Sbool.ConcSbool bvv = Sbool.newConcSbool((boolean) value);
-            return Xor.newInstance(bv, bvv);
         } else {
             throw new NotYetImplementedException();
         }

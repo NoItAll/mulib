@@ -1,69 +1,70 @@
 package de.wwu.mulib.solving;
 
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sdouble;
-import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
+import java.util.HashMap;
 import java.util.Map;
 
 public class StdLabels implements Labels {
 
-    protected final Map<String, Object> identifiersToSVars;
+    protected final Map<String, SubstitutedVar> identifiersToSVars;
+    protected final Map<String, Sprimitive> identifiersToSPrimitives;
     protected final Map<SubstitutedVar, Object> svariablesToValues;
     protected final Map<String, Object> identifiersToValues;
 
     public StdLabels(
-            Map<String, Object> identifiersToVars,
-            Map<SubstitutedVar, Object> svariablesToValues,
-            Map<String, Object> identifiersToValues) {
-        this.identifiersToSVars = identifiersToVars;
-        this.svariablesToValues = Map.copyOf(svariablesToValues);
-        this.identifiersToValues = Map.copyOf(identifiersToValues);
+            Map<String, SubstitutedVar> identifiersToSubstitutedVars,
+            Map<SubstitutedVar, Object> substitutedVarsToOriginalRepresentation,
+            Map<String, Object> identifiersToOriginalRepresentation) {
+        this.identifiersToSVars = identifiersToSubstitutedVars;
+        this.identifiersToSPrimitives = new HashMap<>();
+        for (Map.Entry<String, SubstitutedVar> entry : identifiersToSVars.entrySet()) {
+            if (entry.getValue() instanceof Sprimitive) {
+                identifiersToSPrimitives.put(entry.getKey(), (Sprimitive) entry.getValue());
+            }
+        }
+        this.svariablesToValues = Map.copyOf(substitutedVarsToOriginalRepresentation);
+        this.identifiersToValues = Map.copyOf(identifiersToOriginalRepresentation);
     }
 
     @Override
-    public Object getForTrackedSubstitutedVar(SubstitutedVar sv) {
-        if (!(sv instanceof Sprimitive)) {
-            throw new NotYetImplementedException();
-        }
+    public Object getLabelForNamedSubstitutedVar(SubstitutedVar sv) {
         return svariablesToValues.get(sv);
     }
 
     @Override
-    public Integer getForTrackedSubstitutedVar(Sint i) {
-        return (Integer) svariablesToValues.get(i);
+    public Object getLabelForId(String id) {
+        return identifiersToValues.get(id);
     }
 
     @Override
-    public Double getForTrackedSubstitutedVar(Sdouble d) {
-        return (Double) svariablesToValues.get(d);
+    public SubstitutedVar getNamedVar(String id) {
+        return identifiersToSVars.get(id);
     }
 
     @Override
-    public Boolean getForTrackedSubstitutedVar(Sbool b) {
-        return (Boolean) svariablesToValues.get(b);
-    }
-
-    @Override
-    public Object getForTrackedVar(String identifier) {
-        return identifiersToValues.get(identifier);
-    }
-
-    @Override
-    public SubstitutedVar[] getTrackedVariables() {
+    public SubstitutedVar[] getNamedVars() {
         return svariablesToValues.keySet().toArray(new SubstitutedVar[0]);
     }
 
     @Override
-    public Map<String, Object> getIdentifiersToSVars() {
+    public Sprimitive[] getNamedPrimitiveVars() {
+        return svariablesToValues.keySet().stream().filter(sv -> sv instanceof Sprimitive).toArray(Sprimitive[]::new);
+    }
+
+    @Override
+    public Map<String, SubstitutedVar> getIdToNamedVar() {
         return identifiersToSVars;
     }
 
     @Override
-    public Map<String, Object> getIdentifiersToValues() {
+    public Map<String, Sprimitive> getIdToNamedPrimitiveVar() {
+        return identifiersToSPrimitives;
+    }
+
+    @Override
+    public Map<String, Object> getIdToLabel() {
         return identifiersToValues;
     }
 

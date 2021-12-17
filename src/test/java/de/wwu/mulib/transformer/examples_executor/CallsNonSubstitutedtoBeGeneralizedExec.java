@@ -2,10 +2,9 @@ package de.wwu.mulib.transformer.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.transformer.MulibTransformer;
+import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformer.examples.CallsNonSubstitutedToBeGeneralized;
 import de.wwu.mulib.transformer.examples.NonSubstitutedToBeGeneralized;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.lang.reflect.Constructor;

@@ -3,18 +3,18 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 
-public abstract class Sshort extends Sintegernumber {
+public abstract class Sshort extends Sint {
     private Sshort() {}
 
-    public static Sshort.ConcSshort newConcSshort(short s) {
+    public static Sshort concSshort(short s) {
         return new Sshort.ConcSshort(s);
     }
 
-    public static Sshort.SymSshort newInputSymbolicSshort() {
+    public static Sshort newInputSymbolicSshort() {
         return new Sshort.SymSshort();
     }
 
-    public static Sshort.SymSshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
+    public static Sshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
         return new Sshort.SymSshort(representedExpression);
     }
     
@@ -61,7 +61,7 @@ public abstract class Sshort extends Sintegernumber {
         }
     }
 
-    public static final class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
+    public static class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
         private SymSshort() {
@@ -69,9 +69,6 @@ public abstract class Sshort extends Sintegernumber {
         }
 
         private SymSshort(NumericExpression representedExpression) {
-            if (representedExpression.isFp()) {
-                throw new MulibRuntimeException("Represented NumericExpression must be an integer.");
-            }
             this.representedExpression = representedExpression;
         }
 

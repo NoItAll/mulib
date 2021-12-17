@@ -1,23 +1,22 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 
-public abstract class Sbyte extends Sintegernumber {
+public abstract class Sbyte extends Sint {
     private Sbyte() {}
 
-    public static Sbyte.ConcSbyte newConcSbyte(byte b) {
+    public static Sbyte concSbyte(byte b) {
         return new Sbyte.ConcSbyte(b);
     }
 
-    public static Sbyte.SymSbyte newInputSymbolicSbyte() {
+    public static Sbyte newInputSymbolicSbyte() {
         return new Sbyte.SymSbyte();
     }
 
-    public static Sbyte.SymSbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
+    public static Sbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
         return new Sbyte.SymSbyte(representedExpression);
     }
-    
+
     public static final class ConcSbyte extends Sbyte implements ConcSnumber {
         private final byte value;
 
@@ -61,7 +60,7 @@ public abstract class Sbyte extends Sintegernumber {
         }
     }
 
-    public static final class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
+    public static class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
         private SymSbyte() {
@@ -69,9 +68,6 @@ public abstract class Sbyte extends Sintegernumber {
         }
 
         private SymSbyte(NumericExpression representedExpression) {
-            if (representedExpression.isFp()) {
-                throw new MulibRuntimeException("Represented NumericExpression must be an integer.");
-            }
             this.representedExpression = representedExpression;
         }
 

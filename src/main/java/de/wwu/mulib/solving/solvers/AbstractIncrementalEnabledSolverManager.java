@@ -5,19 +5,20 @@ import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.Constraint;
 
 import java.util.ArrayDeque;
-import java.util.List;
 
 public abstract class AbstractIncrementalEnabledSolverManager<M> implements SolverManager {
+    // Each constraint represents one "scope" of a constraint here. That means tha a pop in a managed constraint solver
+    // corresponds to a pop here.
     protected final ArrayDeque<Constraint> constraints = new ArrayDeque<>();
-    protected final boolean labelSymbolicValues;
 
     protected M currentModel;
     private int level = 0;
     private boolean isSatisfiable;
     private boolean satisfiabilityWasCalculated;
+    protected final MulibConfig config;
 
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
-        this.labelSymbolicValues = config.LABEL_SYMBOLIC_VALUES;
+        this.config = config;
     }
 
     protected abstract M calculateCurrentModel();
@@ -51,22 +52,22 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
     }
 
     @Override
-    public void addConstraintsAfterNewBacktrackingPoint(List<Constraint> constraints) {
-        solverSpecificBacktrackingPoint();
-        level++;
-        _addConstraint(And.newInstance(constraints));
+    public void addConstraint(Constraint c) {
+        addSolverConstraintRepresentation(c);
+        // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
+        // representation of the current constraint scope
+        Constraint previousTop = constraints.pollFirst();
+        constraints.push(And.newInstance(previousTop, c));
+        satisfiabilityWasCalculated = false;
+        currentModel = null;
     }
 
     @Override
     public void addConstraintAfterNewBacktrackingPoint(Constraint c) {
         solverSpecificBacktrackingPoint();
         level++;
-        _addConstraint(c);
-    }
-
-    protected void _addConstraint(Constraint constraint) {
-        addSolverConstraintRepresentation(constraint);
-        constraints.push(constraint);
+        addSolverConstraintRepresentation(c);
+        constraints.push(c);
         satisfiabilityWasCalculated = false;
         currentModel = null;
     }
@@ -99,5 +100,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
     @Override
     public final void backtrackAll() {
         backtrack(level);
+    }
+
+    public final int getLevel() {
+        return level;
     }
 }

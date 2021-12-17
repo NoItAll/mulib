@@ -1,24 +1,11 @@
 package de.wwu.mulib.solving.solvers;
 
-import com.microsoft.z3.*;
+import com.microsoft.z3.BoolExpr;
+import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
-import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.solving.StdLabels;
-import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.ConcSprimitive;
 import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
-import de.wwu.mulib.substitutions.primitives.SymSprimitive;
-
-import java.util.ArrayDeque;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.Map;
 
 public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
 

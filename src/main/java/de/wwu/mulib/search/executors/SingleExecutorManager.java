@@ -5,7 +5,8 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.search.values.ValueFactory;
+import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -14,16 +15,20 @@ import java.util.logging.Level;
 
 public class SingleExecutorManager extends MulibExecutorManager {
     public SingleExecutorManager(
+            MulibConfig config,
             SearchTree observedTree,
             ChoicePointFactory choicePointFactory,
             ValueFactory valueFactory,
-            MulibConfig config) {
+            CalculationFactory calculationFactory,
+            MulibValueTransformer mulibValueTransformer) {
         super(
                 config,
                 new ArrayList<>(),
                 observedTree,
                 choicePointFactory,
-                valueFactory
+                valueFactory,
+                calculationFactory,
+                mulibValueTransformer
         );
     }
 
@@ -44,14 +49,6 @@ public class SingleExecutorManager extends MulibExecutorManager {
     public List<PathSolution> getAllSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         List<PathSolution> result = super.getAllSolutions(mulibExecutors.get(0));
-        Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
-        return result;
-    }
-
-    @Override
-    public List<PathSolution> getAllSolutions(List<Object> args) {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-        List<PathSolution> result = super.getAllSolutions(mulibExecutors.get(0), args);
         Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
         return result;
     }
