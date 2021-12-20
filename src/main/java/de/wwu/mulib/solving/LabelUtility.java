@@ -7,7 +7,7 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LabelService {
+public class LabelUtility {
 
     public static Labels getLabels(
             SolverManager solverManager,

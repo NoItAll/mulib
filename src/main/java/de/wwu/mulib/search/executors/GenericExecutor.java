@@ -12,7 +12,7 @@ import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
-import de.wwu.mulib.solving.LabelService;
+import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -178,7 +178,7 @@ public final class GenericExecutor extends MulibExecutor {
             symbolicExecution.addNamedVariable("return", (SubstitutedVar) solutionValue);
         }
 
-        Labels labels = LabelService.getLabels(
+        Labels labels = LabelUtility.getLabels(
                 solverManager,
                 symbolicExecution.getMulibValueTransformer(),
                 symbolicExecution.getNamedVariables()
@@ -426,7 +426,7 @@ public final class GenericExecutor extends MulibExecutor {
     }
 
     @Override
-    public Object concretize (Sprimitive sprimitive){
+    public Object concretize (Sprimitive sprimitive) {
         // TODO this should also be constrained in the subsequent execution
         Object label = solverManager.getLabel(sprimitive);
         return label;

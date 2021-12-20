@@ -12,7 +12,7 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.primitives.SymbolicValueFactory;
-import de.wwu.mulib.solving.LabelService;
+import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
@@ -265,7 +265,7 @@ public class MulibContext {
             additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
             solverManager.addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (solverManager.isSatisfiable()) {
-                Labels newLabels = LabelService.getLabels(
+                Labels newLabels = LabelUtility.getLabels(
                         solverManager,
                         mulibValueTransformer.copyFromPrototype(),
                         l.getIdToNamedVar()
