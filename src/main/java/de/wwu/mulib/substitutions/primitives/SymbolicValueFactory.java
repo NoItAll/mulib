@@ -215,7 +215,6 @@ public class SymbolicValueFactory implements ValueFactory {
 
     @Override
     public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
-        assert n0 instanceof SymNumericExpressionSprimitive || n1 instanceof SymNumericExpressionSprimitive;
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
                 () -> (Sint.SymSint) Sint.newInputSymbolicSint(),

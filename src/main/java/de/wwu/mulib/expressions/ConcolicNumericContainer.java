@@ -8,6 +8,7 @@ public final class ConcolicNumericContainer implements NumericExpression {
     private ConcSnumber conc;
 
     public ConcolicNumericContainer(NumericExpression sym, ConcSnumber conc) {
+        assert !(sym instanceof ConcolicNumericContainer);
         this.sym = sym;
         this.conc = conc;
     }

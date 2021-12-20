@@ -1,5 +1,6 @@
 package de.wwu.mulib.transformations;
 
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
@@ -30,7 +31,7 @@ public class MulibClassWriter extends ClassWriter {
                         return type2;
                     }
                 } catch (ClassNotFoundException e) {
-                    throw new IllegalStateException(e);
+                    throw new MulibRuntimeException(e);
                 }
             }
             return Object.class.getName().replace(".", "/");

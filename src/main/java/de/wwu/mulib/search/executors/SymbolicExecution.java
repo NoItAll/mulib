@@ -872,9 +872,5 @@ public final class SymbolicExecution {
     public boolean negatedBoolChoice(final Sbool b) {
         return choicePointFactory.negatedBoolChoice(this, b);
     }
-
-    private boolean isOnExploredPath() {
-        return currentChoiceOption.isEvaluated();
-    }
 }
 

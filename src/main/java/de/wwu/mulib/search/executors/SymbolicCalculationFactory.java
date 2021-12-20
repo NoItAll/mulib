@@ -3,7 +3,6 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.*;
-import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 public class SymbolicCalculationFactory implements CalculationFactory {
@@ -380,27 +379,27 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         return Neg.neg(n);
     }
 
-    protected Constraint and(Sbool lhs, Sbool rhs) {
+    protected Constraint and(Constraint lhs, Constraint rhs) {
         return new And(lhs, rhs);
     }
 
-    protected Constraint or(Sbool lhs, Sbool rhs) {
+    protected Constraint or(Constraint lhs, Constraint rhs) {
         return new Or(lhs, rhs);
     }
 
-    protected Constraint not(Sbool b) {
+    protected Constraint not(Constraint b) {
         return new Not(b);
     }
 
-    protected Constraint lt(Snumber lhs, Snumber rhs) {
+    protected Constraint lt(NumericExpression lhs, NumericExpression rhs) {
         return new Lt(lhs, rhs);
     }
 
-    protected Constraint lte(Snumber lhs, Snumber rhs) {
+    protected Constraint lte(NumericExpression lhs, NumericExpression rhs) {
         return new Lte(lhs, rhs);
     }
 
-    protected Constraint eq(Snumber lhs, Snumber rhs) {
+    protected Constraint eq(NumericExpression lhs, NumericExpression rhs) {
         return new Eq(lhs, rhs);
     }
 }

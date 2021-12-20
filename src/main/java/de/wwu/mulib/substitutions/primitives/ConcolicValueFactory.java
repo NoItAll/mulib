@@ -1,7 +1,7 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ConcolicConstraint;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
@@ -9,6 +9,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 
 import java.util.function.Function;
 
+// The creation of concrete numbers is performed in SymbolicValueFactory.
 public class ConcolicValueFactory extends SymbolicValueFactory {
 
     ConcolicValueFactory(MulibConfig config) {
@@ -72,7 +73,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         // Concrete value
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both
-        ConcolicConstraint container = new ConcolicConstraint(sym, conc);
+        ConcolicConstraintContainer container = new ConcolicConstraintContainer(sym, conc);
         return (Sbool.SymSbool) Sbool.newConstraintSbool(container);
     }
 
@@ -170,12 +171,11 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
-        assert constraint instanceof ConcolicConstraint; // TODO for now
-        if (constraint instanceof ConcolicConstraint) {
+        assert constraint instanceof ConcolicConstraintContainer; // TODO for now
+        if (constraint instanceof ConcolicConstraintContainer) {
             return (Sbool.SymSbool) Sbool.newConstraintSbool(constraint);
         } else {
             return super.wrappingSymSbool(se, constraint);
         }
     }
-
 }

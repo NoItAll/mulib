@@ -41,13 +41,6 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         this.activateParallelFor = config.ACTIVATE_PARALLEL_FOR.isPresent() ? config.ACTIVATE_PARALLEL_FOR.get() : 1;
     }
 
-    private void setTerminated() {
-        terminated = true;
-        for (MulibExecutor me : mulibExecutors) {
-            me.setTerminated(true);
-        }
-    }
-
     private static class SimpleSyncedQueue<T> {
         private final LinkedList<T> queue;
         private SimpleSyncedQueue() {
@@ -84,7 +77,6 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         if (terminated || globalBudgetExceeded() || (idle.size() == mulibExecutors.size() - 1 && observedTree.getChoiceOptionDeque().isEmpty())) {
             try {
                 checkForFailure();
-//                setTerminated();
                 executorService.shutdown();
                 boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
                 if (!terminated) {
@@ -202,7 +194,6 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     private volatile Throwable failureInThread = null;
     public void signalFailure(Throwable failureInThread) {
         assert failureInThread != null;
-        assert this.failureInThread == null;
         this.failureInThread = failureInThread;
     }
 }
