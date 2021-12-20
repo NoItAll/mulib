@@ -36,7 +36,7 @@ public interface ValueFactory {
 
     Sint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1);
 
-    Sint concSint(int i);
+    Sint.ConcSint concSint(int i);
 
     Sdouble.ConcSdouble concSdouble(double d);
 

@@ -109,8 +109,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
-        // TODO If SymbolicExecution has been used as a fallback, numericExpression is not necessarily a ConcolicNumericContainer
         if (numericExpression instanceof ConcolicNumericContainer) {
             // We simply wrap the new ConcolicContainer
             return (Sint.SymSint) Sint.newExpressionSymbolicSint(numericExpression);
@@ -121,7 +119,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
         if (numericExpression instanceof ConcolicNumericContainer) {
             return (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(numericExpression);
         } else {
@@ -131,7 +128,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
         if (numericExpression instanceof ConcolicNumericContainer) {
             return (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(numericExpression);
         } else {
@@ -141,7 +137,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
         if (numericExpression instanceof ConcolicNumericContainer) {
             return (Slong.SymSlong) Slong.newExpressionSymbolicSlong(numericExpression);
         } else {
@@ -151,7 +146,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
         if (numericExpression instanceof ConcolicNumericContainer) {
             return (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(numericExpression);
         } else {
@@ -161,7 +155,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
-        assert numericExpression instanceof ConcolicNumericContainer; // TODO for now
         if (numericExpression instanceof ConcolicNumericContainer) {
             return (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(numericExpression);
         } else {
@@ -171,7 +164,6 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
-        assert constraint instanceof ConcolicConstraintContainer; // TODO for now
         if (constraint instanceof ConcolicConstraintContainer) {
             return (Sbool.SymSbool) Sbool.newConstraintSbool(constraint);
         } else {
