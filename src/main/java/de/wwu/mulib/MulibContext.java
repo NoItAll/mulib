@@ -3,15 +3,14 @@ package de.wwu.mulib;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.search.choice_points.SymbolicChoicePointFactory;
+import de.wwu.mulib.search.choice_points.ChoicePointFactory;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.search.executors.MulibExecutorManager;
 import de.wwu.mulib.search.executors.MultiExecutorsManager;
 import de.wwu.mulib.search.executors.SingleExecutorManager;
-import de.wwu.mulib.search.executors.SymbolicCalculationFactory;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.substitutions.primitives.SymbolicValueFactory;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
@@ -92,25 +91,25 @@ public class MulibContext {
             throw new MulibRuntimeException(t);
         }
         SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
-        SymbolicChoicePointFactory symbolicChoicePointFactory = SymbolicChoicePointFactory.getInstance(config);
-        SymbolicValueFactory symbolicValueFactory = SymbolicValueFactory.getInstance(config);
-        SymbolicCalculationFactory symbolicCalculationFactory = SymbolicCalculationFactory.getInstance(config);
+        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
+        ValueFactory valueFactory = ValueFactory.getInstance(config);
+        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
         this.mulibExecutorManager = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
                         searchTree,
-                        symbolicChoicePointFactory,
-                        symbolicValueFactory,
-                        symbolicCalculationFactory,
+                        choicePointFactory,
+                        valueFactory,
+                        calculationFactory,
                         mulibValueTransformer
                 )
                 :
                 new MultiExecutorsManager(
                         config,
                         searchTree,
-                        symbolicChoicePointFactory,
-                        symbolicValueFactory,
-                        symbolicCalculationFactory,
+                        choicePointFactory,
+                        valueFactory,
+                        calculationFactory,
                         mulibValueTransformer
                 );
     }
