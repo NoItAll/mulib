@@ -480,10 +480,6 @@ public class MulibConfig {
                 throw new MisconfigurationException("When choosing IDDFS, an incremental budget must be specified.");
             }
 
-            if (INCR_ACTUAL_CP_BUDGET != 0 && CONCOLIC) {
-                throw new MisconfigurationException("Concolic execution with IDDFS is currently not supported.");
-            }
-
             return new MulibConfig(
                     LABEL_RESULT_VALUE,
                     GLOBAL_AVOID_SAT_CHECKS,
