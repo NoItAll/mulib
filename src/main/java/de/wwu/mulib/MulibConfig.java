@@ -25,6 +25,7 @@ public class MulibConfig {
     public final long PARALLEL_TIMEOUT_IN_MS;
     public final ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
     public final Optional<Long> ACTIVATE_PARALLEL_FOR;
+    public final boolean CONCOLIC;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -103,6 +104,7 @@ public class MulibConfig {
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         private SearchStrategy GLOBAL_SEARCH_STRATEGY;
+        private boolean CONCOLIC;
         private List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
         private ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
         private long ACTIVATE_PARALLEL_FOR;
@@ -140,6 +142,7 @@ public class MulibConfig {
             this.CONCRETIZE_IF_NEEDED = true;
             this.LABEL_RESULT_VALUE = true;
             this.ENLIST_LEAVES = false;
+            this.CONCOLIC = false;
             this.TREE_INDENTATION = "    ";
             this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
             this.GLOBAL_SOLVER_TYPE = Solvers.Z3;
@@ -446,6 +449,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setCONCOLIC(boolean CONCOLIC) {
+            this.CONCOLIC = CONCOLIC;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -470,6 +478,10 @@ public class MulibConfig {
                     && (GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDFS
                         || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))) {
                 throw new MisconfigurationException("When choosing IDDFS, an incremental budget must be specified.");
+            }
+
+            if (INCR_ACTUAL_CP_BUDGET != 0 && CONCOLIC) {
+                throw new MisconfigurationException("Concolic execution with IDDFS is currently not supported.");
             }
 
             return new MulibConfig(
@@ -517,7 +529,8 @@ public class MulibConfig {
                     SYMSSHORT_UB,
                     SYMSBYTE_LB,
                     SYMSBYTE_UB,
-                    TREAT_BOOLEANS_AS_INTS
+                    TREAT_BOOLEANS_AS_INTS,
+                    CONCOLIC
             );
         }
     }
@@ -565,7 +578,8 @@ public class MulibConfig {
                         Optional<Short> SYMSSHORT_UB,
                         Optional<Byte> SYMSBYTE_LB,
                         Optional<Byte> SYMSBYTE_UB,
-                        boolean TREAT_BOOLEANS_AS_INTS
+                        boolean TREAT_BOOLEANS_AS_INTS,
+                        boolean CONCOLIC
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -611,6 +625,7 @@ public class MulibConfig {
         this.SYMSBYTE_LB =   SYMSBYTE_LB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_LB.get()));
         this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
+        this.CONCOLIC = CONCOLIC;
     }
 
     @Override
@@ -619,6 +634,7 @@ public class MulibConfig {
                 + "GLOBAL_SEARCH_STRATEGY=" + GLOBAL_SEARCH_STRATEGY
                 + (ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ? "" : ", ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES)
                 + ", GLOBAL_SOLVER_TYPE=" + GLOBAL_SOLVER_TYPE
+                + ", CONCOLIC=" + CONCOLIC
                 + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
                 + (ENLIST_LEAVES ? ", ENLIST_LEAVES=" + true : "")
                 + FIXED_ACTUAL_CP_BUDGET.map(v -> ", FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
