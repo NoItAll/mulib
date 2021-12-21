@@ -370,29 +370,6 @@ public final class GenericExecutor extends MulibExecutor {
         } else if (choiceOption.isUnsatisfiable()) {
             return false;
         }
-        /* TODO Not valid any longer for all instances since domain-constraints on numerics can yield unsatisfiable restrictions
-        // otherNumber is only valid if there is a binary choice.
-        int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
-        if (choiceOption.getChoice().getChoiceOptions().size() == 2
-                && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
-                && choiceOption.getParent().isSatisfiable()) {
-            // If the first choice option is not satisfiable, the choice is binary, and the parent
-            // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
-            // of the first choice.
-            Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
-            assert other != choiceOption;
-            Constraint c0 = other.getOptionConstraint();
-            Constraint c1 = choiceOption.getOptionConstraint();
-            if ((c1 instanceof Not && c0 == ((Not) c1).getConstraint())
-                || (c0 instanceof Not && c1 == ((Not) c0).getConstraint())) {
-                choiceOption.setSatisfiable();
-                heuristicSatEvals++;
-                choiceOption.setOptionConstraint(Sbool.TRUE);
-                addAfterBacktrackingPoint(choiceOption);
-                assert solverManager.isSatisfiable();
-                return true;
-            }
-        }*/
 
         addAfterBacktrackingPoint(choiceOption);
         if (solverManager.isSatisfiable()) {

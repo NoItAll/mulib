@@ -15,7 +15,6 @@ import java.util.Optional;
 public abstract class MulibExecutor {
     protected SymbolicExecution currentSymbolicExecution;
     protected Choice.ChoiceOption currentChoiceOption;
-    protected long heuristicSatEvals = 0;
     protected long satEvals = 0;
     protected long unsatEvals = 0;
     protected long addedAfterBacktrackingPoint = 0;
@@ -36,7 +35,6 @@ public abstract class MulibExecutor {
 
     public LinkedHashMap<String, String> getStatistics() {
         LinkedHashMap<String, String> result = new LinkedHashMap<>();
-//        result.put("heuristicSatEvals", String.valueOf(heuristicSatEvals));
         result.put("addedAfterBacktrackingPoint", String.valueOf(this.addedAfterBacktrackingPoint));
         result.put("satEvals", String.valueOf(this.satEvals));
         result.put("unsatEvals", String.valueOf(this.unsatEvals));
