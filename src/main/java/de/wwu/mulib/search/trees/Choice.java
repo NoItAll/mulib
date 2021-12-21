@@ -6,11 +6,9 @@ import de.wwu.mulib.exceptions.IllegalTreeModificationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.substitutions.primitives.SymSprimitive;
 
 import java.util.Collection;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 
 public final class Choice extends TreeNode {
     private final List<ChoiceOption> options;
