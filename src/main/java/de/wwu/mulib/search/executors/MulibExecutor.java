@@ -3,9 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.LinkedHashMap;
 import java.util.List;

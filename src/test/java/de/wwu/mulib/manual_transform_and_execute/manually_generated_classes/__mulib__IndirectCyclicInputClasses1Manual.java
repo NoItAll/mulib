@@ -31,7 +31,7 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
 
     public Object label(Object var1, MulibValueTransformer __mulib__valueTransformer, SolverManager var3) {
         IndirectCyclicInputClasses1Manual __mulib__originalObject = (IndirectCyclicInputClasses1Manual)var1;
-        __mulib__originalObject.c = (IndirectCyclicInputClasses0Manual)(!__mulib__valueTransformer.alreadyCreatedLabelObject(this.c) ? __mulib__valueTransformer.labelValue(this.c, var3) : __mulib__valueTransformer.getLabelObject(this.c));
+        __mulib__originalObject.c = (IndirectCyclicInputClasses0Manual)(__mulib__valueTransformer.labelValue(this.c, var3));
         return __mulib__originalObject;
     }
 

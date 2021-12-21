@@ -9,6 +9,7 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayDeque;
@@ -185,10 +186,34 @@ public final class MulibValueTransformer {
         }
     }
 
+    private Object labelArray(Object o, SolverManager solverManager) {
+        Class<?> componentType = o.getClass().getComponentType();
+        int length = Array.getLength(o);
+        Object[] result = new Object[length];
+        if (componentType.isArray()) {
+            for (int i = 0; i < length; i++) {
+                result[i] = labelArray(Array.get(o, i), solverManager);
+            }
+        } else {
+            for (int i = 0; i < length; i++) {
+                Object val = Array.get(o, i);
+                if (val instanceof PartnerClass) {
+                    result[i] = labelValue(val, solverManager);
+                } else if (val instanceof Sprimitive) {
+                    result[i] = labelValue(val, solverManager);
+                } else {
+                    return o;
+                }
+            }
+        }
+        return result;
+    }
+
     public Object labelValue(Object searchRegionVal, SolverManager solverManager) { // TODO Sarray
         if (searchRegionVal == null) {
             return null;
         }
+
         if (searchRegionVal instanceof Sprimitive) {
             if (searchRegionVal instanceof ConcSprimitive) {
                 if (searchRegionVal instanceof Sbool) {
@@ -215,23 +240,42 @@ public final class MulibValueTransformer {
                 return solverManager.getLabel((Sprimitive) searchRegionVal);
             }
         } else if (searchRegionVal instanceof PartnerClass) {
-            Object emptyLabelObject = createEmptyLabelObject(searchRegionVal, ((PartnerClass) searchRegionVal).getOriginalClass());
+            Object result = searchSpaceRepresentationToLabelObject.get(searchRegionVal);
+            if (result != null) {
+                return result;
+            }
             if (transformationRequired) {
-                return ((PartnerClass) searchRegionVal).label(
+                Object emptyLabelObject = createEmptyLabelObject(((PartnerClass) searchRegionVal).getOriginalClass());
+                searchSpaceRepresentationToLabelObject.put(searchRegionVal, emptyLabelObject);
+                result = ((PartnerClass) searchRegionVal).label(
                         emptyLabelObject,
                         this,
                         solverManager
                 );
+                assert emptyLabelObject == result;
+                return result;
             } else {
                 return searchRegionVal;
             }
+        } else if (searchRegionVal.getClass().isArray()) {
+            Object labeledArray = searchSpaceRepresentationToLabelObject.get(searchRegionVal);
+            if (labeledArray != null) {
+                return labeledArray;
+            }
+            labeledArray = labelArray(searchRegionVal, solverManager);
+            searchSpaceRepresentationToLabelObject.put(searchRegionVal, labeledArray);
+            return labeledArray;
         } else {
+            Object result = searchSpaceRepresentationToLabelObject.get(searchRegionVal);
+            if (result != null) {
+                return result;
+            }
             BiFunction<MulibValueTransformer, Object, Object> labelMethod = this.classesToLabelFunction.get(searchRegionVal.getClass());
             if (labelMethod == null) {
                 searchSpaceRepresentationToLabelObject.put(searchRegionVal, searchRegionVal);
                 return searchRegionVal;
             } else {
-                Object result = labelMethod.apply(this, searchRegionVal);
+                result = labelMethod.apply(this, searchRegionVal);
                 assert searchRegionVal.getClass() == result.getClass();
                 searchSpaceRepresentationToLabelObject.put(searchRegionVal, result);
                 return result;
@@ -239,28 +283,15 @@ public final class MulibValueTransformer {
         }
     }
 
-    public Object createEmptyLabelObject(Object searchSpaceRepresentation, Class<?> clazz) {
+    private Object createEmptyLabelObject(Class<?> clazz) {
         Constructor<?> constructor = getOrGenerateZeroArgsConstructor(clazz);
         try {
             Object result = constructor.newInstance();
-            searchSpaceRepresentationToLabelObject.put(searchSpaceRepresentation, result);
             return result;
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
             e.printStackTrace();
             throw new MulibRuntimeException(e);
         }
-    }
-
-    public boolean alreadyCreatedLabelObject(Object searchSpaceRepresentation) {
-        return searchSpaceRepresentationToLabelObject.containsKey(searchSpaceRepresentation);
-    }
-
-    public Object getLabelObject(Object searchSpaceRepresentation) {
-        Object result = searchSpaceRepresentationToLabelObject.get(searchSpaceRepresentation);
-        if (result == null) {
-            throw new MulibRuntimeException("The retrieved label object must not be empty");
-        }
-        return result;
     }
 
     // Cache for generated constructors

@@ -1111,79 +1111,19 @@ public class MulibTransformer {
                 insns.add(new FieldInsnNode(PUTFIELD, originalCn.name, fn.name, fn.desc));
                 // TODO Free arrays
             } else if (!getMulibPrimitiveWrapperDescs().contains(fn.desc)) { // Is object
-                LabelNode alreadyCreated = new LabelNode();
-                LabelNode afterRetrievalOrCreation = new LabelNode();
                 insns.add(loadObjVar(originalObjectIndex));
 
                 insns.add(loadObjVar(valueTransformerIndex));
                 insns.add(loadThis());
                 insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-                // Check if object has already been created before
+                insns.add(loadObjVar(solverManagerIndex));
                 insns.add(new MethodInsnNode(
                         INVOKEVIRTUAL,
                         mulibValueTransformerCp,
-                        "alreadyCreatedLabelObject",
-                         toMethodDesc(objectDesc, "Z")
-                ));
-                // If already created, jump to the retrieval part
-                insns.add(new JumpInsnNode(IFNE, alreadyCreated));
-
-                if (shouldBeTransformed(fn.desc.substring(1, fn.desc.length() - 1).replace(_TRANSFORMATION_PREFIX, ""))) {
-                    insns.add(loadObjVar(valueTransformerIndex));
-                    insns.add(loadThis());
-                    insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-                    insns.add(loadObjVar(solverManagerIndex));
-                    insns.add(new MethodInsnNode(
-                            INVOKEVIRTUAL,
-                            mulibValueTransformerCp,
-                            "labelValue",
-                            toMethodDesc(objectDesc + solverManagerDesc, objectDesc)
-                    ));
-                } else {
-                    // Is not already created, create:
-                    // First, we add the value stored in the relevant field to the stack. For this value, we will call
-                    // the label-method and pass a new empty label-object, i.e., the original representation, and the
-                    // MulibValueTransformer
-                    insns.add(loadThis());
-                    insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-
-                    insns.add(loadObjVar(valueTransformerIndex));
-                    insns.add(loadThis());
-                    insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-                    insns.add(new LdcInsnNode(Type.getObjectType(fn.desc.substring(1, fn.desc.length() - 1))));
-                    insns.add(new MethodInsnNode(
-                            INVOKEVIRTUAL,
-                            mulibValueTransformerCp,
-                            "createEmptyLabelObject",
-                            toMethodDesc(objectDesc + classDesc, objectDesc)
-                    ));
-
-                    // Invoke label function here. The uppermost stack position is the empty label object
-                    insns.add(loadObjVar(valueTransformerIndex));
-                    insns.add(loadObjVar(solverManagerIndex));
-                    insns.add(new MethodInsnNode(
-                            INVOKEVIRTUAL,
-                            fn.desc.substring(1, fn.desc.length() - 1),
-                            "label",
-                            toMethodDesc(objectDesc + mulibValueTransformerDesc + solverManagerDesc, objectDesc)
-                    ));
-                }
-
-                insns.add(new JumpInsnNode(GOTO, afterRetrievalOrCreation));
-
-                insns.add(alreadyCreated);
-                // Or retrieve, if already exists
-                insns.add(loadObjVar(valueTransformerIndex));
-                insns.add(loadThis());
-                insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-                insns.add(new MethodInsnNode(
-                        INVOKEVIRTUAL,
-                        mulibValueTransformerCp,
-                        "getLabelObject",
-                        toMethodDesc(objectDesc, objectDesc)
+                        "labelValue",
+                        toMethodDesc(objectDesc + solverManagerDesc, objectDesc)
                 ));
 
-                insns.add(afterRetrievalOrCreation);
                 insns.add(new TypeInsnNode(CHECKCAST, fn.desc.substring(1, fn.desc.length() - 1).replace(_TRANSFORMATION_PREFIX, "")));
                 // Set field
                 if (reflectionRequiredForField) {

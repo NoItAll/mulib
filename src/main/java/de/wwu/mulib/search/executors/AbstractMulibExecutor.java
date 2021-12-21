@@ -18,11 +18,9 @@ import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.Conc;
-import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.lang.reflect.Array;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -206,7 +204,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         PathSolution solution;
         if (labelResultValue) {
             if (solutionValue != null && solutionValue.getClass().isArray()) {
-                solutionValue = transformArray(solutionValue, labels, symbolicExecution); // TODO Free arrays
+                solutionValue = symbolicExecution.getMulibValueTransformer().labelValue(solutionValue, solverManager);
             } else if (solutionValue instanceof SubstitutedVar) {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }
@@ -225,94 +223,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             );
         }
         return solution;
-    }
-
-    private Object transformArray(Object o, Labels l, SymbolicExecution symbolicExecution) {
-        Class<?> componentType = o.getClass().getComponentType();
-        int length = Array.getLength(o);
-        Object[] result = new Object[length];
-        if (componentType.isArray()) {
-            for (int i = 0; i < length; i++) {
-                result[i] = transformArray(Array.get(o, i), l, symbolicExecution);
-            }
-        } else {
-            for (int i = 0; i < length; i++) {
-                Object val = Array.get(o, i);
-                if (val instanceof PartnerClass) {
-                    result[i] = symbolicExecution.getMulibValueTransformer().labelValue(val, solverManager);
-                } else if (val instanceof Sprimitive) {
-                    result[i] = transformOneValue((Sprimitive) val, l);
-                } else {
-                    return o;
-                }
-            }
-        }
-        return result;
-    }
-
-    private Object transformOneValue(SubstitutedVar o, Labels l) {
-        if (o instanceof Sbool) {
-            if (o instanceof Sbool.ConcSbool) {
-                return ((Sbool.ConcSbool) o).isTrue();
-            } else if (o instanceof Sbool.SymSbool) {
-                return l.getLabelForNamedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-
-            }
-        }
-        if (o instanceof Sint) {
-            if (o instanceof Sshort) {
-                if (o instanceof Sshort.ConcSshort) {
-                    return ((Sshort.ConcSshort) o).shortVal();
-                } else if (o instanceof Sshort.SymSshort) {
-                    return l.getLabelForNamedSubstitutedVar(o);
-                } else {
-                    throw new NotYetImplementedException();
-                }
-            } else if (o instanceof Sbyte) {
-                if (o instanceof Sbyte.ConcSbyte) {
-                    return ((Sbyte.ConcSbyte) o).byteVal();
-                } else if (o instanceof Sbyte.SymSbyte) {
-                    return l.getLabelForNamedSubstitutedVar(o);
-                } else {
-                    throw new NotYetImplementedException();
-                }
-            }
-            if (o instanceof Sint.ConcSint) {
-                return ((Sint.ConcSint) o).intVal();
-            } else if (o instanceof Sint.SymSint) {
-                return l.getLabelForNamedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Sdouble) {
-            if (o instanceof Sdouble.ConcSdouble) {
-                return ((Sdouble.ConcSdouble) o).doubleVal();
-            } else if (o instanceof Sdouble.SymSdouble) {
-                return l.getLabelForNamedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Sfloat) {
-            if (o instanceof Sfloat.ConcSfloat) {
-                return ((Sfloat.ConcSfloat) o).floatVal();
-            } else if (o instanceof Sfloat.SymSfloat) {
-                return l.getLabelForNamedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (o instanceof Slong) {
-            if (o instanceof Slong.ConcSlong) {
-                return ((Slong.ConcSlong) o).longVal();
-            } else if (o instanceof Slong.SymSlong) {
-                return l.getLabelForNamedSubstitutedVar(o);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else {
-            throw new NotYetImplementedException();
-        }
     }
 
     protected void addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
