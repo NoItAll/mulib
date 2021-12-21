@@ -36,7 +36,7 @@ public abstract class MulibExecutor {
 
     public LinkedHashMap<String, String> getStatistics() {
         LinkedHashMap<String, String> result = new LinkedHashMap<>();
-        result.put("heuristicSatEvals", String.valueOf(heuristicSatEvals));
+//        result.put("heuristicSatEvals", String.valueOf(heuristicSatEvals));
         result.put("addedAfterBacktrackingPoint", String.valueOf(this.addedAfterBacktrackingPoint));
         result.put("satEvals", String.valueOf(this.satEvals));
         result.put("unsatEvals", String.valueOf(this.unsatEvals));
@@ -52,7 +52,7 @@ public abstract class MulibExecutor {
         return mulibExecutorManager;
     }
 
-    public abstract Optional<Choice.ChoiceOption> chooseNextChoiceOption(Choice choice);
+    public abstract Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options);
 
     public abstract Object concretize(Sprimitive substitutedVar);
 

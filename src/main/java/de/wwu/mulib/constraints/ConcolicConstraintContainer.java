@@ -8,7 +8,7 @@ public class ConcolicConstraintContainer implements Constraint {
 
     public ConcolicConstraintContainer(Constraint sym, Sbool.ConcSbool conc) {
         assert !(sym instanceof ConcolicConstraintContainer);
-        this.sym = sym;
+        this.sym = sym instanceof Sbool.SymSbool ? ((Sbool.SymSbool) sym).getRepresentedConstraint() : sym;
         this.conc = conc;
     }
 

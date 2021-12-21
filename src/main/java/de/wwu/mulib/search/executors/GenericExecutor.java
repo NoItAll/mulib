@@ -315,7 +315,7 @@ public final class GenericExecutor extends MulibExecutor {
             optionToBeEvaluated = optionalChoiceOption.get();
             assert !optionToBeEvaluated.isUnsatisfiable();
             adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-            if (isSatisfiable(optionToBeEvaluated)) {
+            if (checkIfSatisfiableAndSet(optionToBeEvaluated)) {
                 assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1) :
                         "Should not occur";
                 currentSymbolicExecution = new SymbolicExecution(
@@ -334,14 +334,13 @@ public final class GenericExecutor extends MulibExecutor {
     }
 
     @Override
-    public Optional<Choice.ChoiceOption> chooseNextChoiceOption(Choice choice) {
-        List<Choice.ChoiceOption> options = choice.getChoiceOptions();
+    public Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options) {
         Choice.ChoiceOption result = null;
         ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
         boolean isActualIncrementalBudgetExceeded =
                 ebm.incrementalActualChoicePointBudgetIsExceeded();
         for (Choice.ChoiceOption choiceOption : options) {
-            if (continueExecution && isSatisfiable(choiceOption)) {
+            if (continueExecution && checkIfSatisfiableAndSet(choiceOption)) {
                 result = choiceOption;
                 break;
             }
@@ -355,7 +354,7 @@ public final class GenericExecutor extends MulibExecutor {
         }
     }
 
-    private boolean isSatisfiable(Choice.ChoiceOption choiceOption) {
+    private boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
         assert !choiceOption.isEvaluated();
         assert !choiceOption.isBudgetExceeded();
         assert !choiceOption.isUnsatisfiable();

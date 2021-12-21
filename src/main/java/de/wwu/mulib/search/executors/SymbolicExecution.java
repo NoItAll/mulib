@@ -151,7 +151,7 @@ public final class SymbolicExecution {
         namedVariables.put(key, value);
     }
 
-    public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(Choice chooseFrom) {
+    public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {
         assert !isOnKnownPath() : "Should not occur";
         Optional<Choice.ChoiceOption> result = mulibExecutor.chooseNextChoiceOption(chooseFrom);
         result.ifPresent(choiceOption -> this.currentChoiceOption = choiceOption);

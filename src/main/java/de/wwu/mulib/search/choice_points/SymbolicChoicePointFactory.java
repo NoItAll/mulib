@@ -180,7 +180,6 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         return determineBooleanWithNewBinaryChoice(
                 se,
                 b,
-                Not.newInstance(b),
                 currentChoiceOption
         );
     }
@@ -200,16 +199,16 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         }
     }
 
-    private boolean determineBooleanWithNewBinaryChoice(
+    protected boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
             Constraint constraint,
-            Constraint otherConstraint,
             Choice.ChoiceOption currentChoiceOption) {
         // Create Choice with ChoiceOptions (true false)
-        Choice newChoice = new Choice(currentChoiceOption, constraint, otherConstraint);
+        Choice newChoice = new Choice(currentChoiceOption, constraint, Not.newInstance(constraint));
         // First, let the Executor of the current SymbolicExecution decide which choice is to be.
         // This also adds the constraint to the SolverManager's stack
-        Optional<Choice.ChoiceOption> possibleNextChoiceOption = decideOnChoiceOption(se, newChoice);
+        Optional<Choice.ChoiceOption> possibleNextChoiceOption =
+                se.decideOnNextChoiceOptionDuringExecution(newChoice.getChoiceOptions());
 
         // Then, add the new ChoiceOptions to the ExecutionManager's deque.
         // This depends on the chosen ChoiceOption and whether the incremental budget is exceeded.
@@ -234,7 +233,4 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         }
     }
 
-    protected Optional<Choice.ChoiceOption> decideOnChoiceOption(SymbolicExecution se, Choice newChoice) {
-        return se.decideOnNextChoiceOptionDuringExecution(newChoice);
-    }
 }
