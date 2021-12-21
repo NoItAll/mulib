@@ -7,7 +7,6 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -267,22 +266,8 @@ public final class SymbolicExecution {
 
     /* CONCRETIZE */
 
-    public Object concretize(SubstitutedVar var) { /// TODO Extend
-        if (var instanceof Conc) {
-            if (var instanceof Sint.ConcSint) {
-                return ((Sint.ConcSint) var).intVal();
-            } else if (var instanceof Sdouble.ConcSdouble) {
-                return ((Sdouble.ConcSdouble) var).doubleVal();
-            } else if (var instanceof Sfloat.ConcSfloat) {
-                return ((Sfloat.ConcSfloat) var).floatVal();
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (var instanceof Sprimitive) {
-            return mulibExecutor.concretize(var);
-        } else {
-            throw new NotYetImplementedException();
-        }
+    public Object concretize(SubstitutedVar var) {
+        return mulibExecutor.concretize(var);
     }
 
     public Object label(Sprimitive var) {
@@ -443,7 +428,6 @@ public final class SymbolicExecution {
         return calculationFactory.add(this, valueFactory, lhs, rhs);
     }
 
-
     public Slong sub(Slong lhs, Slong rhs) {
         return calculationFactory.sub(this, valueFactory, lhs, rhs);
     }
@@ -467,7 +451,6 @@ public final class SymbolicExecution {
     public Sfloat add(Sfloat lhs, Sfloat rhs) {
         return calculationFactory.add(this, valueFactory, lhs, rhs);
     }
-
 
     public Sfloat sub(Sfloat lhs, Sfloat rhs) {
         return calculationFactory.sub(this, valueFactory, lhs, rhs);
@@ -583,6 +566,7 @@ public final class SymbolicExecution {
 
     @SuppressWarnings("unchecked")
     public <T extends Sprimitive> T castTo(Sprimitive sprimitive, final Class<T> castTo) {
+        /// TODO To CalculationFactory
         if (castTo.isAssignableFrom(sprimitive.getClass())) {
             return (T) sprimitive;
         }
@@ -643,6 +627,7 @@ public final class SymbolicExecution {
     }
 
     public Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c) {
+        /// TODO To CalculationFactory
         if (partnerClass == null) {
             return Sbool.FALSE;
         }

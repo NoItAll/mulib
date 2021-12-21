@@ -17,6 +17,7 @@ import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
+import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -116,8 +117,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Object concretize (SubstitutedVar var) {
-        // TODO add constraint
-        if (var instanceof Sprimitive) {
+        if (var instanceof Conc) {
+            if (var instanceof Sint.ConcSint) {
+                return ((Sint.ConcSint) var).intVal();
+            } else if (var instanceof Sdouble.ConcSdouble) {
+                return ((Sdouble.ConcSdouble) var).doubleVal();
+            } else if (var instanceof Sfloat.ConcSfloat) {
+                return ((Sfloat.ConcSfloat) var).floatVal();
+            } else {
+                throw new NotYetImplementedException();
+            }
+        } else if (var instanceof Sprimitive) {
+            // TODO add constraint
             return solverManager.getLabel((Sprimitive) var);
         } else {
             return currentSymbolicExecution.getMulibValueTransformer().labelValue(var, solverManager);
