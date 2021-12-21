@@ -1,16 +1,12 @@
 package de.wwu.mulib.search.executors;
 
-import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Not;
-import de.wwu.mulib.constraints.Or;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -18,8 +14,6 @@ import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.*;
-import java.util.function.BiFunction;
-import java.util.function.Function;
 
 @SuppressWarnings("unused")
 public final class SymbolicExecution {
@@ -31,6 +25,7 @@ public final class SymbolicExecution {
     // When on a known path, the upmost ChoiceOption corresponds to SymbolicExecution.currentChoiceOption
     private final ArrayDeque<Choice.ChoiceOption> predeterminedPath;
 
+    // The current choice option. This will also be set to choice options on the known path.
     private Choice.ChoiceOption currentChoiceOption;
 
     private final ExecutionBudgetManager executionBudgetManager;
@@ -284,16 +279,14 @@ public final class SymbolicExecution {
                 throw new NotYetImplementedException();
             }
         } else if (var instanceof Sprimitive) {
-            return mulibExecutor.concretize((Sprimitive) var);
-        } else if (var instanceof PartnerClass) {
-            return mulibValueTransformer.labelValue(var, mulibExecutor.solverManager);
+            return mulibExecutor.concretize(var);
         } else {
             throw new NotYetImplementedException();
         }
     }
 
     public Object label(Sprimitive var) {
-        return mulibExecutor.solverManager.getLabel(var);
+        return mulibExecutor.label(var);
     }
 
     /*
@@ -425,7 +418,6 @@ public final class SymbolicExecution {
     public Sdouble add(Sdouble lhs, Sdouble rhs) {
         return calculationFactory.add(this, valueFactory, lhs, rhs);
     }
-
 
     public Sdouble sub(Sdouble lhs, Sdouble rhs) {
         return calculationFactory.sub(this, valueFactory, lhs, rhs);

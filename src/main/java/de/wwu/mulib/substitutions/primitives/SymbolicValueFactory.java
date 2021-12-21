@@ -272,8 +272,6 @@ public class SymbolicValueFactory implements ValueFactory {
                     And.newInstance(Lt.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.MINUS_ONE))
             );
             se.addNewConstraint(zeroOneOrMinusOne);
-            se.getCurrentChoiceOption().setOptionConstraint(
-                    And.newInstance(se.getCurrentChoiceOption().getOptionConstraint(), zeroOneOrMinusOne));
         }
         return toRestrict;
     }
@@ -286,8 +284,6 @@ public class SymbolicValueFactory implements ValueFactory {
                     And.newInstance(Not.newInstance(b), Eq.newInstance(b, Sint.ZERO))
             );
             se.addNewConstraint(eitherZeroOrOne);
-            se.getCurrentChoiceOption().setOptionConstraint(
-                    And.newInstance(se.getCurrentChoiceOption().getOptionConstraint(), eitherZeroOrOne));
         }
         return b;
     }
@@ -303,8 +299,6 @@ public class SymbolicValueFactory implements ValueFactory {
                     Lte.newInstance(i, ub),
                     Lte.newInstance(lb, i));
             se.addNewConstraint(lowerAndUpperBound);
-            se.getCurrentChoiceOption().setOptionConstraint(
-                    And.newInstance(se.getCurrentChoiceOption().getOptionConstraint(), lowerAndUpperBound));
         }
         return i;
     }

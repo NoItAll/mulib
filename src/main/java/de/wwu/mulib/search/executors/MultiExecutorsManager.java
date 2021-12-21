@@ -111,7 +111,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         b.append("\r\n");
         for (MulibExecutor me : mulibExecutors) {
             b.append("   ")
-                    .append(me.searchStrategy)
+                    .append(me.getSearchStrategy())
                     .append(": ")
                     .append(me.getStatistics().toString());
             if (me != last) {
@@ -176,9 +176,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                                 config,
                                 searchStrategy
                         );
-                        finalNextExecutor
-                                .solverManager
-                                .addConstraintAfterNewBacktrackingPoint(observedTree.root.getOption(0).getOptionConstraint());
+                        finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
+                                observedTree.root.getOption(0).getOptionConstraint());
                         mulibExecutors.add(finalNextExecutor);
                         addToPathSolutions(finalNextExecutor);
                         idle.add(finalNextExecutor);
