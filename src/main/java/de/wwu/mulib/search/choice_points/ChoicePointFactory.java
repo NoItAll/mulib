@@ -1,9 +1,18 @@
 package de.wwu.mulib.search.choice_points;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
 public interface ChoicePointFactory {
+
+    static ChoicePointFactory getInstance(MulibConfig config) {
+        if (config.CONCOLIC) {
+            return ConcolicChoicePointFactory.getInstance(config);
+        } else {
+            return SymbolicChoicePointFactory.getInstance(config);
+        }
+    }
 
     boolean ltChoice(SymbolicExecution se, final Sint lhs, final Sint rhs);
 

@@ -1,10 +1,19 @@
 package de.wwu.mulib.substitutions.primitives;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
 public interface ValueFactory {
+
+    static ValueFactory getInstance(MulibConfig config) {
+        if (config.CONCOLIC) {
+            return ConcolicValueFactory.getInstance(config);
+        } else {
+            return SymbolicValueFactory.getInstance(config);
+        }
+    }
 
     Sint symSint(SymbolicExecution se);
 
