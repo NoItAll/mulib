@@ -10,6 +10,7 @@ public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpre
     protected final NumericExpression rhsExpr;
 
     protected AbstractTwoSidedNumericConstraint(NumericExpression lhsExpr, NumericExpression rhsExpr) {
+        assert !(lhsExpr instanceof ConcSnumber) || !(rhsExpr instanceof ConcSnumber);
         this.lhsExpr = lhsExpr instanceof SymNumericExpressionSprimitive ?
                 ((SymNumericExpressionSprimitive) lhsExpr).getRepresentedExpression()
                 :

@@ -7,6 +7,7 @@ public class Not implements Constraint {
     private final Constraint constraint;
 
     public Not(Constraint constraint) {
+        assert !(constraint instanceof Sbool.ConcSbool);
         this.constraint = constraint;
     }
 

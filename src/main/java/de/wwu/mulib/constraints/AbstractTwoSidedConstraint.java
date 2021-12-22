@@ -8,6 +8,7 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
     protected final Constraint rhs;
 
     protected AbstractTwoSidedConstraint(Constraint lhs, Constraint rhs) {
+        assert !(lhs instanceof Sbool.ConcSbool) || !(rhs instanceof Sbool.ConcSbool);
         this.lhs = lhs instanceof Sbool.SymSbool ? ((Sbool.SymSbool) lhs).getRepresentedConstraint() : lhs;
         this.rhs = rhs instanceof Sbool.SymSbool ? ((Sbool.SymSbool) rhs).getRepresentedConstraint() : rhs;
     }

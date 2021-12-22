@@ -23,32 +23,32 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sint sub(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSint(((Sint.ConcSint) lhs).intVal() - ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) lhs).intVal() - ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSint(se, sub(lhs, rhs));
     }
 
     @Override
     public Sint mul(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSint(((Sint.ConcSint) lhs).intVal() * ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) lhs).intVal() * ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSint(se, mul(lhs, rhs));
     }
 
     @Override
     public Sint div(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSint(((Sint.ConcSint) lhs).intVal() / ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) lhs).intVal() / ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSint(se, div(lhs, rhs));
     }
 
     @Override
     public Sint mod(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSint(((Sint.ConcSint) lhs).intVal() % ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) lhs).intVal() % ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSint(se, mod(lhs, rhs));
     }
@@ -231,8 +231,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sbool lt(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSbool(((Sint.ConcSint) lhs).intVal() < ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSbool(((ConcSnumber) lhs).intVal() < ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSbool(se, lt(lhs, rhs));
     }
@@ -263,8 +263,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sbool lte(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSbool(((Sint.ConcSint) lhs).intVal() <= ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSbool(((ConcSnumber) lhs).intVal() <= ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSbool(se, lte(lhs, rhs));
     }
@@ -295,8 +295,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sbool eq(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof Sint.ConcSint && rhs instanceof Sint.ConcSint) {
-            return vf.concSbool(((Sint.ConcSint) lhs).intVal() == ((Sint.ConcSint) rhs).intVal());
+        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
+            return vf.concSbool(((ConcSnumber) lhs).intVal() == ((ConcSnumber) rhs).intVal());
         }
         return vf.wrappingSymSbool(se, eq(lhs, rhs));
     }

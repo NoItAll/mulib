@@ -1,6 +1,7 @@
 package de.wwu.mulib.expressions;
 
 import de.wwu.mulib.substitutions.Sym;
+import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
 public abstract class AbstractExpressionWrappingExpression implements NumericExpression, Sym {
@@ -8,7 +9,7 @@ public abstract class AbstractExpressionWrappingExpression implements NumericExp
     protected final NumericExpression wrapped;
 
     protected AbstractExpressionWrappingExpression(NumericExpression toWrap) {
-        assert toWrap instanceof Sym;
+        assert !(toWrap instanceof ConcSnumber);
         this.wrapped = toWrap instanceof SymNumericExpressionSprimitive ?
                 ((SymNumericExpressionSprimitive) toWrap).getRepresentedExpression()
                 :
