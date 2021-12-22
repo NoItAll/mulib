@@ -101,4 +101,32 @@ public interface CalculationFactory {
 
     Sint cmp(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
 
+    Slong i2l(SymbolicExecution se, ValueFactory vf, Sint i);
+
+    Sfloat i2f(SymbolicExecution se, ValueFactory vf, Sint i);
+
+    Sdouble i2d(SymbolicExecution se, ValueFactory vf, Sint i);
+
+    Sint l2i(SymbolicExecution se, ValueFactory vf, Slong l);
+
+    Sfloat l2f(SymbolicExecution se, ValueFactory vf, Slong l);
+
+    Sdouble l2d(SymbolicExecution se, ValueFactory vf, Slong l);
+
+    Sint f2i(SymbolicExecution se, ValueFactory vf, Sfloat f);
+
+    Slong f2l(SymbolicExecution se, ValueFactory vf, Sfloat f);
+
+    Sdouble f2d(SymbolicExecution se, ValueFactory vf, Sfloat f);
+
+    Sint d2i(SymbolicExecution se, ValueFactory vf, Sdouble d);
+
+    Slong d2l(SymbolicExecution se, ValueFactory vf, Sdouble d);
+
+    Sfloat d2f(SymbolicExecution se, ValueFactory vf, Sdouble d);
+
+    Sbyte i2b(SymbolicExecution se, ValueFactory vf, Sint i);
+
+    Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i);
+
 }

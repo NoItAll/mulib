@@ -122,6 +122,18 @@ public abstract class Slong extends AbstractSnumber {
         return se.gteChoice(this, rhs);
     }
 
+    public final Sint l2i(SymbolicExecution se) {
+        return se.l2i(this);
+    }
+
+    public final Sdouble l2d(SymbolicExecution se) {
+        return se.l2d(this);
+    }
+
+    public final Sfloat l2f(SymbolicExecution se) {
+        return se.l2f(this);
+    }
+
     public static final class ConcSlong extends Slong implements ConcSnumber {
         private final long value;
 

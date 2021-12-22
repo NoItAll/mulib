@@ -1,7 +1,5 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.search.executors.SymbolicExecution;
-
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class AbstractSnumber implements Snumber {
@@ -11,11 +9,6 @@ public abstract class AbstractSnumber implements Snumber {
 
     protected AbstractSnumber() {
         id = nextId.incrementAndGet();
-    }
-
-    @Override
-    public final <T extends Sprimitive> T castTo(Class<T> castToClass, SymbolicExecution se) {
-        return se.castTo(this, castToClass);
     }
 
     @Override

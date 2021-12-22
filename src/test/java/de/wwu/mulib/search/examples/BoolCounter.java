@@ -121,7 +121,7 @@ public class BoolCounter {
         if (se.boolChoice(b2)) {
             count = count.add(Sint.concSint(4), se);
         }
-        if (se.boolChoice(Sbool.newInputSymbolicSbool())) {
+        if (se.boolChoice(se.symSbool())) {
             // Should not influence the overall number of solutions
             throw new Fail();
         }
@@ -209,7 +209,7 @@ public class BoolCounter {
             } else if (se.ltChoice(i0, i1.add(se.concSint(22), se))) {
                 throw new MulibRuntimeException("Should not be possible");
             }
-            count = se.castTo(count.add(_count4Manual(), se), Sint.class);
+            count = count.add(_count4Manual(), se);
         }
 
         return count;

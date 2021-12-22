@@ -119,6 +119,17 @@ public abstract class Sfloat extends Sfpnumber {
         return se.gteChoice(this, rhs);
     }
 
+    public final Sint f2i(SymbolicExecution se) {
+        return se.f2i(this);
+    }
+
+    public final Sdouble f2d(SymbolicExecution se) {
+        return se.f2d(this);
+    }
+
+    public final Slong f2l(SymbolicExecution se) {
+        return se.f2l(this);
+    }
 
     public static final class ConcSfloat extends Sfloat implements ConcSnumber {
         private final float value;

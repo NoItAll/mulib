@@ -593,12 +593,87 @@ public final class TransformationUtility {
         }
     }
 
-    public static InsnList newSeCastCall(Class<?> clazz, int seIndex) {
+    public static InsnList newSeCastCall(int op, int seIndex) {
+        String castName;
+        String castResultDesc;
+        String castMethodOwnerCp;
+        switch (op) {
+            case I2L:
+                castName = "i2l";
+                castResultDesc = slongDesc;
+                castMethodOwnerCp = sintCp;
+                break;
+            case I2F:
+                castName = "i2f";
+                castResultDesc = sfloatDesc;
+                castMethodOwnerCp = sintCp;
+                break;
+            case I2D:
+                castName = "i2d";
+                castResultDesc = sdoubleDesc;
+                castMethodOwnerCp = sintCp;
+                break;
+            case L2I:
+                castName = "l2i";
+                castResultDesc = sintDesc;
+                castMethodOwnerCp = slongCp;
+                break;
+            case L2D:
+                castName = "l2d";
+                castResultDesc = sdoubleDesc;
+                castMethodOwnerCp = slongCp;
+                break;
+            case L2F:
+                castName = "l2f";
+                castResultDesc = sfloatDesc;
+                castMethodOwnerCp = slongCp;
+                break;
+            case D2I:
+                castName = "d2i";
+                castResultDesc = sintDesc;
+                castMethodOwnerCp = sdoubleCp;
+                break;
+            case D2L:
+                castName = "d2l";
+                castResultDesc = slongDesc;
+                castMethodOwnerCp = sdoubleCp;
+                break;
+            case D2F:
+                castName = "d2f";
+                castResultDesc = sfloatDesc;
+                castMethodOwnerCp = sdoubleCp;
+                break;
+            case F2I:
+                castName = "f2i";
+                castResultDesc = sintDesc;
+                castMethodOwnerCp = sfloatCp;
+                break;
+            case F2D:
+                castName = "f2d";
+                castResultDesc = sdoubleDesc;
+                castMethodOwnerCp = sfloatCp;
+                break;
+            case F2L:
+                castName = "f2l";
+                castResultDesc = slongDesc;
+                castMethodOwnerCp = sfloatCp;
+                break;
+            case I2B:
+                castName = "i2b";
+                castResultDesc = sbyteDesc;
+                castMethodOwnerCp = sintCp;
+                break;
+            case I2S:
+                castName = "i2s";
+                castResultDesc = sshortDesc;
+                castMethodOwnerCp = sintCp;
+                break;
+            default:
+                throw new NotYetImplementedException(String.valueOf(op));
+        }
         InsnList result = new InsnList();
-        result.add(newConstantClass(clazz));
         result.add(loadObjVar(seIndex));
-        result.add(newInterfaceCall(castTo, toMethodDesc(classDesc + seDesc, sprimitiveDesc), sprimitiveCp));
-        result.add(newCastNode(clazz));
+        result.add(newVirtualCall(castName, toMethodDesc(seDesc, castResultDesc), castMethodOwnerCp));
         return result;
     }
 

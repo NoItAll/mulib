@@ -119,6 +119,17 @@ public abstract class Sdouble extends Sfpnumber {
         return se.gteChoice(this, rhs);
     }
 
+    public final Sfloat d2f(SymbolicExecution se) {
+        return se.d2f(this);
+    }
+
+    public final Slong d2l(SymbolicExecution se) {
+        return se.d2l(this);
+    }
+
+    public final Sint d2i(SymbolicExecution se) {
+        return se.d2i(this);
+    }
 
     public static final class ConcSdouble extends Sdouble implements ConcSnumber {
         private final double value;

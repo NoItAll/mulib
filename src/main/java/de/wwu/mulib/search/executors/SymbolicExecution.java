@@ -564,66 +564,60 @@ public final class SymbolicExecution {
         return calculationFactory.cmp(this, valueFactory, lhs, rhs);
     }
 
-    @SuppressWarnings("unchecked")
-    public <T extends Sprimitive> T castTo(Sprimitive sprimitive, final Class<T> castTo) {
-        /// TODO To CalculationFactory
-        if (castTo.isAssignableFrom(sprimitive.getClass())) {
-            return (T) sprimitive;
-        }
+    public Slong i2l(Sint i) {
+        return calculationFactory.i2l(this, valueFactory, i);
+    }
 
-        if (sprimitive instanceof ConcSnumber) {
-            ConcSnumber si = (ConcSnumber) sprimitive;
-            if (castTo == Sint.class) {
-                return (T) concSint(si.intVal());
-            } else if (castTo == Slong.class) {
-                return (T) concSlong(si.longVal());
-            } else if (castTo == Sshort.class) {
-                return (T) concSshort(si.shortVal());
-            } else if (castTo == Sbyte.class) {
-                return (T) concSbyte(si.byteVal());
-            } else if (castTo == Sdouble.class) {
-                return (T) concSdouble(si.doubleVal());
-            } else if (castTo == Sfloat.class) {
-                return (T) concSfloat(si.floatVal());
-            } else {
-                throw new NotYetImplementedException();
-            }
-        }
+    public Sfloat i2f(Sint i) {
+        return calculationFactory.i2f(this, valueFactory, i);
+    }
 
-        if (sprimitive instanceof Sint) {
-            SymNumericExpressionSprimitive sym = (SymNumericExpressionSprimitive) sprimitive;
-            if (castTo == Sint.class) {
-                return (T) valueFactory.wrappingSymSint(this, sym);
-            } else if (castTo == Slong.class) {
-                return (T) valueFactory.wrappingSymSlong(this, sym);
-            } else if (castTo == Sdouble.class) {
-                return (T) valueFactory.wrappingSymSdouble(this, sym);
-            } else if (castTo == Sfloat.class) {
-                return (T) valueFactory.wrappingSymSfloat(this, sym);
-            } else if (castTo == Sshort.class) {
-                return (T) valueFactory.wrappingSymSshort(this, sym);
-            } else if (castTo == Sbyte.class) {
-                return (T) valueFactory.wrappingSymSbyte(this, sym);
-            } else {
-                throw new MulibRuntimeException("This type should not be castable to: " + castTo + " for " + sprimitive);
-            }
-        } else if (sprimitive instanceof Sfpnumber || sprimitive instanceof Slong) {
-            SymNumericExpressionSprimitive sym = (SymNumericExpressionSprimitive) sprimitive;
-            if (castTo == Sint.class) {
-                return (T) valueFactory.wrappingSymSint(this, sym);
-            } else if (castTo == Sdouble.class) {
-                return (T) valueFactory.wrappingSymSdouble(this, sym);
-            } else if (castTo == Sfloat.class) {
-                return (T) valueFactory.wrappingSymSfloat(this, sym);
-            } else if (castTo == Slong.class) {
-                return (T) valueFactory.wrappingSymSlong(this, sym);
-            } else {
-                throw new MulibRuntimeException("This type should not be castable to: " + castTo + " for " + sprimitive);
-            }
-        } else {
-            // TODO Regard other cases of Sprimitives.
-            return (T) sprimitive;
-        }
+    public Sdouble i2d(Sint i) {
+        return calculationFactory.i2d(this, valueFactory, i);
+    }
+
+    public Sint l2i(Slong l) {
+        return calculationFactory.l2i(this, valueFactory, l);
+    }
+
+    public Sfloat l2f(Slong l) {
+        return calculationFactory.l2f(this, valueFactory, l);
+    }
+
+    public Sdouble l2d(Slong l) {
+        return calculationFactory.l2d(this, valueFactory, l);
+    }
+
+    public Sint f2i(Sfloat f) {
+        return calculationFactory.f2i(this, valueFactory, f);
+    }
+
+    public Slong f2l(Sfloat f) {
+        return calculationFactory.f2l(this, valueFactory, f);
+    }
+
+    public Sdouble f2d(Sfloat f) {
+        return calculationFactory.f2d(this, valueFactory, f);
+    }
+
+    public Sint d2i(Sdouble d) {
+        return calculationFactory.d2i(this, valueFactory, d);
+    }
+
+    public Slong d2l(Sdouble d) {
+        return calculationFactory.d2l(this, valueFactory, d);
+    }
+
+    public Sfloat d2f(Sdouble d) {
+        return calculationFactory.d2f(this, valueFactory, d);
+    }
+
+    public Sbyte i2b(Sint i) {
+        return calculationFactory.i2b(this, valueFactory, i);
+    }
+
+    public Sshort i2s(Sint i) {
+        return calculationFactory.i2s(this, valueFactory, i);
     }
 
     public Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c) {

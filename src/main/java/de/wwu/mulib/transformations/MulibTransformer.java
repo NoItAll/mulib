@@ -1885,7 +1885,7 @@ public class MulibTransformer {
             }
             if (op >= I2L && op <= I2S) {
                 Class<?> clazz = getClassOfWrappingType(getWrappingTypeForCastConversionInsn(insn));
-                resultInstrs.add(newSeCastCall(clazz, seIndex));
+                resultInstrs.add(newSeCastCall(op, seIndex));
                 return;
             }
             if (op >= ICONST_M1 && op <= DCONST_1) {
@@ -1926,9 +1926,9 @@ public class MulibTransformer {
                     // Boolean is already treated in that explicitly Sbool is regarded.
                     String returnType = splitMethodDesc(mn.desc)[1];
                     if (returnType.equals("S")) {
-                        resultInstrs.add(newSeCastCall(Sshort.class, seIndex));
+                        resultInstrs.add(newSeCastCall(I2S, seIndex));
                     } else if (returnType.equals("B")) {
-                        resultInstrs.add(newSeCastCall(Sbyte.class, seIndex));
+                        resultInstrs.add(newSeCastCall(I2B, seIndex));
                     }
                 }
                 resultInstrs.add(new InsnNode(ARETURN));

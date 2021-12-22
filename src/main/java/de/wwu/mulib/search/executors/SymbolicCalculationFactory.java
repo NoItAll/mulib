@@ -355,6 +355,118 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         return vf.cmp(se, lhs, rhs);
     }
 
+    @Override
+    public Slong i2l(SymbolicExecution se, ValueFactory vf, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return vf.concSlong(((ConcSnumber) i).longVal());
+        }
+        return vf.wrappingSymSlong(se, i);
+    }
+
+    @Override
+    public Sfloat i2f(SymbolicExecution se, ValueFactory vf, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return vf.concSfloat(((ConcSnumber) i).floatVal());
+        }
+        return vf.wrappingSymSfloat(se, i);
+    }
+
+    @Override
+    public Sdouble i2d(SymbolicExecution se, ValueFactory vf, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return vf.concSdouble(((ConcSnumber) i).doubleVal());
+        }
+        return vf.wrappingSymSdouble(se, i);
+    }
+
+    @Override
+    public Sint l2i(SymbolicExecution se, ValueFactory vf, Slong l) {
+        if (l instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) l).intVal());
+        }
+        return vf.wrappingSymSint(se, l);
+    }
+
+    @Override
+    public Sfloat l2f(SymbolicExecution se, ValueFactory vf, Slong l) {
+        if (l instanceof ConcSnumber) {
+            return vf.concSfloat(((ConcSnumber) l).floatVal());
+        }
+        return vf.wrappingSymSfloat(se, l);
+    }
+
+    @Override
+    public Sdouble l2d(SymbolicExecution se, ValueFactory vf, Slong l) {
+        if (l instanceof ConcSnumber) {
+            return vf.concSdouble(((ConcSnumber) l).doubleVal());
+        }
+        return vf.wrappingSymSdouble(se, l);
+    }
+
+    @Override
+    public Sint f2i(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+        if (f instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) f).intVal());
+        }
+        return vf.wrappingSymSint(se, f);
+    }
+
+    @Override
+    public Slong f2l(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+        if (f instanceof ConcSnumber) {
+            return vf.concSlong(((ConcSnumber) f).longVal());
+        }
+        return vf.wrappingSymSlong(se, f);
+    }
+
+    @Override
+    public Sdouble f2d(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+        if (f instanceof ConcSnumber) {
+            return vf.concSdouble(((ConcSnumber) f).doubleVal());
+        }
+        return vf.wrappingSymSdouble(se, f);
+    }
+
+    @Override
+    public Sint d2i(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+        if (d instanceof ConcSnumber) {
+            return vf.concSint(((ConcSnumber) d).intVal());
+        }
+        return vf.wrappingSymSint(se, d);
+    }
+
+    @Override
+    public Slong d2l(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+        if (d instanceof ConcSnumber) {
+            return vf.concSlong(((ConcSnumber) d).longVal());
+        }
+        return vf.wrappingSymSlong(se, d);
+    }
+
+    @Override
+    public Sfloat d2f(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+        if (d instanceof ConcSnumber) {
+            return vf.concSfloat(((ConcSnumber) d).floatVal());
+        }
+        return vf.wrappingSymSfloat(se, d);
+    }
+
+    @Override
+    public Sbyte i2b(SymbolicExecution se, ValueFactory vf, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return vf.concSbyte(((ConcSnumber) i).byteVal());
+        }
+        return vf.wrappingSymSbyte(se, i);
+    }
+
+    @Override
+    public Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return vf.concSshort(((ConcSnumber) i).shortVal());
+        }
+        return vf.wrappingSymSshort(se, i);
+    }
+
     protected NumericExpression sum(NumericExpression lhs, NumericExpression rhs) {
         return Sum.newInstance(lhs, rhs);
     }

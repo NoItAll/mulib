@@ -15,6 +15,4 @@ public interface Sprimitive extends SubstitutedVar {
         return this.getClass().getSimpleName() + getId();
     }
 
-    <T extends Sprimitive> T castTo(Class<T> castToClass, SymbolicExecution se);
-
 }

@@ -125,6 +125,25 @@ public abstract class Sint extends AbstractSnumber {
         return se.gteChoice(this, rhs);
     }
 
+    public final Sdouble i2d(SymbolicExecution se) {
+        return se.i2d(this);
+    }
+
+    public final Sfloat i2f(SymbolicExecution se) {
+        return se.i2f(this);
+    }
+
+    public final Slong i2l(SymbolicExecution se) {
+        return se.i2l(this);
+    }
+
+    public final Sbyte i2b(SymbolicExecution se) {
+        return se.i2b(this);
+    }
+
+    public final Sshort i2s(SymbolicExecution se) {
+        return se.i2s(this);
+    }
 
     @Override
     public final boolean isFp() {
