@@ -20,7 +20,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         return new ConcolicValueFactory(config);
     }
 
-    private static <SA extends Sprimitive, S, N> S numericConcolicWrapperCreator(
+    private static <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
             SymbolicExecution se,
             Function<SymbolicExecution, SA> symCreator,
             Function<Object, ConcSnumber> concSnumberCreator,
@@ -30,7 +30,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         // Concrete value
         ConcSnumber conc = concSnumberCreator.apply(se.label(sym));
         // Container for both
-        ConcolicNumericContainer container = new ConcolicNumericContainer((NumericExpression) sym, conc);
+        ConcolicNumericContainer container = new ConcolicNumericContainer(sym, conc);
         return resultWrapper.apply(container);
     }
 
@@ -109,65 +109,57 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
 
     @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            // We simply wrap the new ConcolicContainer
-            return (Sint.SymSint) Sint.newExpressionSymbolicSint(numericExpression);
-        } else {
-            return super.wrappingSymSint(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSint(se, numericExpression);
     }
 
     @Override
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            return (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(numericExpression);
-        } else {
-            return super.wrappingSymSdouble(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSdouble(se, numericExpression);
     }
 
     @Override
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            return (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(numericExpression);
-        } else {
-            return super.wrappingSymSfloat(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSfloat(se, numericExpression);
     }
 
     @Override
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            return (Slong.SymSlong) Slong.newExpressionSymbolicSlong(numericExpression);
-        } else {
-            return super.wrappingSymSlong(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSlong(se, numericExpression);
     }
 
     @Override
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            return (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(numericExpression);
-        } else {
-            return super.wrappingSymSshort(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSshort(se, numericExpression);
     }
 
     @Override
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
-        if (numericExpression instanceof ConcolicNumericContainer) {
-            return (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(numericExpression);
-        } else {
-            return super.wrappingSymSbyte(se, numericExpression);
-        }
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return super.wrappingSymSbyte(se, numericExpression);
     }
 
     @Override
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
-        if (constraint instanceof ConcolicConstraintContainer) {
-            return (Sbool.SymSbool) Sbool.newConstraintSbool(constraint);
-        } else {
+        assert !(constraint instanceof ConcolicConstraintContainer)
+                && !((constraint instanceof Sbool.SymSbool)
+                && ((Sbool.SymSbool) constraint).getRepresentedExpression() instanceof ConcolicConstraintContainer);
             return super.wrappingSymSbool(se, constraint);
-        }
     }
 }
