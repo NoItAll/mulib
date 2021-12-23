@@ -125,10 +125,6 @@ public final class SymbolicExecution {
         return predeterminedPath.size() > 1;
     }
 
-    public ChoicePointFactory getCpFactory() {
-        return choicePointFactory;
-    }
-
     public Choice.ChoiceOption getCurrentChoiceOption() {
         return currentChoiceOption;
     }

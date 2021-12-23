@@ -38,7 +38,7 @@ public class IntComparison {
         Sint n00 = se.symSint();
         Sint n01 = se.symSint();
 
-        if (se.getCpFactory().eqChoice(se, n00, n01)) {
+        if (se.eqChoice(n00, n01)) {
             alwaysLargerVal = alwaysLargerVal.add(n00, se);
             alwaysLowerVal = alwaysLowerVal.add(n01, se);
         } else {
@@ -50,27 +50,27 @@ public class IntComparison {
         Sint n20 = se.symSint();
         Sint n21 = se.symSint();
 
-        if (se.getCpFactory().gteChoice(se, n10, n11)) {
+        if (se.gteChoice(n10, n11)) {
             alwaysLargerVal = alwaysLargerVal.add(n10, se);
             alwaysLowerVal = alwaysLowerVal.add(n11, se);
         } else {
             throw new Fail();
         }
 
-        if (se.getCpFactory().ltChoice(se, n21, n20)) {
+        if (se.ltChoice(n21, n20)) {
             alwaysLargerVal = alwaysLargerVal.add(n20, se);
             alwaysLowerVal = alwaysLowerVal.add(n21, se);
         } else {
             throw new Fail();
         }
 
-        if (se.getCpFactory().lteChoice(se, alwaysLargerVal, alwaysLowerVal)) {
+        if (se.lteChoice(alwaysLargerVal, alwaysLowerVal)) {
             throw new MulibRuntimeException("This cannot occur.");
         }
 
         Sint result = alwaysLargerVal.sub(alwaysLowerVal, se);
 
-        if (se.getCpFactory().lteChoice(se, result, Sint.concSint(0))) {
+        if (se.lteChoice(result, Sint.concSint(0))) {
             throw new MulibRuntimeException("This cannot occur.");
         }
 

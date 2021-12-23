@@ -65,8 +65,8 @@ public class AbsValueMul {
 
     public static Sint abs(Sint i) {
         SymbolicExecution se = SymbolicExecution.get();
-        if (se.getCpFactory().ltChoice(se, i, Sint.concSint(0))) {
-            if (se.getCpFactory().boolChoice(se, se.symSbool())) {
+        if (se.ltChoice(i, Sint.concSint(0))) {
+            if (se.boolChoice(se.symSbool())) {
                 throw new Fail();
             }
             return i.neg(se);
