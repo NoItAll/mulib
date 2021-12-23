@@ -5,8 +5,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.primitives.Sbyte;
-import de.wwu.mulib.substitutions.primitives.Sshort;
 import org.objectweb.asm.*;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.util.CheckClassAdapter;
@@ -1208,10 +1206,12 @@ public class MulibTransformer {
                 insns.add(new JumpInsnNode(GOTO, putfield));
                 // Case symbolic
                 insns.add(isSym);
-                insns.add(loadObjVar(solverManagerIndex));
+                insns.add(loadObjVar(valueTransformerIndex));
                 insns.add(loadThis());
                 insns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-                insns.add(new MethodInsnNode(INVOKEINTERFACE, solverManagerCp, "getLabel", toMethodDesc(sprimitiveDesc, objectDesc)));
+                insns.add(loadObjVar(solverManagerIndex));
+                insns.add(new MethodInsnNode(INVOKEVIRTUAL, mulibValueTransformerCp, "labelPrimitiveValue",
+                        toMethodDesc(sprimitiveDesc + solverManagerDesc, objectDesc)));
                 insns.add(new TypeInsnNode(CHECKCAST, castToCp));
                 insns.add(new MethodInsnNode(INVOKEVIRTUAL, castToCp, toValueMethod, toMethodDesc("", originalFieldDesc)));
                 insns.add(putfield);

@@ -32,6 +32,7 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
 //                        .setINCR_ACTUAL_CP_BUDGET(32)
+                        .setCONCOLIC(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)

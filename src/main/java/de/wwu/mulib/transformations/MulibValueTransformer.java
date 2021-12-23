@@ -236,28 +236,32 @@ public final class MulibValueTransformer {
         }
     }
 
+    public Object labelPrimitiveValue(Sprimitive searchRegionVal, SolverManager solverManager) {
+        if (searchRegionVal instanceof ConcSnumber) {
+            return labelConcSnumber((ConcSnumber) searchRegionVal);
+        } else {
+            if (searchRegionVal instanceof Sbool.SymSbool) {
+                Constraint c = ((Sbool.SymSbool) searchRegionVal).getRepresentedConstraint();
+                if (c instanceof ConcolicConstraintContainer) {
+                    return ((ConcolicConstraintContainer) c).getConc().isTrue();
+                }
+            } else {
+                NumericExpression ne = ((SymNumericExpressionSprimitive) searchRegionVal).getRepresentedExpression();
+                if (ne instanceof ConcolicNumericContainer) {
+                    return labelConcSnumber(((ConcolicNumericContainer) ne).getConc());
+                }
+            }
+            return solverManager.getLabel(searchRegionVal);
+        }
+    }
+
     public Object labelValue(Object searchRegionVal, SolverManager solverManager) { // TODO Sarray
         if (searchRegionVal == null) {
             return null;
         }
 
         if (searchRegionVal instanceof Sprimitive) {
-            if (searchRegionVal instanceof ConcSnumber) {
-                return labelConcSnumber((ConcSnumber) searchRegionVal);
-            } else {
-                if (searchRegionVal instanceof Sbool.SymSbool) {
-                    Constraint c = ((Sbool.SymSbool) searchRegionVal).getRepresentedConstraint();
-                    if (c instanceof ConcolicConstraintContainer) {
-                        return ((ConcolicConstraintContainer) c).getConc().isTrue();
-                    }
-                } else {
-                    NumericExpression ne = ((SymNumericExpressionSprimitive) searchRegionVal).getRepresentedExpression();
-                    if (ne instanceof ConcolicNumericContainer) {
-                        return labelConcSnumber(((ConcolicNumericContainer) ne).getConc());
-                    }
-                }
-                return solverManager.getLabel((Sprimitive) searchRegionVal);
-            }
+            return labelPrimitiveValue((Sprimitive) searchRegionVal, solverManager);
         } else if (searchRegionVal instanceof PartnerClass) {
             Object result = searchSpaceRepresentationToLabelObject.get(searchRegionVal);
             if (result != null) {
