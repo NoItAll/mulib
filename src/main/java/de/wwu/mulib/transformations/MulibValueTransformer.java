@@ -1,8 +1,12 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
+import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -209,34 +213,49 @@ public final class MulibValueTransformer {
         return result;
     }
 
+    private static Object labelConcSnumber(ConcSnumber searchRegionVal) {
+        if (searchRegionVal instanceof Sbool) {
+            return ((Sbool.ConcSbool) searchRegionVal).isTrue();
+        }
+        if (searchRegionVal instanceof Sint) {
+            if (searchRegionVal instanceof Sshort) {
+                return searchRegionVal.shortVal();
+            } else if (searchRegionVal instanceof Sbyte) {
+                return searchRegionVal.byteVal();
+            } else {
+                return searchRegionVal.intVal();
+            }
+        } else if (searchRegionVal instanceof Slong) {
+            return searchRegionVal.longVal();
+        } else if (searchRegionVal instanceof Sdouble) {
+            return searchRegionVal.doubleVal();
+        } else if (searchRegionVal instanceof Sfloat) {
+            return searchRegionVal.floatVal();
+        } else {
+            throw new NotYetImplementedException();
+        }
+    }
+
     public Object labelValue(Object searchRegionVal, SolverManager solverManager) { // TODO Sarray
         if (searchRegionVal == null) {
             return null;
         }
 
         if (searchRegionVal instanceof Sprimitive) {
-            if (searchRegionVal instanceof ConcSprimitive) {
-                if (searchRegionVal instanceof Sbool) {
-                    return ((Sbool.ConcSbool) searchRegionVal).isTrue();
-                }
-                if (searchRegionVal instanceof Sint) {
-                    if (searchRegionVal instanceof Sshort) {
-                        return ((Sshort.ConcSshort) searchRegionVal).shortVal();
-                    } else if (searchRegionVal instanceof Sbyte) {
-                        return ((Sbyte.ConcSbyte) searchRegionVal).byteVal();
-                    } else {
-                        return ((Sint.ConcSint) searchRegionVal).intVal();
-                    }
-                } else if (searchRegionVal instanceof Slong) {
-                    return ((Slong.ConcSlong) searchRegionVal).longVal();
-                } else if (searchRegionVal instanceof Sdouble) {
-                    return ((Sdouble.ConcSdouble) searchRegionVal).doubleVal();
-                } else if (searchRegionVal instanceof Sfloat) {
-                    return ((Sfloat.ConcSfloat) searchRegionVal).floatVal();
-                } else {
-                    throw new NotYetImplementedException();
-                }
+            if (searchRegionVal instanceof ConcSnumber) {
+                return labelConcSnumber((ConcSnumber) searchRegionVal);
             } else {
+                if (searchRegionVal instanceof Sbool.SymSbool) {
+                    Constraint c = ((Sbool.SymSbool) searchRegionVal).getRepresentedConstraint();
+                    if (c instanceof ConcolicConstraintContainer) {
+                        return ((ConcolicConstraintContainer) c).getConc().isTrue();
+                    }
+                } else {
+                    NumericExpression ne = ((SymNumericExpressionSprimitive) searchRegionVal).getRepresentedExpression();
+                    if (ne instanceof ConcolicNumericContainer) {
+                        return labelConcSnumber(((ConcolicNumericContainer) ne).getConc());
+                    }
+                }
                 return solverManager.getLabel((Sprimitive) searchRegionVal);
             }
         } else if (searchRegionVal instanceof PartnerClass) {

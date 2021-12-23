@@ -3,10 +3,12 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.And;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.ExceededBudget;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -208,6 +210,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 solutionValue = symbolicExecution.getMulibValueTransformer().labelValue(solutionValue, solverManager);
             } else if (solutionValue instanceof SubstitutedVar) {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
+            }
+        } else {
+            if (solutionValue instanceof Sbool.SymSbool) {
+                if (((Sbool.SymSbool) solutionValue).getRepresentedConstraint() instanceof ConcolicConstraintContainer) {
+                    solutionValue = ((ConcolicConstraintContainer) ((Sbool.SymSbool) solutionValue).getRepresentedConstraint()).getSym();
+                }
+            } else if (solutionValue instanceof SymNumericExpressionSprimitive
+                    && ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression() instanceof ConcolicNumericContainer) {
+                solutionValue = ((ConcolicNumericContainer) ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression()).getSym();
             }
         }
 
