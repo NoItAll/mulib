@@ -79,9 +79,15 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         } else if (e.isRatNum()) {
             RatNum ratNum = (RatNum) e;
             if (p instanceof Sdouble) {
-                return ratNum.getNumerator().getBigInteger().doubleValue() / ratNum.getNumerator().getBigInteger().doubleValue();
-            } else{
-                return (float) (ratNum.getNumerator().getBigInteger().doubleValue() / ratNum.getNumerator().getBigInteger().doubleValue());
+                if (ratNum.getNumerator().getBigInteger().doubleValue() == 0.0) {
+                    return 0d;
+                }
+                return ratNum.getNumerator().getBigInteger().doubleValue() / ratNum.getDenominator().getBigInteger().doubleValue();
+            } else {
+                if (ratNum.getNumerator().getBigInteger().doubleValue() == 0.0) {
+                    return 0f;
+                }
+                return (float) (ratNum.getNumerator().getBigInteger().doubleValue() / ratNum.getDenominator().getBigInteger().doubleValue());
             }
         } else if (e.isBool()) {
             return e.isTrue();
