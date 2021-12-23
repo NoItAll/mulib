@@ -7,7 +7,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Eq extends AbstractTwoSidedNumericConstraint {
 
-    public Eq(NumericExpression lhs, NumericExpression rhs) {
+    private Eq(NumericExpression lhs, NumericExpression rhs) {
         super(lhs, rhs);
     }
 

@@ -360,7 +360,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber) {
             return vf.concSlong(((ConcSnumber) i).longVal());
         }
-        return vf.wrappingSymSlong(se, i);
+        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
@@ -368,7 +368,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber) {
             return vf.concSfloat(((ConcSnumber) i).floatVal());
         }
-        return vf.wrappingSymSfloat(se, i);
+        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
@@ -376,7 +376,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber) {
             return vf.concSdouble(((ConcSnumber) i).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, i);
+        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
@@ -384,7 +384,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (l instanceof ConcSnumber) {
             return vf.concSint(((ConcSnumber) l).intVal());
         }
-        return vf.wrappingSymSint(se, l);
+        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
@@ -392,7 +392,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (l instanceof ConcSnumber) {
             return vf.concSfloat(((ConcSnumber) l).floatVal());
         }
-        return vf.wrappingSymSfloat(se, l);
+        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
@@ -400,7 +400,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (l instanceof ConcSnumber) {
             return vf.concSdouble(((ConcSnumber) l).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, l);
+        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
@@ -408,7 +408,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (f instanceof ConcSnumber) {
             return vf.concSint(((ConcSnumber) f).intVal());
         }
-        return vf.wrappingSymSint(se, f);
+        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
@@ -416,7 +416,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (f instanceof ConcSnumber) {
             return vf.concSlong(((ConcSnumber) f).longVal());
         }
-        return vf.wrappingSymSlong(se, f);
+        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
@@ -424,7 +424,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (f instanceof ConcSnumber) {
             return vf.concSdouble(((ConcSnumber) f).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, f);
+        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
@@ -432,7 +432,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (d instanceof ConcSnumber) {
             return vf.concSint(((ConcSnumber) d).intVal());
         }
-        return vf.wrappingSymSint(se, d);
+        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
@@ -440,7 +440,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (d instanceof ConcSnumber) {
             return vf.concSlong(((ConcSnumber) d).longVal());
         }
-        return vf.wrappingSymSlong(se, d);
+        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
@@ -448,7 +448,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (d instanceof ConcSnumber) {
             return vf.concSfloat(((ConcSnumber) d).floatVal());
         }
-        return vf.wrappingSymSfloat(se, d);
+        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
@@ -456,7 +456,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber) {
             return vf.concSbyte(((ConcSnumber) i).byteVal());
         }
-        return vf.wrappingSymSbyte(se, i);
+        return vf.wrappingSymSbyte(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
@@ -464,54 +464,54 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber) {
             return vf.concSshort(((ConcSnumber) i).shortVal());
         }
-        return vf.wrappingSymSshort(se, i);
+        return vf.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
-    protected NumericExpression sum(NumericExpression lhs, NumericExpression rhs) {
+    private NumericExpression sum(NumericExpression lhs, NumericExpression rhs) {
         return Sum.newInstance(lhs, rhs);
     }
 
-    protected NumericExpression sub(NumericExpression lhs, NumericExpression rhs) {
+    private NumericExpression sub(NumericExpression lhs, NumericExpression rhs) {
         return Sub.newInstance(lhs, rhs);
     }
 
-    protected NumericExpression mul(NumericExpression lhs, NumericExpression rhs) {
+    private NumericExpression mul(NumericExpression lhs, NumericExpression rhs) {
         return Mul.newInstance(lhs, rhs);
     }
 
-    protected NumericExpression div(NumericExpression lhs, NumericExpression rhs) {
+    private NumericExpression div(NumericExpression lhs, NumericExpression rhs) {
         return Div.newInstance(lhs, rhs);
     }
 
-    protected NumericExpression mod(NumericExpression lhs, NumericExpression rhs) {
+    private NumericExpression mod(NumericExpression lhs, NumericExpression rhs) {
         return Mod.newInstance(lhs, rhs);
     }
 
-    protected NumericExpression neg(NumericExpression n) {
+    private NumericExpression neg(NumericExpression n) {
         return Neg.neg(n);
     }
 
-    protected Constraint and(Constraint lhs, Constraint rhs) {
-        return new And(lhs, rhs);
+    private Constraint and(Constraint lhs, Constraint rhs) {
+        return And.newInstance(lhs, rhs);
     }
 
-    protected Constraint or(Constraint lhs, Constraint rhs) {
-        return new Or(lhs, rhs);
+    private Constraint or(Constraint lhs, Constraint rhs) {
+        return Or.newInstance(lhs, rhs);
     }
 
-    protected Constraint not(Constraint b) {
-        return new Not(b);
+    private Constraint not(Constraint b) {
+        return Not.newInstance(b);
     }
 
-    protected Constraint lt(NumericExpression lhs, NumericExpression rhs) {
-        return new Lt(lhs, rhs);
+    private Constraint lt(NumericExpression lhs, NumericExpression rhs) {
+        return Lt.newInstance(lhs, rhs);
     }
 
-    protected Constraint lte(NumericExpression lhs, NumericExpression rhs) {
-        return new Lte(lhs, rhs);
+    private Constraint lte(NumericExpression lhs, NumericExpression rhs) {
+        return Lte.newInstance(lhs, rhs);
     }
 
-    protected Constraint eq(NumericExpression lhs, NumericExpression rhs) {
-        return new Eq(lhs, rhs);
+    private Constraint eq(NumericExpression lhs, NumericExpression rhs) {
+        return Eq.newInstance(lhs, rhs);
     }
 }

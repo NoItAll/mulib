@@ -11,14 +11,15 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
 
     protected AbstractOperatorNumericExpression(NumericExpression expr0, NumericExpression expr1) {
         assert !(expr0 instanceof ConcSnumber) || !(expr1 instanceof ConcSnumber);
-        this.expr0 = expr0 instanceof SymNumericExpressionSprimitive ?
-                ((SymNumericExpressionSprimitive) expr0).getRepresentedExpression()
-                :
-                expr0;
-        this.expr1 = expr1 instanceof SymNumericExpressionSprimitive ?
-                ((SymNumericExpressionSprimitive) expr1).getRepresentedExpression()
-                :
-                expr1;
+        assert !(expr0 instanceof ConcolicNumericContainer) && !(expr1 instanceof ConcolicNumericContainer);
+        if (expr0 instanceof SymNumericExpressionSprimitive) {
+            expr0 = ((SymNumericExpressionSprimitive) expr0).getRepresentedExpression();
+        }
+        if (expr1 instanceof SymNumericExpressionSprimitive) {
+            expr1 = ((SymNumericExpressionSprimitive) expr1).getRepresentedExpression();
+        }
+        this.expr0 = expr0;
+        this.expr1 = expr1;
     }
 
     public final NumericExpression getExpr0() {

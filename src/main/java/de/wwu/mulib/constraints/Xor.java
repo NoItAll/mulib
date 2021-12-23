@@ -3,7 +3,7 @@ package de.wwu.mulib.constraints;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Xor extends AbstractTwoSidedConstraint {
-    protected Xor(Constraint lhs, Constraint rhs) {
+    private Xor(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 

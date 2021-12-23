@@ -10,10 +10,11 @@ public abstract class AbstractExpressionWrappingExpression implements NumericExp
 
     protected AbstractExpressionWrappingExpression(NumericExpression toWrap) {
         assert !(toWrap instanceof ConcSnumber);
-        this.wrapped = toWrap instanceof SymNumericExpressionSprimitive ?
-                ((SymNumericExpressionSprimitive) toWrap).getRepresentedExpression()
-                :
-                toWrap;
+        assert !(toWrap instanceof ConcolicNumericContainer);
+        if (toWrap instanceof SymNumericExpressionSprimitive) {
+            toWrap = ((SymNumericExpressionSprimitive) toWrap).getRepresentedExpression();
+        }
+        this.wrapped = toWrap;
     }
 
 

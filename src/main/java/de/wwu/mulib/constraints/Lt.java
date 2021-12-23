@@ -7,7 +7,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Lt extends AbstractTwoSidedNumericConstraint {
 
-    public Lt(NumericExpression lhs, NumericExpression rhs) {
+    private Lt(NumericExpression lhs, NumericExpression rhs) {
         super(lhs, rhs);
     }
 

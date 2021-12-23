@@ -4,7 +4,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Or extends AbstractTwoSidedConstraint {
 
-    public Or(Constraint lhs, Constraint rhs) {
+    private Or(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 

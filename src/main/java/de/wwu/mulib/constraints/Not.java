@@ -8,14 +8,16 @@ public class Not implements Constraint {
 
     public Not(Constraint constraint) {
         assert !(constraint instanceof Sbool.ConcSbool);
+        assert !(constraint instanceof ConcolicConstraintContainer);
+        if (constraint instanceof Sbool.SymSbool) {
+            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
+        }
         this.constraint = constraint;
     }
 
     public static Constraint newInstance(Constraint constraint) {
         if (constraint instanceof Sbool.ConcSbool) {
             return Sbool.concSbool(!((Sbool.ConcSbool) constraint).isTrue());
-        } else if (constraint instanceof Sbool.SymSbool) {
-            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         }
         if (constraint instanceof Not) {
             return ((Not) constraint).getConstraint();

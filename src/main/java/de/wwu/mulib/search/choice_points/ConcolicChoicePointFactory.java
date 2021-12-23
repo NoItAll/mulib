@@ -26,10 +26,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
             SymbolicExecution se,
             Constraint constraint,
             Choice.ChoiceOption currentChoiceOption) {
-        Constraint innerConstraint = constraint instanceof Sbool.SymSbool ?
-                ((Sbool.SymSbool) constraint).getRepresentedConstraint()
-                :
-                constraint;
+        Constraint innerConstraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         ConcolicConstraintContainer container = (ConcolicConstraintContainer) innerConstraint;
 
         // Find out which choice option is pre-chosen by concolic values

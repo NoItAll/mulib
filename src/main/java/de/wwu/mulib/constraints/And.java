@@ -7,7 +7,7 @@ import java.util.List;
 
 public class And extends AbstractTwoSidedConstraint {
 
-    public And(Constraint lhs, Constraint rhs) {
+    private And(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 

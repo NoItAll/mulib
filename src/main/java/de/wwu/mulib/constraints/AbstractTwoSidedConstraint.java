@@ -9,8 +9,15 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
 
     protected AbstractTwoSidedConstraint(Constraint lhs, Constraint rhs) {
         assert !(lhs instanceof Sbool.ConcSbool) || !(rhs instanceof Sbool.ConcSbool);
-        this.lhs = lhs instanceof Sbool.SymSbool ? ((Sbool.SymSbool) lhs).getRepresentedConstraint() : lhs;
-        this.rhs = rhs instanceof Sbool.SymSbool ? ((Sbool.SymSbool) rhs).getRepresentedConstraint() : rhs;
+        assert !(lhs instanceof ConcolicConstraintContainer) && !(rhs instanceof ConcolicConstraintContainer);
+        if (lhs instanceof Sbool.SymSbool) {
+            lhs = ((Sbool.SymSbool) lhs).getRepresentedConstraint();
+        }
+        if (rhs instanceof Sbool.SymSbool) {
+            rhs = ((Sbool.SymSbool) rhs).getRepresentedConstraint();
+        }
+        this.lhs = lhs;
+        this.rhs = rhs;
     }
 
     public Constraint getLhs() {
