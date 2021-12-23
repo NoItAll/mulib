@@ -4,10 +4,7 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
-import de.wwu.mulib.search.executors.CalculationFactory;
-import de.wwu.mulib.search.executors.MulibExecutorManager;
-import de.wwu.mulib.search.executors.MultiExecutorsManager;
-import de.wwu.mulib.search.executors.SingleExecutorManager;
+import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
@@ -39,7 +36,7 @@ public class MulibContext {
     private final MethodHandle methodHandle;
     private final MulibExecutorManager mulibExecutorManager;
     private final SolverManager solverManager;
-    private final Function<MulibValueTransformer, Object[]> argsSupplier;
+    private final Function<SymbolicExecution, Object[]> argsSupplier;
     private final MulibTransformer mulibTransformer;
     private final MulibValueTransformer mulibValueTransformer;
 
@@ -73,10 +70,34 @@ public class MulibContext {
 
         this.mulibConfig = config;
         this.solverManager = Solvers.getSolverManager(config);
-        this.argsSupplier = (mulibValueTransformer) -> {
+        this.argsSupplier = (se) -> {
             Object[] arguments = new Object[searchRegionArgs.length];
             for (int i = 0; i < arguments.length; i++) {
-                arguments[i] = mulibValueTransformer.copySearchRegionRepresentation(searchRegionArgs[i]);
+                Object arg = searchRegionArgs[i];
+                if (arg instanceof SymSprimitive) {
+                    if (arg instanceof Sint) {
+                        if (arg instanceof Sbyte) {
+                            arg = se.symSbyte();
+                        } else if (arg instanceof Sshort) {
+                            arg = se.symSshort();
+                        } else if (arg instanceof Sbool) {
+                            arg = se.symSbool();
+                        } else {
+                            arg = se.symSint();
+                        }
+                    } else if (arg instanceof Sdouble) {
+                        arg = se.symSdouble();
+                    } else if (arg instanceof Sfloat) {
+                        arg = se.symSfloat();
+                    } else if (arg instanceof Slong) {
+                        arg = se.symSlong();
+                    } else {
+                        throw new NotYetImplementedException();
+                    }
+                } else {
+                    se.getMulibValueTransformer().copySearchRegionRepresentation(arg);
+                }
+                arguments[i] = arg;
             }
             return arguments;
         };

@@ -141,6 +141,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 try {
+                    assert solverManager.isSatisfiable();
                     Object solutionValue = invokeSearchRegion();
                     PathSolution solution;
                     try {
@@ -209,6 +210,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }
         }
+
         if (isThrownException) {
             solution = currentChoiceOption.setExceptionSolution(
                     (Throwable) solutionValue,
@@ -256,7 +258,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     protected Object invokeSearchRegion() throws Throwable {
-        return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution.getMulibValueTransformer());
+        return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
     }
 
 }

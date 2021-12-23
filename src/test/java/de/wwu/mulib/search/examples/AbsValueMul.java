@@ -9,7 +9,6 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import org.junit.jupiter.api.Test;
 
@@ -67,7 +66,7 @@ public class AbsValueMul {
     public static Sint abs(Sint i) {
         SymbolicExecution se = SymbolicExecution.get();
         if (se.getCpFactory().ltChoice(se, i, Sint.concSint(0))) {
-            if (se.getCpFactory().boolChoice(se, Sbool.newInputSymbolicSbool())) {
+            if (se.getCpFactory().boolChoice(se, se.symSbool())) {
                 throw new Fail();
             }
             return i.neg(se);

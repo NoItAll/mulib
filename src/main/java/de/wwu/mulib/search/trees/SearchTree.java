@@ -2,8 +2,8 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.util.*;
@@ -12,7 +12,7 @@ import java.util.function.Function;
 public final class SearchTree {
 
     private final MethodHandle representedMethod;
-    private final Function<MulibValueTransformer, Object[]> argsSupplier;
+    private final Function<SymbolicExecution, Object[]> argsSupplier;
     public final Choice root;
     private final List<PathSolution> solutionsList;
     private final List<Fail> failsList;
@@ -24,7 +24,7 @@ public final class SearchTree {
     public SearchTree(
             MulibConfig config,
             MethodHandle methodHandle,
-            Function<MulibValueTransformer, Object[]> argsProvider) {
+            Function<SymbolicExecution, Object[]> argsProvider) {
         this.indentBy = config.TREE_INDENTATION;
         this.enlistLeaves = config.ENLIST_LEAVES;
         this.representedMethod = methodHandle;
@@ -49,8 +49,8 @@ public final class SearchTree {
         choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
     }
 
-    public Object invokeSearchRegion(MulibValueTransformer mulibValueTransformer) throws Throwable {
-        Object[] args = argsSupplier.apply(mulibValueTransformer);
+    public Object invokeSearchRegion(SymbolicExecution symbolicExecution) throws Throwable {
+        Object[] args = argsSupplier.apply(symbolicExecution);
         if (args.length == 0) {
             return representedMethod.invoke();
         } else {
