@@ -10,10 +10,13 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.function.Function;
 
 // The creation of concrete numbers is performed in SymbolicValueFactory.
-public class ConcolicValueFactory extends SymbolicValueFactory {
+public class ConcolicValueFactory extends AbstractValueFactory {
 
+    private final SymbolicValueFactory svf;
+    
     ConcolicValueFactory(MulibConfig config) {
         super(config);
+        this.svf = SymbolicValueFactory.getInstance(config);
     }
 
     public static ConcolicValueFactory getInstance(MulibConfig config) {
@@ -38,10 +41,10 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Sint.SymSint symSint(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSint,
+                svf::symSint,
                 o -> concSint((Integer) o),
                 // Wrapped in new SymSint; we do not reuse these outer wrappers, thus, we do not call
-                // super.wrappingXYZ(...).
+                // svf.wrappingXYZ(...).
                 c -> (Sint.SymSint) Sint.newExpressionSymbolicSint(c)
         );
     }
@@ -50,7 +53,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Sdouble.SymSdouble symSdouble(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSdouble,
+                svf::symSdouble,
                 o -> concSdouble((Double) o),
                 c -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(c)
         );
@@ -60,7 +63,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Sfloat.SymSfloat symSfloat(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSfloat,
+                svf::symSfloat,
                 o -> concSfloat((Float) o),
                 c -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(c)
         );
@@ -69,7 +72,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     @Override
     public Sbool.SymSbool symSbool(SymbolicExecution se) {
         // Symbolic value
-        Sbool.SymSbool sym = super.symSbool(se);
+        Sbool.SymSbool sym = svf.symSbool(se);
         // Concrete value
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both
@@ -81,7 +84,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Slong.SymSlong symSlong(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSlong,
+                svf::symSlong,
                 o -> concSlong((Long) o),
                 c -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(c)
         );
@@ -91,7 +94,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Sshort.SymSshort symSshort(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSshort,
+                svf::symSshort,
                 o -> concSshort((Short) o),
                 c -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(c)
         );
@@ -101,7 +104,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
     public Sbyte.SymSbyte symSbyte(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                super::symSbyte,
+                svf::symSbyte,
                 o -> concSbyte((Byte) o),
                 c -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(c)
         );
@@ -112,7 +115,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                     && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSint(se, numericExpression);
+        return svf.wrappingSymSint(se, numericExpression);
     }
 
     @Override
@@ -120,7 +123,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                 && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSdouble(se, numericExpression);
+        return svf.wrappingSymSdouble(se, numericExpression);
     }
 
     @Override
@@ -128,7 +131,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                 && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSfloat(se, numericExpression);
+        return svf.wrappingSymSfloat(se, numericExpression);
     }
 
     @Override
@@ -136,7 +139,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                 && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSlong(se, numericExpression);
+        return svf.wrappingSymSlong(se, numericExpression);
     }
 
     @Override
@@ -144,7 +147,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                 && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSshort(se, numericExpression);
+        return svf.wrappingSymSshort(se, numericExpression);
     }
 
     @Override
@@ -152,7 +155,7 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                 && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return super.wrappingSymSbyte(se, numericExpression);
+        return svf.wrappingSymSbyte(se, numericExpression);
     }
 
     @Override
@@ -160,6 +163,11 @@ public class ConcolicValueFactory extends SymbolicValueFactory {
         assert !(constraint instanceof ConcolicConstraintContainer)
                 && !((constraint instanceof Sbool.SymSbool)
                 && ((Sbool.SymSbool) constraint).getRepresentedExpression() instanceof ConcolicConstraintContainer);
-            return super.wrappingSymSbool(se, constraint);
+            return svf.wrappingSymSbool(se, constraint);
+    }
+
+    @Override
+    public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
+        return svf.cmp(se, n0, n1);
     }
 }

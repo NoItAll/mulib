@@ -15,7 +15,7 @@ import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public class SymbolicValueFactory implements ValueFactory {
+public class SymbolicValueFactory extends AbstractValueFactory {
     // TODO Evaluate normal synchronized-statement and performance difference
     private final ReadWriteLock atomicSymSintLock = new ReentrantReadWriteLock();
     private final ReadWriteLock atomicSymSdoubleLock = new ReentrantReadWriteLock();
@@ -51,6 +51,7 @@ public class SymbolicValueFactory implements ValueFactory {
 
     private final MulibConfig config;
     SymbolicValueFactory(MulibConfig config) {
+        super(config);
         this.config = config;
     }
 
@@ -222,41 +223,6 @@ public class SymbolicValueFactory implements ValueFactory {
                 atomicSymSintLock,
                 (newSymSint) -> cmpDomain(se, n0, n1, newSymSint)
         );
-    }
-
-    @Override
-    public Sint.ConcSint concSint(int i) {
-        return (Sint.ConcSint) Sint.concSint(i);
-    }
-
-    @Override
-    public Sdouble.ConcSdouble concSdouble(double d) {
-        return (Sdouble.ConcSdouble) Sdouble.concSdouble(d);
-    }
-
-    @Override
-    public Sfloat.ConcSfloat concSfloat(float f) {
-        return (Sfloat.ConcSfloat) Sfloat.concSfloat(f);
-    }
-
-    @Override
-    public Sbool.ConcSbool concSbool(boolean b) {
-        return (Sbool.ConcSbool) Sbool.concSbool(b);
-    }
-
-    @Override
-    public Slong.ConcSlong concSlong(long l) {
-        return (Slong.ConcSlong) Slong.concSlong(l);
-    }
-
-    @Override
-    public Sshort.ConcSshort concSshort(short s) {
-        return (Sshort.ConcSshort) Sshort.concSshort(s);
-    }
-
-    @Override
-    public Sbyte.ConcSbyte concSbyte(byte b) {
-        return (Sbyte.ConcSbyte) Sbyte.concSbyte(b);
     }
 
     private static Sint.SymSint cmpDomain(
