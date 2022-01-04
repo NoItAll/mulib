@@ -70,6 +70,7 @@ public final class TestUtility {
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
+                        .setTREAT_BOOLEANS_AS_INTS(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
