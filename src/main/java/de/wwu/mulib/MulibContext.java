@@ -284,7 +284,7 @@ public class MulibContext {
             System.arraycopy(latestSolutionConstraint, 0 , additionalSolutionConstraints, 0, latestSolutionConstraint.length);
             additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
             solverManager.addConstraintAfterNewBacktrackingPoint(newConstraint);
-            if (solverManager.isSatisfiable()) {
+            if (solverManager.isSatisfiable()) { // TODO unify with AbstractMulibExecutor
                 Labels newLabels = LabelUtility.getLabels(
                         solverManager,
                         mulibValueTransformer.copyFromPrototype(),
