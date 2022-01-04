@@ -16,9 +16,9 @@ import static de.wwu.mulib.search.executors.SearchStrategy.*;
 public final class TestUtility {
 
     private static final boolean longSingleThreadedExecutorsCheck = false;
-    private static final boolean longParallelExecutorsCheck = false;
-    private static final boolean quickCheck = true;
-    private static final boolean quickParallelExecutorsCheck = false;
+    private static final boolean longParallelExecutorsCheck =       false;
+    private static final boolean quickParallelExecutorsCheck =      false;
+    private static final boolean quickCheck =                       true;
     private TestUtility() {}
 
     public static final long TEST_FIXED_POSSIBLE_CP_BUDGET = 1000;
@@ -32,7 +32,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
 //                        .setINCR_ACTUAL_CP_BUDGET(32)
-                        .setCONCOLIC(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -58,6 +57,7 @@ public final class TestUtility {
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
+                        .setCONCOLIC(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
         );
     }
@@ -88,10 +88,11 @@ public final class TestUtility {
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS)
+                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS, DSAS)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setCONCOLIC(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
@@ -167,7 +168,13 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                MulibConfig.builder()
+                        .setGLOBAL_SEARCH_STRATEGY(DFS)
+                        .setCONCOLIC(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
+                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
+                        .assumeMulibDefaultValueRanges()
         );
     }
 

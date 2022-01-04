@@ -48,6 +48,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
         Optional<Choice.ChoiceOption> chosen =
                 se.decideOnNextChoiceOptionDuringExecution(Collections.singletonList(chosenChoiceOption));
         if (chosen.isEmpty()) { // Incremental budget exceeded.
+            se.notifyNewChoice(newChoice.depth, newChoice.getChoiceOptions());
             throw new Backtrack();
         }
         assert chosen.get() == chosenChoiceOption;
