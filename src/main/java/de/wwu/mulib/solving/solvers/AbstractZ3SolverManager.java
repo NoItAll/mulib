@@ -155,14 +155,10 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             Expr elhs = transformNumericExpr(lhs);
             Expr erhs = transformNumericExpr(rhs);
             BoolExpr result;
-            if (a instanceof Gt) {
-                result = ctx.mkGt((ArithExpr) elhs, (ArithExpr) erhs);
-            } else if (a instanceof Eq) {
+            if (a instanceof Eq) {
                 result = ctx.mkEq(elhs, erhs);
             } else if (a instanceof Lt) {
                 result = ctx.mkLt((ArithExpr) elhs, (ArithExpr) erhs);
-            } else if (a instanceof Gte) {
-                result = ctx.mkGe((ArithExpr) elhs, (ArithExpr) erhs);
             } else if (a instanceof Lte) {
                 result = ctx.mkLe((ArithExpr) elhs, (ArithExpr) erhs);
             } else {

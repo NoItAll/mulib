@@ -241,18 +241,12 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
 
             BiFunction<NumeralFormula, NumeralFormula, BooleanFormula> fpCase;
             BiFunction<NumeralFormula.IntegerFormula, NumeralFormula.IntegerFormula, BooleanFormula> integerCase;
-            if (a instanceof Gt) {
-                fpCase = rationalFormulaManager::greaterThan;
-                integerCase = integerFormulaManager::greaterThan;
-            } else if (a instanceof Eq) {
+            if (a instanceof Eq) {
                 fpCase = rationalFormulaManager::equal;
                 integerCase = integerFormulaManager::equal;
             } else if (a instanceof Lt) {
                 fpCase = rationalFormulaManager::lessThan;
                 integerCase = integerFormulaManager::lessThan;
-            } else if (a instanceof Gte) {
-                fpCase = rationalFormulaManager::greaterOrEquals;
-                integerCase = integerFormulaManager::greaterOrEquals;
             } else if (a instanceof Lte) {
                 fpCase = rationalFormulaManager::lessOrEquals;
                 integerCase = integerFormulaManager::lessOrEquals;
