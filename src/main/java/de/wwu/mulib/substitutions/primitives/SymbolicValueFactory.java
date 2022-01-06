@@ -233,7 +233,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         if (!se.nextIsOnKnownPath()) {
             assert !se.getCurrentChoiceOption().isEvaluated();
             Constraint zeroOneOrMinusOne = Or.newInstance(
-                    And.newInstance(Gt.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.ONE)),
+                    And.newInstance(Lt.newInstance(n1, n0), Eq.newInstance(toRestrict, Sint.ONE)),
                     And.newInstance(Eq.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.ZERO)),
                     And.newInstance(Lt.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.MINUS_ONE))
             );
