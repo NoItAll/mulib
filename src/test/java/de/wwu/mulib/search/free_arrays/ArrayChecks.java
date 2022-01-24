@@ -593,8 +593,6 @@ public class ArrayChecks {
         }, "checkMultipleArrays");
     }
 
-    /// TODO GENERATE_NEW_SYM_AFTER_STORE in tests
-
     public static boolean checkMultipleArrays0() {
         SymbolicExecution se = SymbolicExecution.get();
         for (int i = 0; i < 5; i++) {
