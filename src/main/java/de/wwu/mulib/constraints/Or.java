@@ -9,10 +9,20 @@ public class Or extends AbstractTwoSidedConstraint {
     }
 
     public static Constraint newInstance(Constraint lhs, Constraint rhs) {
-        if (bothConstraintsAreConcrete(lhs, rhs)) {
-            return Sbool.concSbool(((Sbool.ConcSbool) lhs).isTrue() || ((Sbool.ConcSbool) rhs).isTrue());
+        if (lhs instanceof Sbool.ConcSbool) {
+            return evaluateConcrete((Sbool.ConcSbool) lhs, rhs);
+        } else if (rhs instanceof Sbool.ConcSbool) {
+            return evaluateConcrete((Sbool.ConcSbool) rhs, lhs);
         } else {
             return new Or(lhs, rhs);
+        }
+    }
+
+    private static Constraint evaluateConcrete(Sbool.ConcSbool concrete, Constraint nonConcrete) {
+        if (concrete.isTrue()) {
+            return Sbool.TRUE;
+        } else {
+            return nonConcrete;
         }
     }
 

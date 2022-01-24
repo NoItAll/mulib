@@ -207,16 +207,38 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sbool and(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
-        if (lhs instanceof Sbool.ConcSbool && rhs instanceof Sbool.ConcSbool) {
-            return vf.concSbool(((Sbool.ConcSbool) lhs).isTrue() && ((Sbool.ConcSbool) rhs).isTrue());
+        if (lhs instanceof Sbool.ConcSbool) {
+            if (((Sbool.ConcSbool) lhs).isFalse()) {
+                return Sbool.FALSE;
+            } else {
+                return rhs;
+            }
+        }
+        if (rhs instanceof Sbool.ConcSbool) {
+            if (((Sbool.ConcSbool) rhs).isFalse()) {
+                return Sbool.FALSE;
+            } else {
+                return lhs;
+            }
         }
         return vf.wrappingSymSbool(se, and(lhs, rhs));
     }
 
     @Override
     public Sbool or(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
-        if (lhs instanceof Sbool.ConcSbool && rhs instanceof Sbool.ConcSbool) {
-            return vf.concSbool(((Sbool.ConcSbool) lhs).isTrue() || ((Sbool.ConcSbool) rhs).isTrue());
+        if (lhs instanceof Sbool.ConcSbool) {
+            if (((Sbool.ConcSbool) lhs).isTrue()) {
+                return Sbool.TRUE;
+            } else {
+                return rhs;
+            }
+        }
+        if (rhs instanceof Sbool.ConcSbool) {
+            if (((Sbool.ConcSbool) rhs).isTrue()) {
+                return Sbool.TRUE;
+            } else {
+                return lhs;
+            }
         }
         return vf.wrappingSymSbool(se, or(lhs, rhs));
     }
