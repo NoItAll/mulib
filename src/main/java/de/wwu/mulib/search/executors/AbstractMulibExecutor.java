@@ -78,6 +78,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
+    public final boolean checkWithNewConstraint(Constraint c) {
+        return solverManager.checkWithNewConstraint(c);
+    }
+
+    @Override
     public final void addNewConstraint(Constraint c) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
         solverManager.addConstraint(c);
@@ -183,6 +188,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
+    @Override
+    public final boolean isSatisfiable() {
+        return solverManager.isSatisfiable();
+    }
+
     protected abstract Optional<SymbolicExecution> createExecution(
             ChoiceOptionDeque deque,
             ChoicePointFactory choicePointFactory,
@@ -271,5 +281,4 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected Object invokeSearchRegion() throws Throwable {
         return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
     }
-
 }

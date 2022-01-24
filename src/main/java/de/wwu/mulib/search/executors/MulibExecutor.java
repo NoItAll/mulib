@@ -31,7 +31,11 @@ public interface MulibExecutor {
 
     void setTerminated(boolean terminated);
 
+    boolean checkWithNewConstraint(Constraint c);
+
     void addNewConstraint(Constraint c);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
+
+    boolean isSatisfiable();
 }

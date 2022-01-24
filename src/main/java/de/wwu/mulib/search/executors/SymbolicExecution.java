@@ -149,6 +149,7 @@ public final class SymbolicExecution {
     }
 
     public void addNewConstraint(Constraint c) {
+        assert !nextIsOnKnownPath();
         mulibExecutor.addNewConstraint(c);
     }
 
@@ -158,6 +159,14 @@ public final class SymbolicExecution {
 
     public ExecutionBudgetManager getExecutionBudgetManager() {
         return executionBudgetManager;
+    }
+
+    public boolean isSatisfiable() {
+        return mulibExecutor.isSatisfiable();
+    }
+
+    public boolean checkWithNewConstraint(Constraint c) {
+        return mulibExecutor.checkWithNewConstraint(c);
     }
 
     /* SYMBOLIC VARIABLE CREATION */
