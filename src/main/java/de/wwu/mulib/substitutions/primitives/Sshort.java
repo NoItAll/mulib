@@ -1,9 +1,10 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 
 public abstract class Sshort extends Sint {
+    public static final Sshort ZERO = new ConcSshort((short) 0);
+
     private Sshort() {}
 
     public static Sshort concSshort(short s) {
