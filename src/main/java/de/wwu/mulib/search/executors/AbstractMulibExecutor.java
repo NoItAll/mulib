@@ -3,6 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.And;
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibException;
@@ -91,8 +92,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public void addNewConstraintAfterBacktrackingPoint(Constraint c) {
+    public final void addNewConstraintAfterBacktrackingPoint(Constraint c) {
         solverManager.addConstraintAfterNewBacktrackingPoint(c);
+    }
+
+    @Override
+    public final void addNewArrayConstraint(ArrayConstraint ac) {
+        solverManager.addArrayConstraint(ac);
+    }
+
+    @Override
+    public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
+        return solverManager.checkWithNewArrayConstraint(ac);
     }
 
     @Override

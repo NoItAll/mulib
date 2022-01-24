@@ -169,6 +169,88 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewConstraint(c);
     }
 
+    public void addNewArrayConstraint(ArrayConstraint ac) {
+        mulibExecutor.addNewArrayConstraint(ac);
+    }
+
+    public boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
+        return mulibExecutor.checkWithNewArrayConstraint(ac);
+    }
+
+    /* FREE ARRAY OPERATIONS */
+
+    public Sint select(Sarray.SintSarray sarray, Sint index) {
+        return (Sint) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sint store(Sarray.SintSarray sarray, Sint index, Sint value) {
+        return (Sint) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sdouble select(Sarray.SdoubleSarray sarray, Sint index) {
+        return (Sdouble) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sdouble store(Sarray.SdoubleSarray sarray, Sint index, Sdouble value) {
+        return (Sdouble) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sfloat select(Sarray.SfloatSarray sarray, Sint index) {
+        return (Sfloat) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sfloat store(Sarray.SfloatSarray sarray, Sint index, Sfloat value) {
+        return (Sfloat) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Slong select(Sarray.SlongSarray sarray, Sint index) {
+        return (Slong) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Slong store(Sarray.SlongSarray sarray, Sint index, SubstitutedVar value) {
+        return (Slong) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sbyte select(Sarray.SbyteSarray sarray, Sint index) {
+        return (Sbyte) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sbyte store(Sarray.SbyteSarray sarray, Sint index, SubstitutedVar value) {
+        return (Sbyte) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sshort select(Sarray.SshortSarray sarray, Sint index) {
+        return (Sshort) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sshort store(Sarray.SshortSarray sarray, Sint index, SubstitutedVar value) {
+        return (Sshort) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sbool select(Sarray.SboolSarray sarray, Sint index) {
+        return (Sbool) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sbool store(Sarray.SboolSarray sarray, Sint index, Sbool value) {
+        return (Sbool) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public PartnerClass select(Sarray.PartnerClassSarray sarray, Sint index) {
+        return (PartnerClass) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public PartnerClass store(Sarray.PartnerClassSarray sarray, Sint index, PartnerClass value) {
+        return (PartnerClass) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
+    public Sarray select(Sarray.SarraySarray sarray, Sint index) {
+        return (Sarray) calculationFactory.select(this, valueFactory, sarray, index);
+    }
+
+    public Sarray store(Sarray.SarraySarray sarray, Sint index, Sarray value) {
+        return (Sarray) calculationFactory.store(this, valueFactory, sarray, index, value);
+    }
+
     /* SYMBOLIC VARIABLE CREATION */
 
     public Sint namedSymSint(String identifier) {

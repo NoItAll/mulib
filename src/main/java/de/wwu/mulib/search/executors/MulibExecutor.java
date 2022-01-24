@@ -1,5 +1,6 @@
 package de.wwu.mulib.search.executors;
 
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
@@ -34,6 +35,10 @@ public interface MulibExecutor {
     boolean checkWithNewConstraint(Constraint c);
 
     void addNewConstraint(Constraint c);
+
+    void addNewArrayConstraint(ArrayConstraint ac);
+
+    boolean checkWithNewArrayConstraint(ArrayConstraint ac);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 
