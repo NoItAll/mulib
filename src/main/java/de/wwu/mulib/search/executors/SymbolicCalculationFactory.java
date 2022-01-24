@@ -3,11 +3,19 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.*;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 public class SymbolicCalculationFactory implements CalculationFactory {
 
-    SymbolicCalculationFactory(MulibConfig config) {}
+    private final boolean shouldGenerateNewSymbolicAfterStore;
+    private final boolean throwExceptionOnOOB;
+
+    SymbolicCalculationFactory(MulibConfig config) {
+        this.shouldGenerateNewSymbolicAfterStore = config.GENERATE_NEW_SYM_AFTER_STORE;
+        this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
+    }
 
     public static SymbolicCalculationFactory getInstance(MulibConfig config) {
         return new SymbolicCalculationFactory(config);
@@ -487,6 +495,116 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             return vf.concSshort(((ConcSnumber) i).shortVal());
         }
         return vf.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+    }
+
+    @Override
+    public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
+        sarray.checkOnlyConcreteIndicesUsed(index, se);
+        SubstitutedVar result = sarray.checkCache(index);
+        if (result != null) {
+            if (sarray.onlyConcreteIndicesUsed() && index instanceof Sint.ConcSint) {
+                return result;
+            }
+            if (sarray.storeWasUsed()) {
+                // If this flag is not set, we try to use the cached element and verify that it is not stale
+                if (!shouldGenerateNewSymbolicAfterStore) {
+                    // If store was used and we do not return a fresh symbolic value, we might need to add a new select
+                    // constraint to ensure that no stale indices were used which might still be stored as an element
+                    boolean stillValid = se.checkWithNewArrayConstraint(
+                            new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT));
+                    if (stillValid) {
+                        return result;
+                    }
+                }
+                // If the flag was set, or the result is not still valid, we have to generate a new value and add
+                // a respective constraint for the new value.
+                result = sarray.symbolicDefault(se);
+                addSelectConstraintIfNeeded(se, sarray, index, result);
+                return result;
+            } else {
+                // If store was not yet used, we can simply return the cached result
+                return result;
+            }
+        }
+
+        checkIndexAccess(sarray, index, se);
+
+        // Generate new value
+        if (sarray.defaultIsSymbolic()) {
+            result = sarray.symbolicDefault(se);
+        } else {
+            result = sarray.defaultElement(se);
+        }
+
+        addSelectConstraintIfNeeded(se, sarray, index, result);
+
+        sarray.setForIndex(index, result); /// TODO caching?
+
+        return result;
+    }
+
+    @Override
+    public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
+        assert sarray.getClazz().isInstance(value);
+        checkIndexAccess(sarray, index, se);
+        sarray.setStoreWasUsed();
+        sarray.checkOnlyConcreteIndicesUsed(index, se);
+
+        // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
+        if (!sarray.onlyConcreteIndicesUsed()) {
+            if (!se.nextIsOnKnownPath()) {
+                ArrayConstraint storeConstraint =
+                        new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE);
+                se.addNewArrayConstraint(storeConstraint);
+            }
+        }
+
+        sarray.setForIndex(index, value);
+        return value;
+    }
+
+    private void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
+        // We will now add a constraint indicating to the solver that at position i a value can be found that previously
+        // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
+        // is the case if symbolic indices have been used.
+        if (!sarray.onlyConcreteIndicesUsed()) {
+            if (!se.nextIsOnKnownPath()) {
+                ArrayConstraint selectConstraint =
+                        new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT);
+                se.addNewArrayConstraint(selectConstraint);
+            }
+        }
+    }
+
+    private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
+        if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
+            // If either the length or the index are symbolic, there can potentially be an
+            // ArrayIndexOutOfBoundsException.
+            Constraint indexInBound = And.newInstance(
+                    Lt.newInstance(i, sarray.getLength()),
+                    Lte.newInstance(Sint.ZERO, i)
+            );
+            if (throwExceptionOnOOB) {
+                boolean inBounds = se.boolChoice(indexInBound);
+                if (!inBounds) {
+                    throw new ArrayIndexOutOfBoundsException();
+                }
+            } else {
+                // If we do not regard out-of-bound array index-accesses, we simply add a new constraint and proceed.
+                //// TODO It is assumed that, if the index-access is illegal, backtracking will occur once reaching the
+                //  next choice option or once reaching the end of the execution. Find an approach with minimal overhead
+                //  here.
+                if (!se.nextIsOnKnownPath()) {
+                    se.addNewConstraint(indexInBound);
+                }
+            }
+        } else {
+            Sint.ConcSint concLen = (Sint.ConcSint) sarray.getLength();
+            Sint.ConcSint concI = (Sint.ConcSint) i;
+            if (concLen.intVal() <= concI.intVal() || concI.intVal() < 0) {
+                throw new ArrayIndexOutOfBoundsException();
+            }
+        }
     }
 
     private NumericExpression sum(NumericExpression lhs, NumericExpression rhs) {

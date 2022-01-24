@@ -1,6 +1,8 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -128,5 +130,10 @@ public interface CalculationFactory {
     Sbyte i2b(SymbolicExecution se, ValueFactory vf, Sint i);
 
     Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i);
+
+    SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index);
+
+    SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value);
+
 
 }

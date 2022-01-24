@@ -3,7 +3,10 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
@@ -711,6 +714,16 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         ConcolicNumericContainer container =
                 new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
         return Sshort.newExpressionSymbolicSshort(container);
+    }
+
+    @Override
+    public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
+        throw new NotYetImplementedException(); //// TODO
+    }
+
+    @Override
+    public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
+        throw new NotYetImplementedException(); //// TODO
     }
 
     private Slong toSlong(ValueFactory vf, Snumber original, Slong sym) {
