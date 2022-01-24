@@ -1981,7 +1981,7 @@ public class MulibTransformer {
                 throw new NotYetImplementedException();
             }
             throw new NotYetImplementedException();
-        } else if (insn instanceof IincInsnNode) { ///// TODO
+        } else if (insn instanceof IincInsnNode) {
             IincInsnNode iin = (IincInsnNode) insn;
             resultInstrs.add(newConstantAndWrapper(new IntInsnNode(BIPUSH, iin.incr), WR_INT, seIndex));
             resultInstrs.add(new VarInsnNode(ALOAD, iin.var)); // Adaptation of iin.var happened beforehand

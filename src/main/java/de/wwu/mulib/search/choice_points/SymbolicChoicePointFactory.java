@@ -149,7 +149,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     }
 
     @Override
-    public boolean boolChoice(final SymbolicExecution se, final Sbool b) {
+    public boolean boolChoice(final SymbolicExecution se, final Constraint b) {
         return threeCaseDistinctionTemplate(se, b);
     }
     

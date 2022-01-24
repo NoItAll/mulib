@@ -832,7 +832,7 @@ public final class SymbolicExecution {
         return choicePointFactory.lteChoice(this, lhs, rhs);
     }
 
-    public boolean boolChoice(final Sbool b) {
+    public boolean boolChoice(final Constraint b) {
         return choicePointFactory.boolChoice(this, b);
     }
 
