@@ -1,13 +1,14 @@
 package de.wwu.mulib.search.executors;
 
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -38,6 +39,8 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
+
+    private long nextNumberInitializedSarray = 0;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -90,6 +93,8 @@ public final class SymbolicExecution {
     public int getNextNumberInitializedAtomicSymSshorts() {
         return nextNumberInitializedAtomicSymSshorts++;
     }
+
+    public long getNextNumberInitializedSarray() { return nextNumberInitializedSarray++; }
 
     void set() {
         se.set(this);
@@ -295,6 +300,44 @@ public final class SymbolicExecution {
         return result;
     }
 
+    public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sintSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SdoubleSarray namedSdoubleSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SfloatSarray namedSfloatSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SlongSarray namedSlongSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.slongSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SshortSarray namedSshortSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sshortSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SbyteSarray namedSbyteSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sboolSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.PartnerClassSarray namedPartnerClassSarray(
+            String identifier, Sint len, Class<PartnerClass> clazz, boolean defaultIsSymbolic) {
+        return valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
+    }
+
+    public Sarray.SarraySarray namedSarraySarray(
+            String identifier, Sint len, Class<Sarray> clazz, boolean defaultIsSymbolic) {
+        return valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
+    }
+
     public Sshort symSshort() {
         return valueFactory.symSshort(this);
     }
@@ -350,6 +393,44 @@ public final class SymbolicExecution {
     public Sbool concSbool(boolean b) {
         return valueFactory.concSbool(b);
     }
+
+    public Sarray.SintSarray sintSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sintSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SdoubleSarray sdoubleSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SfloatSarray sfloatSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SlongSarray slongSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.slongSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SshortSarray sshortSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sshortSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SbyteSarray sbyteSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.SboolSarray sboolSarray(Sint len, boolean defaultIsSymbolic) {
+        return valueFactory.sboolSarray(this, len, defaultIsSymbolic);
+    }
+
+    public Sarray.PartnerClassSarray partnerClassSarray(Sint len, Class<PartnerClass> clazz, boolean defaultIsSymbolic) {
+        return valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
+    }
+
+    public Sarray.SarraySarray sarraySarray(Sint len, Class<Sarray> clazz, boolean defaultIsSymbolic) {
+        return valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
+    }
+
+    @SuppressWarnings("unchecked")
 
     /* CONCRETIZE */
 

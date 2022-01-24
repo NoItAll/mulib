@@ -4,6 +4,8 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 
 public interface ValueFactory {
 
@@ -14,6 +16,24 @@ public interface ValueFactory {
             return SymbolicValueFactory.getInstance(config);
         }
     }
+
+    Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
+    Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<PartnerClass> clazz, boolean freeElements);
+
+    Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<Sarray> clazz, boolean freeElements);
 
     Sint symSint(SymbolicExecution se);
 
