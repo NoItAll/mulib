@@ -42,7 +42,7 @@ public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
 
     @Override
     public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
-        throw new NotYetImplementedException(); //// TODO
+        throw new NotYetImplementedException(); // TODO
     }
 
     @Override

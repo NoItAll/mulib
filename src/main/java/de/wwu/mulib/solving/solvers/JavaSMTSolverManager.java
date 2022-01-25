@@ -503,7 +503,6 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
-        private long arrayNumber = 0; /// TODO Keep this arrayNumber?
         private ArrayFormula newArrayExprFromValue(long arrayId, SubstitutedVar value) {
             FormulaType arraySort;
             if (value instanceof Sprimitive) {
@@ -519,12 +518,16 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             } else {
                 throw new NotYetImplementedException();
             }
-            return arrayFormulaManager.makeArray(
-                    // In the mutable case, multiple array expressions might represent the array
-                    arrayId + "_" + arrayNumber++,
-                    FormulaType.IntegerType,
-                    arraySort
-            );
+            try {
+                return arrayFormulaManager.makeArray(
+                        // In the mutable case, multiple array expressions might represent the array
+                        "Sarray" + arrayId,
+                        FormulaType.IntegerType,
+                        arraySort
+                );
+            } catch (Throwable t) {
+                throw new MulibRuntimeException(t);
+            }
         }
 
         public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, SubstitutedVar value) {

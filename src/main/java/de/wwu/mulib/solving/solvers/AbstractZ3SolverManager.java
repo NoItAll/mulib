@@ -130,7 +130,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         // it can also be Expr --> BoolExpr, where Expr is the 0,1-encoding-integer.
         private final Map<Object, BoolExpr> boolExprStore = new WeakHashMap<>();
         private final boolean treatSboolsAsInts;
-        
+
         Z3MulibAdapter(MulibConfig config, Context ctx) {
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
             this.ctx = ctx;
@@ -366,7 +366,6 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
-        private long arrayNumber = 0; /// TODO Keep this arrayNumber?
         public ArrayExpr newArrayExprFromValue(long arrayId, SubstitutedVar value) {
             Sort arraySort;
             if (value instanceof Sprimitive) {
@@ -382,13 +381,17 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             } else {
                 throw new NotYetImplementedException();
             }
-            return ctx.mkArrayConst(
-                    // In the mutable case, multiple array expressions might represent the array
-                    arrayId + "_" + arrayNumber++,
-                    // The array is accessed via an int
-                    ctx.mkIntSort(),
-                    arraySort
-            );
+            try {
+                return ctx.mkArrayConst(
+                        // In the mutable case, multiple array expressions might represent the array
+                        "Sarray" + arrayId,
+                        // The array is accessed via an int
+                        ctx.mkIntSort(),
+                        arraySort
+                );
+            } catch (Throwable t) {
+                throw new MulibRuntimeException(t);
+            }
         }
 
         public ArrayExpr newArrayExprFromStore(ArrayExpr oldRepresentation, Sint index, SubstitutedVar value) {

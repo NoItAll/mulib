@@ -168,6 +168,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 try {
                     assert solverManager.isSatisfiable();
                     Object solutionValue = invokeSearchRegion();
+                    if (!solverManager.isSatisfiable()) {
+                        throw new Fail();
+                    }
                     PathSolution solution;
                     try {
                         solution = generateSolution(solutionValue, symbolicExecution, false);

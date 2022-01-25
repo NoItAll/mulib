@@ -323,6 +323,15 @@ public class ArrayChecks {
             assertEquals(2, result.size());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
 
+            result = TestUtility.executeMulib(
+                    "checkSymSelect3",
+                    ArrayChecks.class,
+                    1,
+                    mb,
+                    false
+            );
+            assertEquals(0, result.size());
+
             mb.setTHROW_EXCEPTION_ON_OOB(true);
             result = TestUtility.executeMulib(
                     "checkSymSelect0",
@@ -356,6 +365,16 @@ public class ArrayChecks {
             assertEquals(4, result.size());
             assertEquals(2, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
             assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
+
+            result = TestUtility.executeMulib(
+                    "checkSymSelect3",
+                    ArrayChecks.class,
+                    1,
+                    mb,
+                    false
+            );
+            assertEquals(1, result.size());
+            assertEquals(1, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
             return result;
         }, "checkSymArraySelect");
     }
@@ -424,6 +443,18 @@ public class ArrayChecks {
                 throw new MulibRuntimeException("Must not occur");
             }
         }
+
+        return se.concSbool(true);
+    }
+
+    public static Sbool checkSymSelect3() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
+        if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+            throw Mulib.fail();
+        }
+
+        se.select(objs, se.concSint(2)); // Must fail
 
         return se.concSbool(true);
     }

@@ -591,7 +591,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                 }
             } else {
                 // If we do not regard out-of-bound array index-accesses, we simply add a new constraint and proceed.
-                //// TODO It is assumed that, if the index-access is illegal, backtracking will occur once reaching the
                 //  next choice option or once reaching the end of the execution. Find an approach with minimal overhead
                 //  here.
                 if (!se.nextIsOnKnownPath()) {

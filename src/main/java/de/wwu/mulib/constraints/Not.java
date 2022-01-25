@@ -6,7 +6,7 @@ public class Not implements Constraint {
 
     private final Constraint constraint;
 
-    public Not(Constraint constraint) {
+    private Not(Constraint constraint) {
         assert !(constraint instanceof Sbool.ConcSbool);
         assert !(constraint instanceof ConcolicConstraintContainer);
         if (constraint instanceof Sbool.SymSbool) {
@@ -17,7 +17,10 @@ public class Not implements Constraint {
 
     public static Constraint newInstance(Constraint constraint) {
         if (constraint instanceof Sbool.ConcSbool) {
-            return Sbool.concSbool(!((Sbool.ConcSbool) constraint).isTrue());
+            return Sbool.concSbool(((Sbool.ConcSbool) constraint).isFalse());
+        }
+        if (constraint instanceof Sbool.SymSbool) {
+            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         }
         if (constraint instanceof Not) {
             return ((Not) constraint).getConstraint();
