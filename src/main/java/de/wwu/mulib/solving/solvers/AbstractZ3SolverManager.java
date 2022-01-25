@@ -25,7 +25,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         synchronized (syncObject) {
             Context context = new Context();
             solver = context.mkSolver();
-            adapter = new Z3MulibAdapter(incrementalSolverState, config, context);
+            adapter = new Z3MulibAdapter(config, context);
         }
     }
 
@@ -130,13 +130,10 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         // it can also be Expr --> BoolExpr, where Expr is the 0,1-encoding-integer.
         private final Map<Object, BoolExpr> boolExprStore = new WeakHashMap<>();
         private final boolean treatSboolsAsInts;
-
-        protected final IncrementalSolverState<ArrayExpr> incrementalSolverState;
-
-        Z3MulibAdapter(IncrementalSolverState<ArrayExpr> incrementalSolverState, MulibConfig config, Context ctx) {
+        
+        Z3MulibAdapter(MulibConfig config, Context ctx) {
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
             this.ctx = ctx;
-            this.incrementalSolverState = incrementalSolverState;
         }
 
         Expr getExprForNumericExpression(NumericExpression ne) {

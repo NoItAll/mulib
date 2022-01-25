@@ -68,7 +68,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         shutdown.getNotifier(),
                         chosenSolver
                 );
-                this.adapter = new JavaSMTMulibAdapter(incrementalSolverState, mulibConfig, context);
+                this.adapter = new JavaSMTMulibAdapter(mulibConfig, context);
                 this.solver = context.newProverEnvironment(SolverContext.ProverOptions.GENERATE_MODELS);
             } catch (InvalidConfigurationException e) {
                 throw new MulibRuntimeException(e);
@@ -238,16 +238,14 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         private final RationalFormulaManager rationalFormulaManager;
         private final ArrayFormulaManager arrayFormulaManager;
         private final boolean treatSboolsAsInts;
-        private final IncrementalSolverState<ArrayFormula> incrementalSolverState;
 
-        JavaSMTMulibAdapter(IncrementalSolverState incrementalSolverState, MulibConfig config, SolverContext context) {
+        JavaSMTMulibAdapter(MulibConfig config, SolverContext context) {
             FormulaManager formulaManager = context.getFormulaManager();
             booleanFormulaManager = formulaManager.getBooleanFormulaManager();
             integerFormulaManager = formulaManager.getIntegerFormulaManager();
             rationalFormulaManager = formulaManager.getRationalFormulaManager();
             arrayFormulaManager = formulaManager.getArrayFormulaManager();
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
-            this.incrementalSolverState = incrementalSolverState;
         }
 
         Formula getFormulaForNumericExpression(NumericExpression numericExpression) {
