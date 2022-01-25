@@ -182,6 +182,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
         for (Choice.ChoiceOption co : getPathBetween) {
             solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
+            addExistingArrayConstraints(co.getArrayConstraints());
             addedAfterBacktrackingPoint++;
         }
         currentChoiceOption = optionToBeEvaluated.getParent();

@@ -403,6 +403,7 @@ public class ArrayChecks {
         }
 
         Sint temp2 = objs.select(Sint.concSint(0), se);
+        // One of both must be equal to temp2, since the array only has size 2 and temp0 != temp1
         if (temp0.notEqChoice(temp2, se) && temp1.notEqChoice(temp2, se)) {
             throw new MulibRuntimeException("Must not occur");
         }

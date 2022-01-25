@@ -3,11 +3,15 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.Expr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
 
 import java.util.ArrayDeque;
 
+@Deprecated
+/** Currently not further maintained */
 public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
     protected ArrayDeque<Expr> expressions;
 
@@ -34,6 +38,11 @@ public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
     @Override
     protected void solverSpecificBacktrackingPoint() {
         // Nothing to do here
+    }
+
+    @Override
+    public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
+        throw new NotYetImplementedException(); //// TODO
     }
 
     @Override

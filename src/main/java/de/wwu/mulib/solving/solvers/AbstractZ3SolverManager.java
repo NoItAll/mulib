@@ -6,6 +6,7 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.math.BigInteger;
@@ -13,7 +14,7 @@ import java.util.Map;
 import java.util.WeakHashMap;
 import java.util.function.Supplier;
 
-public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model> {
+public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, ArrayExpr> {
 
     private static final Object syncObject = new Object();
     protected final Solver solver;
@@ -24,7 +25,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         synchronized (syncObject) {
             Context context = new Context();
             solver = context.mkSolver();
-            adapter = new Z3MulibAdapter(config, context);
+            adapter = new Z3MulibAdapter(incrementalSolverState, config, context);
         }
     }
 
@@ -35,6 +36,32 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         } catch (Exception e) {
             throw new MulibRuntimeException(e);
         }
+    }
+
+    @Override
+    protected final ArrayExpr createCompletelyNewArrayRepresentation(ArrayConstraint ac) {
+        return adapter.newArrayExprFromValue(ac.getArrayId(), ac.getValue());
+    }
+
+    @Override
+    protected final ArrayExpr createNewArrayRepresentationForStore(ArrayConstraint ac, ArrayExpr oldRepresentation) {
+        assert ac.getType() == ArrayConstraint.Type.STORE;
+        // We do not need to add anything to the constraint store. This constraint will "be made true" via array-nesting.
+        return adapter.newArrayExprFromStore(
+                oldRepresentation,
+                ac.getIndex(),
+                ac.getValue()
+        );
+    }
+
+    @Override
+    protected final void addArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
+        BoolExpr selectConstraint = newArraySelectConstraint(arrayRepresentation, index, value);
+        solver.add(selectConstraint);
+    }
+
+    protected BoolExpr newArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
+        return adapter.transformSelectConstraint(arrayRepresentation, index, value);
     }
 
     @Override
@@ -104,9 +131,12 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         private final Map<Object, BoolExpr> boolExprStore = new WeakHashMap<>();
         private final boolean treatSboolsAsInts;
 
-        Z3MulibAdapter(MulibConfig config, Context ctx) {
+        protected final IncrementalSolverState<ArrayExpr> incrementalSolverState;
+
+        Z3MulibAdapter(IncrementalSolverState<ArrayExpr> incrementalSolverState, MulibConfig config, Context ctx) {
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
             this.ctx = ctx;
+            this.incrementalSolverState = incrementalSolverState;
         }
 
         Expr getExprForNumericExpression(NumericExpression ne) {
@@ -135,6 +165,16 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             }
             boolExprStore.put(c, result);
             return result;
+        }
+
+        private Expr transformSubstitutedVar(SubstitutedVar sv) {
+            if (sv instanceof Sbool) {
+                return transformSbool((Sbool) sv);
+            } else if (sv instanceof Snumber) {
+                return transformSnumber((Snumber) sv);
+            } else {
+                throw new NotYetImplementedException();
+            }
         }
 
         private BoolExpr transformAbstractTwoSidedConstraint(AbstractTwoSidedConstraint c) {
@@ -198,29 +238,34 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 }
             }
             else if (n instanceof Snumber) {
-                result = numericExpressionsStore.get(n);
-                if (result != null) {
-                    return result;
-                }
-                if (n instanceof Sint) {
-                    result = transformSintegerNumber((Sint) n);
-                } else if (n instanceof Sfpnumber) {
-                    result = transformSfpnumber((Sfpnumber) n);
-                } else if (n instanceof Slong) {
-                    result = _transformSnumber(
-                            (Slong) n,
-                            () -> n instanceof Slong.ConcSlong,
-                            () -> n instanceof Slong.SymSlong,
-                            () -> ctx.mkInt(((Slong.ConcSlong) n).longVal()),
-                            () -> ctx.mkIntConst(((Slong) n).getInternalName())
-                    );
-                } else {
-                    throw new NotYetImplementedException();
-                }
-                numericExpressionsStore.put(n, result);
+                result = transformSnumber((Snumber) n);
             } else {
                 throw new NotYetImplementedException();
             }
+            return result;
+        }
+
+        private Expr transformSnumber(Snumber n) {
+            Expr result = numericExpressionsStore.get(n);
+            if (result != null) {
+                return result;
+            }
+            if (n instanceof Sint) {
+                result = transformSintegerNumber((Sint) n);
+            } else if (n instanceof Sfpnumber) {
+                result = transformSfpnumber((Sfpnumber) n);
+            } else if (n instanceof Slong) {
+                result = _transformSnumber(
+                        n,
+                        () -> n instanceof Slong.ConcSlong,
+                        () -> n instanceof Slong.SymSlong,
+                        () -> ctx.mkInt(((Slong.ConcSlong) n).longVal()),
+                        () -> ctx.mkIntConst((n).getInternalName())
+                );
+            } else {
+                throw new NotYetImplementedException();
+            }
+            numericExpressionsStore.put(n, result);
             return result;
         }
 
@@ -322,6 +367,42 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             }
             boolExprStore.put(b, result);
             return result;
+        }
+
+        private long arrayNumber = 0; /// TODO Keep this arrayNumber?
+        public ArrayExpr newArrayExprFromValue(long arrayId, SubstitutedVar value) {
+            Sort arraySort;
+            if (value instanceof Sprimitive) {
+                if (value instanceof Sbool) {
+                    arraySort = ctx.mkBoolSort();
+                } else if (value instanceof Sint || value instanceof Slong) {
+                    arraySort = ctx.mkIntSort();
+                } else if (value instanceof Sfpnumber) {
+                    arraySort = ctx.mkRealSort();
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else {
+                throw new NotYetImplementedException();
+            }
+            return ctx.mkArrayConst(
+                    // In the mutable case, multiple array expressions might represent the array
+                    arrayId + "_" + arrayNumber++,
+                    // The array is accessed via an int
+                    ctx.mkIntSort(),
+                    arraySort
+            );
+        }
+
+        public ArrayExpr newArrayExprFromStore(ArrayExpr oldRepresentation, Sint index, SubstitutedVar value) {
+            Expr val = transformSubstitutedVar(value);
+            Expr i = transformSintegerNumber(index);
+            return ctx.mkStore(oldRepresentation, i, val);
+        }
+
+        public BoolExpr transformSelectConstraint(ArrayExpr arrayExpr, Sint index, SubstitutedVar value) {
+            Expr selectExpr = ctx.mkSelect(arrayExpr, transformSintegerNumber(index));
+            return ctx.mkEq(selectExpr, transformSubstitutedVar(value));
         }
     }
 }

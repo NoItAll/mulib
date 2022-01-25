@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.solvers;
 
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
@@ -11,6 +12,12 @@ public interface SolverManager {
     void addConstraint(Constraint constraint);
 
     void addConstraintAfterNewBacktrackingPoint(Constraint constraint);
+
+    void addArrayConstraint(ArrayConstraint ac);
+
+    void addArrayConstraints(List<ArrayConstraint> acs);
+
+    boolean checkWithNewArraySelectConstraint(ArrayConstraint ac);
 
     boolean checkWithNewConstraint(Constraint c);
 
@@ -25,6 +32,8 @@ public interface SolverManager {
     Object getLabel(Sprimitive var);
 
     ArrayDeque<Constraint> getConstraints();
+
+    List<ArrayConstraint> getArrayConstraints();
 
     int getLevel();
 }

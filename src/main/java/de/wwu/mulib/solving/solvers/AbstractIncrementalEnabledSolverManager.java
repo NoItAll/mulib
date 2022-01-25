@@ -1,40 +1,45 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
+import java.util.List;
 
-public abstract class AbstractIncrementalEnabledSolverManager<M> implements SolverManager {
-    // Each constraint represents one "scope" of a constraint here. That means tha a pop in a managed constraint solver
-    // corresponds to a pop here.
-    protected final ArrayDeque<Constraint> constraints = new ArrayDeque<>();
+/**
+ *
+ * @param <M> Class representing a Model from which value assignments can be derived
+ * @param <AR> Class representing an array
+ */
+public abstract class AbstractIncrementalEnabledSolverManager<M, AR> implements SolverManager {
+    protected final IncrementalSolverState<AR> incrementalSolverState;
 
     protected M currentModel;
-    private int level = 0;
     private boolean isSatisfiable;
     private boolean satisfiabilityWasCalculated;
     protected final MulibConfig config;
 
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
-    }
-
-    protected abstract M calculateCurrentModel();
-
-    protected abstract void addSolverConstraintRepresentation(Constraint constraint);
-
-    protected abstract boolean calculateIsSatisfiable();
-
-    @Override
-    public ArrayDeque<Constraint> getConstraints() {
-        return new ArrayDeque<>(constraints); // Wrap and return
+        this.incrementalSolverState = IncrementalSolverState.newInstance(config);
     }
 
     @Override
-    public boolean isSatisfiable() {
-        assert level != 0: "The initial dummy choice should always be present";
+    public final ArrayDeque<Constraint> getConstraints() {
+        return new ArrayDeque<>(incrementalSolverState.getConstraints()); // Wrap and return
+    }
+
+    @Override
+    public final List<ArrayConstraint> getArrayConstraints() {
+        return incrementalSolverState.getArrayConstraints();
+    }
+
+    @Override
+    public final boolean isSatisfiable() {
+        assert incrementalSolverState.getLevel() != 0: "The initial choice should always be present";
         if (!satisfiabilityWasCalculated) {
             isSatisfiable = calculateIsSatisfiable();
             satisfiabilityWasCalculated = true;
@@ -42,7 +47,35 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
         return isSatisfiable;
     }
 
-    protected abstract void solverSpecificBacktrackingPoint();
+    @Override
+    public final void addArrayConstraints(List<ArrayConstraint> acs) {
+        for (ArrayConstraint ac : acs) {
+            addArrayConstraint(ac);
+        }
+    }
+
+    // Treatment of free arrays is inspired by that of Muli, yet modified. E.g., the ArrayConstraint is not a subtype of Constraint in Mulib:
+    // https://github.com/wwu-pi/muggl/blob/53a2874cba2b193ec99d2aea8a454a88481656c7/muggl-solver-z3/src/main/java/de/wwu/muggl/solvers/z3/Z3MugglAdapter.java
+    @Override
+    public final void addArrayConstraint(ArrayConstraint ac) {
+        incrementalSolverState.addArrayConstraintAtLevel(ac);
+        AR arrayRepresentation = incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+        if (ac.getType() == ArrayConstraint.Type.SELECT) {
+            if (arrayRepresentation == null) {
+                arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
+                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            }
+            addArraySelectConstraint(arrayRepresentation, ac.getIndex(), ac.getValue());
+        } else {
+            if (arrayRepresentation == null) {
+                arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
+            } else {
+                arrayRepresentation = createNewArrayRepresentationForStore(ac, arrayRepresentation);
+            }
+            incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+        }
+        assert calculateIsSatisfiable();
+    }
 
     protected final M getCurrentModel() {
         if (currentModel == null) {
@@ -52,35 +85,26 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
     }
 
     @Override
-    public void addConstraint(Constraint c) {
+    public final void addConstraint(Constraint c) {
         addSolverConstraintRepresentation(c);
-        // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
-        // representation of the current constraint scope
-        Constraint previousTop = constraints.pollFirst();
-        constraints.push(And.newInstance(previousTop, c));
+        incrementalSolverState.addConstraint(c);
         satisfiabilityWasCalculated = false;
         currentModel = null;
     }
 
     @Override
-    public void addConstraintAfterNewBacktrackingPoint(Constraint c) {
+    public final void addConstraintAfterNewBacktrackingPoint(Constraint c) {
         solverSpecificBacktrackingPoint();
-        level++;
         addSolverConstraintRepresentation(c);
-        constraints.push(c);
+        incrementalSolverState.pushConstraint(c);
         satisfiabilityWasCalculated = false;
         currentModel = null;
     }
-
-    protected abstract void solverSpecificBacktrackOnce();
-
-    protected abstract void solverSpecificBacktrack(int toBacktrack);
 
     @Override
     public final void backtrackOnce() {
         solverSpecificBacktrackOnce();
-        constraints.pop();
-        level--;
+        incrementalSolverState.popConstraint();
         satisfiabilityWasCalculated = false;
         currentModel = null;
     }
@@ -89,9 +113,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
     public final void backtrack(int numberOfChoiceOptions) {
         solverSpecificBacktrack(numberOfChoiceOptions);
         for (int i = 0; i < numberOfChoiceOptions; i++) {
-            constraints.pop();
+            incrementalSolverState.popConstraint();
         }
-        level -= numberOfChoiceOptions;
         satisfiabilityWasCalculated = false;
 
         currentModel = null;
@@ -99,10 +122,29 @@ public abstract class AbstractIncrementalEnabledSolverManager<M> implements Solv
 
     @Override
     public final void backtrackAll() {
-        backtrack(level);
+        backtrack(incrementalSolverState.getLevel());
     }
 
+    @Override
     public final int getLevel() {
-        return level;
+        return incrementalSolverState.getLevel();
     }
+
+    protected abstract M calculateCurrentModel();
+
+    protected abstract void addSolverConstraintRepresentation(Constraint constraint);
+
+    protected abstract boolean calculateIsSatisfiable();
+
+    protected abstract AR createCompletelyNewArrayRepresentation(ArrayConstraint ac);
+
+    protected abstract AR createNewArrayRepresentationForStore(ArrayConstraint ac, AR oldRepresentation);
+
+    protected abstract void addArraySelectConstraint(AR arrayRepresentation, Sint index, SubstitutedVar value);
+
+    protected abstract void solverSpecificBacktrackingPoint();
+
+    protected abstract void solverSpecificBacktrackOnce();
+
+    protected abstract void solverSpecificBacktrack(int toBacktrack);
 }

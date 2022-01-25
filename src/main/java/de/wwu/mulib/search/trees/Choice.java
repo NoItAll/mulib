@@ -1,5 +1,6 @@
 package de.wwu.mulib.search.trees;
 
+import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.IllegalTreeAccessException;
 import de.wwu.mulib.exceptions.IllegalTreeModificationException;
@@ -7,7 +8,9 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 import de.wwu.mulib.solving.Labels;
 
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 public final class Choice extends TreeNode {
@@ -65,6 +68,9 @@ public final class Choice extends TreeNode {
         public final int choiceOptionNumber;
         // This constraint must be fulfilled to further evaluate the ChoiceOption
         private Constraint optionConstraint;
+        // Separate ArrayConstraints. These are added after the fact.
+        private List<ArrayConstraint> arrayConstraints = Collections.EMPTY_LIST;
+
         // The possible child of this ChoiceOption is set after evaluating the option.
         private TreeNode child = null;
 
@@ -95,12 +101,31 @@ public final class Choice extends TreeNode {
             return optionConstraint;
         }
 
+        public List<ArrayConstraint> getArrayConstraints() {
+            return arrayConstraints;
+        }
+
+        private boolean isIllegalConstraintModification() {
+            return child != null || isEvaluated();
+        }
+
         public void setOptionConstraint(Constraint optionConstraint) {
-            if (child != null || state == EVALUATED) {
+            if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
                         " evaluated cannot be changed");
             }
             this.optionConstraint = optionConstraint;
+        }
+
+        public void addArrayConstraint(ArrayConstraint arrayConstraint) {
+            if (isIllegalConstraintModification()) {
+                throw new IllegalTreeModificationException("The array constraint must not be added to already evaluated" +
+                        " choice options");
+            }
+            if (arrayConstraints == Collections.EMPTY_LIST) {
+                arrayConstraints = new ArrayList<>();
+            }
+            arrayConstraints.add(arrayConstraint);
         }
 
         public TreeNode getChild() {
@@ -127,14 +152,14 @@ public final class Choice extends TreeNode {
             return result;
         }
 
-        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints) {
+        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints, List<ArrayConstraint> arrayConstraints) {
             _checkChildIsUnset();
-            return new PathSolution(this, value, l, constraints);
+            return new PathSolution(this, value, l, constraints, arrayConstraints);
         }
 
-        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints) {
+        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints, List<ArrayConstraint> arrayConstraints) {
             _checkChildIsUnset();
-            return new ExceptionPathSolution(this, throwable, labels, constraints);
+            return new ExceptionPathSolution(this, throwable, labels, constraints, arrayConstraints);
         }
 
         public ExceededBudget setBudgetExceeded(Budget budget) {

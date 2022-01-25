@@ -6,6 +6,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.solving.Solvers;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import org.sosy_lab.common.ShutdownManager;
 import org.sosy_lab.common.configuration.Configuration;
@@ -22,7 +23,7 @@ import java.util.WeakHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model> {
+public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, ArrayFormula> {
 
     private static final Object syncObject = new Object();
     private final ProverEnvironment solver;
@@ -67,7 +68,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         shutdown.getNotifier(),
                         chosenSolver
                 );
-                this.adapter = new JavaSMTMulibAdapter(mulibConfig, context);
+                this.adapter = new JavaSMTMulibAdapter(incrementalSolverState, mulibConfig, context);
                 this.solver = context.newProverEnvironment(SolverContext.ProverOptions.GENERATE_MODELS);
             } catch (InvalidConfigurationException e) {
                 throw new MulibRuntimeException(e);
@@ -95,6 +96,36 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     @Override
+    protected ArrayFormula createCompletelyNewArrayRepresentation(ArrayConstraint ac) {
+        return adapter.newArrayExprFromValue(ac.getArrayId(), ac.getValue());
+    }
+
+    @Override
+    protected ArrayFormula createNewArrayRepresentationForStore(ArrayConstraint ac, ArrayFormula oldRepresentation) {
+        assert ac.getType() == ArrayConstraint.Type.STORE;
+        // We do not need to add anything to the constraint store. This constraint will "be made true" via array-nesting.
+        return adapter.newArrayExprFromStore(
+                oldRepresentation,
+                ac.getIndex(),
+                ac.getValue()
+        );
+    }
+
+    @Override
+    protected void addArraySelectConstraint(ArrayFormula arrayRepresentation, Sint index, SubstitutedVar value) {
+        BooleanFormula selectConstraint = newArraySelectConstraint(arrayRepresentation, index, value);
+        try {
+            solver.addConstraint(selectConstraint);
+        } catch (InterruptedException e) {
+            throw new MulibRuntimeException(e);
+        }
+    }
+
+    private BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, SubstitutedVar value) {
+        return adapter.transformSelectConstraint(arrayFormula, index, value);
+    }
+
+    @Override
     protected void solverSpecificBacktrackOnce() {
         solverSpecificBacktrack(1);
     }
@@ -109,6 +140,23 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     @Override
     protected void solverSpecificBacktrackingPoint() {
         solver.push();
+    }
+
+    @Override
+    public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
+        BooleanFormula f = newArraySelectConstraint(
+                incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()),
+                ac.getIndex(),
+                ac.getValue()
+        );
+
+        boolean result;
+        try {
+            result = !solver.isUnsatWithAssumptions(Collections.singleton(f));
+        } catch (SolverException | InterruptedException e) {
+            throw new MulibRuntimeException(e);
+        }
+        return result;
     }
 
     @Override
@@ -188,14 +236,18 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         private final BooleanFormulaManager booleanFormulaManager;
         private final IntegerFormulaManager integerFormulaManager;
         private final RationalFormulaManager rationalFormulaManager;
+        private final ArrayFormulaManager arrayFormulaManager;
         private final boolean treatSboolsAsInts;
+        private final IncrementalSolverState<ArrayFormula> incrementalSolverState;
 
-        JavaSMTMulibAdapter(MulibConfig config, SolverContext context) {
+        JavaSMTMulibAdapter(IncrementalSolverState incrementalSolverState, MulibConfig config, SolverContext context) {
             FormulaManager formulaManager = context.getFormulaManager();
             booleanFormulaManager = formulaManager.getBooleanFormulaManager();
             integerFormulaManager = formulaManager.getIntegerFormulaManager();
             rationalFormulaManager = formulaManager.getRationalFormulaManager();
+            arrayFormulaManager = formulaManager.getArrayFormulaManager();
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
+            this.incrementalSolverState = incrementalSolverState;
         }
 
         Formula getFormulaForNumericExpression(NumericExpression numericExpression) {
@@ -204,6 +256,40 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
 
         BooleanFormula getBooleanFormulaForConstraint(Constraint c) {
             return booleanFormulaStore.get(c);
+        }
+
+        private Formula transformSubstitutedVar(SubstitutedVar sv) {
+            if (sv instanceof Sbool) {
+                return transformSbool((Sbool) sv);
+            } else if (sv instanceof Snumber) {
+                return transformSnumber((Snumber) sv);
+            } else {
+                throw new NotYetImplementedException();
+            }
+        }
+
+        private NumeralFormula transformSnumber(Snumber n) {
+            NumeralFormula result = numericExpressionStore.get(n);
+            if (result != null) {
+                return result;
+            }
+            if (n instanceof Sint) {
+                result = transformSintegerNumber((Sint) n);
+            } else if (n instanceof Sfpnumber) {
+                result = transformSfpnumber((Sfpnumber) n);
+            } else if (n instanceof Slong) {
+                result = _transformSnumber(
+                        n,
+                        () -> n instanceof Slong.ConcSlong,
+                        () -> n instanceof Slong.SymSlong,
+                        () -> integerFormulaManager.makeNumber(((Slong.ConcSlong) n).longVal()),
+                        () -> integerFormulaManager.makeVariable((n).getInternalName())
+                );
+            } else {
+                throw new NotYetImplementedException();
+            }
+            numericExpressionStore.put(n, result);
+            return result;
         }
 
         BooleanFormula transformConstraint(Constraint c) {
@@ -301,21 +387,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                     throw new NotYetImplementedException();
                 }
             } else {
-                if (n instanceof Sint) {
-                    result = transformSintegerNumber((Sint) n);
-                } else if (n instanceof Sfpnumber) {
-                    result = transformSfpnumber((Sfpnumber) n);
-                } else if (n instanceof Slong) {
-                    result = _transformSnumber(
-                            (Slong) n,
-                            () -> n instanceof Slong.ConcSlong,
-                            () -> n instanceof Slong.SymSlong,
-                            () -> integerFormulaManager.makeNumber(((Slong.ConcSlong) n).longVal()),
-                            () -> integerFormulaManager.makeVariable(((Slong.SymSlong) n).getInternalName())
-                    );
-                } else {
-                    throw new NotYetImplementedException();
-                }
+                result = transformSnumber((Snumber) n);
             }
 
             return result;
@@ -430,6 +502,54 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 throw new NotYetImplementedException();
             }
             booleanFormulaStore.put(b, result);
+            return result;
+        }
+
+        private long arrayNumber = 0; /// TODO Keep this arrayNumber?
+        private ArrayFormula newArrayExprFromValue(long arrayId, SubstitutedVar value) {
+            FormulaType arraySort;
+            if (value instanceof Sprimitive) {
+                if (value instanceof Sbool) {
+                    arraySort = FormulaType.BooleanType;
+                } else if (value instanceof Sint || value instanceof Slong) {
+                    arraySort = FormulaType.IntegerType;
+                } else if (value instanceof Sfpnumber) {
+                    arraySort = FormulaType.RationalType;
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else {
+                throw new NotYetImplementedException();
+            }
+            return arrayFormulaManager.makeArray(
+                    // In the mutable case, multiple array expressions might represent the array
+                    arrayId + "_" + arrayNumber++,
+                    FormulaType.IntegerType,
+                    arraySort
+            );
+        }
+
+        public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, SubstitutedVar value) {
+            Formula f = transformSubstitutedVar(value);
+            Formula i = transformSintegerNumber(index);
+            return arrayFormulaManager.store(oldRepresentation, i, f);
+        }
+
+        public BooleanFormula transformSelectConstraint(ArrayFormula array, Sint index, SubstitutedVar var) {
+            Formula selectExpr = arrayFormulaManager.select(array, transformSintegerNumber(index));
+            Formula value = transformSubstitutedVar(var);
+            BooleanFormula result;
+            if (var instanceof Sbool) {
+                result = booleanFormulaManager.equivalence((BooleanFormula) selectExpr, (BooleanFormula) value);
+            } else if (var instanceof Sint) {
+                result = integerFormulaManager.equal(
+                        (NumeralFormula.IntegerFormula) selectExpr, (NumeralFormula.IntegerFormula) value);
+            } else if (var instanceof Sfpnumber) {
+                result = rationalFormulaManager.equal(
+                        (NumeralFormula.RationalFormula) selectExpr, (NumeralFormula.RationalFormula) value);
+            } else {
+                throw new NotYetImplementedException();
+            }
             return result;
         }
     }

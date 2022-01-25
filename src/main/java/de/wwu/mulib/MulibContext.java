@@ -262,6 +262,7 @@ public class MulibContext {
         constraintList.add(Sbool.TRUE);
         constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
         solverManager.addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
+        solverManager.addArrayConstraints(pathSolution.getArrayConstraints());
         List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
         while (solverManager.isSatisfiable() && solutions.size() < N) {
             Solution latestSolution = pathSolution.getLatestSolution();

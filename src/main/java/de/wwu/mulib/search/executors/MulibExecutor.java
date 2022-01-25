@@ -12,6 +12,8 @@ import java.util.Optional;
 
 public interface MulibExecutor {
 
+    void addExistingArrayConstraints(List<ArrayConstraint> acs);
+
     Optional<PathSolution> runForSingleSolution();
 
     List<PathSolution> runForSolutions();

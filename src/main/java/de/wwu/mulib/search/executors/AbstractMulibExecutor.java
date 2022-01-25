@@ -97,13 +97,20 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final void addNewArrayConstraint(ArrayConstraint ac) {
-        solverManager.addArrayConstraint(ac);
+    public final void addExistingArrayConstraints(List<ArrayConstraint> acs) {
+        solverManager.addArrayConstraints(acs);
     }
 
     @Override
+    public final void addNewArrayConstraint(ArrayConstraint ac) {
+        solverManager.addArrayConstraint(ac);
+        currentChoiceOption.addArrayConstraint(ac);
+    }
+
+
+    @Override
     public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
-        return solverManager.checkWithNewArrayConstraint(ac);
+        return solverManager.checkWithNewArraySelectConstraint(ac);
     }
 
     @Override
@@ -247,13 +254,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             solution = currentChoiceOption.setExceptionSolution(
                     (Throwable) solutionValue,
                     labels,
-                    solverManager.getConstraints().toArray(new Constraint[0])
+                    solverManager.getConstraints().toArray(new Constraint[0]),
+                    solverManager.getArrayConstraints()
             );
         } else {
             solution = currentChoiceOption.setSolution(
                     solutionValue,
                     labels,
-                    solverManager.getConstraints().toArray(new Constraint[0])
+                    solverManager.getConstraints().toArray(new Constraint[0]),
+                    solverManager.getArrayConstraints()
             );
         }
         return solution;

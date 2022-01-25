@@ -178,6 +178,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                         );
                         finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
                                 observedTree.root.getOption(0).getOptionConstraint());
+                        finalNextExecutor.addExistingArrayConstraints(observedTree.root.getOption(0).getArrayConstraints());
                         mulibExecutors.add(finalNextExecutor);
                         addToPathSolutions(finalNextExecutor);
                         idle.add(finalNextExecutor);
