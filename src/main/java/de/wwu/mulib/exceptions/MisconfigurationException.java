@@ -6,11 +6,11 @@ public class MisconfigurationException extends MulibException {
         super(msg);
     }
 
-    public MisconfigurationException(String msg, Exception cause) {
+    public MisconfigurationException(String msg, Throwable cause) {
         super(msg, cause);
     }
 
-    public MisconfigurationException(Exception cause) {
+    public MisconfigurationException(Throwable cause) {
         super(cause);
     }
 }

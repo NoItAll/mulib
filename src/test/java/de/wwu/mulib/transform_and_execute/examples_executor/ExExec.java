@@ -88,17 +88,20 @@ public class ExExec {
         );
     }
 
+    private static final Object syncObject = new Object(); // TODO As long as static is not properly handled, we need to enfore this
     private List<PathSolution> _testExSymExe15_trueExec(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = TestUtility.executeMulib(
-                "exec",
-                ExSymExe15_true.class,
-                1,
-                mb,
-                true
-        );
-        assertEquals(2, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        return result;
+        synchronized (syncObject) {
+            List<PathSolution> result = TestUtility.executeMulib(
+                    "exec",
+                    ExSymExe15_true.class,
+                    1,
+                    mb,
+                    true
+            );
+            assertEquals(2, result.size());
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            return result;
+        }
     }
 
     @Test
@@ -110,16 +113,18 @@ public class ExExec {
     }
 
     private List<PathSolution> _testExSymExe14_trueExec(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = TestUtility.executeMulib(
-                "exec",
-                ExSymExe14_true.class,
-                1,
-                mb,
-                true
-        );
-        assertEquals(2, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        return result;
+        synchronized (syncObject) {
+            List<PathSolution> result = TestUtility.executeMulib(
+                    "exec",
+                    ExSymExe14_true.class,
+                    1,
+                    mb,
+                    true
+            );
+            assertEquals(2, result.size());
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            return result;
+        }
     }
 
     @Test

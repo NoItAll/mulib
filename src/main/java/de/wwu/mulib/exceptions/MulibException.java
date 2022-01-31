@@ -9,7 +9,7 @@ public abstract class MulibException extends RuntimeException {
         super(msg, cause);
     }
 
-    public MulibException(Exception cause) {
+    public MulibException(Throwable cause) {
         super(cause);
     }
 }

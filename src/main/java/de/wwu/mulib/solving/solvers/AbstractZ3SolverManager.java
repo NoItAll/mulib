@@ -3,6 +3,7 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.*;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
@@ -12,6 +13,7 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.math.BigInteger;
 import java.util.Map;
 import java.util.WeakHashMap;
+import java.util.function.Function;
 import java.util.function.Supplier;
 
 public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, ArrayExpr> {
@@ -24,7 +26,59 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         super(config);
         synchronized (syncObject) {
             Context context = new Context();
-            solver = context.mkSolver();
+            if (config.SOLVER_ARGS.isEmpty()) {
+                solver = context.mkSolver();
+            } else {
+                Object arg = config.SOLVER_ARGS.get("z3.config");
+                if (arg instanceof String && ((String) arg).equalsIgnoreCase("default")) {
+                    // Default tactic from https://github.com/Z3Prover/z3/blob/21e59f7c6e5033006265fc6bc16e2c9f023db0e8/src/tactic/portfolio/default_tactic.cpp
+                    // Solvers constructed from tactics are always non-incremental
+                    Params contextSimpP = context.mkParams();
+                    contextSimpP.add("max_depth", 30);
+                    contextSimpP.add("max-steps", 5000000);
+                    Params pullIteP = context.mkParams();
+                    pullIteP.add("pull_cheap_ite", true);
+                    pullIteP.add("push_ite_arith", false);
+                    pullIteP.add("local_ctx", true);
+                    pullIteP.add("local_ctx_limit", 10000000);
+                    pullIteP.add("hoist_ite", true);
+                    solver = context.mkSolver(
+                            context.usingParams(
+                                    context.andThen(
+                                            context.mkTactic("simplify"),
+                                            context.cond(context.and(context.mkProbe("is-propositional"), context.not(context.mkProbe("produce-proofs"))), context.mkTactic("smtfd"),
+                                                    context.cond(context.mkProbe("is-qfbv"), context.mkTactic("qfbv"),
+                                                            context.cond(context.mkProbe("is-qfaufbv"), context.mkTactic("qfaufbv"),
+                                                                    context.cond(context.mkProbe("is-qflia"), context.mkTactic("qflia"),
+                                                                            context.cond(context.mkProbe("is-qfauflia"), context.mkTactic("qfauflia"),
+                                                                                    context.cond(context.mkProbe("is-qflra"), context.mkTactic("qflra"),
+                                                                                            context.cond(context.mkProbe("is-qfnra"), context.mkTactic("qfnra"),
+                                                                                                    context.cond(context.mkProbe("is-qfnia"), context.mkTactic("qfnia"),
+                                                                                                            context.cond(context.mkProbe("is-lira"), context.mkTactic("lira"),
+                                                                                                                    context.cond(context.mkProbe("is-nra"), context.mkTactic("nra"),
+                                                                                                                            context.cond(context.mkProbe("is-qffp"), context.mkTactic("qffp"),
+                                                                                                                                    context.cond(context.mkProbe("is-qffplra"), context.mkTactic("qffplra"),
+                                                                                                                                            context.andThen(
+                                                                                                                                                    context.mkTactic("propagate-values"),
+                                                                                                                                                    context.usingParams(context.mkTactic("ctx-simplify"), contextSimpP),
+                                                                                                                                                    context.usingParams(context.mkTactic("simplify"), pullIteP),
+                                                                                                                                                    context.mkTactic("solve-eqs"),
+                                                                                                                                                    context.mkTactic("elim-uncnstr"),
+                                                                                                                                                    context.mkTactic("smt"))))))))))))))),
+                                    context.mkParams()
+                            )
+                    );
+                } else {
+                    assert arg instanceof Function;
+                    try {
+                        Function<Context, Tactic> contextFunction = (Function<Context, Tactic>) arg;
+                        Tactic initTactic = contextFunction.apply(context);
+                        solver = context.mkSolver(initTactic);
+                    } catch (Throwable t) {
+                        throw new MisconfigurationException("Illegal solver configuration detected: ", t);
+                    }
+                }
+            }
             adapter = new Z3MulibAdapter(config, context);
         }
     }

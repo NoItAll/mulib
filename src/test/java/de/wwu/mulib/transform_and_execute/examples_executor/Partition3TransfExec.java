@@ -2,17 +2,12 @@ package de.wwu.mulib.transform_and_execute.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.transform_and_execute.examples.Partition3Transf;
-import de.wwu.mulib.transformations.MulibTransformer;
 import org.junit.jupiter.api.Test;
 
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
-import java.util.function.Function;
 
 import static org.junit.jupiter.api.Assertions.*;
 

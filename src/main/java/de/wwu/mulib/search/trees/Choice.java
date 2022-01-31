@@ -205,6 +205,10 @@ public final class Choice extends TreeNode {
             return state == CUT_OFF;
         }
 
+        public boolean isUnknown() {
+            return state == UNKNOWN;
+        }
+
         public void setSatisfiable() {
             _checkIllegalStateModificationElseSet(SATISFIABLE);
         }
@@ -236,7 +240,7 @@ public final class Choice extends TreeNode {
                                                     state == EXPLICITLY_FAILED ? "EXPLICITLY_FAILED" : "UNSATISFIABLE";
         }
 
-        private String stateToString() {
+        public String stateToString() {
             return stateToString(state);
         }
 

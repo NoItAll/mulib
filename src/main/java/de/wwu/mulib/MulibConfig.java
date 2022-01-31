@@ -11,6 +11,7 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 import java.io.PrintStream;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Function;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 public class MulibConfig {
@@ -56,6 +57,7 @@ public class MulibConfig {
     public final Solvers GLOBAL_SOLVER_TYPE;
     public final boolean GLOBAL_AVOID_SAT_CHECKS;
     public final boolean LABEL_RESULT_VALUE;
+    public final Map<String, Object> SOLVER_ARGS;
 
     /* Budget */
     public final Optional<Long> FIXED_POSSIBLE_CP_BUDGET;
@@ -142,6 +144,7 @@ public class MulibConfig {
         private boolean TREAT_BOOLEANS_AS_INTS;
         private boolean GENERATE_NEW_SYM_AFTER_STORE;
         private boolean THROW_EXCEPTION_ON_OOB;
+        private LinkedHashMap<String, Object> SOLVER_ARGS;
 
         private MulibConfigBuilder() {
             // Defaults
@@ -203,6 +206,7 @@ public class MulibConfig {
             this.TREAT_BOOLEANS_AS_INTS = false;
             this.THROW_EXCEPTION_ON_OOB = false;
             this.GENERATE_NEW_SYM_AFTER_STORE = false;
+            this.SOLVER_ARGS = new LinkedHashMap<>();
         }
 
         public MulibConfigBuilder setENLIST_LEAVES(boolean ENLIST_LEAVES) {
@@ -472,6 +476,16 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder putSOLVER_ARGS(String key, String val) {
+            SOLVER_ARGS.put(key, val);
+            return this;
+        }
+
+        public MulibConfigBuilder putSOLVER_ARGS(String key, Function<?, ?> val) {
+            SOLVER_ARGS.put(key, val);
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -508,6 +522,7 @@ public class MulibConfig {
                     ADDITIONAL_PARALLEL_SEARCH_STRATEGIES,
                     PARALLEL_TIMEOUT_IN_MS,
                     GLOBAL_SOLVER_TYPE,
+                    SOLVER_ARGS,
                     FIXED_POSSIBLE_CP_BUDGET,
                     FIXED_ACTUAL_CP_BUDGET,
                     INCR_ACTUAL_CP_BUDGET,
@@ -559,6 +574,7 @@ public class MulibConfig {
                         List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES,
                         long PARALLEL_TIMEOUT_IN_MS,
                         Solvers GLOBAL_SOLVER_TYPE,
+                        LinkedHashMap<String, Object> SOLVER_ARGS,
                         long FIXED_POSSIBLE_CP_BUDGET,
                         long FIXED_ACTUAL_CP_BUDGET,
                         long INCR_ACTUAL_CP_BUDGET,
@@ -606,6 +622,7 @@ public class MulibConfig {
         this.GLOBAL_SEARCH_STRATEGY = GLOBAL_SEARCH_STRATEGY;
         this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = List.copyOf(ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.GLOBAL_SOLVER_TYPE = GLOBAL_SOLVER_TYPE;
+        this.SOLVER_ARGS = Collections.unmodifiableMap(new LinkedHashMap<>(SOLVER_ARGS));
         this.FIXED_POSSIBLE_CP_BUDGET = 0 != FIXED_POSSIBLE_CP_BUDGET   ? Optional.of(FIXED_POSSIBLE_CP_BUDGET) : Optional.empty();
         this.FIXED_ACTUAL_CP_BUDGET =   0 != FIXED_ACTUAL_CP_BUDGET     ? Optional.of(FIXED_ACTUAL_CP_BUDGET)   : Optional.empty();
         this.INCR_ACTUAL_CP_BUDGET =    0 != INCR_ACTUAL_CP_BUDGET      ? Optional.of(INCR_ACTUAL_CP_BUDGET)    : Optional.empty();
@@ -654,6 +671,7 @@ public class MulibConfig {
                 + "GLOBAL_SEARCH_STRATEGY=" + GLOBAL_SEARCH_STRATEGY
                 + (ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ? "" : ", ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES)
                 + ", GLOBAL_SOLVER_TYPE=" + GLOBAL_SOLVER_TYPE
+                + (!SOLVER_ARGS.isEmpty() ? ", SOLVER_ARGS=" + SOLVER_ARGS : "")
                 + ", CONCOLIC=" + CONCOLIC
                 + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
                 + (ENLIST_LEAVES ? ", ENLIST_LEAVES=" + true : "")
