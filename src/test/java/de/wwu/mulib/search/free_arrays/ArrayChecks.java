@@ -23,7 +23,7 @@ public class ArrayChecks {
     @Test
     public void checkConcreteArraySelect() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
+            mb.setCONCOLIC(false);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteSelect0",
                     ArrayChecks.class,
@@ -90,7 +90,7 @@ public class ArrayChecks {
     @Test
     public void checkConcreteArrayStore() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
+            mb.setCONCOLIC(false); //// TODO
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteStore0",
                     ArrayChecks.class,
@@ -165,7 +165,7 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccessWithOOB() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
+            mb.setCONCOLIC(false); //// TODO
             mb.setTHROW_EXCEPTION_ON_OOB(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
@@ -196,8 +196,8 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(2, result.size());
-            assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+            assertEquals(3, result.size());
+            assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
             assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
 
             result = TestUtility.executeMulib(
@@ -207,7 +207,7 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(1, result.size());
+            assertEquals(2, result.size());
             assertTrue(result.stream().allMatch(ps -> ps instanceof ExceptionPathSolution));
             return result;
         }, "checkConcreteIllegalAccessWithOOB");
@@ -216,7 +216,7 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccess() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
+            mb.setCONCOLIC(false); //// TODO
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -237,6 +237,7 @@ public class ArrayChecks {
                     false
             );
             assertEquals(1, result.size());
+            assertTrue(result.stream().allMatch(ps -> ps instanceof ExceptionPathSolution));
 
             result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess2",
@@ -256,6 +257,7 @@ public class ArrayChecks {
                     false
             );
             assertEquals(1, result.size());
+            assertTrue(result.stream().allMatch(ps -> ps instanceof ExceptionPathSolution));
             return result;
         }, "checkConcreteIllegalAccess");
     }
@@ -340,9 +342,9 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(3, result.size());
+            assertEquals(4, result.size());
             assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
-            assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
+            assertEquals(3, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
 
             result = TestUtility.executeMulib(
                     "checkSymSelect1",
@@ -373,8 +375,8 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(1, result.size());
-            assertEquals(1, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
+            assertEquals(2, result.size());
+            assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
             return result;
         }, "checkSymArraySelect");
     }
@@ -492,9 +494,9 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(2, result.size());
+            assertEquals(3, result.size());
             assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
-            assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+            assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
 
             result = TestUtility.executeMulib(
                     "checkSymStore1",
@@ -605,7 +607,7 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(6, result.size());
+            assertEquals(11, result.size());
             assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
             assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
 
