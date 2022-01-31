@@ -116,17 +116,17 @@ public final class SearchTree {
         return printTree(root, indentBy);
     }
 
-    private static String printTree(TreeNode currentNode, String indentBy) {
+    private String printTree(TreeNode currentNode, String indentBy) {
         StringBuilder sb = new StringBuilder();
         if (currentNode instanceof Choice) {
             Choice choice = (Choice) currentNode;
             for (Choice.ChoiceOption co : choice.getChoiceOptions()) {
                 sb.append(indentBy.repeat(currentNode.depth));
-                sb.append("- ChoiceOption: ").append(co.getOptionConstraint()).append("\r\n");
+                sb.append("- ChoiceOption(").append(choice.depth).append(")").append(co.getOptionConstraint()).append("\r\n");
                 if (co.isEvaluated()) {
                     sb.append(printTree(co.getChild(), indentBy));
                 } else {
-                    sb.append(indentBy.repeat(currentNode.depth + 1)).append("Unevaluated\r\n");
+                    sb.append(indentBy.repeat(currentNode.depth + 1)).append(co.stateToString()).append("\r\n");
                 }
             }
         } else {

@@ -6,7 +6,6 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.transform_and_execute.examples.*;
 import de.wwu.mulib.transform_and_execute.examples.apache2_examples.*;
-import de.wwu.mulib.transform_and_execute.examples.BooleanIntChecks;
 import de.wwu.mulib.transform_and_execute.examples.mit_examples.InfiniteLoop;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
@@ -219,7 +218,6 @@ public class ExExec {
                             mb,
                             true
                     );
-
                     assertEquals(2, result.size());
                     assertEquals(1, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
                     assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
