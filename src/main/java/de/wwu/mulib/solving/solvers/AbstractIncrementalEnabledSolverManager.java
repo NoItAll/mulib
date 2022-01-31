@@ -3,7 +3,9 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
@@ -86,19 +88,31 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, AR> implements 
 
     @Override
     public final void addConstraint(Constraint c) {
-        addSolverConstraintRepresentation(c);
         incrementalSolverState.addConstraint(c);
         satisfiabilityWasCalculated = false;
         currentModel = null;
+        try {
+            addSolverConstraintRepresentation(c);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
+        }
     }
 
     @Override
     public final void addConstraintAfterNewBacktrackingPoint(Constraint c) {
-        solverSpecificBacktrackingPoint();
-        addSolverConstraintRepresentation(c);
-        incrementalSolverState.pushConstraint(c);
-        satisfiabilityWasCalculated = false;
-        currentModel = null;
+        if (c != Sbool.TRUE) {
+            satisfiabilityWasCalculated = false;
+            currentModel = null;
+        }
+        try {
+            incrementalSolverState.pushConstraint(c);
+            solverSpecificBacktrackingPoint();
+            addSolverConstraintRepresentation(c);
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
+        }
     }
 
     @Override
