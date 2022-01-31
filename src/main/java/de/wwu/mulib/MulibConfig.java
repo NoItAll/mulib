@@ -141,7 +141,7 @@ public class MulibConfig {
         private Optional<Byte> SYMSBYTE_UB;
         private boolean TREAT_BOOLEANS_AS_INTS;
         private boolean GENERATE_NEW_SYM_AFTER_STORE;
-        private boolean THROW_EXCEPTIONS_ON_OOB;
+        private boolean THROW_EXCEPTION_ON_OOB;
 
         private MulibConfigBuilder() {
             // Defaults
@@ -201,7 +201,7 @@ public class MulibConfig {
             this.SYMSBYTE_LB =   Optional.empty();
             this.SYMSBYTE_UB =   Optional.empty();
             this.TREAT_BOOLEANS_AS_INTS = false;
-            this.THROW_EXCEPTIONS_ON_OOB = false;
+            this.THROW_EXCEPTION_ON_OOB = false;
             this.GENERATE_NEW_SYM_AFTER_STORE = false;
         }
 
@@ -457,8 +457,8 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setTHROW_EXCEPTION_ON_OOB(boolean THROW_EXCEPTIONS_ON_OOB) {
-            this.THROW_EXCEPTIONS_ON_OOB = THROW_EXCEPTIONS_ON_OOB;
+        public MulibConfigBuilder setTHROW_EXCEPTION_ON_OOB(boolean THROW_EXCEPTION_ON_OOB) {
+            this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
             return this;
         }
 
@@ -544,7 +544,7 @@ public class MulibConfig {
                     SYMSBYTE_LB,
                     SYMSBYTE_UB,
                     TREAT_BOOLEANS_AS_INTS,
-                    THROW_EXCEPTIONS_ON_OOB,
+                    THROW_EXCEPTION_ON_OOB,
                     GENERATE_NEW_SYM_AFTER_STORE,
                     CONCOLIC
             );
