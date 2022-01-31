@@ -7,6 +7,8 @@ import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
+import java.util.Set;
+
 public class SymbolicCalculationFactory implements CalculationFactory {
 
     private final boolean shouldGenerateNewSymbolicAfterStore;
@@ -499,7 +501,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        sarray.checkOnlyConcreteIndicesUsed(index, se);
         SubstitutedVar result = sarray.checkCache(index);
         if (result != null) {
             if (sarray.onlyConcreteIndicesUsed() && index instanceof Sint.ConcSint) {
@@ -527,6 +528,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             }
         }
 
+        representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
 
         // Generate new value
@@ -538,7 +540,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
         addSelectConstraintIfNeeded(se, sarray, index, result);
 
-        sarray.setForIndex(index, result); /// TODO caching?
+        sarray.setForIndex(index, result); // TODO caching required if we want to postpone representing the array with constraints
 
         return result;
     }
@@ -546,9 +548,10 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     @Override
     public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
         assert sarray.getClazz().isInstance(value);
+        representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         sarray.setStoreWasUsed();
-        sarray.checkOnlyConcreteIndicesUsed(index, se);
+        sarray.checkNeedsToRepresentOldEntries(index, se);
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (!sarray.onlyConcreteIndicesUsed()) {
@@ -563,20 +566,32 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         return value;
     }
 
-    private void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
-        // We will now add a constraint indicating to the solver that at position i a value can be found that previously
-        // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
-        // is the case if symbolic indices have been used.
-        if (!sarray.onlyConcreteIndicesUsed()) {
-            if (!se.nextIsOnKnownPath()) {
-                ArrayConstraint selectConstraint =
-                        new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT);
-                se.addNewArrayConstraint(selectConstraint);
+    private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
+        if (sarray.checkNeedsToRepresentOldEntries(index, se)) {
+            Set<Sint> cachedIndices = sarray.getCachedIndices();
+            for (Sint i : cachedIndices) {
+                ArrayConstraint ac =
+                        new ArrayConstraint(sarray.getId(), i, sarray.getForIndex(i), ArrayConstraint.Type.SELECT);
+                se.addNewArrayConstraint(ac);
             }
         }
     }
 
+    private static void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
+        // We will now add a constraint indicating to the solver that at position i a value can be found that previously
+        // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
+        // is the case if symbolic indices have been used.
+        if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
+            ArrayConstraint selectConstraint =
+                    new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT);
+            se.addNewArrayConstraint(selectConstraint);
+        }
+    }
+
     private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
+        if (i instanceof Sint.ConcSint && ((Sint.ConcSint) i).intVal() < 0) {
+            throw new ArrayIndexOutOfBoundsException();
+        }
         if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.

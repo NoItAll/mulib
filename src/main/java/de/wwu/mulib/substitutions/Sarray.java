@@ -1,12 +1,12 @@
 package de.wwu.mulib.substitutions;
 
-import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
     private final long id;
@@ -27,11 +27,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.clazz = clazz;
         this.elements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
-
         this.len = len;
-        if (!se.nextIsOnKnownPath()) {
-            se.addNewConstraint(se.lte(Sint.ZERO, len));
-        }
     }
 
     public abstract T symbolicDefault(SymbolicExecution se);
@@ -68,21 +64,19 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public void checkOnlyConcreteIndicesUsed(Sint i, SymbolicExecution se) {
+    public boolean checkNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof Sint.SymSint) {
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
-                if (elements.isEmpty() || se.nextIsOnKnownPath()) {
-                    return;
-                }
-                for (Map.Entry<Sint, T> entry : elements.entrySet()) {
-                    ArrayConstraint ac =
-                            new ArrayConstraint(id, entry.getKey(), entry.getValue(), ArrayConstraint.Type.SELECT);
-                    se.addNewArrayConstraint(ac);
-                }
+                return !elements.isEmpty() && !se.nextIsOnKnownPath();
             }
         }
+        return false;
+    }
+
+    public Set<Sint> getCachedIndices() {
+        return elements.keySet();
     }
 
     public Sint getLength() {
