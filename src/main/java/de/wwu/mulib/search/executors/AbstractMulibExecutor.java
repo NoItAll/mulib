@@ -35,6 +35,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     // Gets the currently targeted choice option. This is not in sync with the choice option of SymbolicExecution
     // until the last ChoiceOption of the known path is reached
     protected Choice.ChoiceOption currentChoiceOption;
+    protected long heuristicSatEvals = 0;
     protected long satEvals = 0;
     protected long unsatEvals = 0;
     protected long addedAfterBacktrackingPoint = 0;
@@ -44,6 +45,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected final SearchStrategy searchStrategy;
     private final boolean labelResultValue;
     protected boolean terminated = false;
+    private final boolean isConcolic;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
@@ -56,6 +58,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.solverManager = Solvers.getSolverManager(config);
         this.searchStrategy = searchStrategy;
         this.labelResultValue = config.LABEL_RESULT_VALUE;
+        this.isConcolic = config.CONCOLIC;
     }
 
     @Override
@@ -67,6 +70,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public LinkedHashMap<String, String> getStatistics() {
         LinkedHashMap<String, String> result = new LinkedHashMap<>();
         result.put("addedAfterBacktrackingPoint", String.valueOf(this.addedAfterBacktrackingPoint));
+        result.put("heuristicSatEvals", String.valueOf(heuristicSatEvals));
         result.put("satEvals", String.valueOf(this.satEvals));
         result.put("unsatEvals", String.valueOf(this.unsatEvals));
         result.put("solverBacktrack", String.valueOf(this.solverBacktrack));
@@ -243,11 +247,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }
         } else {
-            if (solutionValue instanceof Sbool.SymSbool) {
+            if (isConcolic && solutionValue instanceof Sbool.SymSbool) {
                 if (((Sbool.SymSbool) solutionValue).getRepresentedConstraint() instanceof ConcolicConstraintContainer) {
                     solutionValue = ((ConcolicConstraintContainer) ((Sbool.SymSbool) solutionValue).getRepresentedConstraint()).getSym();
                 }
-            } else if (solutionValue instanceof SymNumericExpressionSprimitive
+            } else if (isConcolic && solutionValue instanceof SymNumericExpressionSprimitive
                     && ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression() instanceof ConcolicNumericContainer) {
                 solutionValue = ((ConcolicNumericContainer) ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression()).getSym();
             }

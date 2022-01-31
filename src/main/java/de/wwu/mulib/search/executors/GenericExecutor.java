@@ -1,12 +1,15 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.search.trees.SearchTree;
+import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -155,6 +158,28 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             return true;
         } else if (choiceOption.isUnsatisfiable()) {
             return false;
+        }
+
+        int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
+        if (choiceOption.getChoice().getChoiceOptions().size() == 2
+                && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
+                && choiceOption.getParent().isSatisfiable()) {
+            // If the first choice option is not satisfiable, the choice is binary, and the parent
+            // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
+            // of the first choice.
+            Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
+            assert other != choiceOption;
+            Constraint c0 = other.getOptionConstraint();
+            Constraint c1 = choiceOption.getOptionConstraint();
+            if ((c1 instanceof Not && ((Not) c1).isNegationOf(c0))
+                    || (c0 instanceof Not && ((Not) c0).isNegationOf(c1))) {
+                choiceOption.setSatisfiable();
+                choiceOption.setOptionConstraint(Sbool.TRUE);
+                addAfterBacktrackingPoint(choiceOption);
+                heuristicSatEvals++;
+                assert solverManager.isSatisfiable();
+                return true;
+            }
         }
 
         addAfterBacktrackingPoint(choiceOption);

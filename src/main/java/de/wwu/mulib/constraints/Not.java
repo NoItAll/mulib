@@ -9,9 +9,6 @@ public class Not implements Constraint {
     private Not(Constraint constraint) {
         assert !(constraint instanceof Sbool.ConcSbool);
         assert !(constraint instanceof ConcolicConstraintContainer);
-        if (constraint instanceof Sbool.SymSbool) {
-            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
-        }
         this.constraint = constraint;
     }
 
@@ -52,5 +49,12 @@ public class Not implements Constraint {
     @Override
     public int hashCode() {
         return constraint.hashCode();
+    }
+
+    public final boolean isNegationOf(Constraint constraint) {
+        if (constraint instanceof Sbool.SymSbool) {
+            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
+        }
+        return this.constraint == constraint;
     }
 }
