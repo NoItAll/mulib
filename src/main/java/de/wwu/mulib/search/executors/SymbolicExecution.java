@@ -175,6 +175,7 @@ public final class SymbolicExecution {
     }
 
     public void addNewArrayConstraint(ArrayConstraint ac) {
+        assert !nextIsOnKnownPath();
         mulibExecutor.addNewArrayConstraint(ac);
     }
 

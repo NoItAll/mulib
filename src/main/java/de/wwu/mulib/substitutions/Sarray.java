@@ -30,6 +30,14 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = len;
     }
 
+    public T generateElement(SymbolicExecution se) {
+        if (defaultIsSymbolic) {
+            return symbolicDefault(se);
+        } else {
+            return defaultElement(se);
+        }
+    }
+
     public abstract T symbolicDefault(SymbolicExecution se);
 
     public abstract T defaultElement(SymbolicExecution se);
@@ -64,7 +72,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public boolean checkNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
+    public boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof Sint.SymSint) {
                 onlyConcreteIndicesUsed = false;

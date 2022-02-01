@@ -516,30 +516,23 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                     if (stillValid) {
                         return result;
                     }
+                    // Otherwise, the index-value-mapping became stale
                 }
                 // If the flag was set, or the result is not still valid, we have to generate a new value and add
                 // a respective constraint for the new value.
-                result = sarray.symbolicDefault(se);
-                addSelectConstraintIfNeeded(se, sarray, index, result);
-                return result;
             } else {
                 // If store was not yet used, we can simply return the cached result
                 return result;
             }
         }
 
-        representArrayViaConstraintsIfNeeded(se, sarray, index);
-        checkIndexAccess(sarray, index, se);
-
-        // Generate new value
-        if (sarray.defaultIsSymbolic()) {
-            result = sarray.symbolicDefault(se);
-        } else {
-            result = sarray.defaultElement(se);
+        if (result == null) {
+            representArrayViaConstraintsIfNeeded(se, sarray, index);
+            checkIndexAccess(sarray, index, se);
         }
-
+        // Generate new value
+        result = sarray.generateElement(se);
         addSelectConstraintIfNeeded(se, sarray, index, result);
-
         sarray.setForIndex(index, result); // TODO caching required if we want to postpone representing the array with constraints
 
         return result;
@@ -551,7 +544,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         sarray.setStoreWasUsed();
-        sarray.checkNeedsToRepresentOldEntries(index, se);
+        sarray.checkIfNeedsToRepresentOldEntries(index, se);
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (!sarray.onlyConcreteIndicesUsed()) {
@@ -567,7 +560,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkNeedsToRepresentOldEntries(index, se)) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index, se)) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =
@@ -604,13 +597,11 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                 if (!inBounds) {
                     throw new ArrayIndexOutOfBoundsException();
                 }
-            } else {
+            } else if (!se.nextIsOnKnownPath()) {
                 // If we do not regard out-of-bound array index-accesses, we simply add a new constraint and proceed.
                 //  next choice option or once reaching the end of the execution. Find an approach with minimal overhead
                 //  here.
-                if (!se.nextIsOnKnownPath()) {
-                    se.addNewConstraint(indexInBound);
-                }
+                se.addNewConstraint(indexInBound);
             }
         } else {
             Sint.ConcSint concLen = (Sint.ConcSint) sarray.getLength();
