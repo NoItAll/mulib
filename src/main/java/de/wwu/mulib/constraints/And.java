@@ -35,7 +35,7 @@ public class And extends AbstractTwoSidedConstraint {
 
     public static Constraint newInstance(List<Constraint> constraints) {
         if (constraints.isEmpty()) {
-            throw new IllegalArgumentException("There must be at least one constraint.");
+            return Sbool.TRUE;
         } else if (constraints.size() == 1) {
             return constraints.get(0);
         }

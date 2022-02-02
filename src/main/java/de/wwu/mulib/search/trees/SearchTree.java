@@ -112,19 +112,24 @@ public final class SearchTree {
         return result;
     }
 
-    public String printTree() {
-        return printTree(root, indentBy);
+    @Override
+    public String toString() {
+        return toString(root, indentBy);
     }
 
-    private String printTree(TreeNode currentNode, String indentBy) {
+    private String toString(TreeNode currentNode, String indentBy) {
         StringBuilder sb = new StringBuilder();
         if (currentNode instanceof Choice) {
             Choice choice = (Choice) currentNode;
             for (Choice.ChoiceOption co : choice.getChoiceOptions()) {
                 sb.append(indentBy.repeat(currentNode.depth));
-                sb.append("- ChoiceOption(").append(choice.depth).append(")").append(co.getOptionConstraint()).append("\r\n");
+                sb.append("- ChoiceOption(").append(choice.depth).append(")").append(co.getOptionConstraint());
+                if (!co.getArrayConstraints().isEmpty()) {
+                    sb.append(co.getArrayConstraints());
+                }
+                sb.append("\r\n");
                 if (co.isEvaluated()) {
-                    sb.append(printTree(co.getChild(), indentBy));
+                    sb.append(toString(co.getChild(), indentBy));
                 } else {
                     sb.append(indentBy.repeat(currentNode.depth + 1)).append(co.stateToString()).append("\r\n");
                 }

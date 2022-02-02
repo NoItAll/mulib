@@ -31,7 +31,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
         // Find out which choice option is pre-chosen by concolic values
         boolean firstIsChosen = container.getConc().isTrue();
-        Constraint actualConstraint = container.getSym();
+        Constraint actualConstraint = container.getSym().getRepresentedConstraint();
 
         // Create Choice with ChoiceOptions (true false)
         Choice newChoice = new Choice(currentChoiceOption, actualConstraint, Not.newInstance(actualConstraint));

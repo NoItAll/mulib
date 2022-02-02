@@ -36,4 +36,10 @@ public final class ArrayConstraint {
     public Type getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return (type == Type.SELECT ? "SELECT{" : "STORE{")
+                + index + "=" + value + "}";
+    }
 }

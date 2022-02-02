@@ -62,7 +62,6 @@ public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
     @Override
     protected void solverSpecificBacktrack(int toBacktrack) {
         solver.pop(toBacktrack);
-        currentModel = null;
     }
 
     @Override

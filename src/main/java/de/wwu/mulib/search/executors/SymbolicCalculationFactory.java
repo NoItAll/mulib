@@ -503,7 +503,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
         SubstitutedVar result = sarray.checkCache(index);
         if (result != null) {
-            if (sarray.onlyConcreteIndicesUsed() && index instanceof Sint.ConcSint) {
+            if (sarray.onlyConcreteIndicesUsed()) {
                 return result;
             }
             if (sarray.storeWasUsed()) {
@@ -544,7 +544,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         sarray.setStoreWasUsed();
-        sarray.checkIfNeedsToRepresentOldEntries(index, se);
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (!sarray.onlyConcreteIndicesUsed()) {

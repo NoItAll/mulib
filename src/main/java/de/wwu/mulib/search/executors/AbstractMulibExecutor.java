@@ -169,8 +169,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
+                assert solverManager.isSatisfiable();
                 try {
-                    assert solverManager.isSatisfiable();
                     Object solutionValue = invokeSearchRegion();
                     if (!solverManager.isSatisfiable()) {
                         throw new Fail();
@@ -200,12 +200,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                 } catch (MulibException e) {
                     e.printStackTrace();
+                    Mulib.log.log(Level.WARNING, config.toString());
                     throw e;
                 } catch (Exception | AssertionError e) {
                     PathSolution solution = generateSolution(e, symbolicExecution, true);
                     return Optional.of(solution);
                 } catch (Throwable t) {
                     t.printStackTrace();
+                    Mulib.log.log(Level.WARNING, config.toString());
                     throw new MulibRuntimeException(t);
                 }
             }
