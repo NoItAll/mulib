@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
@@ -28,6 +29,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.Level;
 
 public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected SymbolicExecution currentSymbolicExecution;
@@ -120,9 +122,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public final Object label(SubstitutedVar var) {
         if (var instanceof Sprimitive) {
-            return solverManager.getLabel((Sprimitive) var);
+            return currentSymbolicExecution.getMulibValueTransformer().labelPrimitiveValue((Sprimitive) var, solverManager);
         } else {
-            throw new NotYetImplementedException();
+            return currentSymbolicExecution.getMulibValueTransformer().labelValue(var, solverManager);
         }
     }
 
