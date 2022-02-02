@@ -6,6 +6,8 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 
 import java.util.function.Function;
 
@@ -23,6 +25,81 @@ public class ConcolicValueFactory extends AbstractValueFactory {
         return new ConcolicValueFactory(config);
     }
 
+    protected void restrictLength(SymbolicExecution se, Sint len) {
+        if (len instanceof Sint.ConcSint) {
+            if (((Sint.ConcSint) len).intVal() < 0) {
+                throw new NegativeArraySizeException();
+            }
+        } else if (throwExceptionOnOOB) {
+            // Must be SymSbool since Sint.ZERO is concrete and len has been checked
+            Sbool.SymSbool outOfBounds = (Sbool.SymSbool) se.gte(Sint.ZERO, len);
+            if (se.boolChoice(outOfBounds)) {
+                throw new NegativeArraySizeException();
+            }
+        } else if (!se.nextIsOnKnownPath()) {
+            Sbool inBounds = se.lte(Sint.ZERO, len);
+            Constraint actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(inBounds);
+            if (actualConstraint instanceof Sbool.SymSbool) {
+                actualConstraint = ((Sbool.SymSbool) actualConstraint).getRepresentedConstraint();
+            }
+            se.addNewConstraint(actualConstraint);
+        }
+    }
+
+    @Override
+    public Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SintSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SdoubleSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SfloatSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SlongSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SshortSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SbyteSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SboolSarray(len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<PartnerClass> clazz, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.PartnerClassSarray(clazz, len, se, freeElements);
+    }
+
+    @Override
+    public Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<Sarray> clazz, boolean freeElements) {
+        restrictLength(se, len);
+        return new Sarray.SarraySarray(clazz, len, se, freeElements);
+    }
+
     private static <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
             SymbolicExecution se,
             Function<SymbolicExecution, SA> symCreator,
@@ -32,6 +109,8 @@ public class ConcolicValueFactory extends AbstractValueFactory {
         SA sym = symCreator.apply(se);
         // Concrete value
         ConcSnumber conc = concSnumberCreator.apply(se.label(sym));
+        // TODO Performance optimization: If nextIsOnKnownPath() is false, we can return the neutral element (e.g. 0 and false)
+        //  or 1 to directly account for Sarray-based index-constraints.
         // Container for both
         ConcolicNumericContainer container = new ConcolicNumericContainer(sym, conc);
         return resultWrapper.apply(container);
