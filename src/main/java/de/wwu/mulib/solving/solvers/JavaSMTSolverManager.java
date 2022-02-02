@@ -23,7 +23,7 @@ import java.util.WeakHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
-public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, ArrayFormula> {
+public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, BooleanFormula, ArrayFormula> {
 
     private static final Object syncObject = new Object();
     private final ProverEnvironment solver;
@@ -150,13 +150,11 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 ac.getValue()
         );
 
-        boolean result;
         try {
-            result = !solver.isUnsatWithAssumptions(Collections.singleton(f));
+            return !solver.isUnsatWithAssumptions(Collections.singleton(f));
         } catch (SolverException | InterruptedException e) {
             throw new MulibRuntimeException(e);
         }
-        return result;
     }
 
     @Override
@@ -197,9 +195,14 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             }
         }
         assert f != null;
-        Object result = toPrimitiveOrString(var, getCurrentModel().evaluate(f));
-        assert result != null;
-        return result;
+        try {
+            Object result = toPrimitiveOrString(var, getCurrentModel().evaluate(f));
+            assert result != null;
+            return result;
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
+        }
     }
 
     private static Object toPrimitiveOrString(Sprimitive p, Object o) {

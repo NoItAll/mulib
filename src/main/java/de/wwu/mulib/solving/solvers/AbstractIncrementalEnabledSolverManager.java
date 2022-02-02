@@ -9,6 +9,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
+import java.util.Collections;
 import java.util.List;
 
 /**
@@ -16,7 +17,7 @@ import java.util.List;
  * @param <M> Class representing a Model from which value assignments can be derived
  * @param <AR> Class representing an array
  */
-public abstract class AbstractIncrementalEnabledSolverManager<M, AR> implements SolverManager {
+public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implements SolverManager {
     protected final IncrementalSolverState<AR> incrementalSolverState;
 
     protected M currentModel;
@@ -113,6 +114,27 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, AR> implements 
             t.printStackTrace();
             throw new MulibRuntimeException(t);
         }
+    }
+
+    @Override
+    public void addTemporaryAssumption(Constraint c) {
+        satisfiabilityWasCalculated = false;
+        currentModel = null;
+        incrementalSolverState.addTemporaryAssumption(c);
+    }
+
+    @Override
+    public void resetTemporaryAssumptions() {
+        if (!incrementalSolverState.getTemporaryAssumptions().isEmpty()) {
+            satisfiabilityWasCalculated = false;
+            currentModel = null;
+            incrementalSolverState.resetTemporaryAssumptions();
+        }
+    }
+
+    @Override
+    public List<Constraint> getTemporaryAssumptions() {
+        return Collections.unmodifiableList(incrementalSolverState.getTemporaryAssumptions());
     }
 
     @Override

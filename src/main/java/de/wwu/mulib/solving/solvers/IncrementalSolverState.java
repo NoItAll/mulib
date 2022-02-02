@@ -22,6 +22,9 @@ public class IncrementalSolverState<AR> {
     // Stores all array constraints so that they can be replayed if needed // TODO more efficient way?
     private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
 
+    // Helper for evaluating whether labels in concolic execution are still valid
+    private final List<Constraint> temporaryAssumptions = new ArrayList<>();
+
     private IncrementalSolverState(MulibConfig config) {}
 
     public void addConstraint(Constraint c) {
@@ -40,6 +43,7 @@ public class IncrementalSolverState<AR> {
         // Check whether we need to update represented arrays
         popArrayConstraintForLevel(level);
         constraints.poll();
+        resetTemporaryAssumptions();
         level--;
     }
 
@@ -84,6 +88,18 @@ public class IncrementalSolverState<AR> {
             result.addAll(acs);
         }
         return result;
+    }
+
+    public void addTemporaryAssumption(Constraint c) {
+        temporaryAssumptions.add(c);
+    }
+
+    public List<Constraint> getTemporaryAssumptions() {
+        return temporaryAssumptions;
+    }
+
+    public void resetTemporaryAssumptions() {
+        temporaryAssumptions.clear();
     }
 
     public int getLevel() {

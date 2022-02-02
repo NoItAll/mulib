@@ -17,6 +17,12 @@ public interface SolverManager {
 
     void addArrayConstraints(List<ArrayConstraint> acs);
 
+    void addTemporaryAssumption(Constraint c);
+
+    void resetTemporaryAssumptions();
+
+    List<Constraint> getTemporaryAssumptions();
+
     boolean checkWithNewArraySelectConstraint(ArrayConstraint ac);
 
     boolean checkWithNewConstraint(Constraint c);

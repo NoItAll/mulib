@@ -16,7 +16,7 @@ import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, ArrayExpr> {
+public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, BoolExpr, ArrayExpr> {
 
     private static final Object syncObject = new Object();
     protected final Solver solver;

@@ -222,6 +222,16 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return solverManager.isSatisfiable();
     }
 
+    @Override
+    public final void addTemporaryAssumption(Constraint c) {
+        solverManager.addTemporaryAssumption(c);
+    }
+
+    @Override
+    public final void resetTemporaryAssumptions() {
+        solverManager.resetTemporaryAssumptions();
+    }
+
     protected abstract Optional<SymbolicExecution> createExecution(
             ChoiceOptionDeque deque,
             ChoicePointFactory choicePointFactory,
