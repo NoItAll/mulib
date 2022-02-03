@@ -63,6 +63,8 @@ public final class Choice extends TreeNode {
         public static final byte CUT_OFF = 5; // TODO not yet implemented functionality
         // If Mulib.failed() has been used.
         public static final byte EXPLICITLY_FAILED = 6;
+        // For concolic execution: if the labeling is not valid anymore, we need to reevaluate
+        public static final byte REEVALUATION_NEEDED = 7;
 
         private byte state;
         public final int choiceOptionNumber;
@@ -194,7 +196,7 @@ public final class Choice extends TreeNode {
         }
 
         public boolean isSatisfiable() {
-            return state == SATISFIABLE || state == EVALUATED;
+            return state == SATISFIABLE;
         }
 
         public boolean isBudgetExceeded() {
@@ -213,8 +215,19 @@ public final class Choice extends TreeNode {
             _checkIllegalStateModificationElseSet(SATISFIABLE);
         }
 
+        public void setReevaluationNeeded() {
+            _checkIllegalStateModificationElseSet(REEVALUATION_NEEDED);
+        }
+
+        public boolean reevaluationNeeded() {
+            return state == REEVALUATION_NEEDED;
+        }
+
         private void _checkIllegalStateModificationElseSet(byte newState) {
-            if (state != UNKNOWN && !(state == SATISFIABLE && newState == EVALUATED)) {
+            if (state != UNKNOWN
+                    && !(state == SATISFIABLE && newState == REEVALUATION_NEEDED)
+                    && !(state == REEVALUATION_NEEDED && (newState == EVALUATED || newState == SATISFIABLE))
+                    && !(state == SATISFIABLE && newState == EVALUATED)) {
                 throw new IllegalTreeModificationException("New state '" + stateToString(newState) + "' cannot be set. " +
                         "State is already set to '" + stateToString() + "'.");
             }
@@ -226,6 +239,7 @@ public final class Choice extends TreeNode {
             return "ChoiceOption{depth=" + depth
                     + ",number=" + choiceOptionNumber
                     + ",constraint=" + optionConstraint
+                    + ",arrayConstraints=" + arrayConstraints
                     + ",state="
                         + stateToString()
                     + "}";
@@ -237,7 +251,9 @@ public final class Choice extends TreeNode {
                             state == EVALUATED ? "EVALUATED" :
                                     state == BUDGET_EXCEEDED ? "BUDGET_EXCEEDED" :
                                             state == CUT_OFF ? "CUT_OFF" :
-                                                    state == EXPLICITLY_FAILED ? "EXPLICITLY_FAILED" : "UNSATISFIABLE";
+                                                    state == EXPLICITLY_FAILED ? "EXPLICITLY_FAILED" :
+                                                            state == UNSATISFIABLE ? "UNSATISFIABLE" :
+                                                                    state == REEVALUATION_NEEDED ? "REEVALUATION_NEEDED" : "UNKNOWN_STATE";
         }
 
         public String stateToString() {
