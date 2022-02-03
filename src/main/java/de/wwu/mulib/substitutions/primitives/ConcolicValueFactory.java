@@ -3,6 +3,7 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.Eq;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -109,8 +110,11 @@ public class ConcolicValueFactory extends AbstractValueFactory {
         SA sym = symCreator.apply(se);
         // Concrete value
         ConcSnumber conc = concSnumberCreator.apply(se.label(sym));
-        // TODO Performance optimization: If nextIsOnKnownPath() is false, we can return the neutral element (e.g. 0 and false)
-        //  or 1 to directly account for Sarray-based index-constraints.
+        // TODO Performance optimization: If nextIsOnKnownPath() is false, we can return the neutral element (e.g. 0 and
+        //  false) or 1 to directly account for Sarray-based index-constraints.
+        // TODO addTemporaryAssumption for each concolic value yields high overhead. Potentially, we should add an
+        //  implementation for free concolic arrays in a way that avoids the need for these types of consistency checks.
+        se.addTemporaryAssumption(Eq.newInstance(sym, conc));
         // Container for both
         ConcolicNumericContainer container = new ConcolicNumericContainer(sym, conc);
         return resultWrapper.apply(container);
