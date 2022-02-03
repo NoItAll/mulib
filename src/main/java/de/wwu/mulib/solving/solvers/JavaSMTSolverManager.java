@@ -77,8 +77,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     @Override
-    protected void addSolverConstraintRepresentation(Constraint constraint) {
-        BooleanFormula b = adapter.transformConstraint(constraint);
+    protected void addSolverConstraintRepresentation(BooleanFormula b) {
         try {
             solver.addConstraint(b);
         } catch (Exception e) {
@@ -121,8 +120,13 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
     }
 
-    private BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, SubstitutedVar value) {
+    protected BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, SubstitutedVar value) {
         return adapter.transformSelectConstraint(arrayFormula, index, value);
+    }
+
+    @Override
+    protected BooleanFormula transformConstraint(Constraint c) {
+        return adapter.transformConstraint(c);
     }
 
     @Override
@@ -138,18 +142,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     @Override
-    protected void solverSpecificBacktrackingPoint() {
-        solver.push();
-    }
-
-    @Override
-    public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
-        BooleanFormula f = newArraySelectConstraint(
-                incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()),
-                ac.getIndex(),
-                ac.getValue()
-        );
-
+    protected boolean calculateSatisfiabilityWithSolverBoolRepresentation(BooleanFormula f) {
         try {
             return !solver.isUnsatWithAssumptions(Collections.singleton(f));
         } catch (SolverException | InterruptedException e) {
@@ -158,16 +151,10 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     @Override
-    public boolean checkWithNewConstraint(Constraint c) {
-        BooleanFormula b = adapter.transformConstraint(c);
-        boolean result;
-        try {
-            result = !solver.isUnsatWithAssumptions(Collections.singleton(b));
-        } catch (SolverException | InterruptedException e) {
-            throw new MulibRuntimeException(e);
-        }
-        return result;
+    protected void solverSpecificBacktrackingPoint() {
+        solver.push();
     }
+
 
     @Override
     protected Model calculateCurrentModel() {

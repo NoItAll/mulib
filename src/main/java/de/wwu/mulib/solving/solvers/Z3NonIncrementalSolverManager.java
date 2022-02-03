@@ -3,14 +3,10 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
 
 import java.util.ArrayDeque;
 
-/** Currently not further maintained */
 public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
     protected ArrayDeque<BoolExpr> expressions;
 
@@ -20,15 +16,15 @@ public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
     }
 
     @Override
-    protected void addSolverConstraintRepresentation(Constraint constraint) {
+    protected void addSolverConstraintRepresentation(BoolExpr boolExpr) {
         // We add the solver's constraint representation after incrementing the level. If the level is still
-        // equal to the number of expressions, a constraint has been added without pushing!
+        // equal to the number of expressions, a constraint has been added without pushing
         if (expressions.size() == getLevel()) {
             // Add the modified constraint instead
-            constraint = incrementalSolverState.getConstraints().peek();
+            boolExpr = transformConstraint(_getConstraints().peek());
             expressions.pop();
         }
-        expressions.push(adapter.transformConstraint(constraint));
+        expressions.push(boolExpr);
     }
 
     @Override
@@ -47,11 +43,6 @@ public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
     }
 
     @Override
-    public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
-        throw new NotYetImplementedException(); // TODO
-    }
-
-    @Override
     protected void solverSpecificBacktrackOnce() {
         expressions.pop();
     }
@@ -63,11 +54,10 @@ public class Z3NonIncrementalSolverManager extends AbstractZ3SolverManager {
         }
     }
 
-
     @Override
-    public boolean checkWithNewConstraint(Constraint c) {
-        expressions.addLast(adapter.transformConstraint(c));
-        boolean result = isSatisfiable();
+    protected boolean calculateSatisfiabilityWithSolverBoolRepresentation(BoolExpr boolExpr) {
+        expressions.addLast(boolExpr);
+        boolean result = calculateIsSatisfiable();
         expressions.removeLast();
         return result;
     }

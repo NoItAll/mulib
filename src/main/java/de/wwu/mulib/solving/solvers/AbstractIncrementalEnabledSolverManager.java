@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -14,13 +15,13 @@ import java.util.List;
 
 /**
  *
- * @param <M> Class representing a Model from which value assignments can be derived
- * @param <AR> Class representing an array
+ * @param <M> Class representing a solver's model from which value assignments can be derived
+ * @param <B> Class representing constraints in the solver
+ * @param <AR> Class representing array expressions in the solver
  */
 public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implements SolverManager {
-    protected final IncrementalSolverState<AR> incrementalSolverState;
-
-    protected M currentModel;
+    private final IncrementalSolverState<AR> incrementalSolverState;
+    private M currentModel;
     private boolean isSatisfiable;
     private boolean satisfiabilityWasCalculated;
     protected final MulibConfig config;
@@ -35,6 +36,36 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         return new ArrayDeque<>(incrementalSolverState.getConstraints()); // Wrap and return
     }
 
+    // For internal use without conservative copy
+    protected ArrayDeque<Constraint> _getConstraints() {
+        return incrementalSolverState.getConstraints();
+    }
+
+    @Override
+    public final boolean checkWithNewConstraint(Constraint c) {
+        if (c instanceof Sbool.ConcSbool) {
+            return ((Sbool.ConcSbool) c).isTrue();
+        }
+        B bool = transformConstraint(c);
+        return _check(bool);
+    }
+
+    @Override
+    public final boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
+        B bool = newArraySelectConstraint(incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()), ac.getIndex(), ac.getValue());
+        return _check(bool);
+    }
+
+    private boolean _check(B bool) {
+        boolean result = calculateSatisfiabilityWithSolverBoolRepresentation(bool);
+        if (!result) {
+            // For instance Z3 bases its solver.getModel() on the last sat-check. Hence
+            // if this is unsatisfiable, we should reset the model.
+            resetSatisfiabilityWasCalculatedAndModel();
+        }
+        return result;
+    }
+
     @Override
     public final List<ArrayConstraint> getArrayConstraints() {
         return incrementalSolverState.getArrayConstraints();
@@ -44,7 +75,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     public final boolean isSatisfiable() {
         assert incrementalSolverState.getLevel() != 0: "The initial choice should always be present";
         if (!satisfiabilityWasCalculated) {
-            isSatisfiable = calculateIsSatisfiable();
+            isSatisfiable = incrementalSolverState.getTemporaryAssumptions().size() > 0 ?
+                    calculateSatisfiabilityWithSolverBoolRepresentation(transformConstraint(And.newInstance(incrementalSolverState.getTemporaryAssumptions())))
+                    :
+                    calculateIsSatisfiable();
             satisfiabilityWasCalculated = true;
         }
         return isSatisfiable;
@@ -77,12 +111,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             }
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
+        resetSatisfiabilityWasCalculatedAndModel();
         assert calculateIsSatisfiable();
     }
 
     protected final M getCurrentModel() {
         if (currentModel == null) {
-            currentModel = calculateCurrentModel();
+            try {
+                currentModel = calculateCurrentModel();
+            } catch (Throwable t) {
+                t.printStackTrace();
+                throw new MulibRuntimeException(t);
+            }
         }
         return currentModel;
     }
@@ -90,10 +130,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     @Override
     public final void addConstraint(Constraint c) {
         incrementalSolverState.addConstraint(c);
-        satisfiabilityWasCalculated = false;
-        currentModel = null;
+        resetSatisfiabilityWasCalculatedAndModel();
         try {
-            addSolverConstraintRepresentation(c);
+            addSolverConstraintRepresentation(transformConstraint(c));
         } catch (Throwable t) {
             t.printStackTrace();
             throw new MulibRuntimeException(t);
@@ -102,14 +141,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     @Override
     public final void addConstraintAfterNewBacktrackingPoint(Constraint c) {
-        if (c != Sbool.TRUE) {
-            satisfiabilityWasCalculated = false;
-            currentModel = null;
-        }
+        resetSatisfiabilityWasCalculatedAndModel();
         try {
             incrementalSolverState.pushConstraint(c);
             solverSpecificBacktrackingPoint();
-            addSolverConstraintRepresentation(c);
+            addSolverConstraintRepresentation(transformConstraint(c));
         } catch (Throwable t) {
             t.printStackTrace();
             throw new MulibRuntimeException(t);
@@ -118,16 +154,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     @Override
     public void addTemporaryAssumption(Constraint c) {
-        satisfiabilityWasCalculated = false;
-        currentModel = null;
+        resetSatisfiabilityWasCalculatedAndModel();
         incrementalSolverState.addTemporaryAssumption(c);
     }
 
     @Override
     public void resetTemporaryAssumptions() {
         if (!incrementalSolverState.getTemporaryAssumptions().isEmpty()) {
-            satisfiabilityWasCalculated = false;
-            currentModel = null;
+            resetSatisfiabilityWasCalculatedAndModel();
             incrementalSolverState.resetTemporaryAssumptions();
         }
     }
@@ -141,8 +175,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     public final void backtrackOnce() {
         solverSpecificBacktrackOnce();
         incrementalSolverState.popConstraint();
-        satisfiabilityWasCalculated = false;
-        currentModel = null;
+        resetSatisfiabilityWasCalculatedAndModel();
     }
 
     @Override
@@ -151,9 +184,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         for (int i = 0; i < numberOfChoiceOptions; i++) {
             incrementalSolverState.popConstraint();
         }
-        satisfiabilityWasCalculated = false;
-
-        currentModel = null;
+        if (numberOfChoiceOptions > 0) {
+            resetSatisfiabilityWasCalculatedAndModel();
+        }
     }
 
     @Override
@@ -168,7 +201,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     protected abstract M calculateCurrentModel();
 
-    protected abstract void addSolverConstraintRepresentation(Constraint constraint);
+    protected abstract void addSolverConstraintRepresentation(B constraint);
 
     protected abstract boolean calculateIsSatisfiable();
 
@@ -183,4 +216,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     protected abstract void solverSpecificBacktrackOnce();
 
     protected abstract void solverSpecificBacktrack(int toBacktrack);
+
+    protected abstract boolean calculateSatisfiabilityWithSolverBoolRepresentation(B boolExpr);
+
+    protected abstract B newArraySelectConstraint(AR arrayRepresentation, Sint indexInArray, SubstitutedVar arrayValue);
+
+    protected abstract B transformConstraint(Constraint c);
+
+    private void resetSatisfiabilityWasCalculatedAndModel() {
+        satisfiabilityWasCalculated = false;
+        currentModel = null;
+    }
 }

@@ -3,10 +3,7 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
 
@@ -15,22 +12,9 @@ public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
     }
 
     @Override
-    public boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
-        BoolExpr expr = newArraySelectConstraint(incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()), ac.getIndex(), ac.getValue());
+    protected boolean calculateSatisfiabilityWithSolverBoolRepresentation(BoolExpr boolExpr) {
         // We assume all other constraints have already been added
-        Status solverStatus = solver.check(expr);
-        if (solverStatus == Status.UNKNOWN) {
-            throw new UnknownSolutionException("Z3 cannot calculate a solution for the given constraints: "
-                    + solver.getReasonUnknown());
-        }
-        return solverStatus == Status.SATISFIABLE;
-    }
-
-    @Override
-    public boolean checkWithNewConstraint(Constraint constraint) {
-        if (constraint instanceof Sbool.ConcSbool) return ((Sbool.ConcSbool) constraint).isTrue();
-        // We assume all other constraints have already been added
-        Status solverStatus = solver.check(adapter.transformConstraint(constraint));
+        Status solverStatus = solver.check(boolExpr);
         if (solverStatus == Status.UNKNOWN) {
             throw new UnknownSolutionException("Z3 cannot calculate a solution for the given constraints: "
                     + solver.getReasonUnknown());
@@ -65,8 +49,7 @@ public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
     }
 
     @Override
-    protected void addSolverConstraintRepresentation(Constraint constraint) {
-        BoolExpr boolExpr = adapter.transformConstraint(constraint);
+    protected void addSolverConstraintRepresentation(BoolExpr boolExpr) {
         solver.add(boolExpr);
     }
 }

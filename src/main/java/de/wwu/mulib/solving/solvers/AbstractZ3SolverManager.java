@@ -119,6 +119,11 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     @Override
+    protected BoolExpr transformConstraint(Constraint c) {
+        return adapter.transformConstraint(c);
+    }
+
+    @Override
     public Object getLabel(Sprimitive var) {
         if (!isSatisfiable()) {
             throw new MulibRuntimeException("Must be satisfiable.");
