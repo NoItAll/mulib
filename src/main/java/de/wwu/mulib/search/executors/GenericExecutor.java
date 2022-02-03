@@ -3,12 +3,14 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.search.trees.SearchTree;
+import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -89,15 +91,30 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             ValueFactory valueFactory,
             CalculationFactory calculationFactory) {
         Choice.ChoiceOption optionToBeEvaluated;
-        while (!terminated && !deque.isEmpty() && !mulibExecutorManager.globalBudgetExceeded()) {
-            Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
-            if (optionalChoiceOption.isEmpty()) {
-                continue;
-            }
-            optionToBeEvaluated = optionalChoiceOption.get();
-            assert !optionToBeEvaluated.isUnsatisfiable();
-            adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-            if (checkIfSatisfiableAndSet(optionToBeEvaluated)) {
+        try {
+            while ((!terminated && !deque.isEmpty() && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
+                if (currentChoiceOption.reevaluationNeeded()) {
+                    optionToBeEvaluated = currentChoiceOption;
+                    // Relabeling case for concolic execution
+                    assert isConcolic;
+                    if (!solverManager.isSatisfiable()) {
+                        assert solverManager.getTemporaryAssumptions().isEmpty();
+                        optionToBeEvaluated.setUnsatisfiable();
+                        continue;
+                    }
+                    optionToBeEvaluated.setSatisfiable();
+                } else {
+                    Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
+                    if (optionalChoiceOption.isEmpty()) {
+                        continue;
+                    }
+                    optionToBeEvaluated = optionalChoiceOption.get();
+                    assert !optionToBeEvaluated.isUnsatisfiable();
+                    adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
+                    if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
+                        continue;
+                    }
+                }
                 assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1);
                 currentSymbolicExecution = new SymbolicExecution(
                         this,
@@ -110,8 +127,11 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                 );
                 return Optional.of(currentSymbolicExecution);
             }
+            return Optional.empty();
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
         }
-        return Optional.empty();
     }
 
     private static Optional<Choice.ChoiceOption> dfsRetriever(ChoiceOptionDeque choiceOptionDeque) {
@@ -150,9 +170,9 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         assert !choiceOption.isCutOff();
         assert !choiceOption.isExplicitlyFailed();
         assert currentChoiceOption == null ||
-                currentChoiceOption.getChild() instanceof Choice
+                (currentChoiceOption.getChild() instanceof Choice
                         && ((Choice) currentChoiceOption.getChild()).getChoiceOptions().stream()
-                        .anyMatch(co -> choiceOption == co);
+                        .anyMatch(co -> choiceOption == co));
         if (choiceOption.isSatisfiable()) {
             addAfterBacktrackingPoint(choiceOption);
             return true;
@@ -183,11 +203,23 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         }
 
         addAfterBacktrackingPoint(choiceOption);
+        return checkSatWithSolver(solverManager, choiceOption);
+    }
+
+    private boolean checkSatWithSolver(SolverManager solverManager, Choice.ChoiceOption choiceOption) {
         if (solverManager.isSatisfiable()) {
             choiceOption.setSatisfiable();
             satEvals++;
             return true;
         } else {
+            solverManager.resetTemporaryAssumptions();
+            // If there are no temporary assumptions, the AbstractIncrementalEnabledSolverManager will used the cached result,
+            // i.e., no costly sat-check is executed
+            if (solverManager.isSatisfiable()) {
+                choiceOption.setSatisfiable();
+                satEvals++;
+                return true;
+            }
             choiceOption.setUnsatisfiable();
             unsatEvals++;
             // Needed during chooseNextChoiceOption(Choice) for when one is unsatisfiable. This way

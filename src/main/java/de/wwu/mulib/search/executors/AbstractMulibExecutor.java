@@ -47,7 +47,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected final SearchStrategy searchStrategy;
     private final boolean labelResultValue;
     protected boolean terminated = false;
-    private final boolean isConcolic;
+    protected final boolean isConcolic;
+    private final MulibConfig config;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
@@ -61,6 +62,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.searchStrategy = searchStrategy;
         this.labelResultValue = config.LABEL_RESULT_VALUE;
         this.isConcolic = config.CONCOLIC;
+        this.config = config;
     }
 
     @Override
@@ -166,7 +168,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Optional<PathSolution> runForSingleSolution() {
-        while (!getDeque().isEmpty() && !terminated) {
+        while ((!getDeque().isEmpty() && !terminated) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
