@@ -39,9 +39,11 @@ public class SingleExecutorManager extends MulibExecutorManager {
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
             Optional<PathSolution> possibleSymbolicExecution = mulibExecutor.runForSingleSolution();
             if (possibleSymbolicExecution.isPresent()) {
+                Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
                 return possibleSymbolicExecution;
             }
         }
+        Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
         return Optional.empty();
     }
 

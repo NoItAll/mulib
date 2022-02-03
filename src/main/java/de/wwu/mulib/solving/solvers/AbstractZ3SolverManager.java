@@ -217,7 +217,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             } else if (c instanceof AbstractTwoSidedConstraint) {
                 result = transformAbstractTwoSidedConstraint((AbstractTwoSidedConstraint) c);
             } else {
-                throw new NotYetImplementedException();
+                throw new NotYetImplementedException(c.toString());
             }
             boolExprStore.put(c, result);
             return result;

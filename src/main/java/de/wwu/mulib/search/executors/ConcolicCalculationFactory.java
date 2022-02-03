@@ -806,7 +806,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private static void evaluateRelabeling(SymbolicExecution se) {
-        if (!se.isSatisfiable()) {
+        if (!se.nextIsOnKnownPath() && !se.isSatisfiable()) {
             backtrack(se);
         }
     }
@@ -836,7 +836,9 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
         if (!se.nextIsOnKnownPath()) {
-            if (result instanceof SymNumericExpressionSprimitive) {
+            if (result instanceof Sbool.SymSbool) {
+                result = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) result);
+            } else if (result instanceof SymNumericExpressionSprimitive) {
                 result = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
             }
             Sint i = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);

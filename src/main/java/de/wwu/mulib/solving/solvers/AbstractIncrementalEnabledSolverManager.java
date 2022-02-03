@@ -112,7 +112,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
         resetSatisfiabilityWasCalculatedAndModel();
-        assert calculateIsSatisfiable();
     }
 
     protected final M getCurrentModel() {
