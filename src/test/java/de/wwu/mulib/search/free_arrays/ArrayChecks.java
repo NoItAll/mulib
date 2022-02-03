@@ -23,7 +23,6 @@ public class ArrayChecks {
     @Test
     public void checkConcreteArraySelect() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteSelect0",
                     ArrayChecks.class,
@@ -90,7 +89,6 @@ public class ArrayChecks {
     @Test
     public void checkConcreteArrayStore() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); //// TODO
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteStore0",
                     ArrayChecks.class,
@@ -165,7 +163,6 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccessWithOOB() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); //// TODO
             mb.setTHROW_EXCEPTION_ON_OOB(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
@@ -216,7 +213,7 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccess() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); //// TODO
+            mb.setTHROW_EXCEPTION_ON_OOB(false);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -294,7 +291,6 @@ public class ArrayChecks {
     @Test
     public void checkSymArraySelect() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkSymSelect0",
                     ArrayChecks.class,
@@ -464,7 +460,6 @@ public class ArrayChecks {
     @Test
     public void checkSymArrayStore() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkSymStore0",
                     ArrayChecks.class,
@@ -578,7 +573,6 @@ public class ArrayChecks {
     @Test
     public void checkMultipleArrays() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setCONCOLIC(false); /// TODO currently not regarded
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkMultipleArrays0",
                     ArrayChecks.class,
