@@ -13,12 +13,14 @@ public final class ArrayConstraint {
     // different symbolic value that is set to equal another symbolic value.
     private final SubstitutedVar value;
     private final Type type;
+    private final int level;
 
-    public ArrayConstraint(long arrayId, Sint index, SubstitutedVar value, Type type) {
+    public ArrayConstraint(long arrayId, Sint index, SubstitutedVar value, Type type, int level) {
         this.arrayId = arrayId;
         this.index = index;
         this.value = value;
         this.type = type;
+        this.level = level;
     }
 
     public long getArrayId() {
@@ -37,9 +39,13 @@ public final class ArrayConstraint {
         return type;
     }
 
+    public int getLevel() {
+        return level;
+    }
+
     @Override
     public String toString() {
         return (type == Type.SELECT ? "SELECT{" : "STORE{")
-                + index + "=" + value + "}";
+                + "ar=" + arrayId + ", " + index + ": " + value + "}";
     }
 }

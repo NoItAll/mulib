@@ -58,11 +58,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     private boolean _check(B bool) {
         boolean result = calculateSatisfiabilityWithSolverBoolRepresentation(bool);
-        if (!result) {
-            // For instance Z3 bases its solver.getModel() on the last sat-check. Hence
-            // if this is unsatisfiable, we should reset the model.
-            resetSatisfiabilityWasCalculatedAndModel();
-        }
+        resetSatisfiabilityWasCalculatedAndModel();
         return result;
     }
 
@@ -95,7 +91,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // https://github.com/wwu-pi/muggl/blob/53a2874cba2b193ec99d2aea8a454a88481656c7/muggl-solver-z3/src/main/java/de/wwu/muggl/solvers/z3/Z3MugglAdapter.java
     @Override
     public final void addArrayConstraint(ArrayConstraint ac) {
-        incrementalSolverState.addArrayConstraintAtLevel(ac);
+        incrementalSolverState.addArrayConstraint(ac);
         AR arrayRepresentation = incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         if (ac.getType() == ArrayConstraint.Type.SELECT) {
             if (arrayRepresentation == null) {

@@ -9,6 +9,7 @@ import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
@@ -16,10 +17,7 @@ import sun.reflect.ReflectionFactory;
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayDeque;
-import java.util.HashMap;
-import java.util.IdentityHashMap;
-import java.util.Map;
+import java.util.*;
 import java.util.function.BiFunction;
 
 /**
@@ -255,7 +253,7 @@ public final class MulibValueTransformer {
         }
     }
 
-    public Object labelValue(Object searchRegionVal, SolverManager solverManager) { // TODO Sarray
+    public Object labelValue(Object searchRegionVal, SolverManager solverManager) {
         if (searchRegionVal == null) {
             return null;
         }
@@ -288,6 +286,18 @@ public final class MulibValueTransformer {
             labeledArray = labelArray(searchRegionVal, solverManager);
             searchSpaceRepresentationToLabelObject.put(searchRegionVal, labeledArray);
             return labeledArray;
+        } else if (searchRegionVal instanceof Sarray) {
+            Sarray sarray = (Sarray) searchRegionVal;
+            int length = (Integer) labelPrimitiveValue(sarray.getLength(), solverManager);
+            Object[] result = new Object[length]; // TODO be more specific
+            Set<Sint> indices = sarray.getCachedIndices();
+            for (Sint i : indices) {
+                SubstitutedVar value = sarray.getForIndex(i);
+                int labeledIndex = (Integer) labelPrimitiveValue(i, solverManager);
+                Object labeledValue = labelValue(value, solverManager);
+                result[labeledIndex] = labeledValue;
+            }
+            return result;
         } else {
             Object result = searchSpaceRepresentationToLabelObject.get(searchRegionVal);
             if (result != null) {
@@ -305,6 +315,7 @@ public final class MulibValueTransformer {
             }
         }
     }
+
 
     private Object createEmptyLabelObject(Class<?> clazz) {
         Constructor<?> constructor = getOrGenerateZeroArgsConstructor(clazz);

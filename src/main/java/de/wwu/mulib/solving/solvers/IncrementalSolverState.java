@@ -56,11 +56,11 @@ public class IncrementalSolverState<AR> {
         }
     }
 
-    public void addArrayConstraintAtLevel(ArrayConstraint ac) {
-        while (arrayConstraints.size() <= level) {
+    public void addArrayConstraint(ArrayConstraint ac) {
+        while (arrayConstraints.size() <= ac.getLevel()) {
             arrayConstraints.add(new ArrayList<>());
         }
-        arrayConstraints.get(level).add(ac);
+        arrayConstraints.get(ac.getLevel()).add(ac);
     }
 
     // Adds an ArrayConstraint to regard mutable arrays as a special case.

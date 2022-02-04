@@ -501,7 +501,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.checkCache(index);
+        SubstitutedVar result = sarray.getForIndex(index);
         if (result != null) {
             if (sarray.onlyConcreteIndicesUsed()) {
                 return result;
@@ -511,8 +511,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                 if (!shouldGenerateNewSymbolicAfterStore) {
                     // If store was used and we do not return a fresh symbolic value, we might need to add a new select
                     // constraint to ensure that no stale indices were used which might still be stored as an element
-                    boolean stillValid = se.checkWithNewArrayConstraint(
-                            new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT));
+                    ArrayConstraint stillValidSelect =
+                            new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                    boolean stillValid = se.checkWithNewArrayConstraint(stillValidSelect);
                     if (stillValid) {
                         return result;
                     }
@@ -528,12 +529,12 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
         if (result == null) {
             representArrayViaConstraintsIfNeeded(se, sarray, index);
-            checkIndexAccess(sarray, index, se);
+            checkIndexAccess(sarray, index, se); // index was already checked
         }
         // Generate new value
         result = sarray.generateElement(se);
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setForIndex(index, result); // TODO caching required if we want to postpone representing the array with constraints
+        sarray.setForIndex(index, result);
 
         return result;
     }
@@ -549,8 +550,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (!sarray.onlyConcreteIndicesUsed()) {
             if (!se.nextIsOnKnownPath()) {
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE);
+                        new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
+                se.addNewArrayConstraint(new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
             }
         }
 
@@ -563,7 +565,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =
-                        new ArrayConstraint(sarray.getId(), i, sarray.getForIndex(i), ArrayConstraint.Type.SELECT);
+                        new ArrayConstraint(sarray.getId(), i, sarray.getForIndex(i), ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -575,7 +577,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         // is the case if symbolic indices have been used.
         if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT);
+                    new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
             se.addNewArrayConstraint(selectConstraint);
         }
     }
@@ -587,9 +589,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.
-            Constraint indexInBound = And.newInstance(
-                    Lt.newInstance(i, sarray.getLength()),
-                    Lte.newInstance(Sint.ZERO, i)
+            Constraint indexInBound = se.and(
+                    se.lt(i, sarray.getLength()),
+                    se.lte(Sint.ZERO, i)
             );
             if (throwExceptionOnOOB) {
                 boolean inBounds = se.boolChoice(indexInBound);

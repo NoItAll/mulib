@@ -24,7 +24,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     private final SymbolicCalculationFactory scf;
     private final boolean shouldGenerateNewSymbolicAfterStore;
     private final boolean throwExceptionOnOOB;
-    
+
     ConcolicCalculationFactory(MulibConfig config) {
         this.scf = SymbolicCalculationFactory.getInstance(config);
         this.shouldGenerateNewSymbolicAfterStore = config.GENERATE_NEW_SYM_AFTER_STORE;
@@ -729,7 +729,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
         Sint possiblySymIndex = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
 //        Sint concreteIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
-        SubstitutedVar result = sarray.checkCache(possiblySymIndex);
+        SubstitutedVar result = sarray.getForIndex(possiblySymIndex);
         if (result != null) {
             if (sarray.onlyConcreteIndicesUsed()) {
                 return result;
@@ -745,7 +745,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                         throw new NotYetImplementedException();
                     }
                     boolean stillValid = se.checkWithNewArrayConstraint(
-                            new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.SELECT));
+                            new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
                     if (stillValid) {
                         return result;
                     }
@@ -793,8 +793,9 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                     throw new NotYetImplementedException();
                 }
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.STORE);
+                        new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
+                se.addNewArrayConstraint(new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
             }
         }
 //        if (possiblySymIndex instanceof Sint.SymSint) {
@@ -825,7 +826,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getForIndex(i);
                 ArrayConstraint ac =
-                        new ArrayConstraint(sarray.getId(), i, val, ArrayConstraint.Type.SELECT);
+                        new ArrayConstraint(sarray.getId(), i, val, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -843,7 +844,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
             }
             Sint i = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint(sarray.getId(), i, result, ArrayConstraint.Type.SELECT);
+                    new ArrayConstraint(sarray.getId(), i, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
             se.addNewArrayConstraint(selectConstraint);
         }
     }

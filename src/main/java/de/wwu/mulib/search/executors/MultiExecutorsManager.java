@@ -131,8 +131,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             }
             Optional<PathSolution> possibleSymbolicExecution = mainExecutor.runForSingleSolution();
             if (possibleSymbolicExecution.isPresent()) {
-                this.observedTree.getChoiceOptionDeque().setEmpty();
                 checkShutdown();
+                this.observedTree.getChoiceOptionDeque().setEmpty();
                 printStatistics();
                 return possibleSymbolicExecution;
             }

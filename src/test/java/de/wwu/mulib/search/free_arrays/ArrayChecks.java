@@ -3,17 +3,17 @@ package de.wwu.mulib.search.free_arrays;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
@@ -692,10 +692,128 @@ public class ArrayChecks {
         return true;
     }
 
-    @Test @Disabled
-    public void checkArrayParameterAndResult() { /// TODO As soon as transformation works, check this
-        TestUtility.getAllSolutions((mb) -> {
-            throw new NotYetImplementedException();
-        }, "checkArrayParameterAndResult");
+    @Test
+    public void checkSimpleSort() {
+        TestUtility.getSolution((mb) -> {
+            Optional<PathSolution> result = TestUtility.executeMulibForOne(
+                    "simpleSort",
+                    ArrayChecks.class,
+                    1,
+                    mb
+            );
+            assertTrue(result.isPresent());
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            PathSolution pathSolution = result.get();
+            Solution s = pathSolution.getInitialSolution();
+            Object[] values = (Object[]) s.value;
+            assertEquals(1, values[0]);
+            assertEquals(1, values[1]);
+            assertEquals(5, values[2]);
+            assertEquals(8, values[3]);
+            assertEquals(17, values[4]);
+            assertEquals(27, values[5]);
+            assertEquals(39, values[6]);
+            assertEquals(42, values[7]);
+            assertEquals(56, values[8]);
+            assertEquals(78, values[9]);
+            return result;
+        });
+    }
+
+    @Test
+    public void checkSimpleSortAlternative() {
+        TestUtility.getSolution((mb) -> {
+            Optional<PathSolution> result = TestUtility.executeMulibForOne(
+                    "simpleSortAlternative",
+                    ArrayChecks.class,
+                    1,
+                    mb
+            );
+            assertTrue(result.isPresent());
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            PathSolution pathSolution = result.get();
+            Solution s = pathSolution.getInitialSolution();
+            Object[] values = (Object[]) s.value;
+            assertEquals(-81, values[0]);
+            assertEquals(-3, values[1]);
+            assertEquals(0, values[2]);
+            assertEquals(1, values[3]);
+            assertEquals(2, values[4]);
+            assertEquals(8, values[5]);
+            assertEquals(9, values[6]);
+            assertEquals(39, values[7]);
+            assertEquals(42, values[8]);
+            assertEquals(78, values[9]);
+            return result;
+        });
+    }
+
+    // Analogous to https://github.com/wwu-pi/muli-env/blob/59dcc66714d7953f68e741c7515e2f8289afbaf7/muli-runtime/src/test/resources/applications/freeArrays/SimpleSort.muli
+    public static Sarray.SintSarray simpleSort() {
+        SymbolicExecution se = SymbolicExecution.get();
+        int[] b = new int[] {1, 42, 17, 56, 78, 5, 27, 39, 1, 8};
+
+        Sarray.SintSarray idx = se.sintSarray(se.symSint(), true);
+        Sarray.SboolSarray usedIdx = se.sboolSarray(se.symSint(), true);
+        Sarray.SintSarray a = se.sintSarray(se.symSint(), true);
+        if (se.notEqChoice(a.getLength(), se.concSint(b.length))) {
+            throw Mulib.fail();
+        }
+        for (int i = 0; se.concSint(i).ltChoice(se.concSint(b.length), se); i++) {
+            if (usedIdx.select(idx.select(se.concSint(i), se), se).boolChoice(se)) {
+                throw Mulib.fail();
+            }
+            a.store(idx.select(se.concSint(i), se), se.concSint(b[i]), se);
+            usedIdx.store(idx.select(se.concSint(i), se), Sbool.TRUE, se);
+        }
+        for (int i = 0; i < b.length - 1; i++) {
+            if (a.select(se.concSint(i), se).gtChoice(a.select(se.concSint(i + 1), se), se)) {
+                throw Mulib.fail();
+            }
+        }
+        return a;
+    }
+
+    public static Sarray.SintSarray simpleSortAlternative() {
+        SymbolicExecution se = SymbolicExecution.get();
+        int[] bBeforeFree = {-81, 42, -3, 9, 78, 0, 2, 39, 1, 8};
+        int n = bBeforeFree.length;
+        Sarray.SintSarray b = se.sintSarray(se.concSint(n), true);
+        Sarray.SintSarray idx = se.sintSarray(se.concSint(n), true);
+        boolean failed = false;
+        for (int i = 0; i < n; i++) {
+            if (se.select(idx, se.concSint(i)).ltChoice(se.concSint(0), se)
+                    || se.select(idx, se.concSint(i)).gteChoice(se.concSint(n), se)) {
+                failed = true; break;
+            }
+            boolean innerFailed = false;
+            for (int j = 0; j < n; j++) {
+                if (i != j && idx.select(se.concSint(i), se).eqChoice(idx.select(se.concSint(j), se), se)) {
+                    innerFailed = true; break;
+                }
+            }
+            if (innerFailed) {
+                failed = true; break;
+            }
+        }
+        if (failed) {
+            throw Mulib.fail();
+        }
+        for (int i = 0; i < n; i++) {
+            b.store(se.concSint(i), se.concSint(bBeforeFree[i]), se);
+        }
+
+        Sarray.SintSarray a = se.sintSarray(se.concSint(n), true);
+        for (int i = 0; i < n; i++) {
+            a.store(idx.select(se.concSint(i), se), b.select(se.concSint(i), se), se);
+        }
+
+        for (int i = 0; i < n-1; i++) {
+            if (a.select(se.concSint(i, se), se).gtChoice(a.select(se.concSint(i+1), se), se)) {
+                throw Mulib.fail();
+            }
+        }
+
+        return a;
     }
 }

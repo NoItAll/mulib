@@ -4,15 +4,14 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.HashMap;
-import java.util.Map;
+import java.util.LinkedHashMap;
 import java.util.Set;
 
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
     private final long id;
     private final Sint len;
     private final Class<T> clazz;
-    private final Map<Sint, T> elements;
+    private final LinkedHashMap<Sint, T> elements;
 
     private final boolean defaultIsSymbolic;
 
@@ -25,7 +24,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.storeWasUsed = false;
         this.onlyConcreteIndicesUsed = true;
         this.clazz = clazz;
-        this.elements = new HashMap<>();
+        this.elements = new LinkedHashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.len = len;
     }
@@ -38,13 +37,14 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
     }
 
+    @Override
+    public String toString() {
+        return "Sarray{id=" + id + ", elements=" + elements + "}";
+    }
+
     public abstract T symbolicDefault(SymbolicExecution se);
 
     public abstract T defaultElement(SymbolicExecution se);
-
-    public final T checkCache(Sint index) {
-        return elements.get(index);
-    }
 
     public final boolean storeWasUsed() {
         return storeWasUsed;
@@ -77,7 +77,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             if (i instanceof Sint.SymSint) {
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
-                return !elements.isEmpty() && !se.nextIsOnKnownPath();
+                return !elements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once
             }
         }
         return false;
@@ -96,6 +96,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     }
 
     public T setForIndex(Sint index, T value) {
+        elements.remove(index);
         return elements.put(index, value);
     }
 
