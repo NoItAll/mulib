@@ -183,7 +183,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
         if (choiceOption.getChoice().getChoiceOptions().size() == 2
                 && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
-                && choiceOption.getParent().isSatisfiable()) {
+                && choiceOption.getParent().isEvaluated()) {
             // If the first choice option is not satisfiable, the choice is binary, and the parent
             // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
             // of the first choice.
