@@ -788,7 +788,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
-        if ((value == null && !Sprimitive.class.isAssignableFrom(sarray.getClazz())) || sarray.getClazz().isInstance(value)) {
+        if ((value == null && !Sprimitive.class.isAssignableFrom(sarray.getClazz())) || (value != null && !sarray.getClazz().isInstance(value))) {
             throw new ArrayStoreException();
         }
         Sint possiblySymIndex = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
