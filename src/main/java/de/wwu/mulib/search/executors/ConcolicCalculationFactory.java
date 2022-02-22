@@ -760,7 +760,19 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
 
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
-        result = sarray.generateElement(se);
+        // Generate new value
+        if (!sarray.defaultIsSymbolic()) {
+            SubstitutedVar nonSymbolicDefaultElement = sarray.nonSymbolicDefaultElement(se);
+            if (sarray.onlyConcreteIndicesUsed()) {
+                result = nonSymbolicDefaultElement;
+            } else {
+                /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
+                /// TODO alternative: only allow this for those arrays with fixed length
+                throw new NotYetImplementedException();
+            }
+        } else {
+            result = sarray.symbolicDefault(se);
+        }
 //        if (result instanceof SymNumericExpressionSprimitive) {
 //            ConcSnumber conc = ConcolicNumericContainer.getConcNumericFromConcolic((SymNumericExpressionSprimitive) result);
 //            Snumber possiblySym = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
@@ -795,7 +807,6 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 ArrayConstraint storeConstraint =
                         new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
-                se.addNewArrayConstraint(new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
             }
         }
 //        if (possiblySymIndex instanceof Sint.SymSint) {

@@ -100,11 +100,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             }
             addArraySelectConstraint(arrayRepresentation, ac.getIndex(), ac.getValue());
         } else {
+            assert ac.getType() == ArrayConstraint.Type.STORE;
             if (arrayRepresentation == null) {
                 arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
-            } else {
-                arrayRepresentation = createNewArrayRepresentationForStore(ac, arrayRepresentation);
             }
+            arrayRepresentation = createNewArrayRepresentationForStore(ac, arrayRepresentation);
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
         resetSatisfiabilityWasCalculatedAndModel();

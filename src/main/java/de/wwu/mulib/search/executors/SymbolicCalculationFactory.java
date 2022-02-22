@@ -2,6 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -532,7 +533,18 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             checkIndexAccess(sarray, index, se); // index was already checked
         }
         // Generate new value
-        result = sarray.generateElement(se);
+        if (!sarray.defaultIsSymbolic()) {
+            SubstitutedVar nonSymbolicDefaultElement = sarray.nonSymbolicDefaultElement(se);
+            if (sarray.onlyConcreteIndicesUsed()) {
+                result = nonSymbolicDefaultElement;
+            } else {
+                /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
+                /// TODO alternative: only allow this for those arrays with fixed length
+                throw new NotYetImplementedException();
+            }
+        } else {
+            result = sarray.symbolicDefault(se);
+        }
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setForIndex(index, result);
 
@@ -552,7 +564,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                 ArrayConstraint storeConstraint =
                         new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
-                se.addNewArrayConstraint(new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
             }
         }
 
