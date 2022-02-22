@@ -29,14 +29,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = len;
     }
 
-    public T generateElement(SymbolicExecution se) {
-        if (defaultIsSymbolic) {
-            return symbolicDefault(se);
-        } else {
-            return defaultElement(se);
-        }
-    }
-
     @Override
     public String toString() {
         return "Sarray{id=" + id + ", elements=" + elements + "}";
@@ -44,7 +36,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public abstract T symbolicDefault(SymbolicExecution se);
 
-    public abstract T defaultElement(SymbolicExecution se);
+    public abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
     public final boolean storeWasUsed() {
         return storeWasUsed;
@@ -126,7 +118,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sint defaultElement(SymbolicExecution se) {
+        public Sint nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sint.ZERO;
         }
     }
@@ -153,7 +145,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sdouble defaultElement(SymbolicExecution se) {
+        public Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sdouble.ZERO;
         }
     }
@@ -180,7 +172,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sfloat defaultElement(SymbolicExecution se) {
+        public Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sfloat.ZERO;
         }
     }
@@ -207,7 +199,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Slong defaultElement(SymbolicExecution se) {
+        public Slong nonSymbolicDefaultElement(SymbolicExecution se) {
             return Slong.ZERO;
         }
     }
@@ -234,7 +226,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sshort defaultElement(SymbolicExecution se) {
+        public Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sshort.ZERO;
         }
     }
@@ -261,7 +253,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sbyte defaultElement(SymbolicExecution se) {
+        public Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbyte.ZERO;
         }
     }
@@ -288,7 +280,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sbool defaultElement(SymbolicExecution se) {
+        public Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbool.FALSE;
         }
     }
@@ -316,7 +308,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public PartnerClass defaultElement(SymbolicExecution se) {
+        public PartnerClass nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
     }
@@ -344,7 +336,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public Sarray defaultElement(SymbolicExecution se) {
+        public Sarray nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
     }
