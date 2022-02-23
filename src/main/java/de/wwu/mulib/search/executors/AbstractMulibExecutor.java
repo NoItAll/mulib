@@ -37,16 +37,20 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     // Gets the currently targeted choice option. This is not in sync with the choice option of SymbolicExecution
     // until the last ChoiceOption of the known path is reached
     protected Choice.ChoiceOption currentChoiceOption;
+    // Statistics
     protected long heuristicSatEvals = 0;
     protected long satEvals = 0;
     protected long unsatEvals = 0;
     protected long addedAfterBacktrackingPoint = 0;
     protected long solverBacktrack = 0;
+    // Manager
     protected final MulibExecutorManager mulibExecutorManager;
+    protected boolean terminated = false;
+    // Executor-specific state
     protected final SolverManager solverManager;
+    // Config
     protected final SearchStrategy searchStrategy;
     private final boolean labelResultValue;
-    protected boolean terminated = false;
     protected final boolean isConcolic;
     private final MulibConfig config;
 

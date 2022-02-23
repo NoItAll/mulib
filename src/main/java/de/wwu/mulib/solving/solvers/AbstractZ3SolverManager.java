@@ -69,11 +69,14 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                             )
                     );
                 } else {
-                    assert arg instanceof Function;
                     try {
                         Function<Context, Tactic> contextFunction = (Function<Context, Tactic>) arg;
-                        Tactic initTactic = contextFunction.apply(context);
-                        solver = context.mkSolver(initTactic);
+                        try {
+                            Tactic initTactic = contextFunction.apply(context);
+                            solver = context.mkSolver(initTactic);
+                        } catch (ClassCastException e) {
+                            throw new MisconfigurationException("The configuration should be an instance of Function<Context, Tactic>!");
+                        }
                     } catch (Throwable t) {
                         throw new MisconfigurationException("Illegal solver configuration detected: ", t);
                     }
