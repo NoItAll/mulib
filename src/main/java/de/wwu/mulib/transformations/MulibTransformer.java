@@ -395,10 +395,10 @@ public class MulibTransformer {
         return result;
     }
 
-    private String calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
+    private String calculateSignatureForSarrayIfNecessary(String desc) {
         // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
-        if (fieldNodeDesc.startsWith("[[") || fieldNodeDesc.startsWith("[L")) {
-            String result = _calculateSignatureForSarrayIfNecessary(fieldNodeDesc);
+        if (desc.startsWith("[[") || desc.startsWith("[L")) {
+            String result = _calculateSignatureForSarrayIfNecessary(desc);
             return result;
         }
         return null;
@@ -602,6 +602,7 @@ public class MulibTransformer {
         mnInit.localVariables.add(new LocalVariableNode(thisDesc, "L" + result.name + ";", null, initStart, initEnd, 0));
         return mnInit;
     }
+
 
     // <init>(LobjectOfPartnerClass;LMulibValueTransformer;)
     private MethodNode generateCopyConstructor(ClassNode originalCn, ClassNode result) {
@@ -1350,7 +1351,7 @@ public class MulibTransformer {
             if (lvn.name.equals(seName)) {
                 seIsTaken = true;
             }
-            if (!primitiveTypes.contains(lvn.desc) || (lvn.desc.length() > 2 && lvn.desc.charAt(0) == '[' && isPrimitive(String.valueOf(lvn.desc.charAt(1))))) { // TODO Proper check for multi-arrays
+            if (!primitiveTypes.contains(lvn.desc) || (lvn.desc.length() > 2 && lvn.desc.charAt(0) == '[' && isPrimitive(String.valueOf(lvn.desc.charAt(1))))) { // TODO Proper check for multi-arrays...why would this even be needed?
                 String typeOrPath = determineClassSubstringFromDesc(lvn.desc);
                 if (shouldBeTransformed(typeOrPath)
                         && !isAlreadyTransformedOrToBeTransformedPath(typeOrPath)) {
@@ -1363,7 +1364,7 @@ public class MulibTransformer {
                         new LocalVariableNode(
                                 lvn.name,
                                 decideOnReplaceDesc(lvn.desc),
-                                null,
+                                calculateSignatureForSarrayIfNecessary(lvn.desc),
                                 lvn.start,
                                 lvn.end,
                                 newLocalVariablesIndices.get(lvn)
