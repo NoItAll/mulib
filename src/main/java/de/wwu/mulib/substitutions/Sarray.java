@@ -285,30 +285,34 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
     }
 
-    public static class PartnerClassSarray extends Sarray<PartnerClass> {
+    public static class PartnerClassSarray<T extends PartnerClass> extends Sarray<T> {
 
-        public PartnerClassSarray(Class<PartnerClass> clazz, Sint len, SymbolicExecution se,
+        public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
                                   boolean defaultIsSymbolic) {
             super(clazz, len, se, defaultIsSymbolic);
         }
 
         @Override
-        public final PartnerClass select(Sint i, SymbolicExecution se) {
-            return se.select(this, i);
+        public final T select(Sint i, SymbolicExecution se) {
+            T result = (T) se.select(this, i);
+            assert result == null || getClazz().isAssignableFrom(result.getClass());
+            return result;
         }
 
         @Override
-        public final PartnerClass store(Sint i, PartnerClass val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final T store(Sint i, T val, SymbolicExecution se) {
+            T result = (T) se.store(this, i, val);
+            assert result == null || getClazz().isAssignableFrom(result.getClass());
+            return result;
         }
 
         @Override
-        public PartnerClass symbolicDefault(SymbolicExecution se) {
+        public T symbolicDefault(SymbolicExecution se) {
             throw new NotYetImplementedException();
         }
 
         @Override
-        public PartnerClass nonSymbolicDefaultElement(SymbolicExecution se) {
+        public T nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
     }

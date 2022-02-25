@@ -548,6 +548,42 @@ public final class SymbolicExecution {
         return se.namedSymSshort(identifier);
     }
 
+    public static Sarray.SintSarray sintSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sintSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SdoubleSarray sdoubleSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sdoubleSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SfloatSarray sfloatSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sfloatSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SlongSarray slongSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.slongSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SshortSarray sshortSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sshortSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SbyteSarray sbyteSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sbyteSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.SboolSarray sboolSarray(Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sboolSarray(len, defaultIsSymbolic);
+    }
+
+    public static Sarray.PartnerClassSarray partnerClassSarray(Class<PartnerClass> clazz, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.partnerClassSarray(len, clazz, defaultIsSymbolic);
+    }
+
+    public static Sarray.SarraySarray sarraySarray(Class<Sarray> clazz, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sarraySarray(len, clazz, defaultIsSymbolic);
+    }
+
     public static Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c, SymbolicExecution se) {
         return se.evalInstanceof(partnerClass, c);
     }

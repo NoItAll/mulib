@@ -34,7 +34,7 @@ public final class Mulib {
             Object... args) {
         return generateWithoutTransformation(methodName, methodOwnerClass, null, args, mb.build()).getAllPathSolutions();
     }
-
+    
     public static List<PathSolution> executeMulib(
             String methodName,
             Class<?> mainClass,
@@ -132,6 +132,34 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
+    public static int[] freeIntArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static long[] freeLongArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double[] freeDoubleArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float[] freeFloatArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static short[] freeShortArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static byte[] freeByteArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static boolean[] freeBooleanArray() {
+        throw _shouldHaveBeenReplaced();
+    }
+
     public static int namedFreeInt(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
@@ -169,6 +197,34 @@ public final class Mulib {
     }
 
     public static <T> T[] namedFreeArray(Class<T> arClass, String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static int[] namedFreeIntArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static long[] namedFreeLongArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double[] namedFreeDoubleArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float[] namedFreeFloatArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static short[] namedFreeShortArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static byte[] namedFreeByteArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static boolean[] namedFreeBooleanArray(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
