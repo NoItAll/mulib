@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -22,7 +23,6 @@ public final class StringConstants {
     public static final String thisDesc = "this";
     public static final String seName = "se";
 
-    public static final String voidDesc = "V";
     public static final String primitiveTypes = "BCDFIJSZ";
 
     public static final String integerCp = cpForClass(Integer.class);
@@ -33,82 +33,76 @@ public final class StringConstants {
     public static final String byteCp = cpForClass(Byte.class);
     public static final String booleanCp = cpForClass(Boolean.class);
 
-    public static final String objectCn = cnForClass(Object.class);
     public static final String objectCp = cpForClass(Object.class);
     public static final String objectDesc = cdescForClass(Object.class);
 
-    public static final String stringCn = cnForClass(String.class);
     public static final String stringCp = cpForClass(String.class);
     public static final String stringDesc = cdescForClass(String.class);
 
-    public static final String mulibCn = cnForClass(Mulib.class);
     public static final String mulibCp = cpForClass(Mulib.class);
     public static final String mulibDesc = cdescForClass(Mulib.class);
 
-    public static final String classCn = cnForClass(Class.class);
     public static final String classCp = cpForClass(Class.class);
     public static final String classDesc = cdescForClass(Class.class);
 
-    public static final String partnerClassCn = cnForClass(PartnerClass.class);
     public static final String partnerClassCp = cpForClass(PartnerClass.class);
     public static final String partnerClassDesc = cdescForClass(PartnerClass.class);
 
-    public static final String substitutedVarCn = cnForClass(SubstitutedVar.class);
     public static final String substitutedVarCp = cpForClass(SubstitutedVar.class);
     public static final String substitutedVarDesc = cdescForClass(SubstitutedVar.class);
 
-    public static final String sprimitiveCn = cnForClass(Sprimitive.class);
     public static final String sprimitiveCp = cpForClass(Sprimitive.class);
     public static final String sprimitiveDesc = cdescForClass(Sprimitive.class);
     public static final String symSprimitiveCp = cpForClass(SymSprimitive.class);
 
-    public static final String snumberCn = cnForClass(Snumber.class);
-    public static final String snumberCp = cpForClass(Snumber.class);
-    public static final String snumberDesc = cdescForClass(Snumber.class);
-
-    public static final String abstractSnumberCn = cnForClass(AbstractSnumber.class);
-    public static final String abstractSnumberCp = cpForClass(AbstractSnumber.class);
-    public static final String abstractSnumberDesc = cdescForClass(AbstractSnumber.class);
-
-    public static final String sfpCn = cnForClass(Sfpnumber.class);
-    public static final String sfpCp = cpForClass(Sfpnumber.class);
-    public static final String sfpDesc = cdescForClass(Sfpnumber.class);
-
-    public static final String sintCn = cnForClass(Sint.class);
     public static final String sintCp = cpForClass(Sint.class);
     public static final String sintDesc = cdescForClass(Sint.class);
     public static final String concSintCp = cpForClass(Sint.ConcSint.class);
 
-    public static final String sdoubleCn = cnForClass(Sdouble.class);
     public static final String sdoubleCp = cpForClass(Sdouble.class);
     public static final String sdoubleDesc = cdescForClass(Sdouble.class);
     public static final String concSdoubleCp = cpForClass(Sdouble.ConcSdouble.class);
 
-    public static final String sfloatCn = cnForClass(Sfloat.class);
     public static final String sfloatCp = cpForClass(Sfloat.class);
     public static final String sfloatDesc = cdescForClass(Sfloat.class);
     public static final String concSFloatCp = cpForClass(Sfloat.ConcSfloat.class);
 
 
-    public static final String sboolCn = cnForClass(Sbool.class);
     public static final String sboolCp = cpForClass(Sbool.class);
     public static final String sboolDesc = cdescForClass(Sbool.class);
     public static final String concSboolCp = cpForClass(Sbool.ConcSbool.class);
 
-    public static final String sshortCn = cnForClass(Sshort.class);
     public static final String sshortCp = cpForClass(Sshort.class);
     public static final String sshortDesc = cdescForClass(Sshort.class);
     public static final String concSshortCp = cpForClass(Sshort.ConcSshort.class);
 
-    public static final String sbyteCn = cnForClass(Sbyte.class);
     public static final String sbyteCp = cpForClass(Sbyte.class);
     public static final String sbyteDesc = cdescForClass(Sbyte.class);
     public static final String concSbyteCp = cpForClass(Sbyte.ConcSbyte.class);
 
-    public static final String slongCn = cnForClass(Slong.class);
     public static final String slongCp = cpForClass(Slong.class);
     public static final String slongDesc = cdescForClass(Slong.class);
     public static final String concSlongCp = cpForClass(Slong.ConcSlong.class);
+
+    public static final String sintSarrayCp = cpForClass(Sarray.SintSarray.class);
+    public static final String sintSarrayDesc = cdescForClass(Sarray.SintSarray.class);
+    public static final String slongSarrayCp = cpForClass(Sarray.SlongSarray.class);
+    public static final String slongSarrayDesc = cdescForClass(Sarray.SlongSarray.class);
+    public static final String sdoubleSarrayCp = cpForClass(Sarray.SdoubleSarray.class);
+    public static final String sdoubleSarrayDesc = cdescForClass(Sarray.SdoubleSarray.class);
+    public static final String sfloatSarrayCp = cpForClass(Sarray.SfloatSarray.class);
+    public static final String sfloatSarrayDesc = cdescForClass(Sarray.SfloatSarray.class);
+    public static final String sshortSarrayCp = cpForClass(Sarray.SshortSarray.class);
+    public static final String sshortSarrayDesc = cdescForClass(Sarray.SshortSarray.class);
+    public static final String sbyteSarrayCp = cpForClass(Sarray.SbyteSarray.class);
+    public static final String sbyteSarrayDesc = cdescForClass(Sarray.SbyteSarray.class);
+    public static final String sboolSarrayCp = cpForClass(Sarray.SboolSarray.class);
+    public static final String sboolSarrayDesc = cdescForClass(Sarray.SboolSarray.class);
+    public static final String sarraySarrayCp = cpForClass(Sarray.SarraySarray.class);
+    public static final String sarraySarrayDesc = cdescForClass(Sarray.SarraySarray.class);
+    public static final String partnerClassSarrayCp = cpForClass(Sarray.PartnerClassSarray.class);
+    public static final String partnerClassSarrayDesc = cdescForClass(Sarray.PartnerClassSarray.class);
+
 
     public static final String seCn = cnForClass(SymbolicExecution.class);
     public static final String seCp = cpForClass(SymbolicExecution.class);
@@ -165,6 +159,16 @@ public final class StringConstants {
     public static final String symSbyte = "symSbyte";
     public static final String symSlong = "symSlong";
 
+    public static final String sdoubleSarray = "sdoubleSarray";
+    public static final String sintSarray = "sintSarray";
+    public static final String sfloatSarray = "sfloatSarray";
+    public static final String sboolSarray = "sboolSarray";
+    public static final String sshortSarray = "sshortSarray";
+    public static final String sbyteSarray = "sbyteSarray";
+    public static final String slongSarray = "slongSarray";
+    public static final String sarraySarray = "sarraySarray";
+    public static final String partnerClassSarray = "partnerClassSarray";
+
     public static final String namedSymSdouble = "namedSymSdouble";
     public static final String namedSymSint = "namedSymSint";
     public static final String namedSymSfloat = "namedSymSfloat";
@@ -172,6 +176,16 @@ public final class StringConstants {
     public static final String namedSymSshort = "namedSymSshort";
     public static final String namedSymSbyte = "namedSymSbyte";
     public static final String namedSymSlong = "namedSymSlong";
+
+    public static final String namedSdoubleSarray = "namedSdoubleSarray";
+    public static final String namedSintSarray = "namedSintSarray";
+    public static final String namedSfloatSarray = "namedSfloatSarray";
+    public static final String namedSboolSarray = "namedSboolSarray";
+    public static final String namedSshortSarray = "namedSshortSarray";
+    public static final String namedSbyteSarray = "namedSbyteSarray";
+    public static final String namedSlongSarray = "namedSlongSarray";
+    public static final String namedSarraySarray = "namedSarraySarray";
+    public static final String namedPartnerClassSarray = "namedPartnerClassSarray";
 
     public static final String concretize = "concretize";
     public static final String concretizeDesc = "(" + objectDesc + seDesc + ")" + objectDesc;
@@ -229,6 +243,14 @@ public final class StringConstants {
     public static final String freeBoolean = "freeBoolean";
     public static final String freeChar = "freeChar";
     public static final String freeObject = "freeObject";
+    public static final String freeIntArray = "freeIntArray";
+    public static final String freeLongArray = "freeLongArray";
+    public static final String freeDoubleArray = "freeDoubleArray";
+    public static final String freeFloatArray = "freeFloatArray";
+    public static final String freeShortArray = "freeShortArray";
+    public static final String freeByteArray = "freeByteArray";
+    public static final String freeBooleanArray = "freeBooleanArray";
+    public static final String freeCharArray = "freeCharArray";
     public static final String freeArray = "freeArray";
 
     public static final String namedFreeInt = "namedFreeInt";
@@ -241,14 +263,58 @@ public final class StringConstants {
     public static final String namedFreeChar = "namedFreeChar";
     public static final String namedFreeObject = "namedFreeObject";
     public static final String namedFreeArray = "namedFreeArray";
+    public static final String namedFreeIntArray = "namedFreeIntArray";
+    public static final String namedFreeLongArray = "namedFreeLongArray";
+    public static final String namedFreeDoubleArray = "namedFreeDoubleArray";
+    public static final String namedFreeFloatArray = "namedFreeFloatArray";
+    public static final String namedFreeShortArray = "namedFreeShortArray";
+    public static final String namedFreeByteArray = "namedFreeByteArray";
+    public static final String namedFreeCharArray = "namedFreeCharArray";
+    public static final String namedFreeBooleanArray = "namedFreeBooleanArray";
 
-    public static final List<String> methodsIntroducingTaint = List.of(
-            freeInt, freeLong, freeDouble, freeFloat, freeShort, freeByte, freeChar, freeBoolean,
-            namedFreeByte, namedFreeDouble, namedFreeChar, namedFreeDouble, namedFreeFloat,
-            namedFreeInt, namedFreeLong, namedFreeShort
+    private static final String newArrayParamsDesc = "(" + sintDesc + "Z" + seDesc + ")";
+    private static final String newClassBasedArrayParamsDesc = "(" + classDesc + sintDesc + "Z" + seDesc + ")";
+    public static final String newSintSarrayDesc = newArrayParamsDesc + sintSarrayDesc;
+    public static final String newSlongSarrayDesc = newArrayParamsDesc + slongSarrayDesc;
+    public static final String newSdoubleSarrayDesc = newArrayParamsDesc + sdoubleSarrayDesc;
+    public static final String newSfloatSarrayDesc = newArrayParamsDesc + sfloatSarrayDesc;
+    public static final String newSshortSarrayDesc = newArrayParamsDesc + sshortSarrayDesc;
+    public static final String newSbyteSarrayDesc = newArrayParamsDesc + sbyteSarrayDesc;
+    public static final String newSboolSarrayDesc = newArrayParamsDesc + sboolSarrayDesc;
+    public static final String newSarraySarrayDesc = newClassBasedArrayParamsDesc + sarraySarrayDesc;
+    public static final String newPartnerClassSarrayDesc = newClassBasedArrayParamsDesc + partnerClassSarrayDesc;
+
+    private static final String newNamedArrayParamsDesc = "(" + stringDesc + sintDesc + "Z" + seDesc + ")";
+    private static final String newClassBasedNamedArrayParamsDesc = "(" + stringDesc + classDesc + sintDesc + "Z" + seDesc + ")";
+    public static final String newNamedSintSarrayDesc = newNamedArrayParamsDesc + sintSarrayDesc;
+    public static final String newNamedSlongSarrayDesc = newNamedArrayParamsDesc + slongSarrayDesc;
+    public static final String newNamedSdoubleSarrayDesc = newNamedArrayParamsDesc + sdoubleSarrayDesc;
+    public static final String newNamedSfloatSarrayDesc = newNamedArrayParamsDesc + sfloatSarrayDesc;
+    public static final String newNamedSshortSarrayDesc = newNamedArrayParamsDesc + sshortSarrayDesc;
+    public static final String newNamedSbyteSarrayDesc = newNamedArrayParamsDesc + sbyteSarrayDesc;
+    public static final String newNamedSboolSarrayDesc = newNamedArrayParamsDesc + sboolSarrayDesc;
+    public static final String newNamedSarraySarrayDesc = newClassBasedNamedArrayParamsDesc + sarraySarrayDesc;
+    public static final String newNamedPartnerClassSarrayDesc = newClassBasedNamedArrayParamsDesc + partnerClassSarrayDesc;
+
+
+    public static final List<String> getMulibPrimitiveWrapperDescs = List.of(
+            sintDesc, sdoubleDesc, sfloatDesc, sboolDesc, slongDesc, sshortDesc, sbyteDesc);
+
+    public static final List<String> specialInitializationMethodsWithoutArrays = List.of(
+            freeInt, namedFreeInt, freeLong, namedFreeLong, freeDouble, namedFreeDouble,
+            freeFloat, namedFreeFloat, freeShort, namedFreeShort, freeByte, namedFreeByte,
+            freeBoolean, namedFreeBoolean, freeChar, namedFreeChar, freeObject, namedFreeObject
     );
 
-    public static List<String> getMulibPrimitiveWrapperDescs() {
-        return List.of(sintDesc, sdoubleDesc, sfloatDesc, sboolDesc, slongDesc, sshortDesc, sbyteDesc);
-    }
+    public static final List<String> specialArrayInitializationMethods = List.of(
+            freeArray, namedFreeArray, freeIntArray, namedFreeIntArray, freeLongArray, namedFreeLongArray,
+            freeDoubleArray, namedFreeDoubleArray, freeFloatArray, namedFreeFloatArray,
+            freeShortArray, namedFreeShortArray, freeByteArray, namedFreeByteArray,
+            freeBooleanArray, namedFreeBooleanArray, freeCharArray, namedFreeCharArray
+    );
+
+    public static final List<String> freeArrayDescs = List.of(
+            partnerClassSarrayDesc, sarraySarrayDesc, sintSarrayDesc, slongSarrayDesc, sdoubleSarrayDesc,
+            sfloatSarrayDesc, sshortSarrayDesc, sbyteSarrayDesc, sboolSarrayDesc
+    );
 }
