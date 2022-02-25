@@ -219,7 +219,7 @@ public class MulibTransformer {
                 || (
                 !explicitlyAddedClasses.contains(toTransform)
                         && regardSpecialCase.stream().noneMatch(x -> x.equals(toTransform))
-                        && (ignoreFromPackages.stream().anyMatch(x -> toTransform.getPackageName().startsWith(x))
+                        && (ignoreFromPackages.stream().anyMatch(x -> toTransform.getPackageName().startsWith(x)) // (Multi-dimensional) arrays of primitives are treated separately in the transformation
                         || ignoreClasses.stream().anyMatch(x -> x.equals(toTransform))
                         || ignoreSubclassesOf.stream().anyMatch(x -> x.isAssignableFrom(toTransform)))
         );
@@ -331,12 +331,13 @@ public class MulibTransformer {
             throwExceptionIfNotEmpty(fn.invisibleAnnotations);
             throwExceptionIfNotEmpty(fn.invisibleTypeAnnotations);
             int access = fn.access;
+            String newSignature = calculateSignatureForSarrayIfNecessary(fn.desc);
             result.fields.add(new FieldNode(
                     MulibTransformer._API_VERSION,
                     access,
                     resultName,
                     decideOnReplaceDesc(fn.desc),
-                    /* signature */ null,
+                    newSignature,
                     /* value */ null
             ));
         }
@@ -392,6 +393,27 @@ public class MulibTransformer {
         maybeWriteToFile(result);
         maybeCheckIsValidAsmWrittenClass(result);
         return result;
+    }
+
+    private String calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
+        // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
+        if (fieldNodeDesc.startsWith("[[") || fieldNodeDesc.startsWith("[L")) {
+            String result = _calculateSignatureForSarrayIfNecessary(fieldNodeDesc);
+            return result;
+        }
+        return null;
+    }
+
+    private String _calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
+        // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
+        if (fieldNodeDesc.startsWith("[[")) {
+            // Is a nested sarray
+            return "L" + sarraySarrayCp + "<" + _calculateSignatureForSarrayIfNecessary(fieldNodeDesc.substring(1)) +  ">;";
+        } else if (fieldNodeDesc.startsWith("[L")) {
+            // Is a PartnerClassSarray
+            return "L" + partnerClassSarrayCp + "<" + decideOnReplaceDesc(fieldNodeDesc.substring(1)) + ">;";
+        }
+        return decideOnReplaceDesc(fieldNodeDesc);
     }
 
     private void ensureInitializedLibraryTypeFields(ClassNode result, MethodNode initNode) {
@@ -647,7 +669,7 @@ public class MulibTransformer {
                 // TODO Enhance with proper array-treatment
                 mnInsns.add(loadObjVar(toCopyIndex));
                 mnInsns.add(new FieldInsnNode(GETFIELD, result.name, fn.name, fn.desc));
-            } else if (!getMulibPrimitiveWrapperDescs().contains(fn.desc)) { // Object
+            } else if (!getMulibPrimitiveWrapperDescs.contains(fn.desc)) { // Object
                 String fieldType = fn.desc.substring(1, fn.desc.length() - 1);
                 LabelNode isNull = new LabelNode();
                 LabelNode alreadyCreated = new LabelNode();
@@ -854,7 +876,7 @@ public class MulibTransformer {
                 mnInsns.add(new InsnNode(ACONST_NULL));
                 mnInsns.add(new FieldInsnNode(PUTFIELD, result.name, fn.name, fn.desc));
                 // TODO Free arrays
-            } else if (!getMulibPrimitiveWrapperDescs().contains(fn.desc)) { // Is object
+            } else if (!getMulibPrimitiveWrapperDescs.contains(fn.desc)) { // Is object
                 String originalDesc = fn.desc.replace(_TRANSFORMATION_PREFIX, "");
                 String transformedOwnerName = fn.desc.substring(1, fn.desc.length() - 1);
                 LabelNode isNull = new LabelNode();
@@ -1108,7 +1130,7 @@ public class MulibTransformer {
                 insns.add(new InsnNode(ACONST_NULL));
                 insns.add(new FieldInsnNode(PUTFIELD, originalCn.name, fn.name, fn.desc));
                 // TODO Free arrays
-            } else if (!getMulibPrimitiveWrapperDescs().contains(fn.desc)) { // Is object
+            } else if (!getMulibPrimitiveWrapperDescs.contains(fn.desc)) { // Is object
                 insns.add(loadObjVar(originalObjectIndex));
 
                 insns.add(loadObjVar(valueTransformerIndex));
@@ -1305,7 +1327,7 @@ public class MulibTransformer {
         */
         for (TryCatchBlockNode tc : mn.tryCatchBlocks) {
             if (shouldBeTransformed(tc.type)) {
-                this.classesToTransform.add(getClassForPath(tc.type));
+                decideOnAddToClassesToTransform(tc.type);
             }
             String newType = decideOnReplaceDesc("L" + tc.type + ";");
             tc.type = newType.substring(1, newType.length() - 1);
@@ -1332,7 +1354,7 @@ public class MulibTransformer {
                 String typeOrPath = determineClassSubstringFromDesc(lvn.desc);
                 if (shouldBeTransformed(typeOrPath)
                         && !isAlreadyTransformedOrToBeTransformedPath(typeOrPath)) {
-                    this.classesToTransform.add(getClassForPath(typeOrPath));
+                    decideOnAddToClassesToTransform(typeOrPath);
                 }
             }
 
@@ -1424,6 +1446,41 @@ public class MulibTransformer {
         return false;
     }
 
+    private static String transformToSarrayDesc(String originalArDesc) {
+        assert originalArDesc.startsWith("[");
+        if (originalArDesc.startsWith("[[")) {
+            return sarraySarrayCp;
+        }
+        if (originalArDesc.startsWith("[L")) {
+            return partnerClassSarrayCp;
+        }
+        if (originalArDesc.startsWith("[I")) {
+            return sintSarrayCp;
+        }
+        if (originalArDesc.startsWith("[J")) {
+            return slongSarrayCp;
+        }
+        if (originalArDesc.startsWith("[D")) {
+            return sdoubleSarrayCp;
+        }
+        if (originalArDesc.startsWith("[F")) {
+            return sfloatSarrayCp;
+        }
+        if (originalArDesc.startsWith("[S")) {
+            return sshortSarrayCp;
+        }
+        if (originalArDesc.startsWith("[B")) {
+            return sbyteSarrayCp;
+        }
+        if (originalArDesc.startsWith("[Z")) {
+            return sshortSarrayCp;
+        }
+        if (originalArDesc.startsWith("[C")) {
+            return partnerClassSarrayCp;
+        }
+        throw new MulibRuntimeException("Array type is not treated: " + originalArDesc);
+    }
+
     /* MAIN TRANSFORMATION LOOP */
     // Replace tainted instructions and wrap to-be-wrapped instructions.
     private void transformAndAddInstructions(
@@ -1449,7 +1506,9 @@ public class MulibTransformer {
                 // This is the case if, for instance, a java.util.Iterator of an ArrayList is spawned to return elements
                 // TODO Handle this via the copy-/lazy-load constructor instead
                 TypeInsnNode tin = (TypeInsnNode) insn;
-                if (shouldBeTransformed(tin.desc)) { //
+                if (getClassForPath(tin.desc).isArray()) {
+                    tin.desc = transformToSarrayDesc(tin.desc);
+                } else if (shouldBeTransformed(tin.desc)) { //
                     tin.desc = decideOnReplaceName(tin.desc);
                 }
             } else if (insn instanceof VarInsnNode) {
@@ -1580,26 +1639,27 @@ public class MulibTransformer {
             }
         } else if (insn instanceof IntInsnNode) {
             if (insn.getOpcode() == NEWARRAY) {
-                IntInsnNode iin = (IntInsnNode) insn;
-                AbstractInsnNode last = resultInstrs.getLast();
-                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
-                    // For now we concretize the Sint which is used for loading.
-                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
-                    // We cast the concretized result to an int
-                    resultInstrs.add(newCastNode(Integer.class));
-                    // We retrieve the int value
-                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
-                }
-                switch (iin.operand) {
-                    case T_INT:
-                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
-                        break;
-                    case T_BOOLEAN:
-                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
-                        break;
-                    default:
-                        throw new NotYetImplementedException();
-                }
+                throw new NotYetImplementedException();
+//                IntInsnNode iin = (IntInsnNode) insn;
+//                AbstractInsnNode last = resultInstrs.getLast();
+//                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
+//                    // For now we concretize the Sint which is used for loading.
+//                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
+//                    // We cast the concretized result to an int
+//                    resultInstrs.add(newCastNode(Integer.class));
+//                    // We retrieve the int value
+//                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
+//                }
+//                switch (iin.operand) {
+//                    case T_INT:
+//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
+//                        break;
+//                    case T_BOOLEAN:
+//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
+//                        break;
+//                    default:
+//                        throw new NotYetImplementedException();
+//                }
             } else {
                 wrapInsnNodeCONST(insn, ta, resultInstrs, seIndex);
             }
@@ -1612,7 +1672,19 @@ public class MulibTransformer {
                 throw new NotYetImplementedException(String.valueOf(insn.getOpcode()));
             }
         } else if (insn instanceof LdcInsnNode) {
-            resultInstrs.add(newConstantAndWrapper(insn, getWrappingTypeForLdcInsn((LdcInsnNode) insn), seIndex));
+            LdcInsnNode ldc = (LdcInsnNode) insn;
+            byte typeOfLdcInsn = getWrappingTypeForLdcInsn(ldc);
+            InsnList wrapper;
+            if (typeOfLdcInsn != WR_TYPE) {
+                wrapper = newConstantAndWrapper(insn, typeOfLdcInsn, seIndex);
+            } else {
+                Type type = (Type) ldc.cst;
+                String newTypeDesc = decideOnReplaceDesc(type.getDescriptor());
+                Type newType = Type.getObjectType(newTypeDesc.substring(1, newTypeDesc.length() - 1));
+                wrapper = new InsnList();
+                wrapper.add(new LdcInsnNode(newType));
+            }
+            resultInstrs.add(wrapper);
         } else if (insn.getOpcode() == NEW) {
             TypeInsnNode typeInsnNode = (TypeInsnNode) insn;
             String descForType = "L" + typeInsnNode.desc + ";";
@@ -1620,11 +1692,12 @@ public class MulibTransformer {
             typeInsnNode.desc = replacementDesc.substring(1, replacementDesc.length() - 1);
             resultInstrs.add(insn);
         } else if (insn.getOpcode() == ANEWARRAY) {
-            TypeInsnNode typeInsnNode = (TypeInsnNode) insn;
-            String descForType = "[L" + typeInsnNode.desc + ";";
-            String replacementDesc = decideOnReplaceDesc(descForType);
-            typeInsnNode.desc = replacementDesc.substring(2, replacementDesc.length() - 1);
-            resultInstrs.add(insn);
+            throw new NotYetImplementedException();
+//            TypeInsnNode typeInsnNode = (TypeInsnNode) insn;
+//            String descForType = "[L" + typeInsnNode.desc + ";";
+//            String replacementDesc = decideOnReplaceDesc(descForType);
+//            typeInsnNode.desc = replacementDesc.substring(2, replacementDesc.length() - 1);
+//            resultInstrs.add(insn);
         } else if (insn instanceof MethodInsnNode) {
             MethodInsnNode min = (MethodInsnNode) insn;
             if (shouldBeTransformed(min.owner)) {
@@ -1726,6 +1799,8 @@ public class MulibTransformer {
                     if (min.getOpcode() == INVOKESTATIC && min.owner.equals(mulibCp)) {
                         String methodName;
                         String methodDesc;
+                        /// TODO Insert support for Mulib.freeArray(int)
+                        boolean initializeFreeArray = false;
                         switch (min.name) {
                             case freeInt:
                                 methodName = symSint;
@@ -1783,9 +1858,107 @@ public class MulibTransformer {
                                 methodName = namedSymSbyte;
                                 methodDesc = toMethodDesc(stringDesc+seDesc, sbyteDesc);
                                 break;
+                            case freeArray:
+                                initializeFreeArray = true;
+                                if (ta.taintedNewObjectArrayInsns.contains(min)) {
+                                    methodName = partnerClassSarray;
+                                    methodDesc = newPartnerClassSarrayDesc;
+                                } else {
+                                    methodName = sarraySarray;
+                                    methodDesc = newSarraySarrayDesc;
+                                }
+                                break;
+                            case freeIntArray:
+                                initializeFreeArray = true;
+                                methodName = sintSarray;
+                                methodDesc = newSintSarrayDesc;
+                                break;
+                            case freeLongArray:
+                                initializeFreeArray = true;
+                                methodName = slongSarray;
+                                methodDesc = newSlongSarrayDesc;
+                                break;
+                            case freeDoubleArray:
+                                initializeFreeArray = true;
+                                methodName = sdoubleSarray;
+                                methodDesc = newSdoubleSarrayDesc;
+                                break;
+                            case freeFloatArray:
+                                initializeFreeArray = true;
+                                methodName = sfloatSarray;
+                                methodDesc = newSfloatSarrayDesc;
+                                break;
+                            case freeShortArray:
+                                initializeFreeArray = true;
+                                methodName = sshortSarray;
+                                methodDesc = newSshortSarrayDesc;
+                                break;
+                            case freeByteArray:
+                                initializeFreeArray = true;
+                                methodName = sbyteSarray;
+                                methodDesc = newSbyteSarrayDesc;
+                                break;
+                            case freeBooleanArray:
+                                initializeFreeArray = true;
+                                methodName = sboolSarray;
+                                methodDesc = newSboolSarrayDesc;
+                                break;
+                            case namedFreeIntArray:
+                                initializeFreeArray = true;
+                                methodName = namedSintSarray;
+                                methodDesc = newNamedSintSarrayDesc;
+                                break;
+                            case namedFreeLongArray:
+                                initializeFreeArray = true;
+                                methodName = namedSlongSarray;
+                                methodDesc = newNamedSlongSarrayDesc;
+                                break;
+                            case namedFreeDoubleArray:
+                                initializeFreeArray = true;
+                                methodName = namedSdoubleSarray;
+                                methodDesc = newNamedSdoubleSarrayDesc;
+                                break;
+                            case namedFreeFloatArray:
+                                initializeFreeArray = true;
+                                methodName = namedSfloatSarray;
+                                methodDesc = newNamedSfloatSarrayDesc;
+                                break;
+                            case namedFreeShortArray:
+                                initializeFreeArray = true;
+                                methodName = namedSshortSarray;
+                                methodDesc = newNamedSshortSarrayDesc;
+                                break;
+                            case namedFreeByteArray:
+                                initializeFreeArray = true;
+                                methodName = namedSbyteSarray;
+                                methodDesc = newNamedSbyteSarrayDesc;
+                                break;
+                            case namedFreeBooleanArray:
+                                initializeFreeArray = true;
+                                methodName = namedSboolSarray;
+                                methodDesc = newNamedSboolSarrayDesc;
+                                break;
+                            case namedFreeArray:
+                                initializeFreeArray = true;
+                                if (ta.taintedNewObjectArrayInsns.contains(min)) {
+                                    methodName = namedPartnerClassSarray;
+                                    methodDesc = newNamedPartnerClassSarrayDesc;
+                                } else {
+                                    methodName = namedSarraySarray;
+                                    methodDesc = newNamedSarraySarrayDesc;
+                                }
+                                break;
                             default:
                                 throw new NotYetImplementedException(min.name);
                         }
+
+                        if (initializeFreeArray) {
+                            /// TODO Regard special case where length is set
+                            resultInstrs.add(newStaticSeCall(symSint, toMethodDesc(seDesc, sintDesc), seIndex));
+                            resultInstrs.add(new InsnNode(ICONST_1)); // true /// TODO Default is symbolic if not set differently
+                        }
+
+
                         resultInstrs.add(newStaticSeCall(methodName, methodDesc, seIndex));
                         return;
                     }
@@ -1827,7 +2000,7 @@ public class MulibTransformer {
             replaceJumpInsn(jin, ta, resultInstrs, seIndex);
         } else if (insn instanceof TypeInsnNode) {
             TypeInsnNode tin = (TypeInsnNode) insn;
-            assert tin.desc.contains(_TRANSFORMATION_PREFIX);
+            assert tin.desc.contains(_TRANSFORMATION_PREFIX) || freeArrayDescs.contains("L" + tin.desc + ";");
             if (tin.getOpcode() == INSTANCEOF) {
                 resultInstrs.add(new TypeInsnNode(CHECKCAST, partnerClassCp));
                 resultInstrs.add(new LdcInsnNode(Type.getObjectType(tin.desc)));
@@ -1841,25 +2014,26 @@ public class MulibTransformer {
         } else if (insn instanceof IntInsnNode) {
             IntInsnNode iin = (IntInsnNode) insn;
             if (op == NEWARRAY) {
-                AbstractInsnNode last = resultInstrs.getLast();
-                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
-                    // For now we concretize the Sint which is used for loading.
-                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
-                    // We cast the concretized result to an int
-                    resultInstrs.add(newCastNode(Integer.class));
-                    // We retrieve the int value
-                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
-                }
-                switch (iin.operand) {
-                    case T_INT:
-                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
-                        break;
-                    case T_BOOLEAN:
-                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
-                        break;
-                    default:
-                        throw new NotYetImplementedException();
-                }
+                throw new NotYetImplementedException();
+//                AbstractInsnNode last = resultInstrs.getLast();
+//                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
+//                    // For now we concretize the Sint which is used for loading.
+//                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
+//                    // We cast the concretized result to an int
+//                    resultInstrs.add(newCastNode(Integer.class));
+//                    // We retrieve the int value
+//                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
+//                }
+//                switch (iin.operand) {
+//                    case T_INT:
+//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
+//                        break;
+//                    case T_BOOLEAN:
+//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
+//                        break;
+//                    default:
+//                        throw new NotYetImplementedException();
+//                }
             } else {
                 throw new NotYetImplementedException();
             }
@@ -1996,16 +2170,17 @@ public class MulibTransformer {
             );
             resultInstrs.add(new VarInsnNode(ASTORE, iin.var)); // Adaptation of iin.var happened beforehand
         } else if (insn instanceof MultiANewArrayInsnNode) {
-            MultiANewArrayInsnNode man = (MultiANewArrayInsnNode) insn;
-            if (insn.getOpcode() != MULTIANEWARRAY) {
-                throw new NotYetImplementedException();
-            }
-            if (man.desc.equals("[[I")) { // TODO Temporary fix until free arrays are allowed
-
-                resultInstrs.add(new MultiANewArrayInsnNode("[[" + sintDesc, 2));
-                return;
-            }
             throw new NotYetImplementedException();
+//            MultiANewArrayInsnNode man = (MultiANewArrayInsnNode) insn;
+//            if (insn.getOpcode() != MULTIANEWARRAY) {
+//                throw new NotYetImplementedException();
+//            }
+//            if (man.desc.equals("[[I")) { // TODO Temporary fix until free arrays are allowed
+//
+//                resultInstrs.add(new MultiANewArrayInsnNode("[[" + sintDesc, 2));
+//                return;
+//            }
+//            throw new NotYetImplementedException();
         } else if (insn instanceof InvokeDynamicInsnNode) {
             InvokeDynamicInsnNode idin = (InvokeDynamicInsnNode) insn;
             if (!idin.bsm.getOwner().equals("java/lang/invoke/StringConcatFactory")) { // TODO Should be relatively easy; if owner is to be replaced: assume that method was replaced and add this method
@@ -2107,12 +2282,23 @@ public class MulibTransformer {
     private String decideOnReplaceName(String s) {
         if (shouldBeTransformed(s)) {
             if (!isAlreadyTransformedOrToBeTransformedPath(s)) {
-                classesToTransform.add(getClassForPath(s));
+                decideOnAddToClassesToTransform(s);
             }
             return addPrefix(s);
         } else {
             return s;
         }
+    }
+
+    private void decideOnAddToClassesToTransform(String path) {
+        if (path.startsWith("[")) {
+            path = path.substring(path.lastIndexOf('[') + 1);
+        }
+        if (path.startsWith("L")) {
+            assert path.endsWith(";");
+            path = path.substring(1, path.length() - 1);
+        }
+        classesToTransform.add(getClassForPath(path));
     }
 
     // Decide on the value by means of which we replace the given descriptor.
@@ -2138,7 +2324,29 @@ public class MulibTransformer {
             case 'V':
                 return currentDesc;
             case '[': // array
-                return "[" + decideOnReplaceDesc(currentDesc.substring(1));
+                char nextChar = currentDesc.charAt(1);
+                switch (nextChar) {
+                    case 'I': // int
+                        return sintSarrayDesc;
+                    case 'J': // long
+                        return slongSarrayDesc;
+                    case 'D': // double
+                        return sdoubleSarrayDesc;
+                    case 'F': // float
+                        return sfloatSarrayDesc;
+                    case 'S': // short
+                        return sshortSarrayDesc;
+                    case 'B': // byte
+                        return sbyteSarrayDesc;
+                    case 'Z': // boolean
+                        return sboolSarrayDesc;
+                    case 'L':
+                        return partnerClassSarrayDesc;
+                    case '[':
+                        return sarraySarrayDesc;
+                    default:
+                        throw new NotYetImplementedException(String.valueOf(nextChar));
+                }
             case 'L': // object
                 String typeName = currentDesc.substring(1, currentDesc.length() - 1);
                 if (shouldBeTransformed(typeName)) {

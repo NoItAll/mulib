@@ -67,6 +67,11 @@ public class TaintAnalysis {
 
     public final int maxVarIndexInsn;
 
+
+    public final Set<AbstractInsnNode> taintedNewObjectArrayInsns;
+
+    public final Set<AbstractInsnNode> taintedNewArrayArrayInsns;
+
     /**
      * Since local variables that are of type double or long are replaced by objects, the index must be adjusted.
      * Double and float local variables are of size 2 while object references are of size 1. Hence, the index of
@@ -94,7 +99,9 @@ public class TaintAnalysis {
             Set<MethodInsnNode> tryToGeneralize,
             Map<LocalVariableNode, Integer> newLvnIndices,
             Map<AbstractInsnNode, Integer> newIndexInsnIndices,
-            int maxVarIndexInsn) {
+            int maxVarIndexInsn,
+            Set<AbstractInsnNode> taintedNewObjectArrayInsns,
+            Set<AbstractInsnNode> taintedNewArrayArrayInsns) {
         this.taintedLocalVariables = taintedLocalVariables;
         this.taintedInstructions = taintedInstructions;
         this.instructionsToWrap = instructionsToWrap;
@@ -113,5 +120,7 @@ public class TaintAnalysis {
         this.newLvnIndices = Collections.unmodifiableMap(newLvnIndices);
         this.newIndexInsnIndices = Collections.unmodifiableMap(newIndexInsnIndices);
         this.maxVarIndexInsn = maxVarIndexInsn;
+        this.taintedNewObjectArrayInsns = Collections.unmodifiableSet(taintedNewObjectArrayInsns);
+        this.taintedNewArrayArrayInsns = Collections.unmodifiableSet(taintedNewArrayArrayInsns);
     }
 }

@@ -4,6 +4,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.*;
 import org.objectweb.asm.Opcodes;
+import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 
 import java.lang.reflect.Field;
@@ -26,7 +27,6 @@ public final class TransformationUtility {
     public static final byte WR_BOOL = 8;
     public static final byte WR_CHAR = 9;
     public static final byte WR_TYPE = 10;
-    public static final byte WR_ARRAY = 11;
 
     private TransformationUtility() {}
 
@@ -305,6 +305,7 @@ public final class TransformationUtility {
     }
 
     public static String[] getNameAndDescriptorForConcMethodOfSPrimitiveSubclass(byte type, boolean useSymbolicExecution) {
+        assert type < WR_TYPE : "Only primitives are allowed";
         String wrapperMethodName;
         String wrapperMethodDesc;
         String optionalSeDesc = useSymbolicExecution ? seDesc : "";
@@ -333,10 +334,6 @@ public final class TransformationUtility {
             wrapperMethodDesc = toMethodDesc("Z" + optionalSeDesc, sboolDesc);
         } else if (type == WR_CHAR) { // Char
             throw new NotYetImplementedException();
-        } else if (type == WR_TYPE) { // Type
-            throw new NotYetImplementedException(); // TODO Free objects
-        } else if (type == WR_ARRAY) { // Array
-            throw new NotYetImplementedException(); // TODO Free arrays
         } else {
             throw new NotYetImplementedException(String.valueOf(type));
         }
@@ -375,11 +372,13 @@ public final class TransformationUtility {
         } else if (insn.cst instanceof String) {
             return WR_STRING;
         } else {
-            if (insn != null) {
-                return (byte) (insn.cst.getClass().isArray() ? WR_ARRAY : WR_TYPE);
+            if (insn.cst instanceof Type) {
+                Type t = (Type) insn.cst;
+                return WR_TYPE;
+            } else {
+                throw new NotYetImplementedException(String.valueOf(insn.cst));
             }
         }
-        throw new NotYetImplementedException(String.valueOf(insn.cst));
     }
 
     public static byte getWrappingTypeForMethodInsn(MethodInsnNode insn) {
@@ -401,9 +400,8 @@ public final class TransformationUtility {
             case 'C':
                 return WR_CHAR;
             case 'L':
-                return WR_TYPE;
             case '[':
-                return WR_ARRAY;
+                return WR_TYPE;
             default:
                 throw new NotYetImplementedException(insn.owner + insn.name + insn.desc);
         }
