@@ -1640,27 +1640,45 @@ public class MulibTransformer {
             }
         } else if (insn instanceof IntInsnNode) {
             if (insn.getOpcode() == NEWARRAY) {
-                throw new NotYetImplementedException();
-//                IntInsnNode iin = (IntInsnNode) insn;
-//                AbstractInsnNode last = resultInstrs.getLast();
-//                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
-//                    // For now we concretize the Sint which is used for loading.
-//                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
-//                    // We cast the concretized result to an int
-//                    resultInstrs.add(newCastNode(Integer.class));
-//                    // We retrieve the int value
-//                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
-//                }
-//                switch (iin.operand) {
-//                    case T_INT:
-//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
-//                        break;
-//                    case T_BOOLEAN:
-//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
-//                        break;
-//                    default:
-//                        throw new NotYetImplementedException();
-//                }
+                IntInsnNode iin = (IntInsnNode) insn;
+                String methodName;
+                String methodDesc;
+                switch (iin.operand) {
+                    case T_INT:
+                        methodName = sintSarray;
+                        methodDesc = newSintSarrayDesc;
+                        break;
+                    case T_LONG:
+                        methodName = slongSarray;
+                        methodDesc = newSlongSarrayDesc;
+                        break;
+                    case T_DOUBLE:
+                        methodName = sdoubleSarray;
+                        methodDesc = newSdoubleSarrayDesc;
+                        break;
+                    case T_FLOAT:
+                        methodName = sfloatSarray;
+                        methodDesc = newSfloatSarrayDesc;
+                        break;
+                    case T_SHORT:
+                        methodName = sshortSarray;
+                        methodDesc = newSshortSarrayDesc;
+                        break;
+                    case T_BYTE:
+                        methodName = sbyteSarray;
+                        methodDesc = newSbyteSarrayDesc;
+                        break;
+                    case T_BOOLEAN:
+                        methodName = sboolSarray;
+                        methodDesc = newSboolSarrayDesc;
+                        break;
+                    default:
+                        throw new NotYetImplementedException();
+                }
+                // Wrap int. This has to be done manually, since we wrap the new array instruction
+                resultInstrs.add(newStaticSeCall("concSint", toMethodDesc("I" + seDesc, sintDesc), seIndex));
+                resultInstrs.add(new InsnNode(ICONST_0)); // The default is null
+                resultInstrs.add(newStaticSeCall(methodName, methodDesc, seIndex));
             } else {
                 wrapInsnNodeCONST(insn, ta, resultInstrs, seIndex);
             }
@@ -1693,12 +1711,7 @@ public class MulibTransformer {
             typeInsnNode.desc = replacementDesc.substring(1, replacementDesc.length() - 1);
             resultInstrs.add(insn);
         } else if (insn.getOpcode() == ANEWARRAY) {
-            throw new NotYetImplementedException();
-//            TypeInsnNode typeInsnNode = (TypeInsnNode) insn;
-//            String descForType = "[L" + typeInsnNode.desc + ";";
-//            String replacementDesc = decideOnReplaceDesc(descForType);
-//            typeInsnNode.desc = replacementDesc.substring(2, replacementDesc.length() - 1);
-//            resultInstrs.add(insn);
+            throw new NotYetImplementedException(); // Should not be wrapped. Rather, should be tainted
         } else if (insn instanceof MethodInsnNode) {
             MethodInsnNode min = (MethodInsnNode) insn;
             if (shouldBeTransformed(min.owner)) {
@@ -1956,9 +1969,8 @@ public class MulibTransformer {
                         if (initializeFreeArray) {
                             /// TODO Regard special case where length is set
                             resultInstrs.add(newStaticSeCall(symSint, toMethodDesc(seDesc, sintDesc), seIndex));
-                            resultInstrs.add(new InsnNode(ICONST_1)); // true /// TODO Default is symbolic if not set differently
+                            resultInstrs.add(new InsnNode(ICONST_1)); // true, Mulib.freeArray will always return symbolic defaults
                         }
-
 
                         resultInstrs.add(newStaticSeCall(methodName, methodDesc, seIndex));
                         return;
@@ -2009,32 +2021,55 @@ public class MulibTransformer {
                 resultInstrs.add(new MethodInsnNode(
                         INVOKESTATIC, seCp, "evalInstanceof", toMethodDesc(partnerClassDesc + classDesc + seDesc, sboolDesc)
                 ));
-            } else {
+            } else if (tin.getOpcode() == ANEWARRAY) {
+                resultInstrs.add(new LdcInsnNode(Type.getObjectType(tin.desc)));
+                resultInstrs.add(new InsnNode(SWAP)); // This should probably be changed
+                resultInstrs.add(new InsnNode((ICONST_0))); // false, arrays initialized with ANEWARRAY will return null if possible
+                resultInstrs.add(newStaticSeCall(partnerClassSarray, newPartnerClassSarrayDesc, seIndex));
+            } else if (CHECKCAST == tin.getOpcode() || NEW == tin.getOpcode()) {
                 resultInstrs.add(tin);
+            } else {
+                throw new NotYetImplementedException();
             }
         } else if (insn instanceof IntInsnNode) {
             IntInsnNode iin = (IntInsnNode) insn;
             if (op == NEWARRAY) {
-                throw new NotYetImplementedException();
-//                AbstractInsnNode last = resultInstrs.getLast();
-//                if (last.getOpcode() == ALOAD || last.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
-//                    // For now we concretize the Sint which is used for loading.
-//                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
-//                    // We cast the concretized result to an int
-//                    resultInstrs.add(newCastNode(Integer.class));
-//                    // We retrieve the int value
-//                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
-//                }
-//                switch (iin.operand) {
-//                    case T_INT:
-//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sintCp));
-//                        break;
-//                    case T_BOOLEAN:
-//                        resultInstrs.add(new TypeInsnNode(ANEWARRAY, sboolCp));
-//                        break;
-//                    default:
-//                        throw new NotYetImplementedException();
-//                }
+                String methodName;
+                String methodDesc;
+                switch (iin.operand) {
+                    case T_INT:
+                        methodName = sintSarray;
+                        methodDesc = newSintSarrayDesc;
+                        break;
+                    case T_LONG:
+                        methodName = slongSarray;
+                        methodDesc = newSlongSarrayDesc;
+                        break;
+                    case T_DOUBLE:
+                        methodName = sdoubleSarray;
+                        methodDesc = newSdoubleSarrayDesc;
+                        break;
+                    case T_FLOAT:
+                        methodName = sfloatSarray;
+                        methodDesc = newSfloatSarrayDesc;
+                        break;
+                    case T_SHORT:
+                        methodName = sshortSarray;
+                        methodDesc = newSshortSarrayDesc;
+                        break;
+                    case T_BYTE:
+                        methodName = sbyteSarray;
+                        methodDesc = newSbyteSarrayDesc;
+                        break;
+                    case T_BOOLEAN:
+                        methodName = sboolSarray;
+                        methodDesc = newSboolSarrayDesc;
+                        break;
+                    default:
+                        throw new NotYetImplementedException();
+                }
+                resultInstrs.add(new InsnNode(ICONST_0)); // false, default element is not symbolic
+                resultInstrs.add(newStaticSeCall(methodName, methodDesc, seIndex));
             } else {
                 throw new NotYetImplementedException();
             }
@@ -2068,7 +2103,45 @@ public class MulibTransformer {
                 return;
             }
             if (op >= IASTORE && op <= SASTORE) {
-                resultInstrs.add(new InsnNode(AASTORE));
+                String methodDesc;
+                String owner;
+                switch (op) {
+                    case IASTORE:
+                        owner = sintSarrayCp;
+                        methodDesc = sintSarrayStoreDesc;
+                        break;
+                    case LASTORE:
+                        owner = slongSarrayCp;
+                        methodDesc = slongSarrayStoreDesc;
+                        break;
+                    case FASTORE:
+                        owner = sfloatSarrayCp;
+                        methodDesc = sfloatSarrayStoreDesc;
+                        break;
+                    case DASTORE:
+                        owner = sdoubleSarrayCp;
+                        methodDesc = sdoubleSarrayStoreDesc;
+                        break;
+                    case AASTORE:
+                        owner = partnerClassSarrayCp;
+                        methodDesc = partnerClassSarrayStoreDesc; /// TODO can also be sarraysarray, differentiate in TaintAnalyzer and store in TaintAnalysis
+                        break;
+                    case BASTORE:
+                        owner = sbyteSarrayCp;
+                        methodDesc = sbyteSarrayStoreDesc; /// TODO Can also be sboolsarray, differentiate in TaintAnalyzer and store in TaintAnalysis
+                        break;
+                    case SASTORE:
+                        owner = sshortSarrayCp;
+                        methodDesc = sshortSarrayStoreDesc;
+                        break;
+                    case CASTORE:
+                    default:
+                        throw new NotYetImplementedException();
+                }
+                resultInstrs.add(loadObjVar(seIndex));
+                resultInstrs.add(newVirtualCall("store", methodDesc, owner));
+
+
                 return;
             }
             if (op >= LCMP && op <= DCMPG) {
@@ -2112,12 +2185,7 @@ public class MulibTransformer {
             if (op >= IALOAD && op <= SALOAD) {
                 AbstractInsnNode loadIndex = resultInstrs.getLast();
                 if (loadIndex.getOpcode() == ALOAD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
-                    // For now we concretize the Sint which is used for loading.
-                    resultInstrs.add(newStaticSeCall(concretize, concretizeDesc, seIndex));
-                    // We cast the concretized result to an int
-                    resultInstrs.add(newCastNode(Integer.class));
-                    // We retrieve the int value
-                    resultInstrs.add(newVirtualCall("intValue", "()I", integerCp));
+
                 } else if (loadIndex.getOpcode() == ALOAD || loadIndex.getOpcode() == GETFIELD) { // TODO Temporary fix until free arrays are implemented; this should not be necessary if we use Sarray
                     // For now we concretize the Sint which is used for loading.
                     resultInstrs.add(loadObjVar(seIndex));
