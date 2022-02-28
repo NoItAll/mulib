@@ -60,7 +60,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public abstract T select(Sint i, SymbolicExecution se);
 
-    public abstract T store(Sint i, T val, SymbolicExecution se);
+    public abstract void store(Sint i, T val, SymbolicExecution se);
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
@@ -108,8 +108,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sint store(Sint i, Sint val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sint val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -135,8 +135,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sdouble store(Sint i, Sdouble val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sdouble val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -162,8 +162,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sfloat store(Sint i, Sfloat val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sfloat val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -189,8 +189,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Slong store(Sint i, Slong val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Slong val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -216,8 +216,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sshort store(Sint i, Sshort val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sshort val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -243,8 +243,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sbyte store(Sint i, Sbyte val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sbyte val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -270,8 +270,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sbool store(Sint i, Sbool val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sbool val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -300,10 +300,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final T store(Sint i, T val, SymbolicExecution se) {
-            T result = (T) se.store(this, i, val);
-            assert result == null || getClazz().isAssignableFrom(result.getClass());
-            return result;
+        public final void store(Sint i, T val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
@@ -330,8 +328,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public final Sarray store(Sint i, Sarray val, SymbolicExecution se) {
-            return se.store(this, i, val);
+        public final void store(Sint i, Sarray val, SymbolicExecution se) {
+            se.store(this, i, val);
         }
 
         @Override
