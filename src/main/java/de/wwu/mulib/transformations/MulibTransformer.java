@@ -1714,19 +1714,19 @@ public class MulibTransformer {
     }
 
     // Wrap load instructions by creating a respective ConcXYZ object
-    private void wrapVarInsnNodeLOAD(VarInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
+    private static void wrapVarInsnNodeLOAD(VarInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
         byte wrappingType = getWrappingTypeForLoadInsn(insn, ta);
         resultInstrs.add(newConstantAndWrapper(insn, wrappingType, seIndex));
     }
 
     // Wrap XYZCONST opcode instructions.
-    private void wrapInsnNodeCONST(AbstractInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
+    private static void wrapInsnNodeCONST(AbstractInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
         byte wrappingType = getWrappingTypeForConstInsn(insn, ta);
         resultInstrs.add(newConstantAndWrapper(insn, wrappingType, seIndex));
     }
 
     // Wrap store instruction. We have to account for, e.g., booleans, since various types are written into using ISTORE.
-    private void wrapVarInsnNodeSTORE(VarInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
+    private static void wrapVarInsnNodeSTORE(VarInsnNode insn, TaintAnalysis ta, InsnList resultInstrs, int seIndex) {
         String[] nameAndDescriptor = getNameAndDescriptorForConcMethodOfSPrimitiveSubclass(getWrappingTypeForStoreInsn(insn, ta));
         resultInstrs.add(newStaticSeCall(nameAndDescriptor[0], nameAndDescriptor[1], seIndex));
         resultInstrs.add(new VarInsnNode(ASTORE, insn.var));
