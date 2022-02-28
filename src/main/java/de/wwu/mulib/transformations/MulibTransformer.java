@@ -1640,45 +1640,7 @@ public class MulibTransformer {
             }
         } else if (insn instanceof IntInsnNode) {
             if (insn.getOpcode() == NEWARRAY) {
-                IntInsnNode iin = (IntInsnNode) insn;
-                String methodName;
-                String methodDesc;
-                switch (iin.operand) {
-                    case T_INT:
-                        methodName = sintSarray;
-                        methodDesc = newSintSarrayDesc;
-                        break;
-                    case T_LONG:
-                        methodName = slongSarray;
-                        methodDesc = newSlongSarrayDesc;
-                        break;
-                    case T_DOUBLE:
-                        methodName = sdoubleSarray;
-                        methodDesc = newSdoubleSarrayDesc;
-                        break;
-                    case T_FLOAT:
-                        methodName = sfloatSarray;
-                        methodDesc = newSfloatSarrayDesc;
-                        break;
-                    case T_SHORT:
-                        methodName = sshortSarray;
-                        methodDesc = newSshortSarrayDesc;
-                        break;
-                    case T_BYTE:
-                        methodName = sbyteSarray;
-                        methodDesc = newSbyteSarrayDesc;
-                        break;
-                    case T_BOOLEAN:
-                        methodName = sboolSarray;
-                        methodDesc = newSboolSarrayDesc;
-                        break;
-                    default:
-                        throw new NotYetImplementedException();
-                }
-                // Wrap int. This has to be done manually, since we wrap the new array instruction
-                resultInstrs.add(newStaticSeCall("concSint", toMethodDesc("I" + seDesc, sintDesc), seIndex));
-                resultInstrs.add(new InsnNode(ICONST_0)); // The default is null
-                resultInstrs.add(newStaticSeCall(methodName, methodDesc, seIndex));
+                throw new NotYetImplementedException(); // Should not be wrapped. Rather, should be tainted
             } else {
                 wrapInsnNodeCONST(insn, ta, resultInstrs, seIndex);
             }
