@@ -142,7 +142,8 @@ public class ArrayChecks {
                     throw new MulibRuntimeException("Must not occur");
                 }
             }
-            Sint temp = objs.store(se.concSint(1), se.symSint(), se);
+            Sint temp = se.symSint();
+            objs.store(se.concSint(1), temp, se);
             if (first == null) {
                 first = temp;
             }
@@ -152,7 +153,8 @@ public class ArrayChecks {
                     throw new MulibRuntimeException("Must not occur");
                 }
             }
-            temp = objs.store(se.concSint(0), se.symSint(), se);
+            temp = se.symSint();
+            objs.store(se.concSint(0), temp, se);
             if (second == null) {
                 second = temp;
             }
