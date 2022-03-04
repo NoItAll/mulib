@@ -788,13 +788,12 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
-        if ((value == null && !Sprimitive.class.isAssignableFrom(sarray.getClazz())) || (value != null && !sarray.getClazz().isInstance(value))) {
-            throw new ArrayStoreException();
-        }
+        Sarray.checkIfValueIsStorableForSarray(sarray, value);
         Sint possiblySymIndex = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
 //        Sint concreteIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
+        Sarray.checkIfValueIsStorableForSarray(sarray, value);
         sarray.setStoreWasUsed();
         if (!sarray.onlyConcreteIndicesUsed()) {
             if (!se.nextIsOnKnownPath()) {

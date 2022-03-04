@@ -553,11 +553,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
-        if ((value == null && !Sprimitive.class.isAssignableFrom(sarray.getClazz())) || (value != null && !sarray.getClazz().isInstance(value))) {
-            throw new ArrayStoreException();
-        }
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
+        Sarray.checkIfValueIsStorableForSarray(sarray, value);
         sarray.setStoreWasUsed();
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.

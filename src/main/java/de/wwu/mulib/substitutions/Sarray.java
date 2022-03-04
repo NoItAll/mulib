@@ -54,6 +54,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         storeWasUsed = true;
     }
 
+    /**
+     * Returns the type of the elements stored in the Sarray. In the case of Sarray.SarraySarray, the type of
+     * Sarray is returned.
+     * @return The class that represents the type of elements stored in the Sarray
+     * @see SarraySarray#getInnerElementType()
+     */
     public final Class<T> getClazz() {
         return clazz;
     }
@@ -94,6 +100,44 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public long getId() {
         return id;
+    }
+
+    @SuppressWarnings("rawtypes")
+    public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
+        if (!(sarray instanceof Sarray.SarraySarray)) {
+            // Either is no SarraySarray
+            if (value == null && Sprimitive.class.isAssignableFrom(sarray.getClazz())
+                    || (value != null && !sarray.getClazz().isInstance(value))) {
+                // Then an ArrayStoreException should be thrown if null is to be stored and the Sarray does hold primitive values.
+                // If the value is not null, it must be assignable to the type stored in the Sarray.
+                throw new ArrayStoreException();
+            }
+        } else {
+            SarraySarray ss = (SarraySarray) sarray;
+            // If it is a Sarray,
+            if (value == null) {
+                // Null is valid for SarraySarray
+                return;
+            }
+            if (ss.elementsAreSarraySarrays()) {
+                // If the sarray stores sarrays, we have to compare it accordingly
+                if (!(value instanceof SarraySarray)) {
+                    throw new ArrayStoreException();
+                }
+                SarraySarray ssv = (SarraySarray) value;
+                if (ss.getInnerElementType().getComponentType() != ssv.getInnerElementType()) {
+                    throw new ArrayStoreException();
+                }
+                return;
+            } else {
+                if (!(value instanceof Sarray)) {
+                    throw new ArrayStoreException();
+                }
+                if (ss.getInnerElementType().getComponentType() != ((Sarray) value).getClazz()) {
+                    throw new ArrayStoreException();
+                }
+            }
+        }
     }
 
     public static class SintSarray extends Sarray<Sint> {
@@ -306,7 +350,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public T symbolicDefault(SymbolicExecution se) {
-            throw new NotYetImplementedException();
+            throw new NotYetImplementedException(); /// TODO
         }
 
         @Override
@@ -315,11 +359,115 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
     }
 
+    @SuppressWarnings("rawtypes")
     public static class SarraySarray extends Sarray<Sarray> {
 
-        public SarraySarray(Class<Sarray> clazz, Sint len, SymbolicExecution se,
-                            boolean defaultIsSymbolic) {
-            super(clazz, len, se, defaultIsSymbolic);
+        private final int dim;
+        private final Class<? extends SubstitutedVar> innerElementType;
+
+        public SarraySarray(Sint len, SymbolicExecution se,
+                            boolean defaultIsSymbolic,
+                            Class<? extends SubstitutedVar> innerElementType) {
+            super(Sarray.class, len, se, defaultIsSymbolic);
+            this.innerElementType = innerElementType;
+            assert innerElementType.isArray();
+            this.dim = determineDimFromInnerElementType(innerElementType);
+            assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
+        }
+
+        private static int determineDimFromInnerElementType(Class<?> innerElementType) {
+            int i = 1; // The SarraySarray this belongs to also counts
+            while (innerElementType.getComponentType() != null) {
+                innerElementType = innerElementType.getComponentType();
+                i++;
+            }
+            return i;
+        }
+
+        public Class<? extends SubstitutedVar> getInnerElementType() {
+            return innerElementType;
+        }
+
+        public boolean elementsAreSarraySarrays() {
+            return dim > 2;
+        }
+
+        @SuppressWarnings("unchecked")
+        public SarraySarray(
+                Sint len, Sint[] innerLengths,
+                SymbolicExecution se, Class<? extends SubstitutedVar> innerElementType) {
+            super(Sarray.class, len, se, false);
+            assert innerElementType.isArray();
+            this.dim = determineDimFromInnerElementType(innerElementType);
+            assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
+            assert dim >= innerLengths.length + 1 : "Dim is always >= the total number of specified lengths";
+            this.innerElementType = innerElementType;
+            Sint i = Sint.ZERO;
+            while (i.ltChoice(len, se)) {
+                Sint[] nextInnerLengths = new Sint[innerLengths.length-1];
+                System.arraycopy(innerLengths, 1, nextInnerLengths, 0, nextInnerLengths.length);
+                se.store(this, i,
+                        generateNonSymbolicSarrayDependingOnState(
+                                innerLengths[0],
+                                nextInnerLengths,
+                                (Class<? extends SubstitutedVar>) innerElementType.getComponentType(),
+                                se
+                        )
+                );
+                i = i.add(Sint.ONE, se);
+            }
+        }
+
+        private Sarray generateNonSymbolicSarrayDependingOnState(
+                Sint len, Sint[] innerLengths,
+                Class<? extends SubstitutedVar> nextInnerElementsType, SymbolicExecution se) {
+            if (elementsAreSarraySarrays()) {
+                assert nextInnerElementsType.isArray();
+                assert innerLengths.length > 2;
+                return SymbolicExecution.sarraySarray(
+                        len,
+                        innerLengths,
+                        nextInnerElementsType,
+                        se
+                );
+            }
+            return generateNonSarraySarray(len, nextInnerElementsType.getComponentType(), false, se);
+        }
+
+        @SuppressWarnings("unchecked")
+        private static Sarray generateNonSarraySarray(Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+            assert !innermostType.isArray();
+            assert Sprimitive.class.isAssignableFrom(innermostType)
+                    || PartnerClass.class.isAssignableFrom(innermostType);
+            // Determine which kind of array must be set
+            if (Sprimitive.class.isAssignableFrom(innermostType)) {
+                if (innermostType == Sint.class) {
+                    return SymbolicExecution.sintSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Slong.class) {
+                    return SymbolicExecution.slongSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Sdouble.class) {
+                    return SymbolicExecution.sdoubleSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Sfloat.class) {
+                    return SymbolicExecution.sfloatSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Sshort.class) {
+                    return SymbolicExecution.sshortSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Sbyte.class) {
+                    return SymbolicExecution.sbyteSarray(len, defaultIsSymbolic, se);
+                } else if (innermostType == Sbool.class) {
+                    return SymbolicExecution.sboolSarray(len, defaultIsSymbolic, se);
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else if (PartnerClass.class.isAssignableFrom(innermostType)) {
+                return SymbolicExecution.partnerClassSarray(
+                        (Class<? extends PartnerClass>) innermostType,
+                        len,
+                        defaultIsSymbolic,
+                        se
+                );
+            } else {
+                throw new NotYetImplementedException();
+            }
         }
 
         @Override
@@ -334,7 +482,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sarray symbolicDefault(SymbolicExecution se) {
-            throw new NotYetImplementedException();
+            if (elementsAreSarraySarrays()) {
+                return SymbolicExecution.sarraySarray(innerElementType, se.symSint(), defaultIsSymbolic(), se);
+            } else {
+                return generateNonSarraySarray(se.symSint(), innerElementType.getComponentType(), defaultIsSymbolic(), se);
+            }
         }
 
         @Override
