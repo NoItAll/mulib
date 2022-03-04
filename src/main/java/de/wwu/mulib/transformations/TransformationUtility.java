@@ -1067,6 +1067,16 @@ public final class TransformationUtility {
         return opname + " " + additions;
     }
 
+    public static String getBytecode(Iterable<AbstractInsnNode> ains) {
+        StringBuilder sb = new StringBuilder();
+
+        for (AbstractInsnNode ain : ains) {
+            sb.append("\t").append(insnToString(ain)).append("\r\n");
+        }
+        
+        return sb.toString();
+    }
+
     public static String getBytecodeForMethodNode(MethodNode mn) {
         StringBuilder sb = new StringBuilder();
         sb.append(mn.name).append(mn.desc).append("\r\n");

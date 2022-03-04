@@ -128,10 +128,6 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static <T> T[] freeArray(Class<T> arClass) {
-        throw _shouldHaveBeenReplaced();
-    }
-
     public static int[] freeIntArray() {
         throw _shouldHaveBeenReplaced();
     }
@@ -193,10 +189,6 @@ public final class Mulib {
     }
 
     public static <T> T namedFreeObject(String identifier, Class<T> objClass) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static <T> T[] namedFreeArray(String identifier, Class<T> arClass) {
         throw _shouldHaveBeenReplaced();
     }
 

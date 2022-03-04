@@ -44,27 +44,39 @@ public class ArrayFieldsWithInitialization {
 //    ArrayFieldsWithInitialization[] objectArray3;
 
     public ArrayFieldsWithInitialization() {
-        Class<short[]> parameter = short[].class;
+        Class<short[][]> parameter = short[][].class;
         intAr0 = Mulib.freeIntArray();
         doubleAr0 = Mulib.freeDoubleArray();
         floatAr0 = Mulib.freeFloatArray();
         longAr0 = Mulib.freeLongArray();
-        shortArs0 = Mulib.freeArray(parameter);
-        byteArs0 = Mulib.freeArray(byte[].class);
-        booleanArs0 = Mulib.freeArray(boolean[][].class);
-        objectArray0 = Mulib.freeArray(ArrayFieldsWithInitialization.class);
+        shortArs0 = Mulib.freeObject(parameter);
+        byteArs0 = Mulib.freeObject(byte[][].class);
+        booleanArs0 = Mulib.freeObject(boolean[][][].class);
+        objectArray0 = Mulib.freeObject(ArrayFieldsWithInitialization[].class);
     }
 
     public ArrayFieldsWithInitialization(boolean b0) {
-        Class<short[]> parameter = short[].class;
+        Class<short[][]> parameter = short[][].class;
         intAr0 = Mulib.namedFreeIntArray("is0");
         doubleAr0 = Mulib.namedFreeDoubleArray("ds0");
         floatAr0 = Mulib.namedFreeFloatArray("fs0");
         longAr0 = Mulib.namedFreeLongArray("ls0");
-        shortArs0 = Mulib.namedFreeArray("ss0", parameter);
-        byteArs0 = Mulib.namedFreeArray("bs0", byte[].class);
-        booleanArs0 = Mulib.namedFreeArray("bools0", boolean[][].class);
-        objectArray0 = Mulib.namedFreeArray("os0", ArrayFieldsWithInitialization.class);
+        shortArs0 = Mulib.namedFreeObject("ss0", parameter);
+        byteArs0 = Mulib.namedFreeObject("bs0", byte[][].class);
+        booleanArs0 = Mulib.namedFreeObject("bools0", boolean[][][].class);
+        objectArray0 = Mulib.namedFreeObject("os0", ArrayFieldsWithInitialization[].class);
+    }
+
+    public ArrayFieldsWithInitialization(boolean b0, boolean b1) {
+        Class<short[][]> parameter = short[][].class;
+        intAr0 = new int[0];
+        doubleAr0 = new double[0];
+        floatAr0 = new float[0];
+        longAr0 = new long[0];
+        shortArs0 = new short[0][0];
+        byteArs0 = new byte[0][0];
+        booleanArs0 = new boolean[0][][];
+        objectArray0 = new ArrayFieldsWithInitialization[0];
     }
 
 }
