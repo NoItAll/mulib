@@ -97,12 +97,14 @@ public final class TaintAnalyzer {
             // Determine the number of local variables of size 2,
             // set the index of TaintValues as well as the frame number.
             int numberOfInputsSized2 = 0;
+            Frame<TaintValue> firstFrame = frames[0];
             for (Frame<TaintValue> f : frames) {
                 for (int j = 0; j < f.getLocals(); j++) {
                     TaintValue localVal = f.getLocal(j);
                     localVal.index = j;
                     if (localVal.size == 2) {
-                        if (numberInputs + numberOfInputsSized2 - j > 0) {
+                        if (f == firstFrame && numberInputs + numberOfInputsSized2 - j > 0) {
+                            // We only need to determine the number of inputs sized 2 for the first frame
                             numberOfInputsSized2++;
                         }
                         localVal = f.getLocal(j + 1);
@@ -209,7 +211,7 @@ public final class TaintAnalyzer {
                     // PUTFIELD is defined to manipulate the operand stack as ..., objectref, value -> ...
                     // We thus check the top of the stack
                     TaintValue value = getFromTopOfStack(frameOfInsn);
-                    addToWrap(value.instrsWhereProduced);
+                    addWrapped(value.instrsWhereProduced);
                 }
             } else if (ain.getOpcode() == INVOKESTATIC && ((MethodInsnNode) ain).owner.equals(mulibCp)) {
                 // Regard special Mulib methods for introducing symbolic/free variables
@@ -260,7 +262,7 @@ public final class TaintAnalyzer {
                 InsnNode insn = (InsnNode) ain;
                 Frame<TaintValue> f = frames[mn.instructions.indexOf(insn)];
                 TaintValue tv = getFromTopOfStack(f);
-                addToWrap(tv.instrsWhereProduced);
+                addWrapped(tv.instrsWhereProduced);
             }
 
             // Also taint the local variables if they are part of the input
@@ -283,7 +285,7 @@ public final class TaintAnalyzer {
                 i++;
             }
             TaintValue fromTopOfStack = getFromTopOfStack(frameOfMethodInsn, i);
-            addToWrap(fromTopOfStack.instrsWhereProduced);
+            addWrapped(fromTopOfStack.instrsWhereProduced);
             currentParamNumber++;
         }
 
@@ -322,7 +324,8 @@ public final class TaintAnalyzer {
                     getInsnsUsingAnonymousLocalVariable(toAdd);
                 changed = insnUsingLocalVariable.stream()
                         .filter(this::canBeAddedToTainted)
-                        .map(taintedInstructions::add)
+                        .map(insn ->
+                                taintedInstructions.add(insn))
                         .anyMatch(Boolean::booleanValue);
             } else {
                 // Taint those instructions using the local variable
@@ -338,7 +341,7 @@ public final class TaintAnalyzer {
                         // Objects and arrays are tainted, not wrapped.
                         addTainted(producedBy);
                     } else {
-                        addToWrap(producedBy);
+                        addWrapped(producedBy);
                     }
                     addTainted(usedBy);
                 }
@@ -347,12 +350,12 @@ public final class TaintAnalyzer {
         return taintedInstructions.add(toAdd) || changed;
     }
 
-    private boolean addToWrap(Collection<AbstractInsnNode> toAdd) {
-        List<Boolean> changed = toAdd.stream().map(this::addToWrap).collect(Collectors.toList());
+    private boolean addWrapped(Collection<AbstractInsnNode> toAdd) {
+        List<Boolean> changed = toAdd.stream().map(this::addWrapped).collect(Collectors.toList());
         return changed.stream().anyMatch(Boolean::booleanValue);
     }
 
-    private boolean addToWrap(AbstractInsnNode toAdd) {
+    private boolean addWrapped(AbstractInsnNode toAdd) {
         if (toAdd instanceof MethodInsnNode) {
             String[] descSplit = splitMethodDesc(((MethodInsnNode) toAdd).desc);
             if (descSplit[1].length() == 1 && primitiveTypes.contains(descSplit[1])) {
@@ -477,7 +480,7 @@ public final class TaintAnalyzer {
                         // we must continue the taint.
                         // This value now is tainted.
                         // Those instructions that yield the given value, if not already tainted, must be wrapped.
-                        changed = addToWrap(val.instrsWhereProduced) || changed;
+                        changed = addWrapped(val.instrsWhereProduced) || changed;
                         // A tainted value must only be used by another tainted instruction.
                         changed = addTainted(val.instrsWhereUsed) || changed;
                     }
@@ -485,7 +488,7 @@ public final class TaintAnalyzer {
                     // If the value is used by a tainted instruction...
                     if (val.instrsWhereUsed.stream().anyMatch(taintedInstructions::contains)) {
                         // ...and the instructions producing this value are not already tainted, they must be wrapped.
-                        changed = addToWrap(val.instrsWhereProduced) || changed;
+                        changed = addWrapped(val.instrsWhereProduced) || changed;
                     }
                 }
             }
@@ -600,7 +603,7 @@ public final class TaintAnalyzer {
     private void addToArrayArrayOrObjectArrayInsnsDependingOnDesc(AbstractInsnNode selectOrStore, String desc, int additionalAALOADs) {
         assert taintedInstructions.contains(selectOrStore);
         String adjustedDesc = desc.substring(additionalAALOADs);
-        if (adjustedDesc.startsWith("[[")) {//((isSelect && adjustedDesc.startsWith("[[")) || (!isSelect && adjustedDesc.startsWith("["))) {
+        if (adjustedDesc.startsWith("[[")) {
             this.taintedNewArrayArrayInsns.add(selectOrStore);
         } else {
             this.taintedNewObjectArrayInsns.add(selectOrStore);
@@ -684,7 +687,7 @@ public final class TaintAnalyzer {
                 if (anyTainted) {
                     // Sanity check
                     assert taintedInstructions.containsAll(tv.instrsWhereUsed);
-                    addToWrap(min);
+                    addWrapped(min);
                 }
             }
 
