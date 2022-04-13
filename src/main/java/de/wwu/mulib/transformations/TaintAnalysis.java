@@ -86,6 +86,8 @@ public class TaintAnalysis {
      */
     public final Map<AbstractInsnNode, Integer> newIndexInsnIndices;
 
+    public final Map<AbstractInsnNode, String> selectedTypeFromSarray;
+
     public TaintAnalysis(
             Set<LocalVariableNode> taintedLocalVariables,
             Set<AbstractInsnNode> taintedInstructions,
@@ -101,7 +103,8 @@ public class TaintAnalysis {
             Map<AbstractInsnNode, Integer> newIndexInsnIndices,
             int maxVarIndexInsn,
             Set<AbstractInsnNode> taintedNewObjectArrayInsns,
-            Set<AbstractInsnNode> taintedNewArrayArrayInsns) {
+            Set<AbstractInsnNode> taintedNewArrayArrayInsns,
+            Map<AbstractInsnNode, String> selectedTypeFromSarray) {
         this.taintedLocalVariables = taintedLocalVariables;
         this.taintedInstructions = taintedInstructions;
         this.instructionsToWrap = instructionsToWrap;
@@ -122,5 +125,6 @@ public class TaintAnalysis {
         this.maxVarIndexInsn = maxVarIndexInsn;
         this.taintedNewObjectArrayInsns = Collections.unmodifiableSet(taintedNewObjectArrayInsns);
         this.taintedNewArrayArrayInsns = Collections.unmodifiableSet(taintedNewArrayArrayInsns);
+        this.selectedTypeFromSarray = Collections.unmodifiableMap(selectedTypeFromSarray);
     }
 }

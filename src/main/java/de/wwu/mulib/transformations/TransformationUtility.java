@@ -30,6 +30,10 @@ public final class TransformationUtility {
 
     private TransformationUtility() {}
 
+    public static boolean isStatic(int access) {
+        return (access & Opcodes.ACC_STATIC) != 0;
+    }
+
     public static int getNumInputs(MethodNode mn) {
         return getNumInputs(mn.desc, (mn.access & Opcodes.ACC_STATIC) != 0 );
     }
@@ -235,11 +239,12 @@ public final class TransformationUtility {
     }
 
     public static String determineClassSubstringFromDesc(String localVarDesc) {
-        if (localVarDesc.length() <= 1 || (localVarDesc.charAt(0) == '[' && localVarDesc.charAt(1) != 'L')) {
-            return localVarDesc;
+        String descWithoutArrays = localVarDesc.replace("[", "");
+        if (descWithoutArrays.length() == 1) {
+            return descWithoutArrays;
         }
-        int start = localVarDesc.charAt(0) == '[' ? 2 : 1;
-        return localVarDesc.substring(start, localVarDesc.length() - 1);
+        // Strip "L" and ";"
+        return descWithoutArrays.substring(1, descWithoutArrays.length() - 1);
     }
 
     /* BYTECODE HELPERS */
@@ -698,17 +703,17 @@ public final class TransformationUtility {
     }
 
     public static void checkMethodNode(MethodNode mn) {
-        throwExceptionIfNotEmpty(mn.attrs);
-        throwExceptionIfNotEmpty(mn.annotationDefault);
-        throwExceptionIfNotEmpty(mn.invisibleAnnotations);
-        throwExceptionIfNotEmpty(mn.invisibleTypeAnnotations);
-        throwExceptionIfNotEmpty(mn.invisibleLocalVariableAnnotations);
-        throwExceptionIfNotEmpty(mn.visibleAnnotations);
-        throwExceptionIfNotEmpty(mn.visibleTypeAnnotations);
-        throwExceptionIfNotEmpty(mn.visibleLocalVariableAnnotations);
-        throwExceptionIfNotEmpty(mn.invisibleParameterAnnotations);
-        throwExceptionIfNotEmpty(mn.visibleParameterAnnotations);
-        throwExceptionIfNotEmpty(mn.parameters);
+//        throwExceptionIfNotEmpty(mn.attrs);
+//        throwExceptionIfNotEmpty(mn.annotationDefault);
+//        throwExceptionIfNotEmpty(mn.invisibleAnnotations);
+//        throwExceptionIfNotEmpty(mn.invisibleTypeAnnotations);
+//        throwExceptionIfNotEmpty(mn.invisibleLocalVariableAnnotations);
+//        throwExceptionIfNotEmpty(mn.visibleAnnotations);
+//        throwExceptionIfNotEmpty(mn.visibleTypeAnnotations);
+//        throwExceptionIfNotEmpty(mn.visibleLocalVariableAnnotations);
+//        throwExceptionIfNotEmpty(mn.invisibleParameterAnnotations);
+//        throwExceptionIfNotEmpty(mn.visibleParameterAnnotations);
+//        throwExceptionIfNotEmpty(mn.parameters);
     }
 
     public static String insnToString(AbstractInsnNode ain) {

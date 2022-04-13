@@ -289,7 +289,7 @@ public final class MulibValueTransformer {
         } else if (searchRegionVal instanceof Sarray) {
             Sarray sarray = (Sarray) searchRegionVal;
             int length = (Integer) labelPrimitiveValue(sarray.getLength(), solverManager);
-            Object[] result = new Object[length]; // TODO be more specific
+            Object[] result = new Object[length];
             Set<Sint> indices = sarray.getCachedIndices();
             for (Sint i : indices) {
                 SubstitutedVar value = sarray.getForIndex(i);

@@ -41,6 +41,8 @@ public final class TaintAnalyzer {
 
     private final Set<AbstractInsnNode> taintedNewObjectArrayInsns = new HashSet<>();
     private final Set<AbstractInsnNode> taintedNewArrayArrayInsns = new HashSet<>();
+    // For PartnerClassSarrays and SarraySarrays we need to determine the selected type so that we can cast to it
+    private final Map<AbstractInsnNode, String> selectedTypeFromSarray = new HashMap<>();
 
     private boolean returnsBoolean;
     private boolean returnsByte;
@@ -51,6 +53,15 @@ public final class TaintAnalyzer {
 
     private final Map<LocalVariableNode, Set<AbstractInsnNode>> localVarToInstrsWhereProduced = new HashMap<>();
     private final Map<LocalVariableNode, Set<AbstractInsnNode>> localVarToInstrsWhereUsed = new HashMap<>();
+    // Key is AbstractInsnNode to allow for IincInsnNode
+    private final Map<AbstractInsnNode, LocalVariableNode> varInsnNodesToReferencedLocalVar = new HashMap<>();
+
+    // LocalVariableNode -> new index
+    private final Map<LocalVariableNode, Integer> newLvnIndices = new HashMap<>();
+
+    // VarInsnNode or IincInsnNode --> new index
+    private final Map<AbstractInsnNode, Integer> newIndexInsnIndices = new HashMap<>();
+
     @SuppressWarnings("unchecked")
     public TaintAnalyzer(
             MulibTransformer mulibTransformer,
@@ -69,7 +80,7 @@ public final class TaintAnalyzer {
                 if (f == null) continue;
                 // Sanity check
                 for (int i = 0; i < f.getStackSize(); i++) {
-                    assert (f.getStack(i).instrsWhereUsed.stream().filter(insn -> insn.getOpcode() != DUP).count() <= 1) : "This can occur using JMPs, but it is not yet dealt with";
+                    assert (f.getStack(i).instrsWhereUsed.stream().filter(insn -> insn.getOpcode() != DUP).count() <= 1) : "This can occur using JMPs, but it is not yet dedicatedly checked";
                 }
             }
             if (allFrames.length == 0) {
@@ -119,6 +130,59 @@ public final class TaintAnalyzer {
         }
     }
 
+    public TaintAnalysis analyze() {
+        /*
+        GATHER INFORMATION ON TAINTED LOCAL VARIABLES.
+        WE ASSUME THAT EACH INPUT-ARGUMENT CAN BE SYMBOLIC, THUS MULIB'S OWN TYPES FOR PRIMITIVES
+        OR A PARTNER CLASS MUST BE USED.
+        */
+        prepareLocalVariablesToUsingInstructionsMapping();
+        gatherInitialTaintedAndWrappedInstructions();
+        calculateTaintFixedPoint();
+
+        /* Add special method-instruction, Mulib.freeArray etc., that initialize an object array or an array array to a designated map
+         * This is done to differentiate at transformation time since both types of arrays are indicated by the same method
+         */
+        determineNewObjectArrayOrArrayArrayInsnsAndDimensionalityOfSarraySarrays();
+        // Differentiate Sarray.PartnerClassSarray and Sarray.SarraySarray for XASELECT and XASTORE
+        determineWhetherTaintedPartnerClassSarrayOrSarraySarrayInsnAndSelectedType();
+
+        // From the tainted instructions, determine those instructions that use boolean, byte, or short values. This is necessary
+        // to create Sbools, Sbytes, and Sshorts since Java bytecode does not differentiate between booleans, bytes, shorts, and ints.
+        // If the return type is boolean, we add this instruction to the tainted boolean instructions as well.
+        determineTaintedBoolShortByteInsns();
+
+        /* Add those instructions that must be concretized, since they are used in a non-transformed method, yet, are tainted. */
+        determineSpecialMethodTreatment();
+
+        // Determine new indices of explicit local variables
+        newLocalVariableIndices();
+        // Gather VarInsnNodes and IincInsnNodes
+        // Determine new indices of indexInsns (including those using anonymous local variables)
+        newLocalVariableIndexInsns();
+
+        // Get the maximal variable index, this is later used to determine the index of SymbolicExecution.
+        int maxVarIndexInsn = newIndexInsnIndices.values().stream()
+                .max(Integer::compareTo).orElse(-1);
+
+        return new TaintAnalysis(
+                taintedLocalVariables, taintedInstructions,
+                instructionsToWrap, frames,
+                taintedBoolInsns, toWrapSinceUsedByBoolInsns,
+                taintedByteInsns, toWrapSinceUsedByByteInsns,
+                taintedShortInsns, toWrapSinceUsedByShortInsns,
+                returnsBoolean, returnsByte, returnsShort,
+                concretizeForMethodCall,
+                tryToGeneralize,
+                newLvnIndices,
+                newIndexInsnIndices,
+                maxVarIndexInsn,
+                taintedNewObjectArrayInsns,
+                taintedNewArrayArrayInsns,
+                selectedTypeFromSarray
+        );
+    }
+
     private void gatherInitialTaintedAndWrappedInstructions() {
         // 1. Taint local variables if they are in the parameter list (and not ignored) or if they come
         // from a type that is to be replaced
@@ -140,12 +204,12 @@ public final class TaintAnalyzer {
                 if (!mulibTransformer.shouldBeTransformed(((FieldInsnNode) ain).owner)) {
                     continue;
                 }
-                taintedInstructions.add(ain);
+                addTainted(ain);
                 if (ain.getOpcode() == PUTFIELD || ain.getOpcode() == PUTSTATIC) {
                     // PUTFIELD is defined to manipulate the operand stack as ..., objectref, value -> ...
                     // We thus check the top of the stack
                     TaintValue value = getFromTopOfStack(frameOfInsn);
-                    instructionsToWrap.addAll(value.instrsWhereProduced);
+                    addToWrap(value.instrsWhereProduced);
                 }
             } else if (ain.getOpcode() == INVOKESTATIC && ((MethodInsnNode) ain).owner.equals(mulibCp)) {
                 // Regard special Mulib methods for introducing symbolic/free variables
@@ -172,9 +236,8 @@ public final class TaintAnalyzer {
                         throw new NotYetImplementedException();
                 }
                 if (specialArrayInitializationMethods.contains(m.name)) {
-                    taintedInstructions.add(m);
+                    taintMethodInsnAndParameters(m);
                 }
-
             } else if (ain.getOpcode() == INVOKESTATIC
                     || ain.getOpcode() == INVOKEVIRTUAL
                     || ain.getOpcode() == INVOKEINTERFACE
@@ -185,44 +248,129 @@ public final class TaintAnalyzer {
                 if (!mulibTransformer.shouldBeTransformed(min.owner)) {
                     methodsToPreserve.add(min);
                     continue;
-                } else {
-                    taintedInstructions.add(min);
                 }
-                // Add all parameters to the set of wrapped instructions, potentially, they might become tainted later on
-                Frame<TaintValue> frameOfMethodInsn = frames[ainIndex];
-                String[] methodDescSplit = splitMethodDesc(min.desc);
-                String[] parameterPart = getSingleDescsFromMethodParams(methodDescSplit[0]);
-                int numberDoubleSlot = (int) Arrays.stream(parameterPart).filter(s -> s.equals("D") || s.equals("J")).count();
-                for (int i = 0, currentParamNumber = 0; i < parameterPart.length + numberDoubleSlot; i++) {
-                    if (parameterPart[currentParamNumber].equals("D") || parameterPart[currentParamNumber].equals("J")) {
-                        i++;
-                    }
-                    TaintValue fromTopOfStack = getFromTopOfStack(frameOfMethodInsn, i);
-                    instructionsToWrap.addAll(fromTopOfStack.instrsWhereProduced);
-                    currentParamNumber++;
-                }
-
-                // Add all instructions using the non-void return value to the set of tainted instructions
-                if (methodDescSplit[1].equals("V")) {
-                    continue;
-                }
-                int indexOfMethodInsnReturnValue = mn.instructions.indexOf(ain.getNext());
-                Frame<TaintValue> frameOfMethodInsnReturnValue = frames[indexOfMethodInsnReturnValue];
-                TaintValue methodInsnReturnValue = getFromTopOfStack(frameOfMethodInsnReturnValue);
-                taintedInstructions.addAll(filterToAddToTaintedInstructions(methodInsnReturnValue.instrsWhereUsed));
+                taintMethodInsnAndParameters(min);
             } else if (ain.getOpcode() == NEW || ain.getOpcode() == ANEWARRAY) {
                 TypeInsnNode n = (TypeInsnNode) ain;
                 if (mulibTransformer.shouldBeTransformed(n.desc)) {
-                    taintedInstructions.add(n);
+                    addTainted(n);
                 }
             } else if (ain.getOpcode() >= IRETURN && ain.getOpcode() <= ARETURN) {
-                taintedInstructions.add(ain);
+                addTainted(ain);
+                InsnNode insn = (InsnNode) ain;
+                Frame<TaintValue> f = frames[mn.instructions.indexOf(insn)];
+                TaintValue tv = getFromTopOfStack(f);
+                addToWrap(tv.instrsWhereProduced);
             }
 
             // Also taint the local variables if they are part of the input
             for (int i = 0; i < numberInputs + numberOfInputsSized2; i++) {
-                addToTaintedInstructions(frameOfInsn, taintedInstructions, instructionsToWrap, i);
+                addToTaintedInstructions(frameOfInsn, i);
             }
+        }
+    }
+
+    private void taintMethodInsnAndParameters(MethodInsnNode min) {
+        taintedInstructions.add(min);
+        int ainIndex = mn.instructions.indexOf(min);
+        // Add all parameters to the set of wrapped instructions, potentially, they might become tainted later on
+        Frame<TaintValue> frameOfMethodInsn = frames[ainIndex];
+        String[] methodDescSplit = splitMethodDesc(min.desc);
+        String[] parameterPart = getSingleDescsFromMethodParams(methodDescSplit[0]);
+        int numberDoubleSlot = (int) Arrays.stream(parameterPart).filter(s -> s.equals("D") || s.equals("J")).count();
+        for (int i = 0, currentParamNumber = 0; i < parameterPart.length + numberDoubleSlot; i++) {
+            if (parameterPart[currentParamNumber].equals("D") || parameterPart[currentParamNumber].equals("J")) {
+                i++;
+            }
+            TaintValue fromTopOfStack = getFromTopOfStack(frameOfMethodInsn, i);
+            addToWrap(fromTopOfStack.instrsWhereProduced);
+            currentParamNumber++;
+        }
+
+        // Add all instructions using the non-void return value to the set of tainted instructions
+        if (methodDescSplit[1].equals("V")) {
+            return;
+        }
+        int indexOfMethodInsnReturnValue = mn.instructions.indexOf(min.getNext());
+        Frame<TaintValue> frameOfMethodInsnReturnValue = frames[indexOfMethodInsnReturnValue];
+        TaintValue methodInsnReturnValue = getFromTopOfStack(frameOfMethodInsnReturnValue);
+        addTainted(methodInsnReturnValue.instrsWhereUsed);
+    }
+
+    private boolean addTainted(Collection<AbstractInsnNode> toAdd) {
+        List<Boolean> changed = toAdd.stream()
+                .map(this::addTainted)
+                .collect(Collectors.toList());
+        return changed.stream().anyMatch(Boolean::booleanValue);
+    }
+
+    private boolean canBeAddedToTainted(AbstractInsnNode toAdd) {
+        return !(toAdd instanceof MethodInsnNode);
+    }
+
+    private boolean addTainted(AbstractInsnNode toAdd) {
+        if (!canBeAddedToTainted(toAdd)) {
+            return false;
+        }
+        boolean changed = false;
+        if (toAdd instanceof VarInsnNode) {
+            LocalVariableNode lvn = this.varInsnNodesToReferencedLocalVar.get(toAdd);
+            if (lvn == null) {
+                // Is anonymous variable that must be tainted; for this, we taint the respective
+                // instructions using it
+                Collection<AbstractInsnNode> insnUsingLocalVariable =
+                    getInsnsUsingAnonymousLocalVariable(toAdd);
+                changed = insnUsingLocalVariable.stream()
+                        .filter(this::canBeAddedToTainted)
+                        .map(taintedInstructions::add)
+                        .anyMatch(Boolean::booleanValue);
+            } else {
+                // Taint those instructions using the local variable
+                Set<AbstractInsnNode> producedBy = localVarToInstrsWhereProduced.get(lvn);
+                Set<AbstractInsnNode> usedBy = localVarToInstrsWhereUsed.get(lvn);
+                if (producedBy != null) {
+                    localVarToInstrsWhereProduced.remove(lvn);
+                    localVarToInstrsWhereUsed.remove(lvn);
+                    taintedLocalVariables.add(lvn);
+                    assert usedBy != null;
+                    changed = true;
+                    if (lvn.desc.startsWith("[") || lvn.desc.startsWith("L")) {
+                        // Objects and arrays are tainted, not wrapped.
+                        addTainted(producedBy);
+                    } else {
+                        addToWrap(producedBy);
+                    }
+                    addTainted(usedBy);
+                }
+            }
+        }
+        return taintedInstructions.add(toAdd) || changed;
+    }
+
+    private boolean addToWrap(Collection<AbstractInsnNode> toAdd) {
+        List<Boolean> changed = toAdd.stream().map(this::addToWrap).collect(Collectors.toList());
+        return changed.stream().anyMatch(Boolean::booleanValue);
+    }
+
+    private boolean addToWrap(AbstractInsnNode toAdd) {
+        if (toAdd instanceof MethodInsnNode) {
+            String[] descSplit = splitMethodDesc(((MethodInsnNode) toAdd).desc);
+            if (descSplit[1].length() == 1 && primitiveTypes.contains(descSplit[1])) {
+                return instructionsToWrap.add(toAdd);
+            } else {
+                // Is either already tainted or listed as to-be-ignored so it must not be wrapped
+                return false;
+            }
+        }
+        boolean isArrayInsnOrLoad = (toAdd.getOpcode() >= IALOAD && toAdd.getOpcode() <= SALOAD)
+                || (toAdd.getOpcode() >= IASTORE && toAdd.getOpcode() <= SASTORE)
+                || toAdd.getOpcode() == ANEWARRAY || toAdd.getOpcode() == NEWARRAY
+                || toAdd.getOpcode() == MULTIANEWARRAY
+                || toAdd.getOpcode() == ALOAD;
+        if (isArrayInsnOrLoad) {
+            return addTainted(toAdd);
+        } else {
+            return instructionsToWrap.add(toAdd);
         }
     }
 
@@ -263,7 +411,7 @@ public final class TaintAnalyzer {
         // tainted. These mappings are used to check whether one of the produced/used instructions was tainted.
         // In this case, we add all other produced/used instructions to the set of tainted instructions.
         for (LocalVariableNode lvn : localVariables) {
-            if (lvn.index < numberInputs + numberOfInputsSized2) {
+            if (lvn.index < numberInputs + numberOfInputsSized2 - 1) {
                 continue;
             }
             localVarToInstrsWhereProduced.put(lvn, new HashSet<>());
@@ -275,13 +423,40 @@ public final class TaintAnalyzer {
             int indexOfInstruction = -1;
             for (Frame<TaintValue> f : frames) {
                 indexOfInstruction++;
-                if (lvnStartIndex> indexOfInstruction
+                // Regard those frames in which the LocalVariableNode is valid
+                if (lvnStartIndex > indexOfInstruction
                         || lvnEndIndex < indexOfInstruction) {
                     continue;
                 }
                 TaintValue current = f.getLocal(lvn.index);
                 currentProduced.addAll(current.instrsWhereProduced);
                 currentUsed.addAll(current.instrsWhereUsed);
+                // Special treatment for arrays. Different from objects that are always
+                // transformed to be of the same type as the partner class, we do not immediately assume that
+                // arrays should be Sarrays. Instead, this is only the case if (an input of) XALOAD or XASTORE
+                // instructions are tainted, or if ASTORE is tainted for this array
+                // To associate the array local variable with its creation, we add the source of ASTORE
+                if (lvn.desc.startsWith("[")) {
+                    // ASTORE
+                    Set<AbstractInsnNode> creationsOfAstoreValues = currentProduced.stream()
+                            .filter(insn -> insn.getOpcode() == ASTORE)
+                            .flatMap(astore -> {
+                                Frame<TaintValue> frameOfAstore = frames[mn.instructions.indexOf(astore)];
+                                return getFromTopOfStack(frameOfAstore).instrsWhereProduced.stream();
+                            }).collect(Collectors.toSet());
+                    currentProduced.addAll(creationsOfAstoreValues);
+                }
+            }
+        }
+        for (AbstractInsnNode ain : mn.instructions) {
+            LocalVariableNode lvn = null;
+            if (ain instanceof VarInsnNode) {
+                lvn = getLocalVariableInScopeOfInsn(ain);
+            } else if (ain instanceof IincInsnNode) {
+                lvn = getLocalVariableInScopeOfInsn(ain);
+            }
+            if (lvn != null) {
+                varInsnNodesToReferencedLocalVar.put(ain, lvn);
             }
         }
     }
@@ -290,65 +465,29 @@ public final class TaintAnalyzer {
         boolean changed = true;
         while (changed) {
             changed = false;
-            for (Frame<TaintValue> f : frames) {
+            for (int numberOfFrame = 0; numberOfFrame < frames.length; numberOfFrame++) {
+                Frame<TaintValue> f = frames[numberOfFrame];
                 // Taint stack values
                 for (int i = 0; i < f.getStackSize(); i++) {
                     TaintValue val = f.getStack(i);
+                    // Check if the value is produced by a wrapped or a tainted instruction
                     if (val.instrsWhereProduced.stream().anyMatch(insn ->
                             taintedInstructions.contains(insn) || instructionsToWrap.contains(insn))) {
-                        if (val.instrsWhereUsed.stream().anyMatch(insn -> !(insn instanceof MethodInsnNode)
-                                && (!taintedInstructions.contains(insn) && !instructionsToWrap.contains(insn)))) {
-                            changed = true;
-                        }
                         // If any of the instructions where the current stack value was produced is tainted or wrapped,
                         // we must continue the taint.
                         // This value now is tainted.
                         // Those instructions that yield the given value, if not already tainted, must be wrapped.
-                        instructionsToWrap.addAll(val.instrsWhereProduced);
+                        changed = addToWrap(val.instrsWhereProduced) || changed;
                         // A tainted value must only be used by another tainted instruction.
-                        taintedInstructions.addAll(filterToAddToTaintedInstructions(val.instrsWhereUsed));
-                        val.instrsWhereUsed.stream()
-                                .filter(insn -> insn instanceof VarInsnNode
-                                        // Only add to tainted local variables, if it is not a benign LOAD instruction
-                                        && !(insn.getOpcode() >= ILOAD && insn.getOpcode() <= ALOAD))
-                                .forEach(insn -> {
-                                    VarInsnNode vin = (VarInsnNode) insn;
-                                    LocalVariableNode lvn = getLocalVariableInScopeOfInsn(vin, mn.instructions, localVariables);
-                                    if (lvn != null) {
-                                        taintedLocalVariables.add(lvn);
-                                    }
-                                });
+                        changed = addTainted(val.instrsWhereUsed) || changed;
                     }
 
                     // If the value is used by a tainted instruction...
                     if (val.instrsWhereUsed.stream().anyMatch(taintedInstructions::contains)) {
-                        if (!instructionsToWrap.containsAll(val.instrsWhereProduced)) {
-                            changed = true;
-                        }
                         // ...and the instructions producing this value are not already tainted, they must be wrapped.
-                        instructionsToWrap.addAll(val.instrsWhereProduced);
+                        changed = addToWrap(val.instrsWhereProduced) || changed;
                     }
                 }
-            }
-            // Now taint the local variables and related instructions
-            Set<LocalVariableNode> remove = new HashSet<>();
-            for (Map.Entry<LocalVariableNode, Set<AbstractInsnNode>> entry : localVarToInstrsWhereProduced.entrySet()) {
-                Set<AbstractInsnNode> currentProduced = entry.getValue();
-                if (currentProduced.stream().anyMatch(insn ->
-                        (taintedInstructions.contains(insn) || instructionsToWrap.contains(insn)))) {
-                    Set<AbstractInsnNode> currentUsed = localVarToInstrsWhereUsed.get(entry.getKey());
-                    assert currentUsed != null;
-                    instructionsToWrap.addAll(currentProduced);
-                    taintedInstructions.addAll(filterToAddToTaintedInstructions(currentUsed));
-                    taintedLocalVariables.add(entry.getKey());
-                    remove.add(entry.getKey());
-                }
-            }
-            // If a local variable has been tainted, it does not need to be tainted again, therefore we can remove
-            // the respective variable from the mapping
-            for (LocalVariableNode r : remove) {
-                localVarToInstrsWhereUsed.remove(r);
-                localVarToInstrsWhereProduced.remove(r);
             }
         }
 
@@ -361,113 +500,131 @@ public final class TaintAnalyzer {
                 Frame<TaintValue> f = frames[i];
                 TaintValue topOfStack = getFromTopOfStack(f);
                 if (topOfStack.size == 2 && topOfStack.instrsWhereProduced.stream().anyMatch(taintedInstructions::contains)) {
-                    taintedInstructions.add(ain);
+                    addTainted(ain);
                 }
             }
         }
     }
 
-    public TaintAnalysis analyze() {
-        /*
-        GATHER INFORMATION ON TAINTED LOCAL VARIABLES.
-        WE ASSUME THAT EACH INPUT-ARGUMENT CAN BE SYMBOLIC, THUS MULIB'S OWN TYPES FOR PRIMITIVES
-        OR A PARTNER CLASS MUST BE USED.
-        */
-        gatherInitialTaintedAndWrappedInstructions();
-        prepareLocalVariablesToUsingInstructionsMapping();
-        calculateTaintFixedPoint();
-
-        // From the tainted instructions, determine those instructions that use boolean, byte, or short values. This is necessary
-        // to create Sbools, Sbytes, and Sshorts since Java bytecode does not differentiate between booleans, bytes, shorts, and ints.
-        // If the return type is boolean, we add this instruction to the tainted boolean instructions as well.
-        determineTaintedBoolShortByteInsns();
-
-//        // There are four kinds of instructions to regard while treating arrays:
-//        // 1. {NEWARRAY, ANEWARRAY, MULTIANEWARRAY}
-//        // 2. {IALOAD, LALOAD, FALOAD, DALOAD, AALOAD, BALOAD, CALOAD, SALOAD}
-//        // 3. {IASTORE, LASTORE, FASTORE, DASTORE, AASTORE, BASTORE, CASTORE, SASTORE}
-//        // 4. ILOAD
-//        // 5. ARRAYLENGTH
-//        // TODO For now: avoid tainting array creations, loads and stores! for this, we remove the ILOAD and the ARRAYLENGTH from tainted
-//        Set<AbstractInsnNode> removeFromWrapping = new HashSet<>();
-//        for (AbstractInsnNode ain : instructionsToWrap) {
-//            if (ain.getOpcode() == ILOAD || ain.getOpcode() == ICONST_M1 || ain.getOpcode() == ICONST_0
-//                    || ain.getOpcode() == ICONST_1 || ain.getOpcode() == ICONST_2 || ain.getOpcode() == ICONST_3
-//                    || ain.getOpcode() == ICONST_4 || ain.getOpcode() == ICONST_5 || ain.getOpcode() == BIPUSH
-//                    || ain.getOpcode() == SIPUSH
-//                    || (ain.getOpcode() == GETFIELD && ((FieldInsnNode) ain).desc.equals("I")) // TODO Hardcoded for proof-of-concept
-//            ) {
-//                Frame<TaintValue> frame = frames[mn.instructions.indexOf(ain.getNext())];
-//                TaintValue upperStack = getFromTopOfStack(frame, 0);
-//                boolean iloadUsedInArrayLoadOrStore =
-//                        upperStack.instrsWhereUsed
-//                                .stream()
-//                                .anyMatch(insn -> (insn.getOpcode() >= IALOAD && insn.getOpcode() <= SALOAD)
-//                                        || (insn.getOpcode() >= IASTORE && insn.getOpcode() <= SASTORE)
-//                                        || insn.getOpcode() == ANEWARRAY
-//                                        || insn.getOpcode() == NEWARRAY
-//                                        || insn.getOpcode() == MULTIANEWARRAY);
-//                if (iloadUsedInArrayLoadOrStore) {
-//                    Set<AbstractInsnNode> used = upperStack.instrsWhereUsed;
-//                    for (AbstractInsnNode usedByAin : used) {
-//                        if (usedByAin.getOpcode() == IASTORE) { // TODO Hardcoded for proof-of-concept
-//                            // Only remove if it is the index which is to be wrapped!
-//                            // This is the frame of the value produced by ILOAD
-//                            Frame<TaintValue> iastoreFrame = frames[mn.instructions.indexOf(usedByAin)];
-//                            // Only remove the index-load from those instructions which are to be wrapped.
-//                            // The index load is on the second-most position on the stack.
-//                            TaintValue iastoreUpperStack = getFromTopOfStack(iastoreFrame, 1);
-//                            assert iastoreUpperStack.producedBy.size() == 1 || iastoreUpperStack.producedBy.size() == 0;
-//                            removeFromWrapping.addAll(iastoreUpperStack.instrsWhereProduced);
-//                        } else {
-//                            removeFromWrapping.addAll(upperStack.instrsWhereProduced);
-//                            break;
-//                        }
-//                    }
-//
-//                }
-//            }
-//        }
-//        instructionsToWrap.removeAll(removeFromWrapping);
-        /* Add special method-instructions (Mulib.freeArray etc.) that initialize an object array or an array array to a designated map */
-        determineNewObjectOrArrrayArrayInsns();
-
-        /* Add those instructions that must be concretized, since they are used in a non-transformed method, yet, are tainted. */
-        determineSpecialMethodTreatment();
-
-        // Determine new indices of explicit local variables
-        Map<LocalVariableNode, Integer> newLvnIndices =
-                newLocalVariableIndices(mn.instructions, taintedLocalVariables, localVariables);
-        // Gather VarInsnNodes and IincInsnNodes
-        // Determine new indices of indexInsns (including those using anonymous local variables)
-        Map<AbstractInsnNode, Integer> newIndexInsnIndices =
-                newLocalVariableIndexInsns(mn.instructions, taintedLocalVariables, newLvnIndices);
-
-        // Get the maximal variable index, this is later used to determine the index of SymbolicExecution.
-        int maxVarIndexInsn = newIndexInsnIndices.values().stream()
-                .max(Integer::compareTo).orElse(-1);
-
-        return new TaintAnalysis(
-                taintedLocalVariables, taintedInstructions,
-                instructionsToWrap, frames,
-                taintedBoolInsns, toWrapSinceUsedByBoolInsns,
-                taintedByteInsns, toWrapSinceUsedByByteInsns,
-                taintedShortInsns, toWrapSinceUsedByShortInsns,
-                returnsBoolean, returnsByte, returnsShort,
-                concretizeForMethodCall,
-                tryToGeneralize,
-                newLvnIndices,
-                newIndexInsnIndices,
-                maxVarIndexInsn,
-                taintedNewObjectArrayInsns,
-                taintedNewArrayArrayInsns
-        );
+    private void determineWhetherTaintedPartnerClassSarrayOrSarraySarrayInsnAndSelectedType() {
+        for (AbstractInsnNode ain : taintedInstructions) {
+            boolean isAALOAD = ain.getOpcode() == AALOAD;
+            boolean isAASTORE = ain.getOpcode() == AASTORE;
+            if (!isAALOAD && !isAASTORE) {
+                continue;
+            }
+            InsnNode in = (InsnNode) ain;
+            // Determine which type of array they belong to
+            int stackOffsetToArrayref;
+            if (isAALOAD) {
+                // stack: ..., arrayref, index
+                stackOffsetToArrayref = 1;
+            } else { // AASTORE == true
+                // stack: ..., arrayref, index, value
+                stackOffsetToArrayref = 2;
+            }
+            Frame<TaintValue> frameOfInsn = frames[mn.instructions.indexOf(in)];
+            TaintValue arrayrefTaintValue = getFromTopOfStack(frameOfInsn, stackOffsetToArrayref);
+            List<TaintValue> checkForSource = new ArrayList<>(arrayrefTaintValue.producedBy);
+            // This way we can determine the desc of the array which is to be returned
+            checkForSource.add(null);
+            int additionalAALOADs = 0;
+            boolean added = false;
+            boolean seenAALOAD = false;
+            String descOfRootArrayTargetedByStoreOrLoad = null;
+            outerLoop:
+            while (!checkForSource.isEmpty()) {
+                TaintValue check = checkForSource.remove(0);
+                if (check == null) {
+                    if (seenAALOAD) {
+                        seenAALOAD = false;
+                        additionalAALOADs++;
+                    }
+                    continue;
+                }
+                for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
+                    if (potentialArrayInitializer instanceof MethodInsnNode) {
+                        /// TODO GETFIELD, GETSTATIC?
+                        String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
+                        // Check if result is casted
+                        Frame<TaintValue> frameOfResultValueOfPotentialArrayInitializer
+                                = frames[mn.instructions.indexOf(potentialArrayInitializer.getNext())];
+                        // Method must have a return value, otherwise it would not be a producer
+                        assert splitMethodDesc(mdesc)[1] != null && !splitMethodDesc(mdesc)[1].equals("V");
+                        TaintValue returnValueOfMethodCall = getFromTopOfStack(frameOfResultValueOfPotentialArrayInitializer);
+                        Optional<AbstractInsnNode> checkcast = returnValueOfMethodCall.instrsWhereUsed.stream()
+                                .filter(insn -> insn.getOpcode() == CHECKCAST)
+                                .findFirst();
+                        if (checkcast.isPresent()) {
+                            descOfRootArrayTargetedByStoreOrLoad = ((TypeInsnNode) checkcast.get()).desc;
+                        } else {
+                            descOfRootArrayTargetedByStoreOrLoad = TransformationUtility.splitMethodDesc(mdesc)[1];
+                        }
+                        added = true;
+                    } else if (potentialArrayInitializer.getOpcode() == MULTIANEWARRAY) {
+                        MultiANewArrayInsnNode mana = (MultiANewArrayInsnNode) potentialArrayInitializer;
+                        // The desc of MultiANewArray is complete to start, we do not need to modify it
+                        descOfRootArrayTargetedByStoreOrLoad = mana.desc;
+                    } else if (potentialArrayInitializer.getOpcode() == ANEWARRAY) {
+                        TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
+                        //  ANEWARRAY-desc declares new array with components of tin.desc, hence, add "["
+                        if (tin.desc.startsWith("[") || (tin.desc.length() == 1 && primitiveTypes.contains(tin.desc))) {
+                            descOfRootArrayTargetedByStoreOrLoad = "[" + tin.desc;
+                        } else {
+                            descOfRootArrayTargetedByStoreOrLoad = "[L" + tin.desc + ";";
+                        }
+                        added = true;
+                    }
+                    if (descOfRootArrayTargetedByStoreOrLoad != null) {
+                        added = true;
+                        addToArrayArrayOrObjectArrayInsnsDependingOnDesc(ain, descOfRootArrayTargetedByStoreOrLoad, additionalAALOADs);
+                        break outerLoop;
+                    }
+                }
+                if (check.instrsWhereUsed.stream().anyMatch(insn -> insn.getOpcode() == AALOAD)) {
+                    seenAALOAD = true;
+                }
+                // We did not break the outer loop, thus, we check the previous elements
+                checkForSource.addAll(check.producedBy);
+                if (!checkForSource.isEmpty() && checkForSource.get(0) == null) {
+                    // Reached next layer
+                    checkForSource.add(null);
+                }
+            }
+            if (!added) {
+                throw new MulibRuntimeException("Could not decide whether AASTORE targets SarraySarray or PartnerClassSarray.");
+            }
+        }
     }
 
-    private void determineNewObjectOrArrrayArrayInsns() {
+    private void addToArrayArrayOrObjectArrayInsnsDependingOnDesc(AbstractInsnNode selectOrStore, String desc, int additionalAALOADs) {
+        assert taintedInstructions.contains(selectOrStore);
+        String adjustedDesc = desc.substring(additionalAALOADs);
+        if (adjustedDesc.startsWith("[[")) {//((isSelect && adjustedDesc.startsWith("[[")) || (!isSelect && adjustedDesc.startsWith("["))) {
+            this.taintedNewArrayArrayInsns.add(selectOrStore);
+        } else {
+            this.taintedNewObjectArrayInsns.add(selectOrStore);
+        }
+        if (selectOrStore.getOpcode() == AALOAD) {
+            String descToLoad;
+            if (adjustedDesc.startsWith("[")) {
+                descToLoad = adjustedDesc.substring(1); // Remove first [ to get type returned by AALOAD
+            } else if (adjustedDesc.startsWith("L") || (adjustedDesc.length() == 1 && primitiveTypes.contains(adjustedDesc))) {
+                descToLoad = adjustedDesc;
+            } else {
+                descToLoad = "L" + adjustedDesc + ";";
+            }
+            selectedTypeFromSarray.put(
+                    selectOrStore,
+                    descToLoad
+            );
+        }
+    }
+
+    private void determineNewObjectArrayOrArrayArrayInsnsAndDimensionalityOfSarraySarrays() {
         for (AbstractInsnNode ain : taintedInstructions) {
             if (ain instanceof MethodInsnNode
-                    && List.of(freeArray, namedFreeArray).contains(((MethodInsnNode) ain).name)) {
+                    && List.of(freeObject, namedFreeObject).contains(((MethodInsnNode) ain).name)) {
                 int arInitMethodIndex = mn.instructions.indexOf(ain);
                 Frame<TaintValue> arInitTvFrame = frames[arInitMethodIndex];
                 // When executing the method, check how many stack values are popped for it
@@ -484,22 +641,22 @@ public final class TaintAnalyzer {
                         if (ldc.cst instanceof String) {
                             continue;
                         }
-                        if (((Type) ldc.cst).getDescriptor().startsWith("[")) {
+                        if (((Type) ldc.cst).getDescriptor().startsWith("[[")) {
                             taintedNewArrayArrayInsns.add(ain);
                         } else {
                             taintedNewObjectArrayInsns.add(ain);
                         }
                     } else if (parameterInsn instanceof VarInsnNode) {
-                        if (parameterInsn.getOpcode() != ALOAD) {
-                            throw new MulibRuntimeException("We expect ALOAD instructions.");
-                        }
-                        LocalVariableNode localVariableNode = getLocalVariableInScopeOfInsn((VarInsnNode) parameterInsn, mn.instructions, localVariables);
-                        if (localVariableNode.desc.equals(stringDesc)) {
+                        assert parameterInsn.getOpcode() == ALOAD : "We expect ALOAD instructions.";
+                        LocalVariableNode localVariableNode = varInsnNodesToReferencedLocalVar.get(parameterInsn);
+                        if (localVariableNode == null) {
+                            throw new NotYetImplementedException();
+                        } else if (localVariableNode.desc.equals(stringDesc)) {
                             continue;
                         } else {
                             // The class described by the class must be fully described by parameters
                             // The signature of the LocalVariableNode is like "Ljava/lang/Class<[S>;
-                            // Extract the described class
+                            // Extract the described class.
                             String signature = localVariableNode.signature;
                             String classDesc = signature.substring(17, signature.length() - 2);
                             if (classDesc.startsWith("[")) {
@@ -527,7 +684,7 @@ public final class TaintAnalyzer {
                 if (anyTainted) {
                     // Sanity check
                     assert taintedInstructions.containsAll(tv.instrsWhereUsed);
-                    instructionsToWrap.add(min);
+                    addToWrap(min);
                 }
             }
 
@@ -584,15 +741,6 @@ public final class TaintAnalyzer {
         }
     }
 
-    // We do not add any more method nodes during the taint analysis since all those MethodInsnNodes that should be transformed
-    // are already added at the initialization. This way we avoid accidentally tainting methods that are to be preserved.
-    private static Collection<AbstractInsnNode> filterToAddToTaintedInstructions(Set<AbstractInsnNode> ains) {
-        return ains.stream()
-                .filter(insn ->
-                        (!(insn instanceof MethodInsnNode)))
-                .collect(Collectors.toList());
-    }
-
     private static byte getTypeForDesc(String desc) {
         // Check if the variable is boolean, byte, or short
         if ((!desc.equals("Z") && !desc.equals("B") && !desc.equals("S"))) {
@@ -606,56 +754,57 @@ public final class TaintAnalyzer {
 
     // Determine the subset of tainted instructions and instructions to wrap which are boolean instructions.
     private void determineTaintedBoolShortByteInsns() {
-        InsnList oldInstructionList = mn.instructions;
         List<LocalVariableNode> oldLocalVariables = mn.localVariables;
         returnsBoolean = mn.desc.substring(mn.desc.lastIndexOf(')') + 1).equals("Z");
         returnsByte = mn.desc.substring(mn.desc.lastIndexOf(')') + 1).equals("B");
         returnsShort = mn.desc.substring(mn.desc.lastIndexOf(')') + 1).equals("S");
         // Loop to determine those instructions that are to be tainted:
         for (AbstractInsnNode ain : taintedInstructions) {
+            // These instructions should not be tainted as they do not have any input value
+            assert ain.getOpcode() != ICONST_0 && ain.getOpcode() != ICONST_1;
             if (ain.getOpcode() == INSTANCEOF) {
-                int indexOfStackValue = oldInstructionList.indexOf(ain.getNext());
+                int indexOfStackValue = mn.instructions.indexOf(ain.getNext());
                 Frame<TaintValue> frameOfInstanceofResult = frames[indexOfStackValue];
                 TaintValue instanceofResult = getFromTopOfStack(frameOfInstanceofResult);
                 assert taintedInstructions.containsAll(instanceofResult.instrsWhereUsed);
                 taintedBoolInsns.addAll(instanceofResult.instrsWhereUsed);
-                continue;
-            }
-            // We start by looking for boolean, byte, and short local variable nodes
-            if (ain.getOpcode() == ILOAD
+            } else if (ain.getOpcode() == ILOAD
                     || ain.getOpcode() == ISTORE
                     || ain instanceof  FieldInsnNode) {
+                // We start by looking for boolean, byte, and short local variable nodes
                 // Find the type of the local or field variable. If the local or field variable is not of types
                 // boolean, byte, or short, continue with the next AbstractInsnNode
-                byte type; // 0 = boolean, 1 = byte, 2 = short
+                String desc;
                 if (ain.getOpcode() == ILOAD || ain.getOpcode() == ISTORE) {
                     // Get local variables in scope with the index
                     LocalVariableNode lvn =
-                            getLocalVariableInScopeOfInsn((VarInsnNode) ain, oldInstructionList, oldLocalVariables);
+                            getLocalVariableInScopeOfInsn(ain);
                     // Check if the variable is boolean, byte, or short
                     if (lvn == null) {
+                        // Anonymous variable
                         continue;
                     }
-                    type = getTypeForDesc(lvn.desc);
-                    if (type == -1) {
-                        continue;
-                    }
+                    desc = lvn.desc;
+
                 } else if (ain instanceof FieldInsnNode) {
                     FieldInsnNode fin = (FieldInsnNode) ain;
-                    type = getTypeForDesc(fin.desc);
-
-                    if (type == -1) {
-                        continue;
-                    }
+                    desc = fin.desc;
                 } else {
                     throw new MulibRuntimeException("Should not occur.");
                 }
+                byte type; // 0 = boolean, 1 = byte, 2 = short
+                type = getTypeForDesc(desc);
+                if (type == -1) {
+                    continue;
+                }
                 // Get those values that were computes using the now-loaded value. Then, get those values that
                 // use the respective computed values (if the computations are boolean comparisons).
-                int indexOfLoaded = oldInstructionList.indexOf(
+                int indexOfLoaded = mn.instructions.indexOf(
                         ain.getOpcode() == ILOAD || ain.getOpcode() == GETFIELD || ain.getOpcode() == GETSTATIC ?
+                                // In this case, the next frame has the value loaded on the top of the stack
                                 ain.getNext()
                                 :
+                                // Else is ISTORE, PUTFIELD, or PUTSTATIC. The value is then already on the top of the stack
                                 ain
                 );
                 Frame<TaintValue> frameOfInstruction = frames[indexOfLoaded];
@@ -687,7 +836,7 @@ public final class TaintAnalyzer {
                         toAdd
                 );
             } else if (ain.getOpcode() == IRETURN && (returnsBoolean || returnsByte || returnsShort)) {
-                int indexOfReturn = oldInstructionList.indexOf(ain);
+                int indexOfReturn = mn.instructions.indexOf(ain);
                 Frame<TaintValue> frameOfInstruction = frames[indexOfReturn];
                 TaintValue stackValueReturned = getFromTopOfStack(frameOfInstruction);
                 // Determine the set of instructions where this is added to:
@@ -717,7 +866,7 @@ public final class TaintAnalyzer {
                 if (!"ZBS".contains(returnPart)) {
                     continue;
                 }
-                int indexOfValue = oldInstructionList.indexOf(min.getNext());
+                int indexOfValue = mn.instructions.indexOf(min.getNext());
                 Frame<TaintValue> frameOfPushedValue = frames[indexOfValue];
                 TaintValue topOfStackOfValue = getFromTopOfStack(frameOfPushedValue);
                 if (returnPart.equals("Z")) {
@@ -728,9 +877,46 @@ public final class TaintAnalyzer {
                     assert returnPart.equals("S");
                     taintedShortInsns.addAll(topOfStackOfValue.instrsWhereUsed);
                 }
-            } else if (ain.getOpcode() == ICONST_0 || ain.getOpcode() == ICONST_1) {
-                // These instructions should not be tainted as they do not have any input value
-                throw new NotYetImplementedException();
+            } else if (ain.getOpcode() == BASTORE || ain.getOpcode() == BALOAD) {
+                // Differentiate BASTORE and BALOAD
+                Frame<TaintValue> frameOfArrayOp = frames[mn.instructions.indexOf(ain)];
+                int offset = ain.getOpcode() == BASTORE ? 2 : 1;
+                TaintValue arrayrefTaintValue = getFromTopOfStack(frameOfArrayOp, offset);
+                ArrayDeque<TaintValue> checkForSource = new ArrayDeque<>(arrayrefTaintValue.producedBy);
+                boolean added = false;
+                String desc = null;
+                outerLoop:
+                while (!checkForSource.isEmpty()) {
+                    TaintValue check = checkForSource.pop();
+                    for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
+                        if (potentialArrayInitializer instanceof MethodInsnNode) {
+                            String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
+                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
+                        } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
+                            TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
+                            desc = tin.desc;
+                        } else if (potentialArrayInitializer.getOpcode() == MULTIANEWARRAY) {
+                            MultiANewArrayInsnNode mana = (MultiANewArrayInsnNode) potentialArrayInitializer;
+                            desc = mana.desc;
+                        }
+
+                        if (desc != null) {
+                            String primitiveDesc = desc.replace("[", "");
+                            if (primitiveDesc.equals("Z")) {
+                                this.toWrapSinceUsedByBoolInsns.add(ain);
+                            } else if (primitiveDesc.equals("B")) {
+                                this.toWrapSinceUsedByByteInsns.add(ain);
+                            } else {
+                                throw new NotYetImplementedException(primitiveDesc);
+                            }
+                            added = true;
+                            break outerLoop;
+                        }
+                    }
+                    // We did not break the outer loop
+                    checkForSource.addAll(check.producedBy);
+                }
+                assert added : "Could not decide to which type of array the BASTORE belongs to.";
             }
         }
         // Loop to determine those instructions that are to be wrapped
@@ -738,7 +924,7 @@ public final class TaintAnalyzer {
             byte type;
             if (ain.getOpcode() == ILOAD || ain.getOpcode() == ISTORE) {
                 LocalVariableNode lvn =
-                        getLocalVariableInScopeOfInsn((VarInsnNode) ain, oldInstructionList, oldLocalVariables);
+                        getLocalVariableInScopeOfInsn(ain);
                 // Check if the variable is boolean
                 if (lvn == null) {
                     continue; // Not of type boolean, byte, or short --> not relevant here.
@@ -775,23 +961,19 @@ public final class TaintAnalyzer {
             } else if (List.of(ICONST_M1, ICONST_0, ICONST_1, ICONST_2, ICONST_3, ICONST_4, ICONST_5, BIPUSH, SIPUSH)
                     .contains(ain.getOpcode())) {
                 // Get taint value pushed on stack for the constant-push
-                int index = oldInstructionList.indexOf(ain.getNext());
+                int index = mn.instructions.indexOf(ain.getNext());
                 TaintValue tvOfIconst = getFromTopOfStack(frames[index]);
-
-                List<AbstractInsnNode> relevantInsnNodes =
+                // Case 1: value is used as input of method
+                List<AbstractInsnNode> relevantMethodInsnNodes =
                         tvOfIconst.instrsWhereUsed.stream()
                                 .filter(insn ->
                                         insn instanceof MethodInsnNode)
-                                .toList();
+                                .collect(Collectors.toList());
 
-                if (relevantInsnNodes.isEmpty()) {
-                    continue;
-                }
-
-                // Check whether, and if, where used as input for MethodInsnNodes:
+                // Check whether, and if, where used as input for MethodInsnNodes. It is sufficient to fint the first
+                // method.
                 Optional<AbstractInsnNode> optionalMethodInsnNode =
-                        relevantInsnNodes.stream()
-                                .filter(insn -> insn instanceof MethodInsnNode)
+                        relevantMethodInsnNodes.stream()
                                 .findFirst();
                 if (optionalMethodInsnNode.isPresent()) {
                     MethodInsnNode anyMethodInsn = (MethodInsnNode) optionalMethodInsnNode.get();
@@ -799,7 +981,7 @@ public final class TaintAnalyzer {
                     String[] paramAndReturn = splitMethodDesc(anyMethodInsn.desc);
                     String[] paramsDescSplit = getSingleDescsFromMethodParams(paramAndReturn[0]);
                     // Get frame of method insn
-                    Frame<TaintValue> frameOfMethodInsn = frames[oldInstructionList.indexOf(anyMethodInsn)];
+                    Frame<TaintValue> frameOfMethodInsn = frames[mn.instructions.indexOf(anyMethodInsn)];
                     // Check stack at this position. At which position is tvOfIconst?
                     int posInParams = paramsDescSplit.length;
                     for (int i = frameOfMethodInsn.getStackSize() - 1; i >= 0; i--) {
@@ -818,16 +1000,72 @@ public final class TaintAnalyzer {
                     } else if (desc.equals("S")) {
                         toWrapSinceUsedByShortInsns.add(ain);
                     }
+                    continue; // We do not even need to check XASTORES, it is clear that this has to be wrapped.
                 }
+
+                // Case 2: Value used in SASTORE or BASTORE
+                List<AbstractInsnNode> relevantXASTORENodes = tvOfIconst.instrsWhereUsed.stream()
+                        .filter(insn -> insn.getOpcode() == SASTORE || insn.getOpcode() == BASTORE)
+                        .collect(Collectors.toList());
+                Optional<AbstractInsnNode> optionalXASTORENode =
+                        relevantXASTORENodes.stream()
+                                .findFirst();
+                if (optionalXASTORENode.isEmpty()) {
+                    continue;
+                }
+                AbstractInsnNode store = optionalXASTORENode.get();
+                // Determine type of array this store belongs to
+                Frame<TaintValue> frameOfStore = frames[mn.instructions.indexOf(store)];
+                // Make sure that we are talking about the value, and not the index here
+                if (getFromTopOfStack(frameOfStore) != tvOfIconst) {
+                    continue;
+                }
+                TaintValue arrayrefTaintValue = getFromTopOfStack(frameOfStore, 2);
+                ArrayDeque<TaintValue> checkForSource = new ArrayDeque<>(arrayrefTaintValue.producedBy);
+                boolean added = false;
+                String desc = null;
+                outerLoop:
+                while (!checkForSource.isEmpty()) {
+                    TaintValue check = checkForSource.pop();
+                    for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
+                        if (potentialArrayInitializer instanceof MethodInsnNode) {
+                            String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
+                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
+                        } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
+                            TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
+                            desc = tin.desc;
+                        } else if (potentialArrayInitializer.getOpcode() == MULTIANEWARRAY) {
+                            MultiANewArrayInsnNode mana = (MultiANewArrayInsnNode) potentialArrayInitializer;
+                            desc = mana.desc;
+                        }
+
+                        if (desc != null) {
+                            String primitiveDesc = desc.replace("[", "");
+                            if (primitiveDesc.equals("Z")) {
+                                this.toWrapSinceUsedByBoolInsns.add(ain);
+                            } else if (primitiveDesc.equals("B")) {
+                                this.toWrapSinceUsedByByteInsns.add(ain);
+                            } else {
+                                throw new NotYetImplementedException(primitiveDesc);
+                            }
+                            added = true;
+                            break outerLoop;
+                        }
+                    }
+                    // We did not break the outer loop
+                    checkForSource.addAll(check.producedBy);
+                }
+                assert added : "Could not decide to which type of array the BASTORE belongs to.";
             }
         }
+
         // We determine which JumpInstructions are using purely boolean values
         Set<AbstractInsnNode> jumpInsns = taintedInstructions.stream()
                 .filter(insn -> insn instanceof JumpInsnNode)
                 .collect(Collectors.toSet());
         assert instructionsToWrap.stream().noneMatch(insn -> insn instanceof JumpInsnNode);
         for (AbstractInsnNode ain : jumpInsns) {
-            int index = oldInstructionList.indexOf(ain);
+            int index = mn.instructions.indexOf(ain);
             if (ain.getOpcode() == IFEQ || ain.getOpcode() == IFNE) {
                 // The int is on top of the stack
                 TaintValue topOfStack = getFromTopOfStack(frames[index]);
@@ -888,18 +1126,27 @@ public final class TaintAnalyzer {
         return false;
     }
 
-    private static LocalVariableNode getLocalVariableInScopeOfInsn(
-            VarInsnNode insn,
-            InsnList l,
-            Collection<LocalVariableNode> lvns) {
-        return getLocalVariableInScopeOfInsn(l.indexOf(insn), insn.var, insn.getOpcode(), l, lvns);
-    }
-
-    private static LocalVariableNode getLocalVariableInScopeOfInsn(
-            IincInsnNode insn,
-            InsnList l,
-            Collection<LocalVariableNode> lvns) {
-        return getLocalVariableInScopeOfInsn(l.indexOf(insn), insn.var, insn.getOpcode(), l, lvns);
+    private LocalVariableNode getLocalVariableInScopeOfInsn(
+            AbstractInsnNode insn) {
+        if (insn instanceof VarInsnNode) {
+            return getLocalVariableInScopeOfInsn(
+                    mn.instructions.indexOf(insn),
+                    ((VarInsnNode) insn).var,
+                    insn.getOpcode(),
+                    mn.instructions,
+                    localVariables
+            );
+        } else if (insn instanceof IincInsnNode) {
+            return getLocalVariableInScopeOfInsn(
+                    mn.instructions.indexOf(insn),
+                    ((IincInsnNode) insn).var,
+                    insn.getOpcode(),
+                    mn.instructions,
+                    localVariables
+            );
+        } else {
+            throw new MulibRuntimeException("Expecting either VarInsnNode or IincInsnNode.");
+        }
     }
 
     private static LocalVariableNode getLocalVariableInScopeOfInsn(
@@ -925,6 +1172,62 @@ public final class TaintAnalyzer {
         }
         // Can occur if variable is not granted a dedicated local variable place (e.g. because it is not used, or is anonymous)
         return null;
+    }
+
+    private Collection<AbstractInsnNode> getInsnsUsingAnonymousLocalVariable(AbstractInsnNode ain) {
+        if (ain instanceof VarInsnNode) {
+            return getInsnsUsingAnonymousLocalVariable(((VarInsnNode) ain).var);
+        } else if (ain instanceof IincInsnNode) {
+            assert ain.getOpcode() == IINC;
+            return getInsnsUsingAnonymousLocalVariable(((IincInsnNode) ain).var);
+        } else {
+            throw new MulibRuntimeException("We expect a VarInsnNode or an IincInsnNode here");
+        }
+    }
+
+    private Collection<AbstractInsnNode> getInsnsUsingAnonymousLocalVariable(int insnVar) {
+        Collection<AbstractInsnNode> result = new ArrayList<>();
+        InsnList insns = mn.instructions;
+        List<LocalVariableNode> lvns = mn.localVariables;
+        List<int[]> reservedIntervals = new ArrayList<>();
+        for (LocalVariableNode lvn : lvns) {
+            // Check if there are other local variable nodes that have this index
+            if (lvn.index == insnVar) {
+                int s = insns.indexOf(lvn.start);
+                int e = insns.indexOf(lvn.end);
+                reservedIntervals.add(new int[] {s, e});
+            }
+        }
+
+        // Add those instructions using the variable where not in reservedInterval
+        int var;
+        int ainPos;
+        nextAin:
+        for (AbstractInsnNode ain : insns) {
+            if (ain instanceof VarInsnNode) {
+                var = ((VarInsnNode) ain).var;
+            } else if (ain instanceof IincInsnNode) {
+                var = ((IincInsnNode) ain).var;
+            } else {
+                continue;
+            }
+            // If not the same position in variable table is regarded: continue
+            if (var != insnVar) {
+                continue;
+            }
+            ainPos = insns.indexOf(ain);
+            // Check all intervals
+            for (int[] ri : reservedIntervals) {
+                // If is in interval, move on to next ain
+                if (ri[0] <= ainPos && ri[1] >= ainPos) {
+                    continue nextAin;
+                }
+            }
+            // Otherwise, add to result
+            result.add(ain);
+        }
+
+        return result;
     }
 
     private static int getNumberTaintedLocalVariablesWithTwoSlotsInScopeOfInsn(
@@ -961,7 +1264,8 @@ public final class TaintAnalyzer {
             Set<AbstractInsnNode> specialTypeInsnsToAdd) {
 
         specialTypeInsnsToAdd.stream()
-                .filter(insn -> !taintedSpecialTypeInsns.contains(insn) && !toWrapSinceUsedBySpecialTypeInsns.contains(insn))
+                .filter(insn -> !taintedSpecialTypeInsns.contains(insn)
+                        && !toWrapSinceUsedBySpecialTypeInsns.contains(insn))
                 .forEach(insn -> {
                     if (instructionsToWrap.contains(insn)) {
                         toWrapSinceUsedBySpecialTypeInsns.add(insn);
@@ -971,46 +1275,39 @@ public final class TaintAnalyzer {
                 });
     }
 
-    private static Map<AbstractInsnNode, Integer> newLocalVariableIndexInsns(
-            InsnList insns,
-            Set<LocalVariableNode> taintedLocalVariables,
-            Map<LocalVariableNode, Integer> newLocalVariableIndices) {
-        List<AbstractInsnNode> indexInsns = getIndexInsns(insns);
+    private void newLocalVariableIndexInsns() {
+        List<AbstractInsnNode> indexInsns = getIndexInsns(mn.instructions);
 
-        // VarInsnNode or IincInsnNode --> new index
-        Map<AbstractInsnNode, Integer> result = new HashMap<>();
         for (AbstractInsnNode indexInsn : indexInsns) {
             LocalVariableNode lvn;
             int indexInsnVarIndex;
             if (indexInsn instanceof VarInsnNode) {
                 indexInsnVarIndex = ((VarInsnNode) indexInsn).var;
-                lvn = getLocalVariableInScopeOfInsn((VarInsnNode) indexInsn, insns, newLocalVariableIndices.keySet());
+                lvn = getLocalVariableInScopeOfInsn(indexInsn);
             } else if (indexInsn instanceof IincInsnNode) {
                 indexInsnVarIndex = ((IincInsnNode) indexInsn).var;
-                lvn = getLocalVariableInScopeOfInsn((IincInsnNode) indexInsn, insns, newLocalVariableIndices.keySet());
+                lvn = getLocalVariableInScopeOfInsn(indexInsn);
             } else {
                 throw new MulibRuntimeException("Only VarInsnNode and IincInsnNode should be used here");
             }
             if (lvn == null) {
-
                 // In this case, we have a index instruction that uses an anonymous local variable
                 int number = getNumberTaintedLocalVariablesWithTwoSlotsInScopeOfInsn(
-                        insns.indexOf(indexInsn),
+                        mn.instructions.indexOf(indexInsn),
                         indexInsnVarIndex,
                         indexInsn.getOpcode(),
-                        insns,
+                        mn.instructions,
                         taintedLocalVariables
                 );
-                result.put(indexInsn, indexInsnVarIndex - number);
+                newIndexInsnIndices.put(indexInsn, indexInsnVarIndex - number);
             } else {
                 // We have a local variable node within the scope, we can simply use its new index
-                Integer newIndex = newLocalVariableIndices.get(lvn);
+                Integer newIndex = newLvnIndices.get(lvn);
                 assert newIndex != null;
-                result.put(indexInsn, newIndex);
+                newIndexInsnIndices.put(indexInsn, newIndex);
             }
         }
 
-        return result;
     }
 
     private static List<AbstractInsnNode> getIndexInsns(InsnList insns) {
@@ -1019,10 +1316,8 @@ public final class TaintAnalyzer {
                 .collect(Collectors.toList());
     }
 
-    private static Map<LocalVariableNode, Integer> newLocalVariableIndices(
-            InsnList insns,
-            Set<LocalVariableNode> taintedLocalVariables,
-            List<LocalVariableNode> localVariables) {
+    private void newLocalVariableIndices() {
+        InsnList insns = mn.instructions;
         Map<LocalVariableNode, List<LocalVariableNode>> taintedDoubleSlotsToAffectedLocalVariables = new HashMap<>();
         for (LocalVariableNode taintedLvn : taintedLocalVariables) {
             // We only have to regard index-shifts for those tainted variables that are double-slots, i.e., those
@@ -1058,31 +1353,26 @@ public final class TaintAnalyzer {
         }
         // We now calculate new indices for all local variables which must be index-shifted since a double-slot
         // local variable is to be substituted.
-        Map<LocalVariableNode, Integer> result = new HashMap<>();
         for (List<LocalVariableNode> affectedLocalVariables : taintedDoubleSlotsToAffectedLocalVariables.values()) {
             for (LocalVariableNode affected : affectedLocalVariables) {
-                result.putIfAbsent(affected, affected.index);
-                result.put(affected, result.get(affected) - 1);
+                newLvnIndices.putIfAbsent(affected, affected.index);
+                newLvnIndices.put(affected, newLvnIndices.get(affected) - 1);
             }
         }
         // Add the unaffected local variable nodes as well
         for (LocalVariableNode lvn : localVariables) {
-            result.putIfAbsent(lvn, lvn.index);
+            newLvnIndices.putIfAbsent(lvn, lvn.index);
         }
-
-        return result;
     }
 
     private void addToTaintedInstructions(
             Frame<TaintValue> f,
-            Set<AbstractInsnNode> taintedInstructions,
-            Set<AbstractInsnNode> instructionsToWrap,
             int toAddForIndex) {
         for (int i = 0; i < f.getLocals(); i++) {
             TaintValue localInputVarTaintValue = f.getLocal(i);
             if (localInputVarTaintValue.index != toAddForIndex) continue;
-            instructionsToWrap.addAll(localInputVarTaintValue.instrsWhereProduced);
-            taintedInstructions.addAll(filterToAddToTaintedInstructions(localInputVarTaintValue.instrsWhereUsed));
+            addTainted(localInputVarTaintValue.instrsWhereProduced);
+            addTainted(localInputVarTaintValue.instrsWhereUsed);
         }
     }
 }

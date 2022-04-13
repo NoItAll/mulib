@@ -273,14 +273,16 @@ public class MulibContext {
             }
 
             SubstitutedVar[] namedVars = l.getNamedVars();
-            Constraint[] disjunctionConstraints = new Constraint[namedVars.length];
+            List<Constraint> disjunctionConstraints = new ArrayList<>();
             for (int i = 0; i < namedVars.length; i++) {
                 SubstitutedVar sv = namedVars[i];
-                Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
-                disjunctionConstraints[i] = disjunctionConstraint;
+                if (sv instanceof Sprimitive) {
+                    Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
+                    disjunctionConstraints.add(disjunctionConstraint);
+                }
             }
 
-            Constraint newConstraint = Or.newInstance(disjunctionConstraints);
+            Constraint newConstraint = Or.newInstance(disjunctionConstraints.toArray(new Constraint[0]));
             Constraint[] additionalSolutionConstraints = new Constraint[latestSolutionConstraint.length + 1];
             System.arraycopy(latestSolutionConstraint, 0 , additionalSolutionConstraints, 0, latestSolutionConstraint.length);
             additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;

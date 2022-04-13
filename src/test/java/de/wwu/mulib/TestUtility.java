@@ -32,12 +32,13 @@ public final class TestUtility {
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
-//                        .setINCR_ACTUAL_CP_BUDGET(32)
                         .setCONCOLIC(false)
                         .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
+//                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+//                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
         );
     }
 

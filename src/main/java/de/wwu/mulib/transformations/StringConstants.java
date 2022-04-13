@@ -48,6 +48,9 @@ public final class StringConstants {
     public static final String partnerClassCp = cpForClass(PartnerClass.class);
     public static final String partnerClassDesc = cdescForClass(PartnerClass.class);
 
+    public static final String sarrayCp = cpForClass(Sarray.class);
+    public static final String sarrayDesc = cdescForClass(Sarray.class);
+
     public static final String substitutedVarCp = cpForClass(SubstitutedVar.class);
     public static final String substitutedVarDesc = cdescForClass(SubstitutedVar.class);
 
@@ -251,7 +254,6 @@ public final class StringConstants {
     public static final String freeByteArray = "freeByteArray";
     public static final String freeBooleanArray = "freeBooleanArray";
     public static final String freeCharArray = "freeCharArray";
-    public static final String freeArray = "freeArray";
 
     public static final String namedFreeInt = "namedFreeInt";
     public static final String namedFreeLong = "namedFreeLong";
@@ -262,7 +264,6 @@ public final class StringConstants {
     public static final String namedFreeBoolean = "namedFreeBoolean";
     public static final String namedFreeChar = "namedFreeChar";
     public static final String namedFreeObject = "namedFreeObject";
-    public static final String namedFreeArray = "namedFreeArray";
     public static final String namedFreeIntArray = "namedFreeIntArray";
     public static final String namedFreeLongArray = "namedFreeLongArray";
     public static final String namedFreeDoubleArray = "namedFreeDoubleArray";
@@ -282,10 +283,11 @@ public final class StringConstants {
     public static final String newSbyteSarrayDesc = newArrayParamsDesc + sbyteSarrayDesc;
     public static final String newSboolSarrayDesc = newArrayParamsDesc + sboolSarrayDesc;
     public static final String newSarraySarrayDesc = newClassBasedArrayParamsDesc + sarraySarrayDesc;
+    public static final String newSarraySarrayWithFixedDimensionsDesc = "(" +  sintDesc + "[" + sintDesc + classDesc + seDesc + ")" + sarraySarrayDesc;
     public static final String newPartnerClassSarrayDesc = newClassBasedArrayParamsDesc + partnerClassSarrayDesc;
 
     private static final String newNamedArrayParamsDesc = "(" + stringDesc + sintDesc + "Z" + seDesc + ")";
-    private static final String newClassBasedNamedArrayParamsDesc = "(" + stringDesc + classDesc + sintDesc + "Z" + seDesc + ")";
+    private static final String newNamedClassBasedArrayParamsDesc = "(" + stringDesc + classDesc + sintDesc + "Z" + seDesc + ")";
     public static final String newNamedSintSarrayDesc = newNamedArrayParamsDesc + sintSarrayDesc;
     public static final String newNamedSlongSarrayDesc = newNamedArrayParamsDesc + slongSarrayDesc;
     public static final String newNamedSdoubleSarrayDesc = newNamedArrayParamsDesc + sdoubleSarrayDesc;
@@ -293,9 +295,37 @@ public final class StringConstants {
     public static final String newNamedSshortSarrayDesc = newNamedArrayParamsDesc + sshortSarrayDesc;
     public static final String newNamedSbyteSarrayDesc = newNamedArrayParamsDesc + sbyteSarrayDesc;
     public static final String newNamedSboolSarrayDesc = newNamedArrayParamsDesc + sboolSarrayDesc;
-    public static final String newNamedSarraySarrayDesc = newClassBasedNamedArrayParamsDesc + sarraySarrayDesc;
-    public static final String newNamedPartnerClassSarrayDesc = newClassBasedNamedArrayParamsDesc + partnerClassSarrayDesc;
+    public static final String newNamedSarraySarrayDesc = newNamedClassBasedArrayParamsDesc + sarraySarrayDesc;
+    public static final String newNamedPartnerClassSarrayDesc = newNamedClassBasedArrayParamsDesc + partnerClassSarrayDesc;
 
+    /* SARRAY SELECTS */
+    private static final String sarraySelectDescTemplate = "(" + sintDesc + seDesc + ")%s";
+    public static final String sintSarraySelectDesc = String.format(sarraySelectDescTemplate, sintDesc);
+    public static final String sdoubleSarraySelectDesc = String.format(sarraySelectDescTemplate, sdoubleDesc);
+    public static final String sfloatSarraySelectDesc = String.format(sarraySelectDescTemplate, sfloatDesc);
+    public static final String slongSarraySelectDesc = String.format(sarraySelectDescTemplate, slongDesc);
+    public static final String sshortSarraySelectDesc = String.format(sarraySelectDescTemplate, sshortDesc);
+    public static final String sbyteSarraySelectDesc = String.format(sarraySelectDescTemplate, sbyteDesc);
+    public static final String sboolSarraySelectDesc = String.format(sarraySelectDescTemplate, sboolDesc);
+    public static final String partnerClassSarraySelectDesc = String.format(sarraySelectDescTemplate, partnerClassDesc);
+    public static final String sarraySarraySelectDesc = String.format(sarraySelectDescTemplate, sarrayDesc);
+
+
+    /* SARRAY STORES */
+    private static final String sarrayStoreDescTemplate = "(" + sintDesc + "%s" + seDesc + ")V";
+    public static final String sintSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sintDesc);
+    public static final String sdoubleSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sdoubleDesc);
+    public static final String sfloatSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sfloatDesc);
+    public static final String slongSarrayStoreDesc = String.format(sarrayStoreDescTemplate, slongDesc);
+    public static final String sshortSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sshortDesc);
+    public static final String sbyteSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sbyteDesc);
+    public static final String sboolSarrayStoreDesc = String.format(sarrayStoreDescTemplate, sboolDesc);
+    public static final String partnerClassSarrayStoreDesc = String.format(sarrayStoreDescTemplate, partnerClassDesc);
+    public static final String sarraySarrayStoreDesc = String.format(sarrayStoreDescTemplate, sarrayDesc);
+
+    /* SARRAY LENGTH */
+    public static final String sarrayLength = "length";
+    public static final String sarrayLengthDesc = "()" + sintDesc;
 
     public static final List<String> getMulibPrimitiveWrapperDescs = List.of(
             sintDesc, sdoubleDesc, sfloatDesc, sboolDesc, slongDesc, sshortDesc, sbyteDesc);
@@ -307,7 +337,7 @@ public final class StringConstants {
     );
 
     public static final List<String> specialArrayInitializationMethods = List.of(
-            freeArray, namedFreeArray, freeIntArray, namedFreeIntArray, freeLongArray, namedFreeLongArray,
+            freeObject, namedFreeObject, freeIntArray, namedFreeIntArray, freeLongArray, namedFreeLongArray,
             freeDoubleArray, namedFreeDoubleArray, freeFloatArray, namedFreeFloatArray,
             freeShortArray, namedFreeShortArray, freeByteArray, namedFreeByteArray,
             freeBooleanArray, namedFreeBooleanArray, freeCharArray, namedFreeCharArray

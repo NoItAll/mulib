@@ -20,6 +20,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     private Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                    boolean defaultIsSymbolic) {
+        assert clazz != null && len != null;
         this.id = se.getNextNumberInitializedSarray();
         this.storeWasUsed = false;
         this.onlyConcreteIndicesUsed = true;
@@ -27,6 +28,16 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.elements = new LinkedHashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.len = len;
+    }
+
+    public Sarray(Sarray s) {
+        this.id = s.getId();
+        this.storeWasUsed = s.storeWasUsed;
+        this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
+        this.clazz = s.clazz;
+        this.elements = new LinkedHashMap<>(s.elements);
+        this.defaultIsSymbolic = s.defaultIsSymbolic;
+        this.len = s.len;
     }
 
     @Override
@@ -70,7 +81,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
+    public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof Sint.SymSint) {
                 onlyConcreteIndicesUsed = false;
@@ -81,24 +92,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return false;
     }
 
-    public Set<Sint> getCachedIndices() {
+    public final Set<Sint> getCachedIndices() {
         return elements.keySet();
     }
 
-    public Sint getLength() {
+    public final Sint getLength() {
         return len;
     }
 
-    public T getForIndex(Sint index) {
+    public final Sint length() {
+        return getLength();
+    }
+
+    public final T getForIndex(Sint index) {
         return elements.get(index);
     }
 
-    public T setForIndex(Sint index, T value) {
+    public final void setForIndex(Sint index, T value) {
         elements.remove(index);
-        return elements.put(index, value);
+        elements.put(index, value);
     }
 
-    public long getId() {
+    public final long getId() {
         return id;
     }
 
@@ -128,7 +143,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                 if (ss.getInnerElementType().getComponentType() != ssv.getInnerElementType()) {
                     throw new ArrayStoreException();
                 }
-                return;
             } else {
                 if (!(value instanceof Sarray)) {
                     throw new ArrayStoreException();
@@ -144,6 +158,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         public SintSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sint.class, len, se, defaultIsSymbolic);
+        }
+
+        public SintSarray(SintSarray s) {
+            super(s);
         }
 
         @Override
@@ -173,6 +191,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             super(Sdouble.class, len, se, defaultIsSymbolic);
         }
 
+        public SdoubleSarray(SdoubleSarray s) {
+            super(s);
+        }
+
         @Override
         public final Sdouble select(Sint i, SymbolicExecution se) {
             return se.select(this, i);
@@ -198,6 +220,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         public SfloatSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sfloat.class, len, se, defaultIsSymbolic);
+        }
+
+        public SfloatSarray(SfloatSarray s) {
+            super(s);
         }
 
         @Override
@@ -227,6 +253,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             super(Slong.class, len, se, defaultIsSymbolic);
         }
 
+        public SlongSarray(SlongSarray s) {
+            super(s);
+        }
+
         @Override
         public final Slong select(Sint i, SymbolicExecution se) {
             return se.select(this, i);
@@ -252,6 +282,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         public SshortSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sshort.class, len, se, defaultIsSymbolic);
+        }
+
+        public SshortSarray(SshortSarray s) {
+            super(s);
         }
 
         @Override
@@ -281,6 +315,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             super(Sbyte.class, len, se, defaultIsSymbolic);
         }
 
+        public SbyteSarray(SbyteSarray s) {
+            super(s);
+        }
+
         @Override
         public final Sbyte select(Sint i, SymbolicExecution se) {
             return se.select(this, i);
@@ -306,6 +344,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         public SboolSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sbool.class, len, se, defaultIsSymbolic);
+        }
+
+        public SboolSarray(SboolSarray s) {
+            super(s);
         }
 
         @Override
@@ -334,6 +376,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
                                   boolean defaultIsSymbolic) {
             super(clazz, len, se, defaultIsSymbolic);
+        }
+
+        public PartnerClassSarray(PartnerClassSarray s) {
+            super(s);
         }
 
         @Override
@@ -375,23 +421,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
         }
 
-        private static int determineDimFromInnerElementType(Class<?> innerElementType) {
-            int i = 1; // The SarraySarray this belongs to also counts
-            while (innerElementType.getComponentType() != null) {
-                innerElementType = innerElementType.getComponentType();
-                i++;
-            }
-            return i;
-        }
-
-        public Class<? extends SubstitutedVar> getInnerElementType() {
-            return innerElementType;
-        }
-
-        public boolean elementsAreSarraySarrays() {
-            return dim > 2;
-        }
-
         @SuppressWarnings("unchecked")
         public SarraySarray(
                 Sint len, Sint[] innerLengths,
@@ -416,6 +445,29 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                 );
                 i = i.add(Sint.ONE, se);
             }
+        }
+
+        public SarraySarray(SarraySarray s) {
+            super(s);
+            this.dim = s.dim;
+            this.innerElementType = s.innerElementType;
+        }
+
+        private static int determineDimFromInnerElementType(Class<?> innerElementType) {
+            int i = 1; // The SarraySarray this belongs to also counts
+            while (innerElementType.getComponentType() != null) {
+                innerElementType = innerElementType.getComponentType();
+                i++;
+            }
+            return i;
+        }
+
+        public Class<? extends SubstitutedVar> getInnerElementType() {
+            return innerElementType;
+        }
+
+        public boolean elementsAreSarraySarrays() {
+            return dim > 2;
         }
 
         private Sarray generateNonSymbolicSarrayDependingOnState(

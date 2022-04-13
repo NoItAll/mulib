@@ -39,7 +39,7 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
         return __mulib__originalObject;
     }
 
-    public Class getOriginalClass() {
+    public Class<?> getOriginalClass() {
         return IndirectCyclicInputClasses0Manual.class;
     }
 
@@ -51,7 +51,7 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
 
     public static Sint calc0(__mulib__IndirectCyclicInputClasses0Manual cycle) {
         SymbolicExecution se = SymbolicExecution.get();
-        Set<Object> alreadySeen = new HashSet();
+        Set<Object> alreadySeen = new HashSet<>();
         Object current = cycle;
 
         while(!alreadySeen.contains(current)) {

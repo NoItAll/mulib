@@ -22,26 +22,26 @@ public class ArrayFieldsWithInitialization {
     private boolean[][][] booleanArs1;
     ArrayFieldsWithInitialization[] objectArray1;
 
-//    // Fixed size // TODO Enable
-//    private int[] intAr2;
-//    protected double[] doubleAr2;
-//    public float[] floatAr2;
-//    long[] longAr2;
-//    short[][] shortArs2;
-//    private byte[][] byteArs2;
-//    private boolean[][][] booleanArs2;
-//    ArrayFieldsWithInitialization[] objectArray2;
+    // Fixed size
+    private int[] intAr2;
+    protected double[] doubleAr2;
+    public float[] floatAr2;
+    long[] longAr2;
+    short[][] shortArs2;
+    private byte[][] byteArs2;
+    private boolean[][][] booleanArs2;
+    ArrayFieldsWithInitialization[] objectArray2;
 
-//
-//    // Named and fixed size
-//    private int[] intAr3;
-//    protected double[] doubleAr3;
-//    public float[] floatAr3;
-//    long[] longAr3;
-//    short[][] shortArs3;
-//    private byte[][] byteArs3;
-//    private boolean[][][] booleanArs3;
-//    ArrayFieldsWithInitialization[] objectArray3;
+
+    // Named and fixed size /// TODO Functionality for named arrays of fixed size
+    private int[] intAr3;
+    protected double[] doubleAr3;
+    public float[] floatAr3;
+    long[] longAr3;
+    short[][] shortArs3;
+    private byte[][] byteArs3;
+    private boolean[][][] booleanArs3;
+    ArrayFieldsWithInitialization[] objectArray3;
 
     public ArrayFieldsWithInitialization() {
         Class<short[][]> parameter = short[][].class;
@@ -57,26 +57,26 @@ public class ArrayFieldsWithInitialization {
 
     public ArrayFieldsWithInitialization(boolean b0) {
         Class<short[][]> parameter = short[][].class;
-        intAr0 = Mulib.namedFreeIntArray("is0");
-        doubleAr0 = Mulib.namedFreeDoubleArray("ds0");
-        floatAr0 = Mulib.namedFreeFloatArray("fs0");
-        longAr0 = Mulib.namedFreeLongArray("ls0");
-        shortArs0 = Mulib.namedFreeObject("ss0", parameter);
-        byteArs0 = Mulib.namedFreeObject("bs0", byte[][].class);
-        booleanArs0 = Mulib.namedFreeObject("bools0", boolean[][][].class);
-        objectArray0 = Mulib.namedFreeObject("os0", ArrayFieldsWithInitialization[].class);
+        intAr1 = Mulib.namedFreeIntArray("is1");
+        doubleAr1 = Mulib.namedFreeDoubleArray("ds1");
+        floatAr1 = Mulib.namedFreeFloatArray("fs1");
+        longAr1 = Mulib.namedFreeLongArray("ls1");
+        shortArs1 = Mulib.namedFreeObject("ss1", parameter);
+        byteArs1 = Mulib.namedFreeObject("bs1", byte[][].class);
+        booleanArs1 = Mulib.namedFreeObject("bools1", boolean[][][].class);
+        objectArray1 = Mulib.namedFreeObject("os1", ArrayFieldsWithInitialization[].class);
     }
 
     public ArrayFieldsWithInitialization(boolean b0, boolean b1) {
         Class<short[][]> parameter = short[][].class;
-        intAr0 = new int[0];
-        doubleAr0 = new double[0];
-        floatAr0 = new float[0];
-        longAr0 = new long[0];
-        shortArs0 = new short[0][0];
-        byteArs0 = new byte[0][0];
-        booleanArs0 = new boolean[0][][];
-        objectArray0 = new ArrayFieldsWithInitialization[0];
+        intAr2 = new int[9];
+        doubleAr2 = new double[13];
+        floatAr2 = new float[0];
+        longAr2 = new long[2];
+        shortArs2 = new short[-1][];
+        byteArs2 = new byte[0][0];
+        booleanArs2 = new boolean[0][][];
+        objectArray2 = new ArrayFieldsWithInitialization[5];
     }
 
 }

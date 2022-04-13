@@ -8,4 +8,8 @@ public class ArrayFields {
     short[][] shortArs;
     private byte[][] byteArs;
     private boolean[][][] booleanArs;
+
+    private ArrayFields[] arrayFields0;
+    private ArrayFields[][] arrayFields1;
+    private ArrayFields[][][] arrayFields2;
 }
