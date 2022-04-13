@@ -15,7 +15,7 @@ import static org.junit.jupiter.api.Assertions.fail;
 
 public class HiddenIteratorVariableExec1 {
     @Test
-    public void testHiddenVariable0() {
+    public void testHiddenVariable1() {
         MulibConfig config =
                 MulibConfig.builder()
                         .setTRANSF_WRITE_TO_FILE(true)

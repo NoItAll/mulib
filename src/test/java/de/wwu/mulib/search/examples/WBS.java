@@ -289,7 +289,7 @@ public class WBS {
         wbs.update(pedal3, auto3, skid3);
     }
 
-    @Test @Disabled
+    @Test @Disabled(value="Subsumed by WBSTransfExec")
     public void testLaunch() {
         TestUtility.getAllSolutions(this::_checkLaunch, "launch");
     }

@@ -23,6 +23,9 @@ public abstract class AbstractSnumber implements Snumber {
 
     @Override
     public boolean equals(Object o) {
+        if (o == null) {
+            return false;
+        }
         if (o.getClass() != this.getClass()) {
             return false;
         }

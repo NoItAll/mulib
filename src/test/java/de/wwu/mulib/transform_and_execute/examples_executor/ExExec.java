@@ -527,7 +527,7 @@ public class ExExec {
         );
     }
 
-    @Test @Disabled // TODO
+    @Test @Disabled(value="Jump-back budget is not yet implemented") // TODO
     public void testInfiniteLoopExec1() {
         TestUtility.getAllSolutions(
                 mb -> {

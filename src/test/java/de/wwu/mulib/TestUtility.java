@@ -285,7 +285,7 @@ public final class TestUtility {
         MulibContext mc = Mulib.generateWithoutTransformation(methodName, containingClass, new Class<?>[0], new Object[0], config);
         Optional<PathSolution> result = mc.getPathSolution();
 
-        if (!result.isEmpty()) {
+        if (result.isPresent()) {
             mc.getUpToNSolutions(result.get(), maxNumberOfSolutionsForEachPath);
         }
         return result;

@@ -17,8 +17,8 @@ public class HardyRamanujan {
     }
 
     private static void positiveDomain(int... vars) {
-        for (int i = 0; i < vars.length; i++) {
-            if (vars[i] <= 0)
+        for (int v : vars) {
+            if (v <= 0)
                 throw Mulib.fail();
         }
     }

@@ -1,6 +1,5 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
@@ -182,9 +181,6 @@ public abstract class Sdouble extends Sfpnumber {
         }
 
         private SymSdouble(NumericExpression representedExpression) {
-            if (!representedExpression.isFp()) {
-                throw new MulibRuntimeException("Represented NumericExpression must be a double.");
-            }
             this.representedExpression = representedExpression;
         }
 
