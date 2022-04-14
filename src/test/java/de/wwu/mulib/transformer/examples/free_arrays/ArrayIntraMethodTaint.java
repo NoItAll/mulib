@@ -3,7 +3,6 @@ package de.wwu.mulib.transformer.examples.free_arrays;
 import de.wwu.mulib.Mulib;
 
 public class ArrayIntraMethodTaint {
-    /// TODO
 
     public static int testIntraMethod0(double d, int[] taintedAr) {
         int[] notTainted = new int[12];
@@ -85,16 +84,100 @@ public class ArrayIntraMethodTaint {
     }
 
     public static int testIntraMethod6(byte[][] taintedBytes, boolean[][] taintedBools) {
-        boolean[] TaintedBools = new boolean[14];
-        byte[] TaintedBytes = new byte[13];
+        boolean[] necessarilyTaintedBools = new boolean[14];
+        byte[] necessarilyTaintedBytes = new byte[13];
         for (int i = 0; i < taintedBools.length; i++) {
-            for (int j = TaintedBytes.length - 1; j >= 0; j--) {
-                TaintedBools[i] = taintedBools[j][i];
-                TaintedBytes[j] = taintedBytes[10][i];
-                TaintedBytes[i] = taintedBytes[j][3];
-                TaintedBools[j] = taintedBools[i][4];
+            for (int j = necessarilyTaintedBytes.length - 1; j >= 0; j--) {
+                necessarilyTaintedBools[i] = taintedBools[j][i];
+                necessarilyTaintedBytes[j] = taintedBytes[10][i];
+                necessarilyTaintedBytes[i] = taintedBytes[j][3];
+                necessarilyTaintedBools[j] = taintedBools[i][4];
             }
         }
         return 7;
+    }
+
+    public int testIntraMethod7(ArrayIntraMethodTaint[] tainted) {
+        ArrayIntraMethodTaint[] notNecessarilyTainted = new ArrayIntraMethodTaint[12];
+        for (int i = 0; i < notNecessarilyTainted.length; i++) {
+            tainted[i] = notNecessarilyTainted[i];
+        }
+        return 8;
+    }
+
+    public int testIntraMethod8(ArrayIntraMethodTaint[][] tainted) {
+        ArrayIntraMethodTaint[][] notNecessarilyTainted = new ArrayIntraMethodTaint[12][];
+        for (int i = 0; i < tainted.length; i++) {
+            for (int j = 0; j < notNecessarilyTainted.length; j++) {
+                tainted[i][j] = notNecessarilyTainted[j][i];
+            }
+        }
+        return 9;
+    }
+
+    public int testIntraMethod9(ArrayIntraMethodTaint[][] tainted) {
+        ArrayIntraMethodTaint[][] necessarilyTainted = new ArrayIntraMethodTaint[12][];
+        for (int i = 0; i < tainted.length; i++) {
+            tainted[i] = necessarilyTainted[i]; // Must be tainted since we do not wrap Sarrays
+        }
+        return 10;
+    }
+
+    public int testIntraMethod10(ArrayIntraMethodTaint[][] tainted) {
+        ArrayIntraMethodTaint[][] necessarilyTainted = new ArrayIntraMethodTaint[12][];
+        for (int i = 0; i < tainted.length; i++) {
+            for (int j = 0; j < necessarilyTainted.length; j++) {
+                necessarilyTainted[j][i] = tainted[i][j];
+                necessarilyTainted[i] = tainted[j];
+            }
+        }
+        return 11;
+    }
+
+    public int testIntraMethod11(ArrayIntraMethodTaint[][][] tainted) {
+        ArrayIntraMethodTaint[][] notNecessarilyTainted = new ArrayIntraMethodTaint[12][];
+        for (int i = 0; i < tainted.length; i++) {
+            for (int j = 0; j < notNecessarilyTainted.length; j++) {
+                tainted[i][j][i] = notNecessarilyTainted[j][i];
+            }
+        }
+        return 12;
+    }
+
+    public int testIntraMethod13(ArrayIntraMethodTaint[][] tainted) {
+        ArrayIntraMethodTaint[][][] necessarilyTainted = new ArrayIntraMethodTaint[12][][];
+        for (int i = 0; i < tainted.length; i++) {
+            tainted[i] = necessarilyTainted[i][i]; // Must be tainted since we do not wrap Sarrays
+        }
+        return 14;
+    }
+
+    public int testIntraMethod14(ArrayIntraMethodTaint[][] tainted) {
+        ArrayIntraMethodTaint[][][] necessarilyTainted = new ArrayIntraMethodTaint[12][15][];
+        for (int i = 0; i < tainted.length; i++) {
+            for (int j = 0; j < necessarilyTainted.length; j++) {
+                necessarilyTainted[j][i][i] = tainted[i][j];
+                necessarilyTainted[i][j] = tainted[j];
+            }
+        }
+        return 15;
+    }
+
+    public int testIntraMethod15(int tainted) {
+        ArrayIntraMethodTaint[][][] necessarilyTainted = new ArrayIntraMethodTaint[1][][];
+        System.out.println(necessarilyTainted[tainted]);
+        return 16;
+    }
+
+    public int testIntraMethod16(int tainted) {
+        ArrayIntraMethodTaint[][][] necessarilyTainted = new ArrayIntraMethodTaint[1][][];
+        System.out.println(necessarilyTainted[0][tainted][1]);
+        return 17;
+    }
+
+    public int testIntraMethod17(int tainted) {
+        ArrayIntraMethodTaint[][][] notTainted = new ArrayIntraMethodTaint[1][][];
+        ArrayIntraMethodTaint test = notTainted[0][16][1];
+        return 18;
     }
 }
