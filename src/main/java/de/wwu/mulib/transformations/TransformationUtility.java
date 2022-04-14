@@ -345,6 +345,32 @@ public final class TransformationUtility {
         return new String[] {wrapperMethodName, wrapperMethodDesc};
     }
 
+    public static byte getWrappingTypeForXALOAD(InsnNode insn, TaintAnalysis ta) {
+        switch (insn.getOpcode()) {
+            case IALOAD:
+                return WR_INT;
+            case LALOAD:
+                return WR_LONG;
+            case DALOAD:
+                return WR_DOUBLE;
+            case FALOAD:
+                return WR_FLOAT;
+            case BALOAD:
+                if (ta.instructionsToWrapSinceUsedByBoolInsns.contains(insn)) {
+                    return WR_BOOL;
+                } else {
+                    assert ta.instructionsToWrapSinceUsedByByteInsns.contains(insn);
+                    return WR_BYTE;
+                }
+            case CALOAD:
+                return WR_CHAR;
+            case SALOAD:
+                return WR_SHORT;
+            default:
+                throw new NotYetImplementedException(String.valueOf(insn.getOpcode()));
+        }
+    }
+
     public static InsnList newConstantAndWrapper(AbstractInsnNode insn, byte type, int seIndex) {
         InsnList result = new InsnList();
         // Add instruction that should be wrapped

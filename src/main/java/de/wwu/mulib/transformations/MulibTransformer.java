@@ -1573,7 +1573,7 @@ public class MulibTransformer {
                 // This is the case if, for instance, a java.util.Iterator of an ArrayList is spawned to return elements
                 // TODO Handle this via the copy-/lazy-load constructor instead
                 TypeInsnNode tin = (TypeInsnNode) insn;
-                if (getClassForPath(tin.desc).isArray()) {
+                if (getClassForPath(tin.desc).isArray() && taintedInsns.contains(tin)) { //// TODO Is this even necessary here? Or to replaceAndAddInsns?
                     assert tin.getOpcode() != NEW;
                     if (tin.getOpcode() == CHECKCAST) {
                         tin.desc = transformToSarrayCpWithSarray(tin.desc);
@@ -1707,8 +1707,10 @@ public class MulibTransformer {
                 resultInstrs.add(newStaticSeCall(nameAndDesc[0], nameAndDesc[1], seIndex));
             } else if (insn.getOpcode() == ARRAYLENGTH) {
                 resultInstrs.add(newConstantAndWrapper(insn, WR_INT, seIndex));
+            } else if (insn.getOpcode() >= IALOAD && insn.getOpcode() <= SALOAD && insn.getOpcode() != AALOAD) {
+                resultInstrs.add(newConstantAndWrapper(insn, getWrappingTypeForXALOAD((InsnNode) insn, ta), seIndex));
             } else {
-                throw new NotYetImplementedException();
+                throw new NotYetImplementedException(String.valueOf(insn.getOpcode()));
             }
         } else if (insn instanceof IntInsnNode) {
             if (insn.getOpcode() == NEWARRAY) {
@@ -2175,11 +2177,11 @@ public class MulibTransformer {
                         }
                         break;
                     case BASTORE:
-                        if (ta.instructionsToWrapSinceUsedByBoolInsns.contains(insn)) {
+                        if (ta.taintedBooleanInsns.contains(insn)) {
                             owner = sboolSarrayCp;
                             methodDesc = sboolSarrayStoreDesc;
                         } else {
-                            assert ta.instructionsToWrapSinceUsedByByteInsns.contains(insn);
+                            assert ta.taintedByteInsns.contains(insn);
                             owner = sbyteSarrayCp;
                             methodDesc = sbyteSarrayStoreDesc;
                         }
@@ -2267,11 +2269,11 @@ public class MulibTransformer {
                         }
                         break;
                     case BALOAD:
-                        if (ta.instructionsToWrapSinceUsedByBoolInsns.contains(insn)) {
+                        if (ta.taintedBooleanInsns.contains(insn)) {
                             owner = sboolSarrayCp;
                             methodDesc = sboolSarraySelectDesc;
                         } else {
-                            assert ta.instructionsToWrapSinceUsedByByteInsns.contains(insn);
+                            assert ta.taintedByteInsns.contains(insn);
                             owner = sbyteSarrayCp;
                             methodDesc = sbyteSarraySelectDesc;
                         }
