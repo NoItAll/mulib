@@ -149,7 +149,7 @@ public class MulibTransformer {
      * @param methodOwner The path of the class.
      * @return true, if the method should be concretized, else false.
      */
-    boolean shouldBeConcretizedFor(String methodOwner) {
+    public boolean shouldBeConcretizedFor(String methodOwner) {
         Class<?> c = getClassForPath(methodOwner);
         return shouldBeConcretizedFor(c);
     }
@@ -159,7 +159,7 @@ public class MulibTransformer {
      * @param methodOwner The path of the class.
      * @return true, if the method should be generalized, else false.
      */
-    boolean shouldTryToUseGeneralizedMethodCall(String methodOwner) {
+    public boolean shouldTryToUseGeneralizedMethodCall(String methodOwner) {
         Class<?> c = getClassForPath(methodOwner);
         return shouldTryToUseGeneralizedMethodCall(c);
     }
@@ -169,7 +169,7 @@ public class MulibTransformer {
      * @param methodOwner The class.
      * @return true, if the method should be concretized, else false.
      */
-    boolean shouldBeConcretizedFor(Class<?> methodOwner) {
+    public boolean shouldBeConcretizedFor(Class<?> methodOwner) {
         return concretizeFor.contains(methodOwner);
     }
 
@@ -178,7 +178,7 @@ public class MulibTransformer {
      * @param methodOwner The class.
      * @return true, if the method should be generalized, else false.
      */
-    boolean shouldTryToUseGeneralizedMethodCall(Class<?> methodOwner) {
+    public boolean shouldTryToUseGeneralizedMethodCall(Class<?> methodOwner) {
         return generalizeMethodCallsFor.contains(methodOwner);
     }
 
@@ -188,12 +188,12 @@ public class MulibTransformer {
      * @param classAsPath The path of the class.
      * @return true, if the class should be transformed, otherwise false.
      */
-    boolean shouldBeTransformed(String classAsPath) {
+    public boolean shouldBeTransformed(String classAsPath) {
         Class<?> c = getClassForPath(classAsPath);
         return !isIgnored(c);
     }
 
-    boolean shouldBeTransformedFromDesc(String desc) {
+    public boolean shouldBeTransformedFromDesc(String desc) {
         if (desc.startsWith("[")) {
             int last = desc.lastIndexOf('[');
             desc = desc.substring(last + 1);
@@ -227,7 +227,7 @@ public class MulibTransformer {
 
     /* METHODS FOR INTERACTING WITH CUSTOM CLASSLOADER */
     // Gets the partner class to the class represented by its name.
-    Class<?> getTransformedClass(String className) {
+    public Class<?> getTransformedClass(String className) {
         return transformedClasses.get(className);
     }
 

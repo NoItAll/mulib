@@ -126,7 +126,8 @@ public class BooleanByteShortAndCharDistinguisher {
                 } else {
                     throw new NotYetImplementedException();
                 }
-                decideOnTaintedOrWrappedForSpecialTypeInsn(
+                decideOnTaintedOrWrappedForSpecialTypeInsn( //// TODO Refactor, let decideOnTaintedOrWrappedForSpecialTypeInsn decide on which set to use
+                        //// TODO What does it mean for AALOAD to be contained here?
                         taintedSpecialInsns,
                         toWrapSpecialInsns,
                         toAdd
@@ -201,6 +202,8 @@ public class BooleanByteShortAndCharDistinguisher {
                                 throw new NotYetImplementedException();
                             }
                             desc = lvn.desc;
+                        } else if (potentialArrayInitializer instanceof FieldInsnNode) {
+                            desc = ((FieldInsnNode) potentialArrayInitializer).desc;
                         }
 
                         if (desc != null) {
@@ -498,6 +501,7 @@ public class BooleanByteShortAndCharDistinguisher {
     }
 
     private static byte getTypeForDesc(String desc) {
+        desc = desc.replace("[", ""); //// TODO
         // Check if the variable is boolean, byte, or short
         if ((!desc.equals("Z") && !desc.equals("B") && !desc.equals("S"))) {
             return -1; // Not of type boolean, byte, or short --> not relevant here.

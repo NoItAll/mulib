@@ -154,7 +154,7 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
             }
             // This way we can determine the desc of the array which is to be returned
             String descOfRootArrayTargetedByStoreOrLoad = null;
-            while (!checkForSource.isEmpty()) { //// TODO ASTORE
+            while (!checkForSource.isEmpty()) {
                 ProductionPathNode check = checkForSource.remove(0);
                 AbstractInsnNode potentialArrayInitializer = check.lastSeenProducingInsn;
                 if (potentialArrayInitializer instanceof MethodInsnNode) {
@@ -216,7 +216,8 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
 
     private void addToArrayArrayOrObjectArrayInsnsDependingOnDesc(AbstractInsnNode selectOrStore, String desc, int additionalAALOADs) {
         assert taintedInstructions.contains(selectOrStore);
-        String adjustedDesc = desc.substring(additionalAALOADs);
+        assert additionalAALOADs == 0 || desc.substring(0, additionalAALOADs).chars().allMatch(c -> c == '[');
+        String adjustedDesc = desc.substring(additionalAALOADs); //// TODO additionalAALOADs make it bad: the L is lost
         if (adjustedDesc.startsWith("[[")) {
             this.taintedNewArrayArrayInsns.add(selectOrStore);
         } else {

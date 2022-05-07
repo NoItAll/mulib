@@ -230,4 +230,52 @@ public class FreeArraysTransfExec {
             fail("Exception should not have been thrown");
         }
     }
+
+    @Test
+    public void testArrayIntraMethodTaintWithSystemClassLoader() {
+        MulibConfig config =
+                MulibConfig.builder()
+                        .setTRANSF_WRITE_TO_FILE(true)
+                        .setTRANSF_VALIDATE_TRANSFORMATION(true)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .build();
+        MulibTransformer transformer = new MulibTransformer(config);
+        transformer.transformAndLoadClasses(ArrayIntraMethodTaint.class);
+        Class<?> transformedClass = transformer.getTransformedClass(ArrayIntraMethodTaint.class);
+        try {
+            String className = transformedClass.getSimpleName();
+            assertTrue(className.startsWith("__mulib__"));
+            // There should always be a constructor with a SymbolicExecution parameter
+            Constructor<?> cons = transformedClass.getDeclaredConstructor(SymbolicExecution.class);
+            Object o = cons.newInstance(new Object[] { null });
+            assertNotNull(o);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            fail("Exception should not have been thrown");
+        }
+    }
+
+    @Test
+    public void testArrayIntraMethodTaintFieldTaintAndReturnTaintWithDifferentClassLoader() {
+        MulibConfig config =
+                MulibConfig.builder()
+                        .setTRANSF_WRITE_TO_FILE(true)
+                        .setTRANSF_VALIDATE_TRANSFORMATION(true)
+                        .build();
+        MulibTransformer transformer = new MulibTransformer(config);
+        transformer.transformAndLoadClasses(ArrayIntraMethodTaintFieldTaintAndReturnTaint.class);
+        Class<?> transformedClass = transformer.getTransformedClass(ArrayIntraMethodTaintFieldTaintAndReturnTaint.class);
+        try {
+            String className = transformedClass.getSimpleName();
+            assertTrue(className.startsWith("__mulib__"));
+            // There should always be a constructor with a SymbolicExecution parameter
+            Constructor<?> cons = transformedClass.getDeclaredConstructor(SymbolicExecution.class);
+            Object o = cons.newInstance(new Object[] { null });
+            assertNotNull(o);
+        } catch (NoSuchMethodException | InstantiationException | IllegalAccessException | InvocationTargetException e) {
+            e.printStackTrace();
+            fail("Exception should not have been thrown");
+        }
+    }
 }
