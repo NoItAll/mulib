@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import org.objectweb.asm.tree.AbstractInsnNode;
 import org.objectweb.asm.tree.analysis.Value;

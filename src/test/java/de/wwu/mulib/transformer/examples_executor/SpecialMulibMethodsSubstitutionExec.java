@@ -22,7 +22,7 @@ public class SpecialMulibMethodsSubstitutionExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(SpecialMulibSubstitutionMethods.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(SpecialMulibSubstitutionMethods.class);
         Class<?> transformedClass = transformer.getTransformedClass(SpecialMulibSubstitutionMethods.class);
         try {

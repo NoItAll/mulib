@@ -22,7 +22,7 @@ public class HiddenIteratorVariableExec2 {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(HiddenIteratorVariable2.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(HiddenIteratorVariable2.class);
         Class<?> transformedClass = transformer.getTransformedClass(HiddenIteratorVariable2.class);
         try {

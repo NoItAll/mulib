@@ -22,7 +22,7 @@ public class HardyRamanujanExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(HardyRamanujan.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(HardyRamanujan.class);
         Class<?> transformedClass = transformer.getTransformedClass(HardyRamanujan.class);
         try {

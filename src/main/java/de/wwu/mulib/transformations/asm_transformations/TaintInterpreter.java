@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;

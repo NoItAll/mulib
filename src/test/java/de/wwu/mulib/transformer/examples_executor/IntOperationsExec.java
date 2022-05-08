@@ -22,7 +22,7 @@ public class IntOperationsExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(IntOperations.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(IntOperations.class);
         Class<?> transformedClass = transformer.getTransformedClass(IntOperations.class);
         try {

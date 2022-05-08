@@ -25,7 +25,7 @@ public class ClassHierarchiesExec {
                                 I0.class, I1.class, I2.class, I3.class, I4.class, I5.class
                         ))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(C1.class);
         Class<?> transformedClass = transformer.getTransformedClass(C0.class);
         try {
@@ -52,7 +52,7 @@ public class ClassHierarchiesExec {
                                 I0.class, I1.class, I2.class, I3.class, I4.class, I5.class
                         ))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(C2.class);
         Class<?> transformedClass = transformer.getTransformedClass(C2.class);
         try {
@@ -79,7 +79,7 @@ public class ClassHierarchiesExec {
                                 I0.class, I1.class, I2.class, I3.class, I4.class, I5.class
                         ))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(C3.class);
         Class<?> transformedClass = transformer.getTransformedClass(C3.class);
         try {

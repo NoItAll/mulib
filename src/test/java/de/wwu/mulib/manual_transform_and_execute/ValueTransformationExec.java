@@ -12,7 +12,7 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 
 public class ValueTransformationExec {
     private MulibConfig mc;
@@ -25,7 +25,7 @@ public class ValueTransformationExec {
     public void setup() {
         mc = MulibConfig.builder()
                 .build();
-        mt = new MulibTransformer(mc);
+        mt = MulibTransformer.get(mc);
         mt.setPartnerClass(IndirectCyclicInputClasses0Manual.class, __mulib__IndirectCyclicInputClasses0Manual.class);
         mt.setPartnerClass(IndirectCyclicInputClasses1Manual.class, __mulib__IndirectCyclicInputClasses1Manual.class);
         mvt = new MulibValueTransformer(mc, mt, true);

@@ -1,9 +1,10 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.transformations.AbstractMulibTransformer;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Analyzer;
 import org.objectweb.asm.tree.analysis.AnalyzerException;
@@ -14,12 +15,12 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.TransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 public final class TaintAnalyzer {
-    private final MulibTransformer mulibTransformer;
+    private final AbstractMulibTransformer mulibTransformer;
     private final MethodNode mn;
     private final int numberInputs;
     private final int numberOfInputsSized2;
@@ -48,7 +49,7 @@ public final class TaintAnalyzer {
 
     @SuppressWarnings("unchecked")
     public TaintAnalyzer(
-            MulibTransformer mulibTransformer,
+            AbstractMulibTransformer mulibTransformer,
             MethodNode mn,
             String owner) {
         this.ains = mn.instructions.toArray();

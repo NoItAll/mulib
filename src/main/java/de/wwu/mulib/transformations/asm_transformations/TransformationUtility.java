@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;

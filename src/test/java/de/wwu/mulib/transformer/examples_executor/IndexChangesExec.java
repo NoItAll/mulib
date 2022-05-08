@@ -23,7 +23,7 @@ public class IndexChangesExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(IndexChanges0.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(IndexChanges0.class);
         Class<?> transformedClass = transformer.getTransformedClass(IndexChanges0.class);
         try {

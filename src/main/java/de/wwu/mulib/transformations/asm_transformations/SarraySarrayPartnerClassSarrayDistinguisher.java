@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -9,9 +9,9 @@ import org.objectweb.asm.tree.analysis.Frame;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.TaintAnalyzer.getFromTopOfStack;
-import static de.wwu.mulib.transformations.TransformationUtility.getNumInputs;
-import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getNumInputs;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 // Needed to distinguish between (AALOAD, AASTORE) --> ((SarraySarray.select, PartnerClassSarray.select), (SarraySarray.store, PartnerClassSarray.store))

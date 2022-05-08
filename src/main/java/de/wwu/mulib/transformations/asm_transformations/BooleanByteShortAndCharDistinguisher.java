@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -8,9 +8,9 @@ import org.objectweb.asm.tree.analysis.Frame;
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.wwu.mulib.transformations.TaintAnalyzer.getFromTopOfStack;
-import static de.wwu.mulib.transformations.TransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 public class BooleanByteShortAndCharDistinguisher {

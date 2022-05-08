@@ -24,7 +24,7 @@ public class CallsNonSubstitutedtoBeGeneralizedExec {
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(CallsNonSubstitutedToBeGeneralized.class))
                         .setTRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR(List.of(NonSubstitutedToBeGeneralized.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(CallsNonSubstitutedToBeGeneralized.class);
         Class<?> transformedClass = transformer.getTransformedClass(CallsNonSubstitutedToBeGeneralized.class);
         try {

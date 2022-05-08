@@ -22,7 +22,7 @@ public class VirtualMethodCallsExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(VirtualMethodCalls.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(VirtualMethodCalls.class);
         Class<?> transformedClass = transformer.getTransformedClass(VirtualMethodCalls.class);
         try {

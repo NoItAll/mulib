@@ -22,7 +22,7 @@ public class ControlFlowStatementsExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(ControlFlowStatements.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ControlFlowStatements.class);
         Class<?> transformedClass = transformer.getTransformedClass(ControlFlowStatements.class);
         try {

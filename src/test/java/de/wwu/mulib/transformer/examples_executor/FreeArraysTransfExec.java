@@ -23,7 +23,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayFields.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayFields.class);
         try {
@@ -48,7 +48,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayFields.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayFields.class);
         try {
@@ -71,7 +71,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayFieldsWithInitialization.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayFieldsWithInitialization.class);
         try {
@@ -96,7 +96,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayFieldsWithInitialization.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayFieldsWithInitialization.class);
         try {
@@ -119,7 +119,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayParameters.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayParameters.class);
         try {
@@ -144,7 +144,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayParameters.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayParameters.class);
         try {
@@ -167,7 +167,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayReturn.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayReturn.class);
         try {
@@ -192,7 +192,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayReturn.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayReturn.class);
         try {
@@ -215,7 +215,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayIntraMethodTaint.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayIntraMethodTaint.class);
         try {
@@ -240,7 +240,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayIntraMethodTaint.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayIntraMethodTaint.class);
         try {
@@ -263,7 +263,7 @@ public class FreeArraysTransfExec {
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(ArrayIntraMethodTaintFieldTaintAndReturnTaint.class);
         Class<?> transformedClass = transformer.getTransformedClass(ArrayIntraMethodTaintFieldTaintAndReturnTaint.class);
         try {

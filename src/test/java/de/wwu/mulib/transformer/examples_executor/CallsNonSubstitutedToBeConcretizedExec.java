@@ -24,7 +24,7 @@ public class CallsNonSubstitutedToBeConcretizedExec {
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(CallsNonSubstitutedToBeConcretized.class))
                         .setTRANSF_CONCRETIZE_FOR(List.of(NonSubstitutedToBeConcretized.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(CallsNonSubstitutedToBeConcretized.class);
         Class<?> transformedClass = transformer.getTransformedClass(CallsNonSubstitutedToBeConcretized.class);
         try {

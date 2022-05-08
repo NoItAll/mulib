@@ -1,20 +1,14 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassWriter;
 
 import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
 
-public class MulibClassWriter extends ClassWriter {
+public abstract class MulibClassWriter<T> extends ClassWriter {
     public MulibClassWriter(int flags) {
         super(flags);
     }
-
-    public MulibClassWriter(ClassReader classReader, int flags) {
-        super(classReader, flags);
-    }
-
 
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
@@ -39,5 +33,9 @@ public class MulibClassWriter extends ClassWriter {
             return super.getCommonSuperClass(type1, type2);
         }
     }
+
+    public abstract void validateClassNode(T classNode);
+
+    public abstract void writeClassToFile(String generatedClassesPathPattern, boolean includePackageName, T classNode);
 
 }

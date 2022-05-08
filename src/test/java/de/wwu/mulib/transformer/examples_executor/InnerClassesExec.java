@@ -10,7 +10,8 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 public class InnerClassesExec {
     @Test
@@ -21,7 +22,7 @@ public class InnerClassesExec {
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_REGARD_SPECIAL_CASE(List.of(SCWI0.class, SCWI0.SCWI0_I0.class, SCWI0.SCWI0_I1.class, SCWI0.SCWI0_I2.class, SCWI0.SCWI0_I3.class))
                         .build();
-        MulibTransformer transformer = new MulibTransformer(config);
+        MulibTransformer transformer = MulibTransformer.get(config);
         transformer.transformAndLoadClasses(SCWI0.class);
         for (Class<?> c : List.of(SCWI0.class, SCWI0.SCWI0_I0.class)) {
             Class<?> transformedClass = transformer.getTransformedClass(c);

@@ -18,6 +18,7 @@ import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.transformations.asm_transformations.AsmMulibTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -54,7 +55,7 @@ public class MulibContext {
             argTypes = findMethodFittingToArgs(args, methodName, owningMethodClass);
         }
         if (transformationRequired) {
-            this.mulibTransformer = new MulibTransformer(config);
+            this.mulibTransformer = new AsmMulibTransformer(config);
             this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
             possiblyTransformedMethodClass = this.mulibTransformer.getTransformedClass(owningMethodClass);
             this.mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer, true);
