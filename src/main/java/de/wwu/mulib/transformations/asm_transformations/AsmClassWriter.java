@@ -5,7 +5,6 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.transformations.MulibClassWriter;
 import org.objectweb.asm.ClassReader;
 import org.objectweb.asm.ClassVisitor;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.tree.ClassNode;
 import org.objectweb.asm.util.CheckClassAdapter;
 
@@ -40,19 +39,17 @@ public class AsmClassWriter extends MulibClassWriter<ClassNode> {
     public void writeClassToFile(String generatedClassesPathPattern, boolean includePackageName, ClassNode classNode) {
         String className;
         OutputStream os;
-        ClassWriter cw;
         try {
             className = classNode.name;
             if (!includePackageName) {
                 className = className.substring(classNode.name.lastIndexOf('/') + 1);
             }
-            cw = this; ///// TODO check valid over multiple writes?
-            classNode.accept(cw);
+            classNode.accept(this);
             os = new FileOutputStream(String.format(generatedClassesPathPattern, className));
-            os.write(cw.toByteArray());
+            os.write(this.toByteArray());
             os.flush();
             os.close();
-            cw.visitSource(String.format(generatedClassesPathPattern, className), null); // TODO connect to debugger
+            this.visitSource(String.format(generatedClassesPathPattern, className), null); // TODO connect to debugger
         } catch (Exception e) {
             throw new MulibRuntimeException("Class file could not be written to file. Bytecode:\r\n" +
                     getBytecodeForClassNodeMethods(classNode), e);
