@@ -10,7 +10,7 @@ import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.List;
 
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.*;
+import static de.wwu.mulib.transformations.TransformationUtility.*;
 
 public final class StringConstants {
     private StringConstants() {}

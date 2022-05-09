@@ -2,6 +2,7 @@ package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.transformations.TransformationUtility;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Frame;
@@ -9,8 +10,8 @@ import org.objectweb.asm.tree.analysis.Frame;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
+import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
 import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getNumInputs;
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
 import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
 import static org.objectweb.asm.Opcodes.*;
 
@@ -172,7 +173,7 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
                     if (checkcast.isPresent()) {
                         descOfRootArrayTargetedByStoreOrLoad = ((TypeInsnNode) checkcast.get()).desc;
                     } else {
-                        descOfRootArrayTargetedByStoreOrLoad = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
+                        descOfRootArrayTargetedByStoreOrLoad = TransformationUtility.splitMethodDesc(mdesc)[1];
                     }
                 } else if (potentialArrayInitializer.getOpcode() == MULTIANEWARRAY) {
                     MultiANewArrayInsnNode mana = (MultiANewArrayInsnNode) potentialArrayInitializer;

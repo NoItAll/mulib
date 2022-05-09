@@ -15,8 +15,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.TransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 public final class TaintAnalyzer {

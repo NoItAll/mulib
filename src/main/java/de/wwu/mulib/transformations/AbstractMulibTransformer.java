@@ -10,7 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.*;
+import static de.wwu.mulib.transformations.TransformationUtility.*;
 
 /**
  * Core piece of Mulib. The MulibTransformer accepts classes and generates partner classes for them, according

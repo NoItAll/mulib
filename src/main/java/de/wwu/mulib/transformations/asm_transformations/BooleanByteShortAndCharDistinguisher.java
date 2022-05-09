@@ -2,14 +2,15 @@ package de.wwu.mulib.transformations.asm_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.transformations.TransformationUtility;
 import org.objectweb.asm.tree.*;
 import org.objectweb.asm.tree.analysis.Frame;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.TransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc;
 import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
 import static org.objectweb.asm.Opcodes.*;
 
@@ -189,7 +190,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
@@ -338,7 +339,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
@@ -381,7 +382,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
