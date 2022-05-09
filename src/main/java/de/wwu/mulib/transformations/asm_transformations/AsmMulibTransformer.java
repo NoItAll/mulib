@@ -4,10 +4,9 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.transformations.AbstractMulibTransformer;
+import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;
-import de.wwu.mulib.transformations.MulibClassWriter;
 import org.objectweb.asm.ClassReader;
-import org.objectweb.asm.ClassWriter;
 import org.objectweb.asm.Opcodes;
 import org.objectweb.asm.Type;
 import org.objectweb.asm.tree.*;
@@ -21,7 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.*;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.*;
 import static org.objectweb.asm.Opcodes.*;
 
 public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
@@ -38,13 +37,13 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     }
 
     @Override
-    public MulibClassWriter<ClassNode> generateMulibClassWriter() {
-        return new AsmClassWriter(ClassWriter.COMPUTE_FRAMES);
+    public MulibClassFileWriter<ClassNode> generateMulibClassWriter() {
+        return new AsmClassFileWriter();
     }
 
     @Override
     protected MulibClassLoader<ClassNode> generateMulibClassLoader() {
-        return new AsmMulibClassLoader(this);
+        return new AsmClassLoader(this);
     }
 
     @Override
@@ -373,7 +372,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                 // This is the case if, for instance, a java.util.Iterator of an ArrayList is spawned to return elements
                 // TODO Handle this via the copy-/lazy-load constructor instead
                 TypeInsnNode tin = (TypeInsnNode) insn;
-                if (getClassForPath(tin.desc).isArray() && taintedInsns.contains(tin)) { //// TODO Is this even necessary here? Or to replaceAndAddInsns?
+                if (getClassForPath(tin.desc).isArray() && taintedInsns.contains(tin)) { /// TODO Is this even necessary here? Or to replaceAndAddInsns?
                     assert tin.getOpcode() != NEW;
                     if (tin.getOpcode() == CHECKCAST) {
                         tin.desc = transformToSarrayCpWithSarray(tin.desc);
@@ -474,7 +473,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                     );
                 }
                 StringBuilder newDesc = new StringBuilder("(");
-                int numInputs = TransformationUtility.getNumInputs(min.desc, true);
+                int numInputs = AsmTransformationUtility.getNumInputs(min.desc, true);
                 newDesc.append(objectDesc.repeat(numInputs));
                 newDesc.append(")");
                 newDesc.append(org.objectweb.asm.Type.getReturnType(generalization).getInternalName());

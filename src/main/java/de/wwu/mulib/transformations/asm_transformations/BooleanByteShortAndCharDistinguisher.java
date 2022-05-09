@@ -8,9 +8,9 @@ import org.objectweb.asm.tree.analysis.Frame;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
 import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 public class BooleanByteShortAndCharDistinguisher {
@@ -126,8 +126,8 @@ public class BooleanByteShortAndCharDistinguisher {
                 } else {
                     throw new NotYetImplementedException();
                 }
-                decideOnTaintedOrWrappedForSpecialTypeInsn( //// TODO Refactor, let decideOnTaintedOrWrappedForSpecialTypeInsn decide on which set to use
-                        //// TODO What does it mean for AALOAD to be contained here?
+                decideOnTaintedOrWrappedForSpecialTypeInsn( /// TODO Refactor, let decideOnTaintedOrWrappedForSpecialTypeInsn decide on which set to use
+                        /// TODO What does it mean for AALOAD to be contained here?
                         taintedSpecialInsns,
                         toWrapSpecialInsns,
                         toAdd
@@ -189,7 +189,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
@@ -338,7 +338,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
@@ -381,7 +381,7 @@ public class BooleanByteShortAndCharDistinguisher {
                     for (AbstractInsnNode potentialArrayInitializer : check.instrsWhereProduced) {
                         if (potentialArrayInitializer instanceof MethodInsnNode) {
                             String mdesc = ((MethodInsnNode) potentialArrayInitializer).desc;
-                            desc = TransformationUtility.splitMethodDesc(mdesc)[1];
+                            desc = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
                         } else if (potentialArrayInitializer.getOpcode() == NEWARRAY) {
                             TypeInsnNode tin = (TypeInsnNode) potentialArrayInitializer;
                             desc = tin.desc;
@@ -501,7 +501,7 @@ public class BooleanByteShortAndCharDistinguisher {
     }
 
     private static byte getTypeForDesc(String desc) {
-        desc = desc.replace("[", ""); //// TODO
+        desc = desc.replace("[", ""); /// TODO
         // Check if the variable is boolean, byte, or short
         if ((!desc.equals("Z") && !desc.equals("B") && !desc.equals("S"))) {
             return -1; // Not of type boolean, byte, or short --> not relevant here.

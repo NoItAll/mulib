@@ -10,7 +10,7 @@ import java.lang.reflect.Modifier;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.*;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.*;
 
 /**
  * Core piece of Mulib. The MulibTransformer accepts classes and generates partner classes for them, according
@@ -257,7 +257,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return null;
     }
 
-    public abstract MulibClassWriter<T> generateMulibClassWriter();
+    public abstract MulibClassFileWriter<T> generateMulibClassWriter();
+
     private String _calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
         // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
         if (fieldNodeDesc.startsWith("[[")) {

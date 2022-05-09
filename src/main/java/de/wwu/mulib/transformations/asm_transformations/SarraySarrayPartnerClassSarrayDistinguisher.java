@@ -9,9 +9,9 @@ import org.objectweb.asm.tree.analysis.Frame;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getNumInputs;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
 import static de.wwu.mulib.transformations.asm_transformations.TaintAnalyzer.getFromTopOfStack;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getNumInputs;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 // Needed to distinguish between (AALOAD, AASTORE) --> ((SarraySarray.select, PartnerClassSarray.select), (SarraySarray.store, PartnerClassSarray.store))
@@ -123,7 +123,7 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
                 path.push(current.lastSeenProducingInsn);
                 current = current.previous;
             }
-            return TransformationUtility.getBytecode(path);
+            return AsmTransformationUtility.getBytecode(path);
         }
     }
 
@@ -172,7 +172,7 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
                     if (checkcast.isPresent()) {
                         descOfRootArrayTargetedByStoreOrLoad = ((TypeInsnNode) checkcast.get()).desc;
                     } else {
-                        descOfRootArrayTargetedByStoreOrLoad = TransformationUtility.splitMethodDesc(mdesc)[1];
+                        descOfRootArrayTargetedByStoreOrLoad = AsmTransformationUtility.splitMethodDesc(mdesc)[1];
                     }
                 } else if (potentialArrayInitializer.getOpcode() == MULTIANEWARRAY) {
                     MultiANewArrayInsnNode mana = (MultiANewArrayInsnNode) potentialArrayInitializer;
@@ -217,7 +217,7 @@ public class SarraySarrayPartnerClassSarrayDistinguisher {
     private void addToArrayArrayOrObjectArrayInsnsDependingOnDesc(AbstractInsnNode selectOrStore, String desc, int additionalAALOADs) {
         assert taintedInstructions.contains(selectOrStore);
         assert additionalAALOADs == 0 || desc.substring(0, additionalAALOADs).chars().allMatch(c -> c == '[');
-        String adjustedDesc = desc.substring(additionalAALOADs); //// TODO additionalAALOADs make it bad: the L is lost
+        String adjustedDesc = desc.substring(additionalAALOADs); /// TODO additionalAALOADs make it bad: the L is lost
         if (adjustedDesc.startsWith("[[")) {
             this.taintedNewArrayArrayInsns.add(selectOrStore);
         } else {

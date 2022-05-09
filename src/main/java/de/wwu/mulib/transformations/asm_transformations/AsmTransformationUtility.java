@@ -15,7 +15,7 @@ import java.util.List;
 import static de.wwu.mulib.transformations.StringConstants.*;
 import static org.objectweb.asm.Opcodes.*;
 
-public final class TransformationUtility {
+public final class AsmTransformationUtility {
     // int = 1, long = 2, double = 3, float = 4, String = 5, byte = 6, short = 7, boolean = 8, char = 9, type = 10, array = 11
     public static final byte WR_INT = 1;
     public static final byte WR_LONG = 2;
@@ -28,7 +28,7 @@ public final class TransformationUtility {
     public static final byte WR_CHAR = 9;
     public static final byte WR_TYPE = 10;
 
-    private TransformationUtility() {}
+    private AsmTransformationUtility() {}
 
     public static boolean isStatic(int access) {
         return (access & Opcodes.ACC_STATIC) != 0;

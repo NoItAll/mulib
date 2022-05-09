@@ -34,9 +34,9 @@ public abstract class MulibClassLoader<T> extends ClassLoader {
         if (result != null) {
             return result;
         }
-        result = getByteArrayOfPartnerClassFor(withoutPrefix);
+        result = getPartnerClassForOriginal(withoutPrefix);
         return result;
     }
 
-    protected abstract Class<?> getByteArrayOfPartnerClassFor(String original);
+    protected abstract Class<?> getPartnerClassForOriginal(String original);
 }

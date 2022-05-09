@@ -15,8 +15,8 @@ import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.getSingleDescsFromMethodParams;
-import static de.wwu.mulib.transformations.asm_transformations.TransformationUtility.splitMethodDesc;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.getSingleDescsFromMethodParams;
+import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.splitMethodDesc;
 import static org.objectweb.asm.Opcodes.*;
 
 public final class TaintAnalyzer {
@@ -55,7 +55,7 @@ public final class TaintAnalyzer {
         this.ains = mn.instructions.toArray();
         this.mulibTransformer = mulibTransformer;
         this.mn = mn;
-        this.numberInputs = TransformationUtility.getNumInputs(mn);
+        this.numberInputs = AsmTransformationUtility.getNumInputs(mn);
         this.localVariables = new ArrayList<>(mn.localVariables != null ? mn.localVariables : new ArrayList<>());
         try {
             Analyzer<TaintValue> a = new Analyzer<>(new TaintInterpreter());
@@ -522,7 +522,7 @@ public final class TaintAnalyzer {
                         "the method " + min.name + " should be generalized or concretized.");
             }
             if (concretize || generalize) {
-                int numParams = TransformationUtility.getNumInputs(
+                int numParams = AsmTransformationUtility.getNumInputs(
                         min.desc,
                         /* We never count the object itself here, since it is not replaced. Only
                          * objects that are not replaced can have ignored methods.*/

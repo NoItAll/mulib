@@ -1,12 +1,23 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import org.objectweb.asm.ClassWriter;
+import soot.util.backend.SootASMClassWriter;
 
 import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
 
-public abstract class MulibClassWriter<T> extends ClassWriter {
-    public MulibClassWriter(int flags) {
+/**
+ * Adaptation of ClassWriter to fit the transformation prefix.
+ */
+public class MulibSootClassWriter extends SootASMClassWriter {
+
+    /**
+     * Constructs a new {@link ClassWriter} object.
+     *
+     * @param flags option flags that can be used to modify the default behavior of this class. See {@link #COMPUTE_MAXS},
+     *              {@link #COMPUTE_FRAMES}.
+     */
+    public MulibSootClassWriter(int flags) {
         super(flags);
     }
 
@@ -33,9 +44,4 @@ public abstract class MulibClassWriter<T> extends ClassWriter {
             return super.getCommonSuperClass(type1, type2);
         }
     }
-
-    public abstract void validateClassNode(T classNode);
-
-    public abstract void writeClassToFile(String generatedClassesPathPattern, boolean includePackageName, T classNode);
-
 }
