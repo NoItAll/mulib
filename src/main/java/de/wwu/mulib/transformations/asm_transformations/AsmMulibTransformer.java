@@ -20,6 +20,7 @@ import java.util.function.Function;
 import java.util.stream.Collectors;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
+import static de.wwu.mulib.transformations.TransformationUtility.*;
 import static de.wwu.mulib.transformations.asm_transformations.AsmTransformationUtility.*;
 import static org.objectweb.asm.Opcodes.*;
 
