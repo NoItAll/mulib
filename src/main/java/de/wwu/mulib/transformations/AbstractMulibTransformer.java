@@ -82,11 +82,26 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             transformClass(classesToTransform.poll());
         }
 
-        // Define classes
-        defineClasses();
+        for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+            if (transformedClasses.get(entry.getKey()) != null) {
+                continue;
+            }
+
+            try {
+                synchronized (syncObject) {
+                    Class<?> result = classLoader.loadClass(getNameToLoadOfClassNode(entry.getValue()));
+                    transformedClasses.put(entry.getKey(), result);
+                }
+            } catch (ClassNotFoundException e) {
+                e.printStackTrace();
+                throw new MulibRuntimeException(e);
+            }
+        }
 
         maybeCheckAreValidInitializedClasses(transformedClasses.values());
     }
+
+    protected abstract String getNameToLoadOfClassNode(T classNode);
 
     /**
      * Returns the partner class for the given class.
@@ -116,6 +131,105 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     public final void setPartnerClass(Class<?> original, Class<?> partnerClass) {
         transformedClasses.put(original.getName(), partnerClass);
     }
+
+    protected abstract boolean isInterface(T classNode);
+
+    protected abstract T getClassNodeForName(String name);
+
+    protected T transformEnrichAndValidate(String toTransformName) {
+        T result;
+        if ((result = this.transformedClassNodes.get(toTransformName)) != null) {
+            return result;
+        }
+        T originalCn = getClassNodeForName(toTransformName);
+        result = transformClassNode(originalCn);
+        transformedClassNodes.put(toTransformName, result);
+        if (!isInterface(originalCn)) {
+            // Synthesize additional constructors
+            // Constructor for free object-initialization:
+            // We do not need to ensure that all previously primitive fields are properly initialized since
+            // each field is set to its symbolic value.
+            generateAndAddSymbolicExecutionConstructor(originalCn, result);
+            // Constructor for translating input objects to the Mulib-representation
+            // We do not need to ensure that all previously primitive fields are properly initialized since we get the
+            // values from primitive fields which, per default, have the value 0
+            generateAndAddTransformationConstructor(originalCn, result);
+            // Constructor for copying input objects, transformed by the transformationConstructor
+            // We do not need to ensure that all previously primitive fields are properly initialized since this should
+            // already hold for the copied object.
+            generateAndAddCopyConstructor(originalCn, result);
+            // Method for copying called-upon object
+            generateAndAddCopyMethod(originalCn, result);
+            // Method for labeling original object
+            generateAndAddLabelTypeMethod(originalCn, result);
+            // Method for returning original type's class
+            generateAndAddOriginalClassMethod(originalCn, result);
+            // Method for setting static fields, if any
+            generateOrEnhanceClinit(originalCn, result);
+        }
+        ensureInitializedLibraryTypeFieldsInConstructors(result);
+
+        return result;
+    }
+
+    /**
+     * Adds a constructor for symbolically initializing a new instance of a class <init>(LSymbolicExecution;)
+     * @param old The old class
+     * @param result The new class to which the symbolic initialization-constructor should be added
+     */
+    protected abstract void generateAndAddSymbolicExecutionConstructor(T old, T result);
+
+    /**
+     * Generates a constructor for transforming an object of the class of old to an object of type result
+     * @param old The to-be-transformed class
+     * @param result The class to an object of which the object of old should be transformed
+     */
+    protected abstract void generateAndAddTransformationConstructor(T old, T result);
+
+    /**
+     * Generates a constructor with the parameter types <init>(LobjectOfPartnerClass;LMulibValueTransformer;)
+     * @param old The old class
+     * @param result The new class to which the new copy constructor should be added
+     */
+    protected abstract void generateAndAddCopyConstructor(T old, T result);
+
+    /**
+     * Adds a method for calling the copy constructor
+     * @param old The old class
+     * @param result The new class to which said method should be added
+     * @see AbstractMulibTransformer#generateAndAddCopyConstructor(Object, Object)
+     */
+    protected abstract void generateAndAddCopyMethod(T old, T result);
+
+    /**
+     * Adds a method to label an object of the transformed class, i.e., transform an object of the type of result to
+     * an object of the type of old
+     * @param old The old class to an instance of which the object of the result class should be transformed
+     * @param result The to-be-transformed class
+     */
+    protected abstract void generateAndAddLabelTypeMethod(T old, T result);
+
+    /**
+     * Adds a method that returns the ClassConstant of the old class
+     * @param old The old class, for which the class constant should be returned
+     * @param result The new class to which said method should be added
+     */
+    protected abstract void generateAndAddOriginalClassMethod(T old, T result);
+
+    /**
+     * Ensure that all static primitives are initialized to the default element for fields
+     * @param old The old class with or without a clinit
+     * @param result The new class with a clinit if old had a clinit, else without
+     */
+    protected abstract void generateOrEnhanceClinit(T old, T result);
+
+    /**
+     * Since Java assumes default values for un-initialized primitive fields, we have to check whether
+     * we still have to assign a value to those fields in all constructors.
+     * @param result The result for which additional safety checks and initializations must be added
+     * @see AbstractMulibTransformer#generateOrEnhanceClinit(Object, Object)
+     */
+    protected abstract void ensureInitializedLibraryTypeFieldsInConstructors(T result);
 
     /* METHODS FOR CHECKING HOW CLASSES SHOULD BE TREATED. */
 
@@ -181,11 +295,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     }
 
     /* TO OVERRIDE */
-    /**
-     * Must set transformed classes using this.classLoader
-     */
-    protected abstract Map<String, Class<?>> defineClasses();
-
     protected abstract MulibClassLoader<T> generateMulibClassLoader();
 
     // Check if the class, represented by the path, is about to be transformed or has already been transformed.
@@ -229,6 +338,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
                 getClass().getClassLoader().loadClass(addPrefix(toTransform.getName()));
+                // If loading succeeded there already is a class file in the build
                 return;
             } catch (ClassNotFoundException ignored) {
             }
@@ -241,13 +351,20 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             return;
         }
 
-        transformedClassNodes.put(toTransform.getName(), transformClass(toTransform.getName()));
+        result = transformEnrichAndValidate(toTransform.getName());
+        // Optionally, conduct some checks and write class node to class file
+        maybeWriteToFile(result);
+        maybeCheckIsValidAsmWrittenClass(result);
     }
 
-    protected abstract T transformClass(String toTransformName);
+    /**
+     * Loads the representation T of the class to be transformed. Transforms this representation
+     * @param toTransform The representation of the class to be loaded
+     * @return the transformed representation
+     */
+    protected abstract T transformClassNode(T toTransform);
 
     /* TRANSFORMING CLASS TO PARTNER CLASS */
-    protected abstract T transform(T originalCn);
     protected String calculateSignatureForSarrayIfNecessary(String desc) {
         // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
         if (desc.startsWith("[[") || desc.startsWith("[L")) {
@@ -257,7 +374,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return null;
     }
 
-    public abstract MulibClassFileWriter<T> generateMulibClassWriter();
+    public abstract MulibClassFileWriter<T> generateMulibClassFileWriter();
 
     private String _calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
         // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
@@ -330,18 +447,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
 
     /* PROTECTED METHODS FOR TRANSFORMING PARAMETERS AND TYPES */
-    // Decide on whether to replace the given class, as specified by its path, should be replaced
-    // with the partner class' name.
-    protected String decideOnReplaceName(String s) {
-        if (shouldBeTransformed(s)) {
-            if (!isAlreadyTransformedOrToBeTransformedPath(s)) {
-                decideOnAddToClassesToTransform(s);
-            }
-            return addPrefix(s);
-        } else {
-            return s;
-        }
-    }
 
     protected void decideOnAddToClassesToTransform(String path) {
         if (path.startsWith("[")) {
@@ -352,6 +457,19 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             path = path.substring(1, path.length() - 1);
         }
         classesToTransform.add(getClassForPath(path));
+    }
+
+    protected final boolean calculateReflectionRequiredForFieldInNonStaticMethod(int access) {
+        if (Modifier.isStatic(access)) {
+            return false;
+        }
+        if (tryUseSystemClassLoader) {
+            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
+            // without reflection
+            return Modifier.isPrivate(access) || Modifier.isFinal(access);
+        } else {
+            return !Modifier.isPublic(access) || Modifier.isFinal(access);
+        }
     }
 
     // Decide on the value by means of which we replace the given descriptor.
@@ -452,9 +570,12 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                     if (Modifier.isAbstract(generatedClass.getModifiers())) {
                         continue;
                     }
+                    if (generatedClass.getNestHost() != null) {
+                        continue;
+                    }
                     if (determineNestHostFieldName(generatedClass.getName().replace(_TRANSFORMATION_PREFIX, "")) != null) {
-                        Class<?> hostFieldClass = generatedClass.getEnclosingClass();
-                        generatedClass.getDeclaredConstructor(new Class[]{hostFieldClass, SymbolicExecution.class}).newInstance(null, null);
+//                        Class<?> hostFieldClass = generatedClass.getEnclosingClass();
+//                        generatedClass.getDeclaredConstructor(new Class[]{hostFieldClass, SymbolicExecution.class}).newInstance(null, null);
                     } else {
                         generatedClass.getDeclaredConstructor(new Class[]{SymbolicExecution.class}).newInstance(new Object[]{null});
                     }
@@ -479,7 +600,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected void maybeCheckIsValidAsmWrittenClass(T classNode) {
         if (validate) {
             // Following the documentation of CheckClassAdapter from here on
-            generateMulibClassWriter().validateClassNode(classNode);
+            generateMulibClassFileWriter().validateClassNode(classNode);
         }
     }
 
@@ -487,7 +608,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected void maybeWriteToFile(T classNode) {
         if (writeToFile) {
             synchronized (syncObject) {
-                generateMulibClassWriter().writeClassToFile(generatedClassesPathPattern, includePackageName, classNode);
+                generateMulibClassFileWriter().writeClassToFile(generatedClassesPathPattern, includePackageName, classNode);
             }
         }
     }

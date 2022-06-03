@@ -18,16 +18,19 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
             // Validate class structure:
             classNode.validate();
             for (SootMethod m : classNode.getMethods()) {
-                // Validate aspects of the class
-                Body b = m.getActiveBody();
-                b.validate();
-                b.validateLocals();
-                b.validateTraps();
-                b.validateUnitBoxes();
-                b.validateUses();
-                b.validateValueBoxes();
+                if (!m.isAbstract()) {
+                    // Validate aspects of the class
+                    Body b = m.retrieveActiveBody();
+                    b.validate();
+                    b.validateLocals();
+                    b.validateTraps();
+                    b.validateUnitBoxes();
+                    b.validateUses();
+                    b.validateValueBoxes();
+                }
             }
         } catch (Exception e) {
+            e.printStackTrace();
             throw new MulibRuntimeException(e);
         }
     }
@@ -36,13 +39,14 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
     public void writeClassToFile(String generatedClassesPathPattern, boolean includePackageName, SootClass classNode) {
         String className = classNode.getName();
         if (!includePackageName) {
-            className = className.substring(classNode.getName().lastIndexOf('/') + 1);
+            className = className.substring(classNode.getName().lastIndexOf('.') + 1);
         }
         MulibBafASMBackend backend = new MulibBafASMBackend(classNode);
         try {
             OutputStream os = new FileOutputStream(String.format(generatedClassesPathPattern, className));
             backend.generateClassFile(os);
         } catch (Exception e) {
+            e.printStackTrace();
             throw new MulibRuntimeException("Class file could not be written to file. Class name: " + className);
         }
     }

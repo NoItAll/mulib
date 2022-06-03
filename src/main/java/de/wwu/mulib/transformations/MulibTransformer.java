@@ -1,7 +1,7 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.transformations.asm_transformations.AsmMulibTransformer;
+import de.wwu.mulib.transformations.soot_transformations.SootMulibTransformer;
 
 public interface MulibTransformer {
 
@@ -27,6 +27,6 @@ public interface MulibTransformer {
     boolean shouldBeTransformedFromDesc(String desc);
 
     static MulibTransformer get(MulibConfig config) {
-        return new AsmMulibTransformer(config);
+        return new SootMulibTransformer(config);
     }
 }

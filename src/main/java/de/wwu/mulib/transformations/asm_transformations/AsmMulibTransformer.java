@@ -38,7 +38,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     }
 
     @Override
-    public MulibClassFileWriter<ClassNode> generateMulibClassWriter() {
+    public MulibClassFileWriter<ClassNode> generateMulibClassFileWriter() {
         return new AsmClassFileWriter();
     }
 
@@ -47,22 +47,9 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         return new AsmClassLoader(this);
     }
 
-    @Override
-    protected ClassNode transformClass(String toTransformName) {
-        try {
-            ClassReader cr = new ClassReader(toTransformName);
-            ClassNode classNode = new ClassNode(_API_VERSION);
-            cr.accept(classNode, 0);
-            ClassNode transformedClass = transform(classNode);
-            return transformedClass;
-        } catch (IOException e) {
-            throw new MulibRuntimeException("The class to be read could not be found: " + toTransformName, e);
-        }
-    }
-
     // Transforms the ASM representation of the original class to the ASM representation of the partner class.
     @Override
-    protected ClassNode transform(ClassNode originalCn) {
+    protected ClassNode transformClassNode(ClassNode originalCn) {
         ClassNode result = new ClassNode(_API_VERSION);
         result.name = addPrefix(originalCn.name);
         result.access = originalCn.access;
@@ -133,57 +120,52 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
             ));
         }
 
-        List<MethodNode> resultMethods = new ArrayList<>();
-        MethodNode clinitMethodNode = null;
-        List<MethodNode> initNodes = new ArrayList<>();
         for (MethodNode mn : originalCn.methods) {
             MethodNode resultingNode = transformMethodNode(mn, result.name, originalCn.name);
-            if (resultingNode.name.equals(clinit)) {
-                assert clinitMethodNode == null;
-                clinitMethodNode = resultingNode;
-            }
-            if (resultingNode.name.equals(init)) {
-                initNodes.add(resultingNode);
-            }
             // Additionally, if we have to, e.g., apply concretizations, we now postprocess this intermediate method node.
-            resultMethods.add(resultingNode);
-        }
-        for (MethodNode initNode : initNodes) {
-            // We assure that in each init-Method all previously primitive fields are initialized with a
-            // Mulib library-type, i.e., they must not be null.
-            ensureInitializedLibraryTypeFields(result, initNode);
+            result.methods.add(resultingNode);
         }
 
-        if (!Modifier.isInterface(originalCn.access)) {
-            // Synthesize additional constructors
-            // Constructor for free object-initialization:
-            // We do not need to ensure that all previously primitive fields are properly initialized since
-            // each field is set to its symbolic value.
-            result.methods.add(generateSymbolicExecutionConstructor(originalCn, result));
-            // Constructor for translating input objects to the Mulib-representation
-            // We do not need to ensure that all previously primitive fields are properly initialized since we get the
-            // values from primitive fields which, per default, have the value 0
-            result.methods.add(generateTransformationConstructor(originalCn, result));
-            // Constructor for copying input objects, transformed by the transformationConstructor
-            // We do not need to ensure that all previously primitive fields are properly initialized since this should
-            // already hold for the copied object.
-            result.methods.add(generateCopyConstructor(originalCn, result));
-            // Method for copying called-upon object
-            result.methods.add(generateCopyMethod(originalCn, result));
-            // Method for labeling original object
-            result.methods.add(generateLabelTypeMethod(originalCn, result));
-            // Method for returning original type's class
-            result.methods.add(generateOriginalClassMethod(originalCn));
-            // Method for setting static fields, if any,
-            generateOrEnhanceClinit(result, clinitMethodNode);
-        }
-
-        result.methods.addAll(resultMethods);
-
-        // Optionally, conduct some checks and write class node to class file
-        maybeWriteToFile(result);
-        maybeCheckIsValidAsmWrittenClass(result);
         return result;
+    }
+
+    // Decide on whether to replace the given class, as specified by its path, should be replaced
+    // with the partner class' name.
+    protected String decideOnReplaceName(String s) {
+        if (shouldBeTransformed(s)) {
+            if (!isAlreadyTransformedOrToBeTransformedPath(s)) {
+                decideOnAddToClassesToTransform(s);
+            }
+            return addPrefix(s);
+        } else {
+            return s;
+        }
+    }
+
+    @Override
+    protected ClassNode getClassNodeForName(String name) {
+        try {
+            ClassReader cr = new ClassReader(name);
+            ClassNode classNode = new ClassNode(_API_VERSION);
+            cr.accept(classNode, 0);
+            return classNode;
+        } catch (IOException e) {
+            throw new MulibRuntimeException("The class to be read could not be found: " + name, e);
+        }
+    }
+
+    protected boolean isInterface(ClassNode classNode) {
+        return Modifier.isInterface(classNode.access);
+    }
+
+    protected void ensureInitializedLibraryTypeFieldsInConstructors(ClassNode result) {
+        for (MethodNode initNode : result.methods) {
+            if (initNode.name.equals(init)) {
+                // We assure that in each init-Method all previously primitive fields are initialized with a
+                // Mulib library-type, i.e., they must not be null.
+                ensureInitializedLibraryTypeFields(result, initNode);
+            }
+        }
     }
 
     /* TRANSFORMING METHOD TO POTENTIALLY SYMBOLIC REPRESENTATION */
@@ -329,23 +311,8 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     }
 
     @Override
-    protected Map<String, Class<?>> defineClasses() {
-        for (Map.Entry<String, ClassNode> entry : transformedClassNodes.entrySet()) {
-            if (transformedClasses.get(entry.getKey()) != null) {
-                continue;
-            }
-
-            try {
-                synchronized (syncObject) {
-                    Class<?> result = classLoader.loadClass(entry.getValue().name.replace("/", "."));
-                    transformedClasses.put(entry.getKey(), result);
-                }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                throw new MulibRuntimeException(e);
-            }
-        }
-        return transformedClasses;
+    protected String getNameToLoadOfClassNode(ClassNode classNode) {
+        return classNode.name.replace("/", ".");
     }
 
     /* MAIN TRANSFORMATION LOOP */
@@ -1293,7 +1260,15 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     }
 
     // Ensure that all static primitives are initialized to the default element for fields
-    private void generateOrEnhanceClinit(ClassNode result, MethodNode clinitMethodNode) {
+    @Override
+    protected void generateOrEnhanceClinit(ClassNode originalNode, ClassNode result) {
+        MethodNode clinitMethodNode = null;
+        for (MethodNode mn : result.methods) {
+            if (mn.name.equals(clinit)) {
+                clinitMethodNode = mn;
+                break;
+            }
+        }
         if (clinitMethodNode == null) {
             clinitMethodNode = new MethodNode(ACC_PUBLIC | ACC_STATIC, clinit, "()V", null, null);
             result.methods.add(clinitMethodNode);
@@ -1376,7 +1351,8 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         return result;
     }
 
-    private MethodNode generateSymbolicExecutionConstructor(ClassNode originalCn, ClassNode result) {
+    @Override
+    protected void generateAndAddSymbolicExecutionConstructor(ClassNode originalCn, ClassNode result) { ///// TODO!
         // Check if is inner class:
         boolean isInnerNonStaticClass = originalCn.nestHostClass != null;
         // Further check whether is not only an inner class, but an inner non-static class:
@@ -1513,7 +1489,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         LabelNode initEnd = new LabelNode();
         mnInsns.add(initEnd);
         mnInit.localVariables.add(new LocalVariableNode(thisDesc, "L" + result.name + ";", null, initStart, initEnd, 0));
-        return mnInit;
+        result.methods.add(mnInit);
     }
 
     private static FieldNode getOriginalFieldNode(String name, ClassNode originalCn) {
@@ -1526,8 +1502,8 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     }
 
 
-    // <init>(LobjectOfPartnerClass;LMulibValueTransformer;)
-    private MethodNode generateCopyConstructor(ClassNode originalCn, ClassNode result) {
+    @Override
+    protected void generateAndAddCopyConstructor(ClassNode originalCn, ClassNode result) {
         // Check if is inner class:
         boolean isInnerNonStaticClass = originalCn.nestHostClass != null;
         // Further check whether is not only an inner class, but an inner non-static class:
@@ -1635,11 +1611,12 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         }
         mnInsns.add(new InsnNode(RETURN));
         mnInsns.add(initEnd);
-        return mnInit;
+        result.methods.add(mnInit);
     }
 
+    @Override
     // public Object copy(MulibValueTransformer mulibValueTransformer) { return new T(this, mulibValueTransformer); }
-    private MethodNode generateCopyMethod(ClassNode originalCn, ClassNode result) {
+    protected void generateAndAddCopyMethod(ClassNode originalCn, ClassNode result) {
         // Check if is inner class:
         boolean isInnerNonStaticClass = originalCn.nestHostClass != null;
         // Further check whether is not only an inner class, but an inner non-static class:
@@ -1683,24 +1660,13 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         ));
         insns.add(new InsnNode(ARETURN));
         insns.add(end);
-        return copyMethod;
+        result.methods.add(copyMethod);
     }
 
-    private boolean calculateReflectionRequiredForFieldInNonStaticMethod(FieldNode fn) {
-        if (Modifier.isStatic(fn.access)) {
-            return false;
-        }
-        if (tryUseSystemClassLoader) {
-            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
-            // without reflection
-            return Modifier.isPrivate(fn.access) || Modifier.isFinal(fn.access);
-        } else {
-            return !Modifier.isPublic(fn.access) || Modifier.isFinal(fn.access);
-        }
-    }
 
     // <init>(LobjectOfOriginalClass;LMulibValueTransformer;)
-    private MethodNode generateTransformationConstructor(ClassNode originalCn, ClassNode result) {
+    @Override
+    protected void generateAndAddTransformationConstructor(ClassNode originalCn, ClassNode result) {
         // Check if is inner class:
         boolean isInnerNonStaticClass = originalCn.nestHostClass != null;
         // Further check whether is not only an inner class, but an inner non-static class:
@@ -1713,7 +1679,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         }
         boolean reflectionRequired = false;
         for (FieldNode fn : originalCn.fields) {
-            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn)) { // We need to set private fields with reflection.
+            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn.access)) { // We need to set private fields with reflection.
                 reflectionRequired = true;
                 break;
             }
@@ -1793,7 +1759,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                 // We do not set the static field each time.
                 continue;
             }
-            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn);
+            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn.access);
             if (fn.desc.charAt(0) == '[') { // Is array
                 mnInsns.add(loadThis());
                 mnInsns.add(new InsnNode(ACONST_NULL));
@@ -1923,7 +1889,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         mnInsns.add(beforeReturn);
         mnInsns.add(new InsnNode(RETURN));
         mnInsns.add(initEnd);
-        return mnInit;
+        result.methods.add(mnInit);
     }
 
 
@@ -1971,7 +1937,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         return new String[] { owner, nameAndDesc[0], nameAndDesc[1], originalDesc };
     }
 
-    private MethodNode generateOriginalClassMethod(ClassNode originalCn) {
+    protected void generateAndAddOriginalClassMethod(ClassNode originalCn, ClassNode result) {
         MethodNode getOriginalClassMethod = new MethodNode(
                 ACC_PUBLIC,
                 "getOriginalClass",
@@ -1985,7 +1951,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         getOriginalClassMethod.instructions.add(new LdcInsnNode(Type.getObjectType(originalCn.name)));
         getOriginalClassMethod.instructions.add(new InsnNode(ARETURN));
         getOriginalClassMethod.instructions.add(end);
-        return getOriginalClassMethod;
+        result.methods.add(getOriginalClassMethod);
     }
 
     // Label-method for the type of an object.
@@ -1993,7 +1959,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
     // assume that an empty object of the original class has been initialized which is to be filled with values,
     // if necessary, using reflection.
     // label(LObject;LMulibValueTransformer;)LObject;
-    private MethodNode generateLabelTypeMethod(ClassNode originalCn, ClassNode result) {
+    protected void generateAndAddLabelTypeMethod(ClassNode originalCn, ClassNode result) {
         // TODO Constructor checks for inner classes!
         // Check if is inner class:
         boolean isInnerNonStaticClass = originalCn.nestHostClass != null;
@@ -2007,7 +1973,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         }
         boolean reflectionRequired = false;
         for (FieldNode fn : originalCn.fields) {
-            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn)) { // We need to set private fields with reflection.
+            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn.access)) { // We need to set private fields with reflection.
                 reflectionRequired = true;
                 break;
             }
@@ -2077,7 +2043,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                 // We do not set the static field each time.
                 continue;
             }
-            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn); // Original field is private as well then
+            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn.access); // Original field is private as well then
             if (reflectionRequiredForField) {
                 insns.add(loadObjVar(originalObjectIndex));
                 // Get field and set accessible
@@ -2228,7 +2194,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         insns.add(loadObjVar(originalObjectIndex));
         insns.add(new InsnNode(ARETURN));
         insns.add(end);
-        return labelMethod;
+        result.methods.add(labelMethod);
     }
 
 }

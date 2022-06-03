@@ -20,7 +20,7 @@ import static de.wwu.mulib.transformations.TransformationUtility.splitMethodDesc
 import static org.objectweb.asm.Opcodes.*;
 
 public final class TaintAnalyzer {
-    private final AbstractMulibTransformer mulibTransformer;
+    private final AbstractMulibTransformer<ClassNode> mulibTransformer;
     private final MethodNode mn;
     private final int numberInputs;
     private final int numberOfInputsSized2;
@@ -49,7 +49,7 @@ public final class TaintAnalyzer {
 
     @SuppressWarnings("unchecked")
     public TaintAnalyzer(
-            AbstractMulibTransformer mulibTransformer,
+            AbstractMulibTransformer<ClassNode> mulibTransformer,
             MethodNode mn,
             String owner) {
         this.ains = mn.instructions.toArray();

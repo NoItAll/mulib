@@ -13,7 +13,7 @@ public final class AsmClassLoader extends MulibClassLoader<ClassNode> {
     @Override
     protected Class<?> getPartnerClassForOriginal(String original) {
         ClassNode classNode = transformer.getTransformedClassNode(original);
-        MulibClassFileWriter<ClassNode> classWriter = transformer.generateMulibClassWriter();
+        MulibClassFileWriter<ClassNode> classWriter = transformer.generateMulibClassFileWriter();
         return defineClass(original, classNode.name.replace("/", "."), classWriter.toByteArray(classNode));
     }
 }

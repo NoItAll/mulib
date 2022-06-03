@@ -14,7 +14,7 @@ public final class SootClassLoader extends MulibClassLoader<SootClass> {
     @Override
     protected Class<?> getPartnerClassForOriginal(String original) {
         SootClass classNode = transformer.getTransformedClassNode(original);
-        MulibClassFileWriter<SootClass> classWriter = transformer.generateMulibClassWriter();
+        MulibClassFileWriter<SootClass> classWriter = transformer.generateMulibClassFileWriter();
         return defineClass(original, classNode.getName().replace("/", "."), classWriter.toByteArray(classNode));
     }
 }
