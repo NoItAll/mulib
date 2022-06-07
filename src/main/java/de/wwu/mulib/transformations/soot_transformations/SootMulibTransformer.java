@@ -523,7 +523,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Initialize fields
         for (SootField oldField : old.getFields()) {
             SootField transformedField = getTransformedFieldForOldField(oldField, result);
-            if (transformedField == resultOuterClassField) {
+            if (transformedField == resultOuterClassField && cc == ChosenConstructor.SE_CONSTR) {
                 // We have already set this
                 continue;
             }
@@ -536,10 +536,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 initializeFieldViaSymbolicExecution(thisLocal, seOrMvtLocal, localSpawner, transformedField, upc);
             } else if (cc == ChosenConstructor.TRANSFORMATION_CONSTR) {
                 initializeFieldViaTransformation(
-                        thisLocal, additionalLocal, seOrMvtLocal, seLocal, classLocal, fieldLocal, exceptionLocal,
-                        localSpawner, oldField, transformedField, old, upc);
+                        thisLocal, additionalLocal, seOrMvtLocal, seLocal, classLocal, fieldLocal,
+                        localSpawner, oldField, transformedField, upc);
             } else if (cc == ChosenConstructor.COPY_CONSTR) {
-                throw new NotYetImplementedException();
+                initializeFieldViaCopy(thisLocal, additionalLocal, seOrMvtLocal, localSpawner, transformedField, upc);
             } else {
                 throw new NotYetImplementedException(cc.name());
             }
@@ -623,6 +623,50 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
     }
 
+    private void initializeFieldViaCopy(
+            Local thisLocal,
+            Local toCopyLocal,
+            Local mvtLocal,
+            LocalSpawner localSpawner,
+            SootField f,
+            UnitPatchingChain upc) {
+        assert mvtLocal.getType() == v.TYPE_MULIB_VALUE_TRANSFORMER;
+        Type t = f.getType();
+        Local toCopyValueLocal = localSpawner.spawnNewStackLocal(t);
+        Local copiedValueLocal = localSpawner.spawnNewStackLocal(t);
+        // Assign value to field; we already define it here so that we can jump to it. It is added at the
+        // end of this method
+        AssignStmt assignToField = Jimple.v().newAssignStmt(
+                Jimple.v().newInstanceFieldRef(thisLocal, f.makeRef()),
+                copiedValueLocal
+        );
+
+        /* GET VALUE FROM ORIGINAL FIELD */
+        AssignStmt getField = Jimple.v().newAssignStmt(
+                toCopyValueLocal,
+                Jimple.v().newInstanceFieldRef(toCopyLocal, f.makeRef())
+        );
+        upc.add(getField);
+
+        if (isPrimitiveOrSprimitive(t)) {
+            AssignStmt directCopy = Jimple.v().newAssignStmt(
+                    copiedValueLocal,
+                    toCopyValueLocal
+            );
+            upc.add(directCopy);
+        } else if (isSarray(t)) {
+            throw new NotYetImplementedException(); //// TODO
+        } else {
+            // Is partnerclass
+            initializeObjectFieldInSpecialConstructor(
+                    toCopyValueLocal, copiedValueLocal, t,
+                    mvtLocal, assignToField, localSpawner, upc
+            );
+        }
+        
+        upc.add(assignToField);
+    }
+
     private void initializeFieldViaTransformation(
             Local thisLocal,
             Local originalLocal,
@@ -630,11 +674,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local seLocal,
             Local classLocal,
             Local fieldLocal,
-            Local exceptionLocal,
             LocalSpawner localSpawner,
             SootField originalField,
             SootField transformedField,
-            SootClass original,
             UnitPatchingChain upc) {
         assert mvtLocal.getType() == v.TYPE_MULIB_VALUE_TRANSFORMER;
         boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(transformedField.getModifiers());
@@ -642,7 +684,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         Type originalType = originalField.getType();
         Local originalValue = localSpawner.spawnNewStackLocal(originalType);
         Local transformedValue = localSpawner.spawnNewStackLocal(transformedType);
-        // Assign value to field; we already define it here so that we can jump to it
+        // Assign value to field; we already define it here so that we can jump to it. It is added at the
+        // end of this method
         AssignStmt assignToField = Jimple.v().newAssignStmt(
                 Jimple.v().newInstanceFieldRef(thisLocal, transformedField.makeRef()),
                 transformedValue
@@ -736,57 +779,73 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             );
             upc.add(wrapConstant);
         } else if (isSarray(transformedType)) {
-            throw new NotYetImplementedException();
+            throw new NotYetImplementedException(); //// TODO
         } else {
             // Is partner class
-            // Check if originalValue == null
-            // TODO also check if should be transformed
-            AssignStmt assignNull = Jimple.v().newAssignStmt(transformedValue, NullConstant.v());
-            IfStmt nullCheck = Jimple.v().newIfStmt(Jimple.v().newEqExpr(originalValue, NullConstant.v()), assignNull);
-            // Check if retrieved original value is null (we add assignNull at the end)
-            upc.add(nullCheck);
-
-            // If the value is not null, we calculate whether the value has already been created
-            VirtualInvokeExpr callAlreadyCreated =
-                    Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED.makeRef(), originalValue);
-            Local stackAlreadyCreated = localSpawner.spawnNewStackLocal(v.TYPE_BOOL); // TODO or int?
-            AssignStmt computeIfAlreadyCreated =
-                    Jimple.v().newAssignStmt(stackAlreadyCreated, callAlreadyCreated);
-            upc.add(computeIfAlreadyCreated);
-            ConditionExpr wasAlreadyCreatedExpr = Jimple.v().newEqExpr(stackAlreadyCreated, IntConstant.v(1)); // Is true?
-            // If the object was already created, we jump to get the copy from the value transformer
-            VirtualInvokeExpr getCopy =
-                    Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_GET_COPY.makeRef(), originalLocal);
-            Local stackLocalOfAlreadyCreatedObject = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
-            AssignStmt assignCopy = Jimple.v().newAssignStmt(stackLocalOfAlreadyCreatedObject, getCopy);
-            CastExpr castedToExpr = Jimple.v().newCastExpr(stackLocalOfAlreadyCreatedObject, transformedType);
-            AssignStmt assignCastedCopy = Jimple.v().newAssignStmt(transformedValue, castedToExpr);
-            IfStmt alreadyCreatedCheck =
-                    Jimple.v().newIfStmt(wasAlreadyCreatedExpr, assignCopy);
-            // Again, we need to add all statements for assigning the copy after treating the false-case
-            upc.add(alreadyCreatedCheck);
-
-            // If there was no copy, we initialize a new object using the constructor
-            Local stackLocalOfNewObject =
-                    createStmtsForConstructorCall(
-                            (RefType) transformedType,
-                            localSpawner,
-                            upc,
-                            List.of(originalLocal.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER),
-                            List.of(originalLocal, mvtLocal)
-                    );
-            upc.add(Jimple.v().newAssignStmt(transformedValue, stackLocalOfNewObject));
-            upc.add(Jimple.v().newGotoStmt(assignToField));
-
-            upc.add(assignCopy);
-            upc.add(assignCastedCopy);
-            upc.add(Jimple.v().newGotoStmt(assignToField));
-
-            // If the retrieved original value is null, we assign null
-            upc.add(assignNull);
+            initializeObjectFieldInSpecialConstructor(
+                    originalValue, transformedValue, transformedType, 
+                    mvtLocal, assignToField, localSpawner, upc
+            );
         }
 
         upc.add(assignToField);
+    }
+    
+    
+    private void initializeObjectFieldInSpecialConstructor(
+            Local originValue, 
+            Local resultValue,
+            Type resultType,
+            Local mvtLocal, 
+            Unit fieldSetUnit,
+            LocalSpawner localSpawner, 
+            UnitPatchingChain upc) {
+        // Is partner class
+        // Check if originalValue == null
+        //// TODO also check if should be transformed
+        AssignStmt assignNull = Jimple.v().newAssignStmt(resultValue, NullConstant.v());
+        IfStmt nullCheck = Jimple.v().newIfStmt(Jimple.v().newEqExpr(originValue, NullConstant.v()), assignNull);
+        // Check if retrieved original value is null (we add assignNull at the end)
+        upc.add(nullCheck);
+
+        // If the value is not null, we calculate whether the value has already been created
+        VirtualInvokeExpr callAlreadyCreated =
+                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED.makeRef(), originValue);
+        Local stackAlreadyCreated = localSpawner.spawnNewStackLocal(v.TYPE_BOOL); // TODO or int?
+        AssignStmt computeIfAlreadyCreated =
+                Jimple.v().newAssignStmt(stackAlreadyCreated, callAlreadyCreated);
+        upc.add(computeIfAlreadyCreated);
+        ConditionExpr wasAlreadyCreatedExpr = Jimple.v().newEqExpr(stackAlreadyCreated, IntConstant.v(1)); // Is true?
+        // If the object was already created, we jump to get the copy from the value transformer
+        VirtualInvokeExpr getCopy =
+                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_GET_COPY.makeRef(), originValue);
+        Local stackLocalOfAlreadyCreatedObject = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
+        AssignStmt assignCopy = Jimple.v().newAssignStmt(stackLocalOfAlreadyCreatedObject, getCopy);
+        CastExpr castedToExpr = Jimple.v().newCastExpr(stackLocalOfAlreadyCreatedObject, resultType);
+        AssignStmt assignCastedCopy = Jimple.v().newAssignStmt(resultValue, castedToExpr);
+        IfStmt alreadyCreatedCheck =
+                Jimple.v().newIfStmt(wasAlreadyCreatedExpr, assignCopy);
+        // Again, we need to add all statements for assigning the copy after treating the false-case
+        upc.add(alreadyCreatedCheck);
+
+        // If there was no copy, we initialize a new object using the constructor
+        Local stackLocalOfNewObject =
+                createStmtsForConstructorCall(
+                        (RefType) resultType,
+                        localSpawner,
+                        upc,
+                        List.of(originValue.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER),
+                        List.of(originValue, mvtLocal)
+                );
+        upc.add(Jimple.v().newAssignStmt(resultValue, stackLocalOfNewObject));
+        upc.add(Jimple.v().newGotoStmt(fieldSetUnit));
+
+        upc.add(assignCopy);
+        upc.add(assignCastedCopy);
+        upc.add(Jimple.v().newGotoStmt(fieldSetUnit));
+
+        // If the retrieved original value is null, we assign null
+        upc.add(assignNull);
     }
 
     private void initializeFieldViaSymbolicExecution(
@@ -829,6 +888,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             AssignStmt assignToField = Jimple.v().newAssignStmt(fieldRef, stackLocalForNew);
             upc.add(assignToField);
         } else {
+            //// TODO
             throw new NotYetImplementedException(t.toString());
         }
     }
@@ -873,12 +933,39 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     @Override
     protected void generateAndAddCopyConstructor(SootClass old, SootClass result) {
-//        throw new NotYetImplementedException(); //// TODO
+        generateSpecializedConstructor(old, result, ChosenConstructor.COPY_CONSTR);
     }
 
     @Override
     protected void generateAndAddCopyMethod(SootClass old, SootClass result) {
-//        throw new NotYetImplementedException(); //// TODO
+        // Create constructor
+        SootMethod copyMethod =
+                new SootMethod("copy", List.of(v.TYPE_MULIB_VALUE_TRANSFORMER), v.TYPE_OBJECT, Modifier.PUBLIC);
+
+        // Create parameter locals for method
+        JimpleBody b = Jimple.v().newBody(copyMethod);
+        copyMethod.setActiveBody(b);
+        LocalSpawner localSpawner = new LocalSpawner(b);
+        // Create locals for body
+        Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_TRANSFORMER);
+
+        // Get unit chain to add instructions to
+        UnitPatchingChain upc = b.getUnits();
+        // Create identity statement for parameter locals
+        upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
+        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_TRANSFORMER, 0)));
+
+        Local stackResultOfCopyConstructor = createStmtsForConstructorCall(
+                    result.getType(), localSpawner, upc,
+                    List.of(result.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER),
+                    List.of(thisLocal, mvtLocal)
+                );
+        upc.add(Jimple.v().newReturnStmt(stackResultOfCopyConstructor));
+
+
+        copyMethod.setDeclaringClass(result);
+        result.addMethod(copyMethod);
     }
 
     @Override
