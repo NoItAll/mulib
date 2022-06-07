@@ -180,7 +180,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected abstract void generateAndAddSymbolicExecutionConstructor(T old, T result);
 
     /**
-     * Generates a constructor for transforming an object of the class of old to an object of type result
+     * Generates a constructor for transforming an object of the class old to an object of type result
+     * <init>(LobjectOfOriginalClass;LMulibValueTransformer;)
      * @param old The to-be-transformed class
      * @param result The class to an object of which the object of old should be transformed
      */
