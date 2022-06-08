@@ -2112,9 +2112,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // If unit is to be wrapped, call respective method
         if (args.isToWrap()) {
             // Only primitives can be wrapped, arrays and objects should not occur here
-            assert var.getType() instanceof IntType || var.getType() instanceof LongType
-                    || var.getType() instanceof DoubleType || var.getType() instanceof ShortType
-                    || var.getType() instanceof ByteType || var.getType() instanceof BooleanType;
+            assert isPrimitiveOrSprimitive(var.getType());
             SootMethodRef smr = constantWrapperMethodRef(var.getType());
             VirtualInvokeExpr invokeExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), smr, value);
             createStackLocalAssignExprRedirectAndAdd(invokeExpr, null, a, a.getLeftOpBox(), args);
