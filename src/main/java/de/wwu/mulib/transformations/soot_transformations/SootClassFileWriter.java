@@ -14,13 +14,14 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
     /* IMPLEMENTATION OF MULIBCLASSFILEWRITER-INTERFACE */
     @Override
     public void validateClassNode(SootClass classNode) {
+        Body b = null;
         try {
             // Validate class structure:
             classNode.validate();
             for (SootMethod m : classNode.getMethods()) {
                 if (!m.isAbstract()) {
                     // Validate aspects of the class
-                    Body b = m.retrieveActiveBody();
+                    b = m.retrieveActiveBody();
                     b.validate();
                     b.validateLocals();
                     b.validateTraps();
@@ -31,7 +32,7 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
             }
         } catch (Exception e) {
             e.printStackTrace();
-            throw new MulibRuntimeException(e);
+            throw new MulibRuntimeException(b == null ? "no body" : b.toString(), e);
         }
     }
 

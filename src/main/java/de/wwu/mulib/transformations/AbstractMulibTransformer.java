@@ -460,15 +460,15 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         classesToTransform.add(getClassForPath(path));
     }
 
-    protected final boolean calculateReflectionRequiredForFieldInNonStaticMethod(int access) {
+    protected final boolean calculateReflectionRequiredForField(int access) {
         if (Modifier.isStatic(access)) {
             return false;
         }
         if (tryUseSystemClassLoader) {
-            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
-            // without reflection
             return Modifier.isPrivate(access) || Modifier.isFinal(access);
         } else {
+            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
+            // without reflection
             return !Modifier.isPublic(access) || Modifier.isFinal(access);
         }
     }

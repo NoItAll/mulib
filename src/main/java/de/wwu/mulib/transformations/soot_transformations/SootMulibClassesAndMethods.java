@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -16,7 +17,6 @@ import java.util.List;
 
 public class SootMulibClassesAndMethods {
     /* SPECIAL CLASSES */
-
     public final SootClass SC_CLASS;
     public final SootClass SC_INTEGER;
     public final SootClass SC_LONG;
@@ -46,11 +46,11 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SBOOLSARRAY;
     public final SootClass SC_SARRAYSARRAY;
     public final SootClass SC_PARTNERCLASSSARRAY;
-
-
-    public final List<SootClass> SC_S;
     public final SootClass SC_SE;
     public final SootClass SC_MULIB_VALUE_TRANSFORMER;
+    public final SootClass SC_SOLVER_MANAGER;
+    public final SootClass SC_SPRIMITIVE;
+    public final SootClass SC_SYM_SPRIMITIVE;
 
     /* SPECIAL TYPES */
     public final RefType TYPE_MULIB_RUNTIME_EXCEPTION;
@@ -86,6 +86,9 @@ public class SootMulibClassesAndMethods {
     public final Type TYPE_OBJECT;
     public final Type TYPE_STRING;
     public final Type TYPE_VOID;
+    public final Type TYPE_SOLVER_MANAGER;
+    public final Type TYPE_SYM_SPRIMITIVE;
+    public final Type TYPE_SPRIMITIVE;
     /* SPECIAL METHODS */
     // Unwrap methods
     public final SootMethod SM_INTEGER_GETVAL;
@@ -143,6 +146,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_TYPE;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_LABEL_PRIMITIVE_VALUE;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_LABEL_VALUE;
     public final SootMethod SM_SINT_ADD;
     public final SootMethod SM_SINT_SUB;
     public final SootMethod SM_SINT_DIV;
@@ -261,6 +266,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_CLASS_GET_DECLARED_FIELD;
     public final SootMethod SM_FIELD_SET_ACCESSIBLE;
     public final SootMethod SM_FIELD_GET;
+    public final SootMethod SM_FIELD_SET;
     public SootMulibClassesAndMethods() {
         SC_MULIB_RUNTIME_EXCEPTION = Scene.v().forceResolve(MulibRuntimeException.class.getName(), SootClass.SIGNATURES);
         SC_CLASS = Scene.v().forceResolve(Class.class.getName(), SootClass.SIGNATURES);
@@ -293,9 +299,10 @@ public class SootMulibClassesAndMethods {
         SC_SARRAYSARRAY         = Scene.v().forceResolve(Sarray.SarraySarray.class.getName(), SootClass.SIGNATURES);
         SC_SE = Scene.v().forceResolve(SymbolicExecution.class.getName(), SootClass.SIGNATURES);
         SC_MULIB_VALUE_TRANSFORMER = Scene.v().forceResolve(MulibValueTransformer.class.getName(), SootClass.SIGNATURES);
+        SC_SOLVER_MANAGER = Scene.v().forceResolve(SolverManager.class.getName(), SootClass.SIGNATURES);
+        SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
+        SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
-        SC_S = List.of(SC_SINT, SC_SLONG, SC_SDOUBLE, SC_SFLOAT,
-                SC_SSHORT, SC_SBYTE, SC_SBOOL, SC_PARTNERCLASS);
         TYPE_MULIB_RUNTIME_EXCEPTION = SC_MULIB_RUNTIME_EXCEPTION.getType();
         TYPE_SINT = Scene.v().getRefType(Sint.class.getName());
         TYPE_SLONG = Scene.v().getRefType(Slong.class.getName());
@@ -307,6 +314,7 @@ public class SootMulibClassesAndMethods {
         TYPE_PARTNERCLASS = Scene.v().getRefType(PartnerClass.class.getName());
         TYPE_SE = Scene.v().getRefType(SymbolicExecution.class.getName());
         TYPE_MULIB_VALUE_TRANSFORMER = Scene.v().getRefType(MulibValueTransformer.class.getName());
+        TYPE_SOLVER_MANAGER = SC_SOLVER_MANAGER.getType();
         TYPE_INT = Scene.v().getType("int");
         TYPE_LONG = Scene.v().getType("long");
         TYPE_DOUBLE = Scene.v().getType("double");
@@ -329,6 +337,8 @@ public class SootMulibClassesAndMethods {
         TYPE_SBYTESARRAY            = SC_SBYTESARRAY.getType();
         TYPE_SBOOLSARRAY            = SC_SBOOLSARRAY.getType();
         TYPE_PARTNERCLASSSARRAY     = SC_PARTNERCLASSSARRAY.getType();
+        TYPE_SPRIMITIVE             = SC_SPRIMITIVE.getType();
+        TYPE_SYM_SPRIMITIVE         = SC_SYM_SPRIMITIVE.getType();
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);
@@ -385,6 +395,8 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION = SC_MULIB_VALUE_TRANSFORMER.getMethod("copySearchRegionRepresentation", List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("transformValue",                 List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_TYPE = SC_MULIB_VALUE_TRANSFORMER.getMethod("transformType",                  List.of(TYPE_CLASS), TYPE_CLASS);
+        SM_MULIB_VALUE_TRANSFORMER_LABEL_PRIMITIVE_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("labelPrimitiveValue", List.of(TYPE_SPRIMITIVE, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
+        SM_MULIB_VALUE_TRANSFORMER_LABEL_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("labelValue", List.of(TYPE_OBJECT, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
 
         SM_SINT_ADD                 = SC_SINT.getMethod("add",          List.of(TYPE_SINT, TYPE_SE),    TYPE_SINT);
         SM_SINT_SUB                 = SC_SINT.getMethod("sub",          List.of(TYPE_SINT, TYPE_SE),    TYPE_SINT);
@@ -507,6 +519,7 @@ public class SootMulibClassesAndMethods {
         SM_CLASS_GET_DECLARED_FIELD  = SC_CLASS.getMethod("getDeclaredField", List.of(TYPE_STRING), TYPE_FIELD);
         SM_FIELD_SET_ACCESSIBLE      = SC_FIELD.getMethod("setAccessible", List.of(TYPE_BOOL), TYPE_VOID);
         SM_FIELD_GET = SC_FIELD.getMethod("get", List.of(TYPE_OBJECT), TYPE_OBJECT);
+        SM_FIELD_SET = SC_FIELD.getMethod("set", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
     }
 
     public static SootMethodRef getMethodRefForMethod(SootMethod sm) { /// TODO not necessary anymore.

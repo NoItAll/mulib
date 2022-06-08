@@ -1679,7 +1679,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         }
         boolean reflectionRequired = false;
         for (FieldNode fn : originalCn.fields) {
-            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn.access)) { // We need to set private fields with reflection.
+            if (calculateReflectionRequiredForField(fn.access)) { // We need to set private fields with reflection.
                 reflectionRequired = true;
                 break;
             }
@@ -1759,7 +1759,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                 // We do not set the static field each time.
                 continue;
             }
-            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn.access);
+            boolean reflectionRequiredForField = calculateReflectionRequiredForField(fn.access);
             if (fn.desc.charAt(0) == '[') { // Is array
                 mnInsns.add(loadThis());
                 mnInsns.add(new InsnNode(ACONST_NULL));
@@ -1973,7 +1973,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
         }
         boolean reflectionRequired = false;
         for (FieldNode fn : originalCn.fields) {
-            if (calculateReflectionRequiredForFieldInNonStaticMethod(fn.access)) { // We need to set private fields with reflection.
+            if (calculateReflectionRequiredForField(fn.access)) { // We need to set private fields with reflection.
                 reflectionRequired = true;
                 break;
             }
@@ -2043,7 +2043,7 @@ public class AsmMulibTransformer extends AbstractMulibTransformer<ClassNode> {
                 // We do not set the static field each time.
                 continue;
             }
-            boolean reflectionRequiredForField = calculateReflectionRequiredForFieldInNonStaticMethod(fn.access); // Original field is private as well then
+            boolean reflectionRequiredForField = calculateReflectionRequiredForField(fn.access); // Original field is private as well then
             if (reflectionRequiredForField) {
                 insns.add(loadObjVar(originalObjectIndex));
                 // Get field and set accessible
