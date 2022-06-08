@@ -2204,11 +2204,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         AssignStmt assignStmt = Jimple.v().newAssignStmt(stackLocal, expressionToCreateStackLocalFor);
         firstStatement = firstStatement == null ? assignStmt : firstStatement;
         // The new assigned value is now the stack local
-        setStackLocalAsValue.setValue(transformStackLocal.apply(stackLocal));
+        Value value = setStackLocalAsValue.getValue();
+        Value transformedStackLocal = transformStackLocal.apply(stackLocal);
+        setStackLocalAsValue.setValue(transformedStackLocal);
         // Redirect jumps
         redirectJumpsFrom.redirectJumpsToThisTo(firstStatement);
         // Add assign
         args.addUnit(assignStmt);
+        if (value instanceof Local && !((Local) value).getName().startsWith("$")) {
+            AssignStmt a = Jimple.v().newAssignStmt(value, transformedStackLocal);
+            args.addUnit(a);
+        }
         return stackLocal;
     }
 
