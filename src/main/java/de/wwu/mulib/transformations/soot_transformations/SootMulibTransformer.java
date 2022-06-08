@@ -20,8 +20,7 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
-import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
-import static de.wwu.mulib.transformations.StringConstants.init;
+import static de.wwu.mulib.transformations.StringConstants.*;
 import static de.wwu.mulib.transformations.TransformationUtility.determineNestHostFieldName;
 import static de.wwu.mulib.transformations.TransformationUtility.getClassForName;
 
@@ -1197,12 +1196,111 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     @Override
     protected void generateOrEnhanceClinit(SootClass old, SootClass result) {
-//        throw new NotYetImplementedException(); //// TODO
+        SootMethod initializer = null;
+        for (SootMethod sm : result.getMethods()) {
+            if (sm.getName().equals(clinit)) {
+                initializer = sm;
+                break;
+            }
+        }
+        if (initializer == null) {
+            // Initialize clinit
+            initializer = new SootMethod(clinit, List.of(), v.TYPE_VOID, Modifier.PUBLIC | Modifier.STATIC);
+            // Create parameter locals for method
+            JimpleBody b = Jimple.v().newBody(initializer);
+            initializer.setActiveBody(b);
+            // Get unit chain to add instructions to
+            UnitPatchingChain upc = b.getUnits();
+
+            upc.add(Jimple.v().newReturnVoidStmt());
+
+            initializer.setDeclaringClass(result);
+            result.addMethod(initializer);
+        }
+
+        JimpleBody b = (JimpleBody) initializer.retrieveActiveBody();
+
+        enhanceClinitOrInitWithNullConditionalDefaults(result, b, true);
+    }
+
+    private void enhanceClinitOrInitWithNullConditionalDefaults(SootClass c, JimpleBody b, boolean regardStaticFields) {
+        Set<SootField> fieldsToInitialize =
+                c.getFields().stream()
+                        .filter(f -> isPrimitiveOrSprimitive(f.getType()) &&
+                                ((regardStaticFields && f.isStatic()) || (!regardStaticFields && !f.isStatic())))
+                        .collect(Collectors.toSet());
+        UnitPatchingChain upc = b.getUnits();
+        Set<ReturnVoidStmt> returnVoids = upc.stream().filter(
+                u -> u instanceof ReturnVoidStmt
+        ).map(ReturnVoidStmt.class::cast).collect(Collectors.toSet());
+
+        Local thisLocal = regardStaticFields ? null : b.getThisLocal();
+
+        LocalSpawner localSpawner = new LocalSpawner(b);
+
+        for (ReturnVoidStmt rv : returnVoids) {
+            // For each of the ReturnVoidStmts: Add a null-check and initialize if needed
+            Unit nextUnit = rv;
+            for (SootField f : fieldsToInitialize) {
+                Type t = f.getType();
+                Local loadedField = localSpawner.spawnNewStackLocal(t);
+                // Load field
+                AssignStmt loadField = Jimple.v().newAssignStmt(
+                        loadedField,
+                        regardStaticFields ?
+                                Jimple.v().newStaticFieldRef(f.makeRef())
+                                :
+                                Jimple.v().newInstanceFieldRef(thisLocal, f.makeRef())
+                );
+                // Check if field is not null
+                IfStmt notNullCheck = Jimple.v().newIfStmt(
+                        Jimple.v().newNeExpr(loadedField, NullConstant.v()),
+                        nextUnit // If is not null, jump to next statement
+                );
+                SootFieldRef staticNeutralElementField;
+                // If is null, initialize
+                if (isIntOrSint(t)) {
+                    staticNeutralElementField = v.SF_SINT_NEUTRAL.makeRef();
+                } else if (isLongOrSlong(t)) {
+                    staticNeutralElementField = v.SF_SLONG_NEUTRAL.makeRef();
+                } else if (isDoubleOrSdouble(t)) {
+                    staticNeutralElementField = v.SF_SDOUBLE_NEUTRAL.makeRef();
+                } else if (isFloatOrSfloat(t)) {
+                    staticNeutralElementField = v.SF_SFLOAT_NEUTRAL.makeRef();
+                } else if (isShortOrSshort(t)) {
+                    staticNeutralElementField = v.SF_SSHORT_NEUTRAL.makeRef();
+                } else if (isByteOrSbyte(t)) {
+                    staticNeutralElementField = v.SF_SBYTE_NEUTRAL.makeRef();
+                } else if (isBoolOrSbool(t)) {
+                    staticNeutralElementField = v.SF_SBOOL_NEUTRAL.makeRef();
+                } else {
+                    throw new NotYetImplementedException();
+                }
+                Local setNewValueTo = localSpawner.spawnNewStackLocal(t);
+                AssignStmt getNeutral = Jimple.v().newAssignStmt(
+                        setNewValueTo,
+                        Jimple.v().newStaticFieldRef(staticNeutralElementField)
+                );
+                AssignStmt assignToField = Jimple.v().newAssignStmt(
+                        regardStaticFields ?
+                                Jimple.v().newStaticFieldRef(f.makeRef())
+                                :
+                                Jimple.v().newInstanceFieldRef(thisLocal, f.makeRef()),
+                        setNewValueTo
+                );
+                upc.insertBefore(List.of(loadField, notNullCheck, getNeutral, assignToField), nextUnit);
+                nextUnit = loadField;
+            }
+        }
     }
 
     @Override
     protected void ensureInitializedLibraryTypeFieldsInConstructors(SootClass result) {
-//        throw new NotYetImplementedException(); //// TODO
+        for (SootMethod sm : result.getMethods()) {
+            if (sm.getName().equals(init)) {
+                enhanceClinitOrInitWithNullConditionalDefaults(result, (JimpleBody) sm.retrieveActiveBody(), false);
+            }
+        }
     }
 
     @Override

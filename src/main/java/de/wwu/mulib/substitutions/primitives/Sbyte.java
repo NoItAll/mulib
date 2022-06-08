@@ -3,7 +3,7 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.expressions.NumericExpression;
 
 public abstract class Sbyte extends Sint {
-    public static final Sbyte ZERO = new ConcSbyte((byte) 0);
+    public static final ConcSbyte ZERO = new ConcSbyte((byte) 0);
 
     private Sbyte() {}
 

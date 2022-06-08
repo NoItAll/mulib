@@ -36,6 +36,13 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SSHORT;
     public final SootClass SC_SBYTE;
     public final SootClass SC_SBOOL;
+    public final SootClass SC_CONCSINT;
+    public final SootClass SC_CONCSLONG;
+    public final SootClass SC_CONCSDOUBLE;
+    public final SootClass SC_CONCSFLOAT;
+    public final SootClass SC_CONCSSHORT;
+    public final SootClass SC_CONCSBYTE;
+    public final SootClass SC_CONCSBOOL;
     public final SootClass SC_PARTNERCLASS;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
@@ -61,6 +68,13 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_SSHORT;
     public final RefType TYPE_SBYTE;
     public final RefType TYPE_SBOOL;
+    public final RefType TYPE_CONCSINT;
+    public final RefType TYPE_CONCSLONG;
+    public final RefType TYPE_CONCSDOUBLE;
+    public final RefType TYPE_CONCSFLOAT;
+    public final RefType TYPE_CONCSSHORT;
+    public final RefType TYPE_CONCSBYTE;
+    public final RefType TYPE_CONCSBOOL;
     public final RefType TYPE_PARTNERCLASS;
     public final RefType TYPE_SARRAYSARRAY;
     public final RefType TYPE_SINTSARRAY;
@@ -89,6 +103,15 @@ public class SootMulibClassesAndMethods {
     public final Type TYPE_SOLVER_MANAGER;
     public final Type TYPE_SYM_SPRIMITIVE;
     public final Type TYPE_SPRIMITIVE;
+
+    /* FIELDS */
+    public final SootField SF_SINT_NEUTRAL;
+    public final SootField SF_SLONG_NEUTRAL;
+    public final SootField SF_SDOUBLE_NEUTRAL;
+    public final SootField SF_SFLOAT_NEUTRAL;
+    public final SootField SF_SSHORT_NEUTRAL;
+    public final SootField SF_SBYTE_NEUTRAL;
+    public final SootField SF_SBOOL_NEUTRAL;
     /* SPECIAL METHODS */
     // Unwrap methods
     public final SootMethod SM_INTEGER_GETVAL;
@@ -287,6 +310,13 @@ public class SootMulibClassesAndMethods {
         SC_SSHORT = Scene.v().forceResolve(Sshort.class.getName(), SootClass.SIGNATURES);
         SC_SBYTE = Scene.v().forceResolve(Sbyte.class.getName(), SootClass.SIGNATURES);
         SC_SBOOL = Scene.v().forceResolve(Sbool.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSINT     = Scene.v().forceResolve(Sint.ConcSint.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSLONG    = Scene.v().forceResolve(Slong.ConcSlong.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSDOUBLE  = Scene.v().forceResolve(Sdouble.ConcSdouble.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSFLOAT   = Scene.v().forceResolve(Sfloat.ConcSfloat.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSSHORT   = Scene.v().forceResolve(Sshort.ConcSshort.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSBYTE    = Scene.v().forceResolve(Sbyte.ConcSbyte.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSBOOL    = Scene.v().forceResolve(Sbool.ConcSbool.class.getName(), SootClass.SIGNATURES);
         SC_PARTNERCLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
         SC_PARTNERCLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
         SC_SINTSARRAY           = Scene.v().forceResolve(Sarray.SintSarray.class.getName(), SootClass.SIGNATURES);
@@ -339,6 +369,21 @@ public class SootMulibClassesAndMethods {
         TYPE_PARTNERCLASSSARRAY     = SC_PARTNERCLASSSARRAY.getType();
         TYPE_SPRIMITIVE             = SC_SPRIMITIVE.getType();
         TYPE_SYM_SPRIMITIVE         = SC_SYM_SPRIMITIVE.getType();
+        TYPE_CONCSINT       = SC_CONCSINT.getType();
+        TYPE_CONCSLONG      = SC_CONCSLONG.getType();
+        TYPE_CONCSDOUBLE    = SC_CONCSDOUBLE.getType();
+        TYPE_CONCSFLOAT     = SC_CONCSFLOAT.getType();
+        TYPE_CONCSSHORT     = SC_CONCSSHORT.getType();
+        TYPE_CONCSBYTE      = SC_CONCSBYTE.getType();
+        TYPE_CONCSBOOL      = SC_CONCSBOOL.getType();
+
+        SF_SINT_NEUTRAL     = SC_SINT.getField("ZERO",      TYPE_CONCSINT);
+        SF_SLONG_NEUTRAL    = SC_SLONG.getField("ZERO",     TYPE_CONCSLONG);
+        SF_SDOUBLE_NEUTRAL  = SC_SDOUBLE.getField("ZERO",   TYPE_CONCSDOUBLE);
+        SF_SFLOAT_NEUTRAL   = SC_SFLOAT.getField("ZERO",    TYPE_CONCSFLOAT);
+        SF_SSHORT_NEUTRAL   = SC_SSHORT.getField("ZERO",    TYPE_CONCSSHORT);
+        SF_SBYTE_NEUTRAL    = SC_SBYTE.getField("ZERO",     TYPE_CONCSBYTE);
+        SF_SBOOL_NEUTRAL    = SC_SBOOL.getField("FALSE",    TYPE_CONCSBOOL);
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);
