@@ -538,6 +538,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         // For transformation constructor: If reflection is required, we must catch the exceptions
         if (cc == ChosenConstructor.TRANSFORMATION_CONSTR && reflectionRequired) {
+            // The following code should only be executed if an exception is thrown
             upc.add(Jimple.v().newGotoStmt(returnStmt));
             // We start the trap first thing after calling super(...)
             try {
@@ -998,7 +999,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         LocalSpawner localSpawner = new LocalSpawner(b);
         // Create locals for body
         Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-        Local labelTo = localSpawner.spawnNewLocal(old.getType());
+        Local labelTo = localSpawner.spawnNewLocal(v.TYPE_OBJECT);
         Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_TRANSFORMER);
         Local smLocal = localSpawner.spawnNewLocal(v.TYPE_SOLVER_MANAGER);
 
@@ -1006,10 +1007,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         UnitPatchingChain upc = b.getUnits();
         // Create identity statement for parameter locals
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
-        upc.add(Jimple.v().newIdentityStmt(labelTo, Jimple.v().newParameterRef(old.getType(), 0)));
+        upc.add(Jimple.v().newIdentityStmt(labelTo, Jimple.v().newParameterRef(v.TYPE_OBJECT, 0)));
         upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_TRANSFORMER, 1)));
-        IdentityStmt lastIdentityStmt = Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 2));
-        upc.add(lastIdentityStmt);
+        upc.add(Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 2)));
+        Local castedToLabelTo = localSpawner.spawnNewLocal(old.getType());
+        AssignStmt castObjectToActualType = Jimple.v().newAssignStmt(
+                castedToLabelTo,
+                Jimple.v().newCastExpr(labelTo, old.getType())
+        );
+        upc.add(castObjectToActualType);
 
         boolean reflectionRequired = calculateReflectionRequired(old);
         Local classLocal = null, fieldLocal = null, exceptionLocal = null;
@@ -1125,13 +1131,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 addInstructionsToInitializeFieldAndSetAccessible(classLocal, fieldLocal, oldField, upc);
                 // Set via Field.set(Object, Object)
                 InvokeStmt setViaField = Jimple.v().newInvokeStmt(
-                        Jimple.v().newVirtualInvokeExpr(fieldLocal, v.SM_FIELD_SET.makeRef(), labelTo, labeledValue)
+                        Jimple.v().newVirtualInvokeExpr(fieldLocal, v.SM_FIELD_SET.makeRef(), castedToLabelTo, labeledValue)
                 );
                 upc.add(setViaField);
             } else {
                 // Simply add the field
                 AssignStmt assignToField = Jimple.v().newAssignStmt(
-                        Jimple.v().newInstanceFieldRef(labelTo, oldField.makeRef()),
+                        Jimple.v().newInstanceFieldRef(castedToLabelTo, oldField.makeRef()),
                         labeledValue
                 );
                 upc.add(assignToField);
@@ -1140,13 +1146,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
 
 
-        ReturnStmt returnStmt = Jimple.v().newReturnStmt(labelTo);
+        ReturnStmt returnStmt = Jimple.v().newReturnStmt(castedToLabelTo);
         // For transformation constructor: If reflection is required, we must catch the exceptions
         if (reflectionRequired) {
             upc.add(Jimple.v().newGotoStmt(returnStmt));
             // We start the trap first thing after the last identity statement (i.e. the first "real" instruction)
             try {
-                Unit successorOfSuperInit = upc.getSuccOf(lastIdentityStmt);
+                Unit successorOfSuperInit = upc.getSuccOf(castObjectToActualType);
                 IdentityStmt exceptionStmt = Jimple.v().newIdentityStmt(exceptionLocal, Jimple.v().newCaughtExceptionRef());
                 Local mulibExceptionStackLocal = localSpawner.spawnNewStackLocal(v.TYPE_MULIB_RUNTIME_EXCEPTION);
                 AssignStmt newMulibRuntimeException =
@@ -1288,7 +1294,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                                 Jimple.v().newInstanceFieldRef(thisLocal, f.makeRef()),
                         setNewValueTo
                 );
-                upc.insertBefore(List.of(loadField, notNullCheck, getNeutral, assignToField), nextUnit);
+                upc.insertBefore(loadField, nextUnit);
+                upc.insertBeforeNoRedirect(List.of(notNullCheck, getNeutral, assignToField), nextUnit);
                 nextUnit = loadField;
             }
         }
@@ -2095,7 +2102,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         // op must be Local, since JCastExpr uses instance of ImmediateBox
                         virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) op, used, args.seLocal());
                     }
-                    createStackLocalAssignExprRedirectAndAdd(virtualInvokeExpr, firstStatement, a, valueBox, args);
+                    Local castCallResult = args.spawnStackLocal(castTo);
+                    AssignStmt castCall = Jimple.v().newAssignStmt(castCallResult, virtualInvokeExpr);
+                    args.addUnit(castCall);
+                    if (firstStatement == null) {
+                        firstStatement = castCall;
+                    }
+                    CastExpr castExpr = Jimple.v().newCastExpr(castCallResult, castTo);
+                    createStackLocalAssignExprRedirectAndAdd(castExpr, firstStatement, a, valueBox, args);
+
                 }
             } else if (value instanceof Ref) {
                 if (value instanceof IdentityRef || value instanceof FieldRef) {
@@ -2205,13 +2220,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         firstStatement = firstStatement == null ? assignStmt : firstStatement;
         // The new assigned value is now the stack local
         Value value = setStackLocalAsValue.getValue();
+        assert args.isToWrap() || (args.isTainted() && args.isTainted(value));
         Value transformedStackLocal = transformStackLocal.apply(stackLocal);
         setStackLocalAsValue.setValue(transformedStackLocal);
         // Redirect jumps
         redirectJumpsFrom.redirectJumpsToThisTo(firstStatement);
         // Add assign
         args.addUnit(assignStmt);
-        if (value instanceof Local && !((Local) value).getName().startsWith("$")) {
+        if (value instanceof Local && args.isTainted(value)) {
             AssignStmt a = Jimple.v().newAssignStmt(value, transformedStackLocal);
             args.addUnit(a);
         }
@@ -2523,7 +2539,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (!isAlreadyTransformedOrToBeTransformedPath(toTransformName)) {
                 decideOnAddToClassesToTransform(toTransformName);
             }
-            return transformEnrichAndValidate(toTransformName);
+            assert transformedClassNodes.get(toTransformName) == null;
+            transformClass(getClassForName(toTransformName));
+            assert transformedClassNodes.get(toTransformName) != null;
+            return transformedClassNodes.get(toTransformName);
         } else {
             return getClassNodeForName(toTransformName);
         }

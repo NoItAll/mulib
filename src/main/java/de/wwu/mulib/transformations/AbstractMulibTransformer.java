@@ -82,7 +82,11 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             transformClass(classesToTransform.poll());
         }
 
+
         for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+            // Optionally, conduct some checks and write class node to class file
+            maybeWriteToFile(entry.getValue());
+            maybeCheckIsValidWrittenClassNode(entry.getValue());
             if (transformedClasses.get(entry.getKey()) != null) {
                 continue;
             }
@@ -353,9 +357,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         }
 
         result = transformEnrichAndValidate(toTransform.getName());
-        // Optionally, conduct some checks and write class node to class file
-        maybeWriteToFile(result);
-        maybeCheckIsValidAsmWrittenClass(result);
     }
 
     /**
@@ -575,8 +576,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                         continue;
                     }
                     if (determineNestHostFieldName(generatedClass.getName().replace(_TRANSFORMATION_PREFIX, "")) != null) {
-//                        Class<?> hostFieldClass = generatedClass.getEnclosingClass();
-//                        generatedClass.getDeclaredConstructor(new Class[]{hostFieldClass, SymbolicExecution.class}).newInstance(null, null);
+                        Class<?> hostFieldClass = generatedClass.getEnclosingClass();
+                        generatedClass.getDeclaredConstructor(new Class[]{hostFieldClass, SymbolicExecution.class}).newInstance(null, null);
                     } else {
                         generatedClass.getDeclaredConstructor(new Class[]{SymbolicExecution.class}).newInstance(new Object[]{null});
                     }
@@ -598,7 +599,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     // Evaluates the validity of the class by using the ASM CheckClassAdapter. This does not find "everything"
     // but gives better information on what might have gone wrong.
-    protected void maybeCheckIsValidAsmWrittenClass(T classNode) {
+    protected void maybeCheckIsValidWrittenClassNode(T classNode) {
         if (validate) {
             // Following the documentation of CheckClassAdapter from here on
             generateMulibClassFileWriter().validateClassNode(classNode);

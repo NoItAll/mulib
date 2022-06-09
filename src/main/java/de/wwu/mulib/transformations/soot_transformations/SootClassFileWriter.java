@@ -5,6 +5,7 @@ import de.wwu.mulib.transformations.MulibClassFileWriter;
 import soot.Body;
 import soot.SootClass;
 import soot.SootMethod;
+import soot.validation.ValidationException;
 
 import java.io.FileOutputStream;
 import java.io.OutputStream;
@@ -30,6 +31,9 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
                     b.validateValueBoxes();
                 }
             }
+        } catch (ValidationException e) {
+            throw new MulibRuntimeException("In class: " + classNode.getName() + "\r\n\r\n" + e.getMessage()
+                    + ": " + e.getConcerned() + "\r\n\r\n" + b);
         } catch (Exception e) {
             e.printStackTrace();
             throw new MulibRuntimeException(b == null ? "no body" : b.toString(), e);

@@ -72,18 +72,40 @@ public class TaintAnalyzer {
         for (Unit u : returnUnits) {
             addToWrap(u);
         }
-        // Add all fieldrefs to the set of tainted values
+        // Add all fieldrefs to the set of tainted values. Furthermore, if a class in, e.g., a cast is to be replaced,
+        // it should also be tainted here.
         for (Value v : values) {
             if (v instanceof FieldRef) {
-                taintedValues.add(v);
+                if (mulibTransformer.shouldBeTransformed(((FieldRef) v).getField().getDeclaringClass().getName().replace(".", "/"))) {
+                    taintedValues.add(v);
+                }
+            } else if (v instanceof CastExpr) {
+                Type castToType = v.getType();
+                if (castToType instanceof RefType
+                        && mulibTransformer.shouldBeTransformed(((RefType) castToType).getClassName())) {
+                    taintedValues.add(v);
+                }
+            } else if (v instanceof ClassConstant) {
+                ClassConstant classConstant = ((ClassConstant) v);
+                if (classConstant.getType() instanceof RefType
+                        && mulibTransformer.shouldBeTransformed(((RefType) classConstant.getType()).getClassName())) {
+                    taintedValues.add(v);
+                }
+            } else if (v instanceof NewExpr) {
+                NewExpr newExpr = (NewExpr) v;
+                if (mulibTransformer.shouldBeTransformed(newExpr.getBaseType().getClassName())) {
+                    taintedValues.add(v);
+                }
+            } else if (v instanceof MethodHandle || v instanceof MethodType) {
+                throw new NotYetImplementedException();
             }
         }
 
 
         // Taint methods statically (i.e. methods won't be tainted in the subsequent main loop)
-        List<Unit> methodCallsToTaint = upc.stream().filter(this::isMethodCallUnit).collect(Collectors.toList());
+        List<Unit> methodCallsToPotentiallyTaint = upc.stream().filter(this::isMethodCallUnit).collect(Collectors.toList());
         // Add taint of special Mulib-indicator methods
-        for (Unit u : methodCallsToTaint) {
+        for (Unit u : methodCallsToPotentiallyTaint) {
             if (isSpecialMulibIndicatorMethod(u)) {
                 addTainted(u);
             } else if (isToTransformMethodCallUnit(u)) {
