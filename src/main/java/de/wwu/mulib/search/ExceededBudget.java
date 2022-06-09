@@ -1,8 +1,9 @@
 package de.wwu.mulib.search;
 
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 
-public class ExceededBudget extends RuntimeException {
+public class ExceededBudget extends MulibRuntimeException {
 
     private final Budget exceededBudget;
 

@@ -1,6 +1,6 @@
 package de.wwu.mulib.exceptions;
 
-public class MisconfigurationException extends MulibException {
+public class MisconfigurationException extends MulibRuntimeException {
 
     public MisconfigurationException(String msg) {
         super(msg);

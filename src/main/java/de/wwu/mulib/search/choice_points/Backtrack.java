@@ -1,5 +1,7 @@
 package de.wwu.mulib.search.choice_points;
 
-public class Backtrack extends RuntimeException {
+import de.wwu.mulib.exceptions.MulibControlFlowException;
+
+public class Backtrack extends MulibControlFlowException {
     public Backtrack() {}
 }
