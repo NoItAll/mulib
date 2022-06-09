@@ -15,7 +15,7 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.*;
 
-@SuppressWarnings("unused")
+@SuppressWarnings({"unused", "rawtypes"})
 public final class SymbolicExecution {
     private final static ThreadLocal<SymbolicExecution> se = new ThreadLocal<>();
     private final MulibExecutor mulibExecutor;
@@ -443,7 +443,6 @@ public final class SymbolicExecution {
         return valueFactory.sarrarSarray(this, len, innerlengths, clazz);
     }
 
-    @SuppressWarnings("unchecked")
 
     /* CONCRETIZE */
 

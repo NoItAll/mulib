@@ -7,6 +7,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import soot.*;
@@ -58,6 +59,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SOLVER_MANAGER;
     public final SootClass SC_SPRIMITIVE;
     public final SootClass SC_SYM_SPRIMITIVE;
+    public final SootClass SC_SUBSTITUTED_VAR;
 
     /* SPECIAL TYPES */
     public final RefType TYPE_MULIB_RUNTIME_EXCEPTION;
@@ -103,6 +105,7 @@ public class SootMulibClassesAndMethods {
     public final Type TYPE_SOLVER_MANAGER;
     public final Type TYPE_SYM_SPRIMITIVE;
     public final Type TYPE_SPRIMITIVE;
+    public final Type TYPE_SUBSTITUTED_VAR;
 
     /* FIELDS */
     public final SootField SF_SINT_NEUTRAL;
@@ -163,6 +166,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_GET;
     public final SootMethod SM_SE_INSTANCEOF;
     public final SootMethod SM_SE_CAST_TO;
+    public final SootMethod SM_SE_CONCRETIZE;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_REGISTER_COPY;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_GET_COPY;
@@ -332,6 +336,7 @@ public class SootMulibClassesAndMethods {
         SC_SOLVER_MANAGER = Scene.v().forceResolve(SolverManager.class.getName(), SootClass.SIGNATURES);
         SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
+        SC_SUBSTITUTED_VAR = Scene.v().forceResolve(SubstitutedVar.class.getName(), SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
         TYPE_MULIB_RUNTIME_EXCEPTION = SC_MULIB_RUNTIME_EXCEPTION.getType();
         TYPE_SINT = Scene.v().getRefType(Sint.class.getName());
@@ -376,6 +381,7 @@ public class SootMulibClassesAndMethods {
         TYPE_CONCSSHORT     = SC_CONCSSHORT.getType();
         TYPE_CONCSBYTE      = SC_CONCSBYTE.getType();
         TYPE_CONCSBOOL      = SC_CONCSBOOL.getType();
+        TYPE_SUBSTITUTED_VAR = SC_SUBSTITUTED_VAR.getType();
 
         SF_SINT_NEUTRAL     = SC_SINT.getField("ZERO",      TYPE_CONCSINT);
         SF_SLONG_NEUTRAL    = SC_SLONG.getField("ZERO",     TYPE_CONCSLONG);
@@ -433,6 +439,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_GET = SC_SE.getMethod("get", Collections.emptyList(), TYPE_SE);
         SM_SE_INSTANCEOF = SC_SE.getMethod("evalInstanceof", List.of(TYPE_PARTNERCLASS, TYPE_CLASS), TYPE_SBOOL);
         SM_SE_CAST_TO = SC_SE.getMethod("castTo", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_OBJECT);
+        SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_SUBSTITUTED_VAR), TYPE_OBJECT);
 
         SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED = SC_MULIB_VALUE_TRANSFORMER.getMethod("alreadyCreated",                 List.of(TYPE_OBJECT), TYPE_BOOL);
         SM_MULIB_VALUE_TRANSFORMER_REGISTER_COPY = SC_MULIB_VALUE_TRANSFORMER.getMethod("registerCopy",                   List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);

@@ -70,7 +70,11 @@ public class TaintAnalyzer {
         // Add units returning a value; - we assume that the return value is always tainted
         List<Unit> returnUnits = upc.stream().filter(u -> u instanceof ReturnStmt).collect(Collectors.toList());
         for (Unit u : returnUnits) {
-            addToWrap(u);
+            ReturnStmt returnStmt = (ReturnStmt) u;
+            if (!(returnStmt.getOp().getType() instanceof RefType)) {
+                // Objects do not have to be wrapped
+                addToWrap(u);
+            }
         }
         // Add all fieldrefs to the set of tainted values. Furthermore, if a class in, e.g., a cast is to be replaced,
         // it should also be tainted here.
@@ -109,6 +113,14 @@ public class TaintAnalyzer {
             if (isSpecialMulibIndicatorMethod(u)) {
                 addTainted(u);
             } else if (isToTransformMethodCallUnit(u)) {
+                InvokeExpr invokeExpr;
+                if (u instanceof AssignStmt) {
+                    invokeExpr = ((AssignStmt) u).getInvokeExpr();
+                } else {
+                    assert u instanceof InvokeStmt;
+                    invokeExpr = ((InvokeStmt) u).getInvokeExpr();
+                }
+                taintedValues.add(invokeExpr);
                 addTainted(u);
             } else {
                 String declaringClassName = getNameOfDeclaringClassOfMethodCallUnit(u);
@@ -143,7 +155,7 @@ public class TaintAnalyzer {
             // Regard values consisting of other values
             for (Value v : values) {
                 if (containsTaintedValueBoxes(v.getUseBoxes())) {
-                    changed = taintedValues.add(v) || changed;
+                    changed = addValueToTainted(v) || changed;
                 }
             }
         }
@@ -169,7 +181,7 @@ public class TaintAnalyzer {
             }
         }) : "Erroneous tainting for: " + originalSootMethod.getName() + ". All values defined by the tainted instruction should be tainted";
         long endTime = System.nanoTime();
-        Mulib.log.log(Level.INFO, "Duration of taint analysis: " + ((endTime - startTime) / 10e6) + "ms with " + iterations + " iterations");
+        Mulib.log.log(Level.INFO, "Duration of taint analysis: " + ((endTime - startTime) / 1e6) + "ms with " + iterations + " iterations");
         return new TaintAnalysis(originalJimpleBody, originalMethodSource, taintedValues, tainted, toWrap, unchangedUnits,
                 concretizeInputs, generalizeSignature);
     }
@@ -226,6 +238,13 @@ public class TaintAnalyzer {
     }
 
     private boolean addValueToTainted(Value v) {
+        if (v instanceof InvokeExpr) {
+            InvokeExpr invokeExpr = (InvokeExpr) v;
+            SootClass declaringClass = invokeExpr.getMethod().getDeclaringClass();
+            if (!mulibTransformer.shouldBeTransformed(declaringClass.getName())) {
+                return false;
+            }
+        }
         return taintedValues.add(v);
     }
 

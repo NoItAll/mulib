@@ -748,24 +748,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             AssignStmt initFieldVal;
             if (originalType instanceof PrimType) {
                 // We still have to unwrap, since Field.get(...) returns a wrapper object
-                SootMethodRef toCall;
-                if (originalType instanceof IntType) {
-                    toCall = v.SM_INTEGER_GETVAL.makeRef();
-                } else if (originalType instanceof LongType) {
-                    toCall = v.SM_LONG_GETVAL.makeRef();
-                } else if (originalType instanceof DoubleType) {
-                    toCall = v.SM_DOUBLE_GETVAL.makeRef();
-                } else if (originalType instanceof FloatType) {
-                    toCall = v.SM_FLOAT_GETVAL.makeRef();
-                } else if (originalType instanceof ShortType) {
-                    toCall = v.SM_SHORT_GETVAL.makeRef();
-                } else if (originalType instanceof ByteType) {
-                    toCall = v.SM_BYTE_GETVAL.makeRef();
-                } else if (originalType instanceof BooleanType) {
-                    toCall = v.SM_BOOLEAN_GETVAL.makeRef();
-                } else {
-                    throw new NotYetImplementedException(String.valueOf(tempFieldValLocal.getType()));
-                }
+                SootMethodRef toCall = getValueFromNumberMethodRef(originalType);
                 initFieldVal = Jimple.v().newAssignStmt(
                         toStoreInLocal,
                         Jimple.v().newVirtualInvokeExpr(tempFieldValLocal, toCall)
@@ -786,6 +769,26 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     Jimple.v().newInstanceFieldRef(toGetFromLocal, originalField.makeRef())
             );
             upc.add(getField);
+        }
+    }
+
+    private SootMethodRef getValueFromNumberMethodRef(Type t) {
+        if (t instanceof IntType) {
+            return v.SM_INTEGER_GETVAL.makeRef();
+        } else if (t instanceof LongType) {
+            return v.SM_LONG_GETVAL.makeRef();
+        } else if (t instanceof DoubleType) {
+            return v.SM_DOUBLE_GETVAL.makeRef();
+        } else if (t instanceof FloatType) {
+            return v.SM_FLOAT_GETVAL.makeRef();
+        } else if (t instanceof ShortType) {
+            return v.SM_SHORT_GETVAL.makeRef();
+        } else if (t instanceof ByteType) {
+            return v.SM_BYTE_GETVAL.makeRef();
+        } else if (t instanceof BooleanType) {
+            return v.SM_BOOLEAN_GETVAL.makeRef();
+        } else {
+            throw new NotYetImplementedException(String.valueOf(t.toString()));
         }
     }
 
@@ -1071,24 +1074,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     );
                     upc.add(toCastValue);
 
-                    SootMethodRef used;
-                    if (ot instanceof IntType) {
-                        used = v.SM_INTEGER_GETVAL.makeRef();
-                    } else if (ot instanceof LongType) {
-                        used = v.SM_LONG_GETVAL.makeRef();
-                    } else if (ot instanceof DoubleType) {
-                        used = v.SM_DOUBLE_GETVAL.makeRef();
-                    } else if (ot instanceof FloatType) {
-                        used = v.SM_FLOAT_GETVAL.makeRef();
-                    } else if (ot instanceof ShortType) {
-                        used = v.SM_SHORT_GETVAL.makeRef();
-                    } else if (ot instanceof ByteType) {
-                        used = v.SM_BYTE_GETVAL.makeRef();
-                    } else if (ot instanceof BooleanType) {
-                        used = v.SM_BOOLEAN_GETVAL.makeRef();
-                    } else {
-                        throw new NotYetImplementedException();
-                    }
+                    SootMethodRef used = getValueFromNumberMethodRef(ot);
                     labeledValue = localSpawner.spawnNewStackLocal(ot);
                     AssignStmt unwrap = Jimple.v().newAssignStmt(
                             labeledValue,
@@ -1429,8 +1415,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         result.setActiveBody(transformedBody);
         JimpleBody toTransformBody = a.analyzedBody;
 
-        // Replace types of exceptions
-//        b.getTraps(); TODO
         // Replace types of locals
         for (Local l : toTransformBody.getLocals()) {
             // transformValue will only transform tainted values
@@ -1500,6 +1484,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             }
 
         }
+
+        // Replace types of exceptions
+        for (Trap t : toTransformBody.getTraps()) {
+            // This was already handled during the transformation of the method body
+            Trap newTrap = t;
+            newTrap.setException(transformEnrichAndValidateIfNotSpecialCase(newTrap.getException().getName()));
+            transformedBody.getTraps().add(newTrap);
+        }
+
         toTransform.setSource(a.originalMethodSource);
         toTransform.releaseActiveBody(); //// TODO Synchronize on toTransform
         return result;
@@ -1620,7 +1613,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Locals are already treated.
         // Constants still have to be wrapped.
         Value op = r.getOp();
-        if (args.isToWrap()) {
+        if (args.isToWrap() && !NullConstant.v().equals(op)) {
             // Find method to wrap with
             SootMethodRef used = constantWrapperMethodRef(args.newMethod().getReturnType()); // TODO class and string returns...
             // Create virtual call
@@ -2137,6 +2130,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private void adjustSignatureIfNeeded(Stmt originalStmt, InvokeExpr invokeExpr, TcArgs args) {
+        assert originalStmt instanceof AssignStmt || originalStmt instanceof InvokeStmt;
         if (invokeExpr.getArgCount() == 0) {
             return;
         }
@@ -2172,7 +2166,49 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 }
             }
         } else if (args.taintAnalysis().concretizeInputs.contains(originalStmt)) {
-            throw new NotYetImplementedException(); /// TODO
+            SootMethod referencedMethod = invokeExpr.getMethod();
+            for (int i = 0; i < invokeExpr.getArgCount(); i++) {
+                ValueBox vb = invokeExpr.getArgBox(i);
+                Value val = vb.getValue();
+                // If argument is ref and we should not transform, we do not need to concretize
+                Type paramType = referencedMethod.getParameterType(i);
+                if (paramType instanceof RefType && !shouldBeTransformed(((RefType) paramType).getClassName())) {
+                    continue;
+                }
+                // If the value is not tainted, we do not need to concretize it
+                if (!args.isTainted(val)) {
+                    continue;
+                }
+                Local concretizeResult = args.spawnStackLocal(v.TYPE_OBJECT);
+                AssignStmt concretizeCall = Jimple.v().newAssignStmt(
+                        concretizeResult,
+                        Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_CONCRETIZE.makeRef(), val)
+                );
+                Type castTo = wrapTypeIfNecessary(paramType);
+                Local castConcretization = args.spawnStackLocal(castTo);
+                AssignStmt castCall = Jimple.v().newAssignStmt(
+                        castConcretization,
+                        Jimple.v().newCastExpr(concretizeResult, castTo)
+                );
+                args.addUnit(concretizeCall);
+                originalStmt.redirectJumpsToThisTo(concretizeCall);
+                args.addUnit(castCall);
+
+                if (paramType instanceof PrimType) {
+                    // After concretizing, a wrapper object is returned
+                    Local unwrappedValue = args.spawnStackLocal(paramType);
+                    SootMethodRef getValue = getValueFromNumberMethodRef(paramType);
+                    AssignStmt unwrap = Jimple.v().newAssignStmt(
+                            unwrappedValue,
+                            Jimple.v().newVirtualInvokeExpr(castConcretization, getValue)
+                    );
+                    args.addUnit(unwrap);
+                    vb.setValue(unwrappedValue);
+                } else {
+                    vb.setValue(castConcretization);
+                }
+            }
+            // originalStmt will be added in the method calling this
         }
     }
 
