@@ -48,7 +48,7 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
         }
         MulibBafASMBackend backend = new MulibBafASMBackend(classNode);
         try {
-            OutputStream os = new FileOutputStream(String.format(generatedClassesPathPattern, className));
+            OutputStream os = new FileOutputStream(String.format(generatedClassesPathPattern, className.replace(".", "/")));
             backend.generateClassFile(os);
         } catch (Exception e) {
             e.printStackTrace();
