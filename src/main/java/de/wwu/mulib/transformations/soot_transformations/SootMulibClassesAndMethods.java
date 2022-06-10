@@ -53,6 +53,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SBYTESARRAY;
     public final SootClass SC_SBOOLSARRAY;
     public final SootClass SC_SARRAYSARRAY;
+    public final SootClass SC_SARRAY;
     public final SootClass SC_PARTNERCLASSSARRAY;
     public final SootClass SC_SE;
     public final SootClass SC_MULIB_VALUE_TRANSFORMER;
@@ -284,6 +285,9 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SFLOAT_F2L;
     public final SootMethod SM_SFLOAT_F2I;
     public final SootMethod SM_SFLOAT_CMP;
+    public final SootMethod SM_SARRAY_SELECT;
+    public final SootMethod SM_SARRAY_STORE;
+    public final SootMethod SM_SARRAY_LENGTH;
 
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
@@ -331,6 +335,7 @@ public class SootMulibClassesAndMethods {
         SC_SBYTESARRAY          = Scene.v().forceResolve(Sarray.SbyteSarray.class.getName(), SootClass.SIGNATURES);
         SC_SBOOLSARRAY          = Scene.v().forceResolve(Sarray.SboolSarray.class.getName(), SootClass.SIGNATURES);
         SC_SARRAYSARRAY         = Scene.v().forceResolve(Sarray.SarraySarray.class.getName(), SootClass.SIGNATURES);
+        SC_SARRAY               = Scene.v().forceResolve(Sarray.class.getName(), SootClass.SIGNATURES);
         SC_SE = Scene.v().forceResolve(SymbolicExecution.class.getName(), SootClass.SIGNATURES);
         SC_MULIB_VALUE_TRANSFORMER = Scene.v().forceResolve(MulibValueTransformer.class.getName(), SootClass.SIGNATURES);
         SC_SOLVER_MANAGER = Scene.v().forceResolve(SolverManager.class.getName(), SootClass.SIGNATURES);
@@ -562,6 +567,9 @@ public class SootMulibClassesAndMethods {
         SM_SFLOAT_F2L               = SC_SFLOAT.getMethod("f2l",          List.of(TYPE_SE),              TYPE_SLONG);
         SM_SFLOAT_F2I               = SC_SFLOAT.getMethod("f2i",          List.of(TYPE_SE),              TYPE_SINT);
         SM_SFLOAT_CMP               = SC_SFLOAT.getMethod("cmp",          List.of(TYPE_SFLOAT, TYPE_SE), TYPE_SINT);
+        SM_SARRAY_LENGTH    = SC_SARRAY.getMethod("length", List.of(),                                    TYPE_SINT);
+        SM_SARRAY_SELECT    = SC_SARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE),                  TYPE_SUBSTITUTED_VAR);
+        SM_SARRAY_STORE     = SC_SARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SUBSTITUTED_VAR, TYPE_SE),     TYPE_VOID);
 
         SM_SBOOL_BOOL_CHOICE = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);
