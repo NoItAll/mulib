@@ -2,6 +2,8 @@ package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.expressions.NumericExpression;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class Sshort extends Sint {
     public static final ConcSshort ZERO = new ConcSshort((short) 0);
 
@@ -63,19 +65,29 @@ public abstract class Sshort extends Sint {
     }
 
     public static class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
         private final NumericExpression representedExpression;
 
         private SymSshort() {
             this.representedExpression = this;
+            id = "SymSshort" + nextId.incrementAndGet();
         }
 
         private SymSshort(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
+            id = "SymShort" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

@@ -1,24 +1,12 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import java.util.concurrent.atomic.AtomicLong;
-
 public abstract class AbstractSnumber implements Snumber {
 
-    protected static AtomicLong nextId = new AtomicLong(0);
-    protected final long id;
-
-    protected AbstractSnumber() {
-        id = nextId.incrementAndGet();
-    }
+    protected AbstractSnumber() {}
 
     @Override
     public final boolean isPrimitive() {
         return true;
-    }
-
-    @Override
-    public final long getId() {
-        return id;
     }
 
     @Override
@@ -68,7 +56,7 @@ public abstract class AbstractSnumber implements Snumber {
 
     @Override
     public String toString() {
-        return this.getClass().getSimpleName() + "{id=" + id
+        return this.getClass().getSimpleName() + "{"
                 + (this instanceof SymNumericExpressionSprimitive
                 && ((SymNumericExpressionSprimitive) this).getRepresentedExpression() != this ?
                     ",e=" + ((SymNumericExpressionSprimitive) this).getRepresentedExpression()

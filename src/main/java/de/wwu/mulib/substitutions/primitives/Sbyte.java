@@ -2,6 +2,8 @@ package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.expressions.NumericExpression;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class Sbyte extends Sint {
     public static final ConcSbyte ZERO = new ConcSbyte((byte) 0);
 
@@ -63,19 +65,29 @@ public abstract class Sbyte extends Sint {
     }
 
     public static class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
         private final NumericExpression representedExpression;
 
         private SymSbyte() {
             this.representedExpression = this;
+            id = "SymSbyte" + nextId.incrementAndGet();
         }
 
         private SymSbyte(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
+            id = "SymSbyte" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

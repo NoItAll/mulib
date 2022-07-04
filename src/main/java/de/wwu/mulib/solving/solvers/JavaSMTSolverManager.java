@@ -271,7 +271,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> n instanceof Slong.ConcSlong,
                         () -> n instanceof Slong.SymSlong,
                         () -> integerFormulaManager.makeNumber(((Slong.ConcSlong) n).longVal()),
-                        () -> integerFormulaManager.makeVariable((n).getInternalName())
+                        () -> integerFormulaManager.makeVariable(((SymSprimitive) n).getId())
                 );
             } else {
                 throw new NotYetImplementedException();
@@ -412,7 +412,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> f instanceof Sdouble.ConcSdouble,
                         () -> f instanceof Sdouble.SymSdouble,
                         () -> rationalFormulaManager.makeNumber(((Sdouble.ConcSdouble) f).doubleVal()),
-                        () -> rationalFormulaManager.makeVariable(f.getInternalName())
+                        () -> rationalFormulaManager.makeVariable(((SymSprimitive) f).getId())
                 );
             } else if (f instanceof Sfloat) {
                 result = _transformSnumber(
@@ -420,7 +420,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> f instanceof Sfloat.ConcSfloat,
                         () -> f instanceof Sfloat.SymSfloat,
                         () -> rationalFormulaManager.makeNumber(((Sfloat.ConcSfloat) f).floatVal()),
-                        () -> rationalFormulaManager.makeVariable(f.getInternalName())
+                        () -> rationalFormulaManager.makeVariable(((SymSprimitive) f).getId())
                 );
             }
             numericExpressionStore.put(f, result);
@@ -438,7 +438,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> i instanceof Sshort.ConcSshort,
                         () -> i instanceof Sshort.SymSshort,
                         () -> integerFormulaManager.makeNumber(((Sshort.ConcSshort) i).shortVal()),
-                        () -> integerFormulaManager.makeVariable(i.getInternalName())
+                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
                 );
             } else if (i instanceof Sbyte) {
                 result = _transformSnumber(
@@ -446,7 +446,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> i instanceof Sbyte.ConcSbyte,
                         () -> i instanceof Sbyte.SymSbyte,
                         () -> integerFormulaManager.makeNumber(((Sbyte.ConcSbyte) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(i.getInternalName())
+                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
                 );
             } else if (i instanceof Sbool) {
                 if (!treatSboolsAsInts) {
@@ -457,7 +457,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> i instanceof Sbool.ConcSbool,
                         () -> i instanceof Sbool.SymSbool,
                         () -> integerFormulaManager.makeNumber(((Sbool.ConcSbool) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(i.getInternalName() + "_int")
+                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId() + "_int")
                 );
             } else {
                 result = _transformSnumber(
@@ -465,7 +465,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> i instanceof Sint.ConcSint,
                         () -> i instanceof Sint.SymSint,
                         () -> integerFormulaManager.makeNumber(((Sint.ConcSint) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(i.getInternalName())
+                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
                 );
             }
             numericExpressionStore.put(i, result);
@@ -482,7 +482,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             } else if (b instanceof Sbool.SymSbool) {
                 Constraint representedConstraint = ((Sbool.SymSbool) b).getRepresentedConstraint();
                 if (representedConstraint == b) {
-                    result = booleanFormulaManager.makeVariable(b.getInternalName());
+                    result = booleanFormulaManager.makeVariable(((SymSprimitive) b).getId());
                 } else {
                     result = transformConstraint(representedConstraint);
                 }

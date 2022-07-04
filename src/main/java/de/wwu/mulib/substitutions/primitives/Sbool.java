@@ -4,6 +4,8 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
     private Sbool() {}
@@ -56,13 +58,6 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
     public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se) {
         return se.boolChoice(se.or(se.and(this, other), se.and(se.not(this), se.not(other))));
-    }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "{id=" + id
-                + additionToToStringBody()
-                + "}";
     }
 
     public static final class ConcSbool extends Sbool implements ConcSnumber {
@@ -131,16 +126,18 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     }
 
     public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
         protected final Constraint representedConstraint;
 
         private SymSbool() {
+            id = "SymSbool" + nextId.incrementAndGet();
             representedConstraint = this;
         }
 
         private SymSbool(Constraint representedConstraint) {
-            if (representedConstraint == null) {
-                throw new IllegalStateException("Must not happen.");
-            }
+            id = "SymSbool" + nextId.incrementAndGet();
             this.representedConstraint = representedConstraint;
         }
 
@@ -159,6 +156,11 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         @Override
         public NumericExpression getRepresentedExpression() {
             return this;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

@@ -3,6 +3,8 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class Sfloat extends Sfpnumber {
     public static final ConcSfloat ZERO = new ConcSfloat(0);
     public static final ConcSfloat ONE = new ConcSfloat(1);
@@ -175,19 +177,29 @@ public abstract class Sfloat extends Sfpnumber {
     }
 
     public static class SymSfloat extends Sfloat implements SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
         private final NumericExpression representedExpression;
 
         private SymSfloat() {
             this.representedExpression = this;
+            id = "SymSfloat" + nextId.incrementAndGet();
         }
 
         private SymSfloat(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
+            id = "SymSfloat" + nextId.incrementAndGet();
         }
 
         @Override
         public final NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

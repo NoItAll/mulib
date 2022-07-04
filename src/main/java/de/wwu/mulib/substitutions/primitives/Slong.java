@@ -3,6 +3,8 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
+import java.util.concurrent.atomic.AtomicLong;
+
 public abstract class Slong extends AbstractSnumber {
     public static final ConcSlong ZERO = new ConcSlong(0);
     public static final ConcSlong ONE = new ConcSlong(1);
@@ -178,19 +180,29 @@ public abstract class Slong extends AbstractSnumber {
     }
 
     public static class SymSlong extends Slong implements SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
         private final NumericExpression representedExpression;
 
         private SymSlong() {
             this.representedExpression = this;
+            id = "SymSlong" + nextId.incrementAndGet();
         }
 
         private SymSlong(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
+            id = "SymSlong" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

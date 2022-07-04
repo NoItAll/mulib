@@ -6,6 +6,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sint extends AbstractSnumber {
     public static final ConcSint MINUS_ONE = new ConcSint(-1);
@@ -194,19 +195,28 @@ public abstract class Sint extends AbstractSnumber {
     }
 
     public static class SymSint extends Sint implements SymNumericExpressionSprimitive {
+        protected static AtomicLong nextId = new AtomicLong(0);
+        private final String id;
         private final NumericExpression representedExpression;
 
         private SymSint() {
             this.representedExpression = this;
+            id = "SymSint" + nextId.incrementAndGet();
         }
 
         private SymSint(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
+            id = "SymSint" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public String getId() {
+            return id;
         }
     }
 }

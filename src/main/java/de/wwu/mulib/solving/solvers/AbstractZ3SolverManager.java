@@ -319,7 +319,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> n instanceof Slong.ConcSlong,
                         () -> n instanceof Slong.SymSlong,
                         () -> ctx.mkInt(((Slong.ConcSlong) n).longVal()),
-                        () -> ctx.mkIntConst((n).getInternalName())
+                        () -> ctx.mkIntConst(((SymSprimitive) n).getId())
                 );
             } else {
                 throw new NotYetImplementedException();
@@ -355,7 +355,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> i instanceof Sshort.ConcSshort,
                         () -> i instanceof Sshort.SymSshort,
                         () -> ctx.mkInt(((Sshort.ConcSshort) i).shortVal()),
-                        () -> ctx.mkIntConst(i.getInternalName())
+                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
                 );
             } else if (i instanceof Sbyte) {
                 return _transformSnumber(
@@ -363,7 +363,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> i instanceof Sbyte.ConcSbyte,
                         () -> i instanceof Sbyte.SymSbyte,
                         () -> ctx.mkInt(((Sbyte.ConcSbyte) i).byteVal()),
-                        () -> ctx.mkIntConst(i.getInternalName())
+                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
                 );
             } else if (i instanceof Sbool) {
                 if (!treatSboolsAsInts) {
@@ -374,7 +374,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> i instanceof Sbool.ConcSbool,
                         () -> i instanceof Sbool.SymSbool,
                         () -> ctx.mkInt(((Sbool.ConcSbool) i).intVal()),
-                        () -> ctx.mkIntConst(i.getInternalName())
+                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
                 );
             } else {
                 return _transformSnumber(
@@ -382,7 +382,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> i instanceof Sint.ConcSint,
                         () -> i instanceof Sint.SymSint,
                         () -> ctx.mkInt(((Sint.ConcSint) i).intVal()),
-                        () -> ctx.mkIntConst(i.getInternalName())
+                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
                 );
             }
         }
@@ -395,7 +395,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> f instanceof Sdouble.ConcSdouble,
                         () -> f instanceof Sdouble.SymSdouble,
                         () -> ctx.mkReal(String.valueOf(((Sdouble.ConcSdouble) f).doubleVal())),
-                        () -> ctx.mkRealConst(f.getInternalName())
+                        () -> ctx.mkRealConst(((SymSprimitive) f).getId())
                 );
             } else if (f instanceof Sfloat) {
                 return _transformSnumber(
@@ -403,7 +403,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> f instanceof Sfloat.ConcSfloat,
                         () -> f instanceof Sfloat.SymSfloat,
                         () -> ctx.mkReal(String.valueOf(((Sfloat.ConcSfloat) f).doubleVal())),
-                        () -> ctx.mkRealConst(f.getInternalName())
+                        () -> ctx.mkRealConst(((SymSprimitive) f).getId())
                 );
             }
             throw new NotYetImplementedException();
@@ -419,7 +419,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             } else {
                 Constraint representedConstraint = ((Sbool.SymSbool) b).getRepresentedConstraint();
                 if (representedConstraint == b) { // Only represents itself
-                    result = ctx.mkBoolConst(b.getInternalName());
+                    result = ctx.mkBoolConst(((SymSprimitive) b).getId());
                 } else {
                     result = transformConstraint(representedConstraint);
                 }
