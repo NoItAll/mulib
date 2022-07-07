@@ -171,7 +171,7 @@ public abstract class Sdouble extends Sfpnumber {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 

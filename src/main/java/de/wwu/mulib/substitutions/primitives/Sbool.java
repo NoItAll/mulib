@@ -81,7 +81,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
 
         @Override

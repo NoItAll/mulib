@@ -60,7 +60,7 @@ public abstract class Sbyte extends Sint {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 

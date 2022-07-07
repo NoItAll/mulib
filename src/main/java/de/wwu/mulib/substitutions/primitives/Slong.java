@@ -175,7 +175,7 @@ public abstract class Slong extends AbstractSnumber {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 

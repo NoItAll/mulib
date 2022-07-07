@@ -172,7 +172,7 @@ public abstract class Sfloat extends Sfpnumber {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 

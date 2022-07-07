@@ -59,7 +59,7 @@ public abstract class AbstractSnumber implements Snumber {
         return this.getClass().getSimpleName() + "{"
                 + (this instanceof SymNumericExpressionSprimitive
                 && ((SymNumericExpressionSprimitive) this).getRepresentedExpression() != this ?
-                    ",e=" + ((SymNumericExpressionSprimitive) this).getRepresentedExpression()
+                    "e=" + ((SymNumericExpressionSprimitive) this).getRepresentedExpression() + ", "
                     :
                     "")
                 + additionToToStringBody()

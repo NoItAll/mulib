@@ -60,7 +60,7 @@ public abstract class Sshort extends Sint {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 

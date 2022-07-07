@@ -190,7 +190,7 @@ public abstract class Sint extends AbstractSnumber {
 
         @Override
         public String additionToToStringBody() {
-            return ",val=" + value;
+            return "val=" + value;
         }
     }
 
