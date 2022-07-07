@@ -572,7 +572,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index, se)) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =

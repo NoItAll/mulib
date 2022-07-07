@@ -3,22 +3,27 @@ package de.wwu.mulib.substitutions;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.LinkedHashMap;
+import java.util.Map;
 import java.util.Set;
 
+@SuppressWarnings("unchecked")
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
     private final long id;
     private final Sint len;
+    // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
-    private final LinkedHashMap<Sint, T> elements;
+    protected final LinkedHashMap<Sint, T> elements;
 
     private final boolean defaultIsSymbolic;
 
     private boolean onlyConcreteIndicesUsed;
     private boolean storeWasUsed;
 
-    private Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
+    /** New instance constructor */
+    protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                    boolean defaultIsSymbolic) {
         assert clazz != null && len != null;
         this.id = se.getNextNumberInitializedSarray();
@@ -30,12 +35,34 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = len;
     }
 
-    public Sarray(Sarray s) {
+    /** Transformation constructor */
+    protected Sarray(
+            T[] arrayElements,
+            MulibValueTransformer mvt) {
+        this.id = mvt.getNextSarrayIdAndIncrement();
+        this.clazz = (Class<T>) arrayElements.getClass().getComponentType();
+        int length = arrayElements.length;
+        this.len = (Sint) mvt.transformValue(length);
+        this.defaultIsSymbolic = false;
+        this.elements = new LinkedHashMap<>();
+        for (int i = 0; i < arrayElements.length; i++) {
+            elements.put((Sint) mvt.transformValue(i), arrayElements[i]);
+        }
+    }
+
+    /** Copy constructor for all Sarrays but SarraySarray */
+    protected Sarray(MulibValueTransformer mvt, Sarray<T> s) {
+        this(mvt, s, new LinkedHashMap<>(s.elements));
+    }
+
+    /** Copy constructor for SarraySarrays */
+    protected Sarray(MulibValueTransformer mvt, Sarray<T> s, LinkedHashMap<Sint, T> elements) {
+        mvt.registerCopy(s, this);
         this.id = s.getId();
         this.storeWasUsed = s.storeWasUsed;
         this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
         this.clazz = s.clazz;
-        this.elements = new LinkedHashMap<>(s.elements);
+        this.elements = elements;
         this.defaultIsSymbolic = s.defaultIsSymbolic;
         this.len = s.len;
     }
@@ -81,7 +108,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
+    public final boolean checkIfNeedsToRepresentOldEntries(Sint i) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof Sint.SymSint) {
                 onlyConcreteIndicesUsed = false;
@@ -109,6 +136,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     }
 
     public final void setForIndex(Sint index, T value) {
+        // Keep order in LinkedHashMap
         elements.remove(index);
         elements.put(index, value);
     }
@@ -116,6 +144,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     public final long getId() {
         return id;
     }
+
+    public abstract Sarray<T> copy(MulibValueTransformer mvt);
 
     @SuppressWarnings("rawtypes")
     public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
@@ -155,13 +185,19 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     }
 
     public static class SintSarray extends Sarray<Sint> {
+        /** Transformation constructor */
+        public SintSarray(Sint[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
 
+        /** New instance constructor */
         public SintSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sint.class, len, se, defaultIsSymbolic);
         }
 
-        public SintSarray(SintSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SintSarray(MulibValueTransformer mvt, SintSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -183,16 +219,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sint nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sint.ZERO;
         }
+
+        @Override
+        public SintSarray copy(MulibValueTransformer mvt) {
+            return new SintSarray(mvt, this);
+        }
     }
 
     public static class SdoubleSarray extends Sarray<Sdouble> {
 
+        /** Transformation constructor */
+        public SdoubleSarray(Sdouble[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SdoubleSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sdouble.class, len, se, defaultIsSymbolic);
         }
 
-        public SdoubleSarray(SdoubleSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SdoubleSarray(MulibValueTransformer mvt, SdoubleSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -214,16 +262,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sdouble.ZERO;
         }
+
+        @Override
+        public SdoubleSarray copy(MulibValueTransformer mvt) {
+            return new SdoubleSarray(mvt, this);
+        }
     }
 
     public static class SfloatSarray extends Sarray<Sfloat> {
 
+        /** Transformation constructor */
+        public SfloatSarray(Sfloat[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SfloatSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sfloat.class, len, se, defaultIsSymbolic);
         }
 
-        public SfloatSarray(SfloatSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SfloatSarray(MulibValueTransformer mvt, SfloatSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -245,16 +305,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sfloat.ZERO;
         }
+
+        @Override
+        public SfloatSarray copy(MulibValueTransformer mvt) {
+            return new SfloatSarray(mvt, this);
+        }
     }
 
     public static class SlongSarray extends Sarray<Slong> {
 
+        /** Transformation constructor */
+        public SlongSarray(Slong[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SlongSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Slong.class, len, se, defaultIsSymbolic);
         }
 
-        public SlongSarray(SlongSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SlongSarray(MulibValueTransformer mvt, SlongSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -276,16 +348,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Slong nonSymbolicDefaultElement(SymbolicExecution se) {
             return Slong.ZERO;
         }
+
+        @Override
+        public SlongSarray copy(MulibValueTransformer mvt) {
+            return new SlongSarray(mvt, this);
+        }
     }
 
     public static class SshortSarray extends Sarray<Sshort> {
 
+        /** Transformation constructor */
+        public SshortSarray(Sshort[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SshortSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sshort.class, len, se, defaultIsSymbolic);
         }
 
-        public SshortSarray(SshortSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SshortSarray(MulibValueTransformer mvt, SshortSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -307,16 +391,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sshort.ZERO;
         }
+
+        @Override
+        public SshortSarray copy(MulibValueTransformer mvt) {
+            return new SshortSarray(mvt, this);
+        }
     }
 
     public static class SbyteSarray extends Sarray<Sbyte> {
 
+        /** Transformation constructor */
+        public SbyteSarray(Sbyte[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SbyteSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sbyte.class, len, se, defaultIsSymbolic);
         }
 
-        public SbyteSarray(SbyteSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SbyteSarray(MulibValueTransformer mvt, SbyteSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -338,16 +434,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbyte.ZERO;
         }
+
+        @Override
+        public SbyteSarray copy(MulibValueTransformer mvt) {
+            return new SbyteSarray(mvt, this);
+        }
     }
 
     public static class SboolSarray extends Sarray<Sbool> {
 
+        /** Transformation constructor */
+        public SboolSarray(Sbool[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public SboolSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
             super(Sbool.class, len, se, defaultIsSymbolic);
         }
 
-        public SboolSarray(SboolSarray s) {
-            super(s);
+        /** Copy constructor */
+        public SboolSarray(MulibValueTransformer mvt, SboolSarray s) {
+            super(mvt, s);
         }
 
         @Override
@@ -369,17 +477,29 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbool.FALSE;
         }
+
+        @Override
+        public SboolSarray copy(MulibValueTransformer mvt) {
+            return new SboolSarray(mvt, this);
+        }
     }
 
     public static class PartnerClassSarray<T extends PartnerClass> extends Sarray<T> {
 
+        /** Transformation constructor */
+        public PartnerClassSarray(T[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
                                   boolean defaultIsSymbolic) {
             super(clazz, len, se, defaultIsSymbolic);
         }
 
-        public PartnerClassSarray(PartnerClassSarray s) {
-            super(s);
+        /** Copy constructor */
+        public PartnerClassSarray(MulibValueTransformer mvt, PartnerClassSarray<T> s) {
+            super(mvt, s);
         }
 
         @Override
@@ -403,14 +523,29 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public T nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
+
+        @Override
+        public PartnerClassSarray<T> copy(MulibValueTransformer mvt) {
+            return new PartnerClassSarray<T>(mvt, this);
+        }
     }
 
     @SuppressWarnings("rawtypes")
     public static class SarraySarray extends Sarray<Sarray> {
 
         private final int dim;
+        // The type of element stored in the array, but represented as a real array, e.g.: Sint[], Sdouble[][], etc.
+        // Sarray.clazz would represent them all as Sarray.
         private final Class<? extends SubstitutedVar> innerElementType;
 
+        /** Transformation constructor */
+        public SarraySarray(Sarray[] values, Class<? extends SubstitutedVar> innerElementType, MulibValueTransformer mvt) {
+            super(values, mvt);
+            this.innerElementType = innerElementType;
+            this.dim = determineDimFromInnerElementType(innerElementType);
+        }
+
+        /** New instance constructor */
         public SarraySarray(Sint len, SymbolicExecution se,
                             boolean defaultIsSymbolic,
                             Class<? extends SubstitutedVar> innerElementType) {
@@ -421,6 +556,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
         }
 
+        /** Other new instance constructor */
         @SuppressWarnings("unchecked")
         public SarraySarray(
                 Sint len, Sint[] innerLengths,
@@ -447,10 +583,19 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             }
         }
 
-        public SarraySarray(SarraySarray s) {
-            super(s);
+        /** Copy constructor */
+        public SarraySarray(MulibValueTransformer mvt, SarraySarray s) {
+            super(mvt, s, copyArrayElements(mvt, s.elements));
             this.dim = s.dim;
             this.innerElementType = s.innerElementType;
+        }
+
+        private static LinkedHashMap<Sint, Sarray> copyArrayElements(MulibValueTransformer mvt, LinkedHashMap<Sint, Sarray> elements) {
+            LinkedHashMap<Sint, Sarray> result = new LinkedHashMap<>();
+            for (Map.Entry<Sint, Sarray> entry : elements.entrySet()) {
+                result.put(entry.getKey(), entry.getValue().copy(mvt));
+            }
+            return result;
         }
 
         private static int determineDimFromInnerElementType(Class<?> innerElementType) {
@@ -544,6 +689,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         @Override
         public Sarray nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
+        }
+
+        @Override
+        public SarraySarray copy(MulibValueTransformer mvt) {
+            return new SarraySarray(mvt, this);
         }
     }
 }

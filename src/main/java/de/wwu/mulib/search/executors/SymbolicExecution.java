@@ -3,6 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -39,8 +40,6 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
-
-    private long nextNumberInitializedSarray = 0;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -94,7 +93,7 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
-    public long getNextNumberInitializedSarray() { return nextNumberInitializedSarray++; }
+    public long getNextNumberInitializedSarray() { return mulibValueTransformer.getNextSarrayIdAndIncrement(); }
 
     void set() {
         se.set(this);
@@ -347,6 +346,14 @@ public final class SymbolicExecution {
         return valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
     }
 
+    public PartnerClass symObject(Class<?> clazz) {
+        throw new NotYetImplementedException();
+    }
+
+    public PartnerClass namedSymObject(String identifier, Class<?> clazz) {
+        throw new NotYetImplementedException();
+    }
+
     public Sshort symSshort() {
         return valueFactory.symSshort(this);
     }
@@ -431,16 +438,16 @@ public final class SymbolicExecution {
         return valueFactory.sboolSarray(this, len, defaultIsSymbolic);
     }
 
-    private Sarray.PartnerClassSarray partnerClassSarray(Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
-        return valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
+    private Sarray.PartnerClassSarray partnerClassSarray(Sint len, Class<? extends PartnerClass> innerElementClass, boolean defaultIsSymbolic) {
+        return valueFactory.partnerClassSarray(this, len, innerElementClass, defaultIsSymbolic);
     }
 
-    private Sarray.SarraySarray sarraySarray(Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
-        return valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
+    private Sarray.SarraySarray sarraySarray(Sint len, Class<? extends SubstitutedVar> innerElementClass, boolean defaultIsSymbolic) {
+        return valueFactory.sarraySarray(this, len, innerElementClass, defaultIsSymbolic);
     }
 
-    private Sarray.SarraySarray sarraySarray(Sint len, Sint[] innerlengths, Class<? extends SubstitutedVar> clazz) {
-        return valueFactory.sarrarSarray(this, len, innerlengths, clazz);
+    private Sarray.SarraySarray sarraySarray(Sint len, Sint[] innerlengths, Class<? extends SubstitutedVar> innerElementClass) {
+        return valueFactory.sarrarSarray(this, len, innerlengths, innerElementClass);
     }
 
 
@@ -579,16 +586,16 @@ public final class SymbolicExecution {
         return se.sboolSarray(len, defaultIsSymbolic);
     }
 
-    public static Sarray.PartnerClassSarray partnerClassSarray(Class<? extends PartnerClass> clazz, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
-        return se.partnerClassSarray(len, clazz, defaultIsSymbolic);
+    public static Sarray.PartnerClassSarray partnerClassSarray(Class<? extends PartnerClass> innerElementClass, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.partnerClassSarray(len, innerElementClass, defaultIsSymbolic);
     }
 
-    public static Sarray.SarraySarray sarraySarray(Class<? extends SubstitutedVar> clazz, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
-        return se.sarraySarray(len, clazz, defaultIsSymbolic);
+    public static Sarray.SarraySarray sarraySarray(Class<? extends SubstitutedVar> innerElementClass, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {
+        return se.sarraySarray(len, innerElementClass, defaultIsSymbolic);
     }
 
-    public static Sarray.SarraySarray sarraySarray(Sint len, Sint[] innerLengths, Class<? extends SubstitutedVar> clazz, SymbolicExecution se) {
-        return se.sarraySarray(len, innerLengths, clazz);
+    public static Sarray.SarraySarray sarraySarray(Sint len, Sint[] innerLengths, Class<? extends SubstitutedVar> innerElementClass, SymbolicExecution se) {
+        return se.sarraySarray(len, innerLengths, innerElementClass);
     }
 
     public static Sarray.SintSarray namedSintSarray(String name, Sint len, boolean defaultIsSymbolic, SymbolicExecution se) {

@@ -12,9 +12,7 @@ import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.Conc;
-import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.Sym;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -23,10 +21,7 @@ import de.wwu.mulib.transformations.asm_transformations.AsmMulibTransformer;
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.Optional;
+import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -46,13 +41,13 @@ public class MulibContext {
             Class<?> owningMethodClass,
             MulibConfig config,
             boolean transformationRequired,
-            Class<?>[] argTypes,
+            Class<?>[] untransformedArgs,
             Object[] args) {
         Class<?> possiblyTransformedMethodClass;
         Object[] searchRegionArgs;
         Class<?>[] searchRegionArgTypes;
-        if (argTypes == null) {
-            argTypes = findMethodFittingToArgs(args, methodName, owningMethodClass);
+        if (untransformedArgs == null) {
+            untransformedArgs = findMethodFittingToArgs(args, methodName, owningMethodClass);
         }
         if (transformationRequired) {
             this.mulibTransformer = new AsmMulibTransformer(config);
@@ -60,45 +55,42 @@ public class MulibContext {
             possiblyTransformedMethodClass = this.mulibTransformer.getTransformedClass(owningMethodClass);
             this.mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer, true);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
-            searchRegionArgTypes = transformArgumentTypes(mulibValueTransformer, argTypes);
+            searchRegionArgTypes = transformArgumentTypes(mulibValueTransformer, untransformedArgs);
         } else {
             this.mulibTransformer = null;
             this.mulibValueTransformer = new MulibValueTransformer(config, null, false);
             possiblyTransformedMethodClass = owningMethodClass;
             searchRegionArgs = args;
-            searchRegionArgTypes = argTypes;
+            searchRegionArgTypes = untransformedArgs;
         }
+        // Find the next sarray-id if any of the arguments are sarrays
+        this.mulibValueTransformer.setNextSarrayId(args);
 
         this.mulibConfig = config;
         this.solverManager = Solvers.getSolverManager(config);
         this.argsSupplier = (se) -> {
+            Map<Object, Object> replacedMap = null;
             Object[] arguments = new Object[searchRegionArgs.length];
             for (int i = 0; i < arguments.length; i++) {
-                Object arg = searchRegionArgs[i];
-                if (arg instanceof SymSprimitive) {
-                    if (arg instanceof Sint) {
-                        if (arg instanceof Sbyte) {
-                            arg = se.symSbyte();
-                        } else if (arg instanceof Sshort) {
-                            arg = se.symSshort();
-                        } else if (arg instanceof Sbool) {
-                            arg = se.symSbool();
-                        } else {
-                            arg = se.symSint();
-                        }
-                    } else if (arg instanceof Sdouble) {
-                        arg = se.symSdouble();
-                    } else if (arg instanceof Sfloat) {
-                        arg = se.symSfloat();
-                    } else if (arg instanceof Slong) {
-                        arg = se.symSlong();
-                    } else {
-                        throw new NotYetImplementedException();
-                    }
-                } else {
-                    se.getMulibValueTransformer().copySearchRegionRepresentation(arg);
+                if (replacedMap == null) {
+                    replacedMap = new HashMap<>();
                 }
-                arguments[i] = arg;
+                Object arg = searchRegionArgs[i];
+                Object newArg;
+                if ((newArg = replacedMap.get(arg)) != null) {
+                    arguments[i] = newArg;
+                    continue;
+                }
+                if (arg instanceof Sprimitive) {
+                    // Keep value //// TODO Concolic
+                    newArg = arg;
+                } else {
+                    // Is null, Sarray, or PartnerClass
+                    assert arg == null || arg instanceof PartnerClass || arg instanceof Sarray;
+                    newArg = se.getMulibValueTransformer().copySearchRegionRepresentation(arg);
+                }
+                replacedMap.put(arg, newArg);
+                arguments[i] = newArg;
             }
             return arguments;
         };
@@ -136,31 +128,22 @@ public class MulibContext {
                 );
     }
 
-    private static Class<?>[] findMethodFittingToArgs(Object[] args, String methodName, Class<?> owningMethodClass) {
-        Class<?>[] directTypesOfArgs = new Class[args.length];
-        for (int i = 0; i < args.length; i++) {
-            if (args[i] == null) {
-                directTypesOfArgs[i] = null;
-            } else {
-                directTypesOfArgs[i] = args[i].getClass();
-            }
-        }
-
+    // Returns an array of parameter types fitting for the given list of arguments, if such a fit exists.
+    private static Class<?>[] findMethodFittingToArgs(Object[] untransformedArgs, String methodName, Class<?> owningMethodClass) {
+        // Get types of arguments
+        Class<?>[] directTypesOfArgs =
+                Arrays.stream(untransformedArgs).map(arg -> arg == null ? null : arg.getClass()).toArray(Class<?>[]::new);
+        // Get methods matching the name and length of arguments
         Method[] candidates = Arrays.stream(owningMethodClass.getDeclaredMethods())
-                .filter(m -> m.getName().equals(methodName))
+                .filter(m -> m.getName().equals(methodName) && m.getParameterCount() == directTypesOfArgs.length)
                 .toArray(Method[]::new);
 
         for (Method m : candidates) {
-            if (m.getParameterTypes().length != args.length) {
-                continue;
-            }
-            Class<?>[] potentialResult = new Class<?>[directTypesOfArgs.length];
             Class<?>[] paramTypes = m.getParameterTypes();
             boolean valid = true;
             for (int i = 0; i < directTypesOfArgs.length; i++) {
                 if (directTypesOfArgs[i] == null) {
                     if (!paramTypes[i].isPrimitive()) {
-                        potentialResult[i] = paramTypes[i];
                         continue;
                     } else {
                         valid = false;
@@ -184,6 +167,7 @@ public class MulibContext {
                 " while having the name " + methodName + " cannot be found in class " + owningMethodClass.getName());
     }
 
+    // Checks if 'checkIfWrapper' is a wrapper type of 'type'
     private static boolean isWrapperOfType(Class<?> type, Class<?> checkIfWrapper) {
         Class<?> mulibWrapper;
         Class<?> javaWrapper;
@@ -214,7 +198,6 @@ public class MulibContext {
         } else {
             throw new NotYetImplementedException();
         }
-        // TODO Arrays
         return mulibWrapper.isAssignableFrom(checkIfWrapper) || javaWrapper == checkIfWrapper;
     }
 
