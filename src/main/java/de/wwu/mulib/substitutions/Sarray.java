@@ -32,6 +32,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.clazz = clazz;
         this.elements = new LinkedHashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
+        if (len instanceof ConcSnumber && !(len instanceof Sint.ConcSint)) {
+            len = se.concSint(((ConcSnumber) len).intVal());
+        }
         this.len = len;
     }
 
@@ -96,7 +99,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
      * Returns the type of the elements stored in the Sarray. In the case of Sarray.SarraySarray, the type of
      * Sarray is returned.
      * @return The class that represents the type of elements stored in the Sarray
-     * @see SarraySarray#getInnerElementType()
+     * @see SarraySarray#getElementType()
      */
     public final Class<T> getClazz() {
         return clazz;
@@ -170,14 +173,14 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                     throw new ArrayStoreException();
                 }
                 SarraySarray ssv = (SarraySarray) value;
-                if (ss.getInnerElementType().getComponentType() != ssv.getInnerElementType()) {
+                if (ss.getElementType().getComponentType() != ssv.getElementType()) {
                     throw new ArrayStoreException();
                 }
             } else {
                 if (!(value instanceof Sarray)) {
                     throw new ArrayStoreException();
                 }
-                if (ss.getInnerElementType().getComponentType() != ((Sarray) value).getClazz()) {
+                if (ss.getElementType().getComponentType() != ((Sarray) value).getClazz()) {
                     throw new ArrayStoreException();
                 }
             }
@@ -536,50 +539,50 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         private final int dim;
         // The type of element stored in the array, but represented as a real array, e.g.: Sint[], Sdouble[][], etc.
         // Sarray.clazz would represent them all as Sarray.
-        private final Class<? extends SubstitutedVar> innerElementType;
+        private final Class<?> elementType;
 
         /** Transformation constructor */
-        public SarraySarray(Sarray[] values, Class<? extends SubstitutedVar> innerElementType, MulibValueTransformer mvt) {
+        public SarraySarray(Sarray[] values, Class<?> elementType, MulibValueTransformer mvt) {
             super(values, mvt);
-            this.innerElementType = innerElementType;
-            this.dim = determineDimFromInnerElementType(innerElementType);
+            this.elementType = elementType;
+            this.dim = determineDimFromInnerElementType(elementType);
         }
 
         /** New instance constructor */
         public SarraySarray(Sint len, SymbolicExecution se,
                             boolean defaultIsSymbolic,
-                            Class<? extends SubstitutedVar> innerElementType) {
+                            Class<?> elementType) {
             super(Sarray.class, len, se, defaultIsSymbolic);
-            this.innerElementType = innerElementType;
-            assert innerElementType.isArray();
-            this.dim = determineDimFromInnerElementType(innerElementType);
+            this.elementType = elementType;
+            assert elementType.isArray();
+            this.dim = determineDimFromInnerElementType(elementType);
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
         }
 
-        /** Other new instance constructor */
+        /** Other new instance constructor for MULTIANEWARRAY bytecode */
         @SuppressWarnings("unchecked")
         public SarraySarray(
-                Sint len, Sint[] innerLengths,
-                SymbolicExecution se, Class<? extends SubstitutedVar> innerElementType) {
-            super(Sarray.class, len, se, false);
-            assert innerElementType.isArray();
-            this.dim = determineDimFromInnerElementType(innerElementType);
+                Sint[] lengths,
+                SymbolicExecution se, Class<?> elementType) {
+            super(Sarray.class, lengths[0], se, false);
+            assert elementType.isArray();
+            this.dim = determineDimFromInnerElementType(elementType);
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
-            assert dim >= innerLengths.length + 1 : "Dim is always >= the total number of specified lengths";
-            this.innerElementType = innerElementType;
+            assert dim >= lengths.length : "Dim is always >= the total number of specified lengths";
+            this.elementType = elementType;
             Sint i = Sint.ZERO;
-            while (i.ltChoice(len, se)) {
-                Sint[] nextInnerLengths = new Sint[innerLengths.length-1];
-                System.arraycopy(innerLengths, 1, nextInnerLengths, 0, nextInnerLengths.length);
+            while (i.ltChoice(getLength(), se)) {
+                Sint[] nextLengths = new Sint[lengths.length-1];
+                System.arraycopy(lengths, 1, nextLengths, 0, nextLengths.length);
                 se.store(this, i,
                         generateNonSymbolicSarrayDependingOnState(
-                                innerLengths[0],
-                                nextInnerLengths,
-                                (Class<? extends SubstitutedVar>) innerElementType.getComponentType(),
+                                nextLengths,
+                                (Class<? extends SubstitutedVar>) elementType.getComponentType(),
                                 se
                         )
                 );
                 i = i.add(Sint.ONE, se);
+                lengths = nextLengths;
             }
         }
 
@@ -587,7 +590,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public SarraySarray(MulibValueTransformer mvt, SarraySarray s) {
             super(mvt, s, copyArrayElements(mvt, s.elements));
             this.dim = s.dim;
-            this.innerElementType = s.innerElementType;
+            this.elementType = s.elementType;
         }
 
         private static LinkedHashMap<Sint, Sarray> copyArrayElements(MulibValueTransformer mvt, LinkedHashMap<Sint, Sarray> elements) {
@@ -607,8 +610,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             return i;
         }
 
-        public Class<? extends SubstitutedVar> getInnerElementType() {
-            return innerElementType;
+        public Class<?> getElementType() {
+            return elementType;
         }
 
         public boolean elementsAreSarraySarrays() {
@@ -616,19 +619,18 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         private Sarray generateNonSymbolicSarrayDependingOnState(
-                Sint len, Sint[] innerLengths,
+                Sint[] lengths,
                 Class<? extends SubstitutedVar> nextInnerElementsType, SymbolicExecution se) {
             if (elementsAreSarraySarrays()) {
                 assert nextInnerElementsType.isArray();
-                assert innerLengths.length > 2;
+                assert lengths.length > 2;
                 return SymbolicExecution.sarraySarray(
-                        len,
-                        innerLengths,
+                        lengths,
                         nextInnerElementsType,
                         se
                 );
             }
-            return generateNonSarraySarray(len, nextInnerElementsType.getComponentType(), false, se);
+            return generateNonSarraySarray(lengths[0], nextInnerElementsType.getComponentType(), false, se);
         }
 
         @SuppressWarnings("unchecked")
@@ -680,9 +682,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         @Override
         public Sarray symbolicDefault(SymbolicExecution se) {
             if (elementsAreSarraySarrays()) {
-                return SymbolicExecution.sarraySarray(innerElementType, se.symSint(), defaultIsSymbolic(), se);
+                assert elementType.getComponentType().isArray();
+                return se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic());
             } else {
-                return generateNonSarraySarray(se.symSint(), innerElementType.getComponentType(), defaultIsSymbolic(), se);
+                return generateNonSarraySarray(se.symSint(), elementType.getComponentType(), defaultIsSymbolic(), se);
             }
         }
 

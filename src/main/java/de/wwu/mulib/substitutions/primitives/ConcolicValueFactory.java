@@ -9,7 +9,6 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 
 import java.util.function.Function;
 
@@ -97,15 +96,15 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    public Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<? extends SubstitutedVar> clazz, boolean freeElements) {
+    public Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean freeElements) {
         restrictLength(se, len);
         return new Sarray.SarraySarray(len, se, freeElements, clazz);
     }
 
     @Override
-    public Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint len, Sint[] innerLengths, Class<? extends SubstitutedVar> clazz) {
-        restrictLength(se, len);
-        return new Sarray.SarraySarray(len, innerLengths, se, clazz);
+    public Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz) {
+        restrictLength(se, lengths[0]);
+        return new Sarray.SarraySarray(lengths, se, clazz);
     }
 
     private static <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(

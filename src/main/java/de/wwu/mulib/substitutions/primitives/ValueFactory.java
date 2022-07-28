@@ -6,7 +6,6 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 
 public interface ValueFactory {
 
@@ -34,9 +33,9 @@ public interface ValueFactory {
 
     Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean freeElements);
 
-    Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<? extends SubstitutedVar> clazz, boolean freeElements);
+    Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean freeElements);
 
-    Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint len, Sint[] innerLengths, Class<? extends SubstitutedVar> clazz);
+    Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz);
 
     Sint symSint(SymbolicExecution se);
 
