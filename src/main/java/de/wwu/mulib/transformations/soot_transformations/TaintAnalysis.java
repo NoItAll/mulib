@@ -1,10 +1,12 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
 import soot.MethodSource;
-import soot.Unit;
+import soot.Type;
 import soot.Value;
 import soot.jimple.JimpleBody;
+import soot.jimple.Stmt;
 
+import java.util.Map;
 import java.util.Set;
 
 public class TaintAnalysis {
@@ -12,21 +14,23 @@ public class TaintAnalysis {
     public final JimpleBody analyzedBody;
     public final MethodSource originalMethodSource;
     public final Set<Value> taintedValues;
-    public final Set<Unit> tainted;
-    public final Set<Unit> unchangedUnits;
-    public final Set<Unit> toWrap;
-    public final Set<Unit> concretizeInputs;
-    public final Set<Unit> generalizeSignature;
+    public final Set<Stmt> tainted;
+    public final Set<Stmt> unchangedUnits;
+    public final Set<Stmt> toWrap;
+    public final Set<Stmt> concretizeInputs;
+    public final Set<Stmt> generalizeSignature;
+    public final Map<Value, Type> valueHolderToClassConstantType;
 
     public TaintAnalysis(
             JimpleBody analyzedBody,
             MethodSource methodSource,
             Set<Value> taintedValues,
-            Set<Unit> tainted,
-            Set<Unit> toWrap,
-            Set<Unit> unchangedUnits,
-            Set<Unit> concretizeInputs,
-            Set<Unit> generalizeSignature) {
+            Set<Stmt> tainted,
+            Set<Stmt> toWrap,
+            Set<Stmt> unchangedUnits,
+            Set<Stmt> concretizeInputs,
+            Set<Stmt> generalizeSignature,
+            Map<Value, Type> valueHolderToClassConstantType) {
         this.analyzedBody = analyzedBody;
         this.originalMethodSource = methodSource;
         this.taintedValues = taintedValues;
@@ -35,5 +39,6 @@ public class TaintAnalysis {
         this.unchangedUnits = unchangedUnits;
         this.concretizeInputs = concretizeInputs;
         this.generalizeSignature = generalizeSignature;
+        this.valueHolderToClassConstantType = valueHolderToClassConstantType;
     }
 }
