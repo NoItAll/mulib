@@ -13,8 +13,6 @@ import static de.wwu.mulib.TestUtility.TEST_BUILD_PATH;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class FreeArraysTransfExec {
-    /// TODO
-
 
     @Test
     public void testArrayFieldsWithDifferentClassLoader() {

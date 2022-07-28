@@ -164,11 +164,12 @@ public final class MulibValueTransformer {
         Class<?> possiblyTransformed = transformType(beforeTransformation);
         if (beforeTransformation != possiblyTransformed) {
             assert PartnerClass.class.isAssignableFrom(possiblyTransformed);
+            Constructor<?> constr;
             try {
                 // Use transformation constructor
-                Constructor<?> constr = possiblyTransformed.getDeclaredConstructor(beforeTransformation, MulibValueTransformer.class);
+                constr = possiblyTransformed.getConstructor(beforeTransformation, MulibValueTransformer.class);
                 result = constr.newInstance(currentValue, this);
-                alreadyCreatedObjects.put(currentValue, result);
+                assert alreadyCreatedObjects.get(currentValue) == result;
                 return result;
             } catch (NoSuchMethodException
                     | IllegalAccessException

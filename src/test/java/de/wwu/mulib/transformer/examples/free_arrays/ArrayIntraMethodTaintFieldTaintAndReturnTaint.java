@@ -18,10 +18,12 @@ public class ArrayIntraMethodTaintFieldTaintAndReturnTaint {
         if (intAr.length < 12) {
             throw Mulib.fail();
         }
+        int test = testIntraMethodTaintAndReturn1(1);
+        testIntraMethodTaintAndReturn1(1);
         for (int i = 0; i < notTainted.length; i++) {
             intAr[i] = notTainted[i] + byteArs[i][i];
         }
-        return 1;
+        return test;
     }
 
     public int testIntraMethodTaintAndReturn1(int check) {

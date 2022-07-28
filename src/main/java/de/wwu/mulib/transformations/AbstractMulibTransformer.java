@@ -11,6 +11,7 @@ import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants.*;
 import static de.wwu.mulib.transformations.TransformationUtility.*;
+import static de.wwu.mulib.transformations.soot_transformations.SootMulibTransformer.addPrefixToName;
 
 /**
  * Core piece of Mulib. The MulibTransformer accepts classes and generates partner classes for them, according
@@ -342,8 +343,9 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
-                getClass().getClassLoader().loadClass(addPrefix(toTransform.getName()));
+                Class<?> loadedClass = getClass().getClassLoader().loadClass(addPrefixToName(toTransform.getName()));
                 // If loading succeeded there already is a class file in the build
+                transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
                 return;
             } catch (ClassNotFoundException ignored) {
             }
