@@ -16,7 +16,6 @@ import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
-import de.wwu.mulib.transformations.asm_transformations.AsmMulibTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -35,6 +34,9 @@ public class MulibContext {
     private final Function<SymbolicExecution, Object[]> argsSupplier;
     private final MulibTransformer mulibTransformer;
     private final MulibValueTransformer mulibValueTransformer;
+    private final ChoicePointFactory choicePointFactory;
+    private final ValueFactory valueFactory;
+    private final CalculationFactory calculationFactory;
 
     protected MulibContext(
             String methodName,
@@ -49,8 +51,11 @@ public class MulibContext {
         if (untransformedArgs == null) {
             untransformedArgs = findMethodFittingToArgs(args, methodName, owningMethodClass);
         }
+        this.choicePointFactory = ChoicePointFactory.getInstance(config);
+        this.valueFactory = ValueFactory.getInstance(config);
+        this.calculationFactory = CalculationFactory.getInstance(config);
         if (transformationRequired) {
-            this.mulibTransformer = new AsmMulibTransformer(config);
+            this.mulibTransformer = MulibTransformer.get(config);
             this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
             possiblyTransformedMethodClass = this.mulibTransformer.getTransformedClass(owningMethodClass);
             this.mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer, true);
@@ -105,9 +110,6 @@ public class MulibContext {
             throw new MulibRuntimeException(t);
         }
         SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
-        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
-        ValueFactory valueFactory = ValueFactory.getInstance(config);
-        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
         this.mulibExecutorManager = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
@@ -243,7 +245,7 @@ public class MulibContext {
         }
         solverManager.backtrackAll();
         List<Constraint> constraintList = new ArrayList<>();
-        constraintList.add(Sbool.TRUE);
+        constraintList.add(Sbool.ConcSbool.TRUE);
         constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
         solverManager.addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
         solverManager.addArrayConstraints(pathSolution.getArrayConstraints());
@@ -297,7 +299,7 @@ public class MulibContext {
 
     private static Constraint getNeq(SubstitutedVar sv, Object value) {
         if (sv instanceof Conc) {
-            return Sbool.FALSE;
+            return Sbool.ConcSbool.FALSE;
         }
         if (sv instanceof Sbool) {
             Sbool bv = (Sbool) sv;

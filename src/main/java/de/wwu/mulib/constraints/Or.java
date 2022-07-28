@@ -20,7 +20,7 @@ public class Or extends AbstractTwoSidedConstraint {
 
     private static Constraint evaluateConcrete(Sbool.ConcSbool concrete, Constraint nonConcrete) {
         if (concrete.isTrue()) {
-            return Sbool.TRUE;
+            return Sbool.ConcSbool.TRUE;
         } else {
             return nonConcrete;
         }

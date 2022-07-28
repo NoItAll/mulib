@@ -6,9 +6,6 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Slong extends AbstractSnumber {
-    public static final ConcSlong ZERO = new ConcSlong(0);
-    public static final ConcSlong ONE = new ConcSlong(1);
-    public static final ConcSlong MINUS_ONE = new ConcSlong(-1);
 
     private Slong() {}
 
@@ -137,6 +134,9 @@ public abstract class Slong extends AbstractSnumber {
     }
 
     public static final class ConcSlong extends Slong implements ConcSnumber {
+        public static final ConcSlong ZERO = new ConcSlong(0);
+        public static final ConcSlong ONE = new ConcSlong(1);
+        public static final ConcSlong MINUS_ONE = new ConcSlong(-1);
         private final long value;
 
         private ConcSlong(long value) {

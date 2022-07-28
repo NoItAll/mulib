@@ -5,7 +5,6 @@ import de.wwu.mulib.expressions.NumericExpression;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sshort extends Sint {
-    public static final ConcSshort ZERO = new ConcSshort((short) 0);
 
     private Sshort() {}
 
@@ -22,6 +21,8 @@ public abstract class Sshort extends Sint {
     }
     
     public static final class ConcSshort extends Sshort implements ConcSnumber {
+        public static final ConcSshort ZERO = new ConcSshort((short) 0);
+
         private final short value;
 
         private ConcSshort(short value) {

@@ -5,7 +5,6 @@ import de.wwu.mulib.expressions.NumericExpression;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sbyte extends Sint {
-    public static final ConcSbyte ZERO = new ConcSbyte((byte) 0);
 
     private Sbyte() {}
 
@@ -22,6 +21,7 @@ public abstract class Sbyte extends Sint {
     }
 
     public static final class ConcSbyte extends Sbyte implements ConcSnumber {
+        public static final ConcSbyte ZERO = new ConcSbyte((byte) 0);
         private final byte value;
 
         private ConcSbyte(byte value) {

@@ -868,7 +868,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.
-            Sbool indexInBound = se.and(se.lt(i, sarray.getLength()), se.lte(Sint.ZERO, i));
+            Sbool indexInBound = se.and(se.lt(i, sarray.getLength()), se.lte(Sint.ConcSint.ZERO, i));
             if (throwExceptionOnOOB) {
                 boolean inBounds = se.boolChoice(indexInBound);
                 if (!inBounds) {

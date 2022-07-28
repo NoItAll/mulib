@@ -14,7 +14,7 @@ public class Solution {
         this.value = value;
         this.labels = labels;
         if (additionalConstraints.length == 0) {
-            this.additionalConstraints = new Constraint[] { Sbool.TRUE };
+            this.additionalConstraints = new Constraint[] { Sbool.ConcSbool.TRUE };
         } else {
             this.additionalConstraints = additionalConstraints;
         }

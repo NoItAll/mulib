@@ -194,7 +194,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             if ((c1 instanceof Not && ((Not) c1).isNegationOf(c0))
                     || (c0 instanceof Not && ((Not) c0).isNegationOf(c1))) {
                 choiceOption.setSatisfiable();
-                choiceOption.setOptionConstraint(Sbool.TRUE);
+                choiceOption.setOptionConstraint(Sbool.ConcSbool.TRUE);
                 addAfterBacktrackingPoint(choiceOption);
                 heuristicSatEvals++;
                 assert solverManager.isSatisfiable();

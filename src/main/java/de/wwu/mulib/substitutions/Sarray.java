@@ -220,7 +220,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sint nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sint.ZERO;
+            return Sint.ConcSint.ZERO;
         }
 
         @Override
@@ -263,7 +263,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sdouble.ZERO;
+            return Sdouble.ConcSdouble.ZERO;
         }
 
         @Override
@@ -306,7 +306,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sfloat.ZERO;
+            return Sfloat.ConcSfloat.ZERO;
         }
 
         @Override
@@ -349,7 +349,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Slong nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Slong.ZERO;
+            return Slong.ConcSlong.ZERO;
         }
 
         @Override
@@ -392,7 +392,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sshort.ZERO;
+            return Sshort.ConcSshort.ZERO;
         }
 
         @Override
@@ -435,7 +435,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sbyte.ZERO;
+            return Sbyte.ConcSbyte.ZERO;
         }
 
         @Override
@@ -478,7 +478,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
-            return Sbool.FALSE;
+            return Sbool.ConcSbool.FALSE;
         }
 
         @Override
@@ -570,7 +570,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
             assert dim >= lengths.length : "Dim is always >= the total number of specified lengths";
             this.elementType = elementType;
-            Sint i = Sint.ZERO;
+            Sint i = Sint.ConcSint.ZERO;
             while (i.ltChoice(getLength(), se)) {
                 Sint[] nextLengths = new Sint[lengths.length-1];
                 System.arraycopy(lengths, 1, nextLengths, 0, nextLengths.length);
@@ -581,7 +581,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                                 se
                         )
                 );
-                i = i.add(Sint.ONE, se);
+                i = i.add(Sint.ConcSint.ONE, se);
                 lengths = nextLengths;
             }
         }

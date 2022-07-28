@@ -9,9 +9,6 @@ import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sint extends AbstractSnumber {
-    public static final ConcSint MINUS_ONE = new ConcSint(-1);
-    public static final ConcSint ZERO = new ConcSint(0);
-    public static final ConcSint ONE = new ConcSint(1);
 
     Sint() {}
 
@@ -152,6 +149,9 @@ public abstract class Sint extends AbstractSnumber {
     }
 
     public static final class ConcSint extends Sint implements ConcSnumber {
+        public static final ConcSint MINUS_ONE = new ConcSint(-1);
+        public static final ConcSint ZERO = new ConcSint(0);
+        public static final ConcSint ONE = new ConcSint(1);
         private final int value;
 
         private ConcSint(int value) {

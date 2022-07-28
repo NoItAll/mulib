@@ -29,7 +29,7 @@ public final class SearchTree {
         this.enlistLeaves = config.ENLIST_LEAVES;
         this.representedMethod = methodHandle;
         this.argsSupplier = argsProvider;
-        this.root = new Choice(null, Sbool.TRUE);
+        this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
         if (enlistLeaves) {
             if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {

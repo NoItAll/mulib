@@ -10,15 +10,8 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
     private Sbool() {}
 
-    public final static ConcSbool TRUE;
-    public final static ConcSbool FALSE;
-    static {
-        TRUE = new ConcSbool(true);
-        FALSE = new ConcSbool(false);
-    }
-
     public static Sbool concSbool(boolean b) {
-        return b ? TRUE : FALSE;
+        return b ? ConcSbool.TRUE : ConcSbool.FALSE;
     }
 
     public static Sbool newInputSymbolicSbool() {
@@ -61,7 +54,8 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     }
 
     public static final class ConcSbool extends Sbool implements ConcSnumber {
-
+        public final static ConcSbool TRUE = new ConcSbool(true);
+        public final static ConcSbool FALSE = new ConcSbool(false);
         private final boolean value;
         private ConcSbool(final boolean value) {
             this.value = value;

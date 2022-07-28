@@ -901,7 +901,7 @@ public final class SymbolicExecution {
     public Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c) {
         /// TODO To CalculationFactory
         if (partnerClass == null) {
-            return Sbool.FALSE;
+            return Sbool.ConcSbool.FALSE;
         }
         return Sbool.concSbool(c.isInstance(partnerClass));
     }
@@ -930,99 +930,99 @@ public final class SymbolicExecution {
     /* CHOICEPOINTFACTORY FACADE */
 
     public boolean ltChoice(final Sint compareToZero) {
-        return ltChoice(compareToZero, Sint.ZERO);
+        return ltChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean gtChoice(final Sint compareToZero) {
-        return gtChoice(compareToZero, Sint.ZERO);
+        return gtChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean eqChoice(final Sint compareToZero) {
-        return eqChoice(compareToZero, Sint.ZERO);
+        return eqChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean notEqChoice(final Sint compareToZero) {
-        return notEqChoice(compareToZero, Sint.ZERO);
+        return notEqChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean gteChoice(final Sint compareToZero) {
-        return gteChoice(compareToZero, Sint.ZERO);
+        return gteChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean lteChoice(final Sint compareToZero) {
-        return lteChoice(compareToZero, Sint.ZERO);
+        return lteChoice(compareToZero, Sint.ConcSint.ZERO);
     }
 
     public boolean ltChoice(final Slong compareToZero) {
-        return ltChoice(compareToZero, Slong.ZERO);
+        return ltChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean gtChoice(final Slong compareToZero) {
-        return gtChoice(compareToZero, Slong.ZERO);
+        return gtChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean eqChoice(final Slong compareToZero) {
-        return eqChoice(compareToZero, Slong.ZERO);
+        return eqChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean notEqChoice(final Slong compareToZero) {
-        return notEqChoice(compareToZero, Slong.ZERO);
+        return notEqChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean gteChoice(final Slong compareToZero) {
-        return gteChoice(compareToZero, Slong.ZERO);
+        return gteChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean lteChoice(final Slong compareToZero) {
-        return lteChoice(compareToZero, Slong.ZERO);
+        return lteChoice(compareToZero, Slong.ConcSlong.ZERO);
     }
 
     public boolean ltChoice(final Sdouble compareToZero) {
-        return ltChoice(compareToZero, Sdouble.ZERO);
+        return ltChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean gtChoice(final Sdouble compareToZero) {
-        return gtChoice(compareToZero, Sdouble.ZERO);
+        return gtChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean eqChoice(final Sdouble compareToZero) {
-        return eqChoice(compareToZero, Sdouble.ZERO);
+        return eqChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean notEqChoice(final Sdouble compareToZero) {
-        return notEqChoice(compareToZero, Sdouble.ZERO);
+        return notEqChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean gteChoice(final Sdouble compareToZero) {
-        return gteChoice(compareToZero, Sdouble.ZERO);
+        return gteChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean lteChoice(final Sdouble compareToZero) {
-        return lteChoice(compareToZero, Sdouble.ZERO);
+        return lteChoice(compareToZero, Sdouble.ConcSdouble.ZERO);
     }
 
     public boolean ltChoice(final Sfloat compareToZero) {
-        return ltChoice(compareToZero, Sfloat.ZERO);
+        return ltChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean gtChoice(final Sfloat compareToZero) {
-        return gtChoice(compareToZero, Sfloat.ZERO);
+        return gtChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean eqChoice(final Sfloat compareToZero) {
-        return eqChoice(compareToZero, Sfloat.ZERO);
+        return eqChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean notEqChoice(final Sfloat compareToZero) {
-        return notEqChoice(compareToZero, Sfloat.ZERO);
+        return notEqChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean gteChoice(final Sfloat compareToZero) {
-        return gteChoice(compareToZero, Sfloat.ZERO);
+        return gteChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean lteChoice(final Sfloat compareToZero) {
-        return lteChoice(compareToZero, Sfloat.ZERO);
+        return lteChoice(compareToZero, Sfloat.ConcSfloat.ZERO);
     }
 
     public boolean ltChoice(final Sint lhs, final Sint rhs) {

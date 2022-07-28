@@ -6,9 +6,6 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sdouble extends Sfpnumber {
-    public static final ConcSdouble ZERO = new ConcSdouble(0);
-    public static final ConcSdouble ONE = new ConcSdouble(1);
-    public static final ConcSdouble MINUS_ONE = new ConcSdouble(-1);
 
     private Sdouble() {}
 
@@ -133,6 +130,9 @@ public abstract class Sdouble extends Sfpnumber {
     }
 
     public static final class ConcSdouble extends Sdouble implements ConcSnumber {
+        public static final ConcSdouble ZERO = new ConcSdouble(0);
+        public static final ConcSdouble ONE = new ConcSdouble(1);
+        public static final ConcSdouble MINUS_ONE = new ConcSdouble(-1);
         private final double value;
 
         private ConcSdouble(double value) {

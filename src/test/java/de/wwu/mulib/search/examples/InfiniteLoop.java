@@ -12,7 +12,8 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InfiniteLoop {
 
@@ -35,7 +36,7 @@ public class InfiniteLoop {
     public static void infiniteConcrete() {
         SymbolicExecution se = SymbolicExecution.get();
         Sint i = se.concSint(0);
-        while (se.boolChoice(Sbool.TRUE)) {
+        while (se.boolChoice(Sbool.ConcSbool.TRUE)) {
             se.add(i, se.concSint(1));
         }
     }

@@ -6,9 +6,6 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.concurrent.atomic.AtomicLong;
 
 public abstract class Sfloat extends Sfpnumber {
-    public static final ConcSfloat ZERO = new ConcSfloat(0);
-    public static final ConcSfloat ONE = new ConcSfloat(1);
-    public static final ConcSfloat MINUS_ONE = new ConcSfloat(-1);
 
     private Sfloat() {}
 
@@ -134,6 +131,9 @@ public abstract class Sfloat extends Sfpnumber {
     }
 
     public static final class ConcSfloat extends Sfloat implements ConcSnumber {
+        public static final ConcSfloat ZERO = new ConcSfloat(0);
+        public static final ConcSfloat ONE = new ConcSfloat(1);
+        public static final ConcSfloat MINUS_ONE = new ConcSfloat(-1);
         private final float value;
 
         private ConcSfloat(float value) {

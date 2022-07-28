@@ -220,14 +220,14 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     public Sbool and(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) lhs).isFalse()) {
-                return Sbool.FALSE;
+                return Sbool.ConcSbool.FALSE;
             } else {
                 return rhs;
             }
         }
         if (rhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) rhs).isFalse()) {
-                return Sbool.FALSE;
+                return Sbool.ConcSbool.FALSE;
             } else {
                 return lhs;
             }
@@ -239,14 +239,14 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     public Sbool or(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) lhs).isTrue()) {
-                return Sbool.TRUE;
+                return Sbool.ConcSbool.TRUE;
             } else {
                 return rhs;
             }
         }
         if (rhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) rhs).isTrue()) {
-                return Sbool.TRUE;
+                return Sbool.ConcSbool.TRUE;
             } else {
                 return lhs;
             }
@@ -602,7 +602,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             // ArrayIndexOutOfBoundsException.
             Constraint indexInBound = se.and(
                     se.lt(i, sarray.getLength()),
-                    se.lte(Sint.ZERO, i)
+                    se.lte(Sint.ConcSint.ZERO, i)
             );
             if (throwExceptionOnOOB) {
                 boolean inBounds = se.boolChoice(indexInBound);

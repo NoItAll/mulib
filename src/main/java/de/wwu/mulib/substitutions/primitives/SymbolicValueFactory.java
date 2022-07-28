@@ -127,12 +127,12 @@ public class SymbolicValueFactory extends AbstractValueFactory {
                 throw new NegativeArraySizeException();
             }
         } else if (throwExceptionOnOOB) {
-            Constraint outOfBounds = se.gte(Sint.ZERO, len);
+            Constraint outOfBounds = se.gte(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();
             }
         } else if (!se.nextIsOnKnownPath()) {
-            Constraint inBounds = se.lte(Sint.ZERO, len);
+            Constraint inBounds = se.lte(Sint.ConcSint.ZERO, len);
             se.addNewConstraint(inBounds);
         }
     }
@@ -311,9 +311,9 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         if (!se.nextIsOnKnownPath()) {
             assert !se.getCurrentChoiceOption().isEvaluated();
             Constraint zeroOneOrMinusOne = Or.newInstance(
-                    And.newInstance(Lt.newInstance(n1, n0), Eq.newInstance(toRestrict, Sint.ONE)),
-                    And.newInstance(Eq.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.ZERO)),
-                    And.newInstance(Lt.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.MINUS_ONE))
+                    And.newInstance(Lt.newInstance(n1, n0), Eq.newInstance(toRestrict, Sint.ConcSint.ONE)),
+                    And.newInstance(Eq.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.ConcSint.ZERO)),
+                    And.newInstance(Lt.newInstance(n0, n1), Eq.newInstance(toRestrict, Sint.ConcSint.MINUS_ONE))
             );
             se.addNewConstraint(zeroOneOrMinusOne);
         }
@@ -324,8 +324,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         if (config.TREAT_BOOLEANS_AS_INTS && !se.nextIsOnKnownPath()) {
             assert !se.getCurrentChoiceOption().isEvaluated();
             Constraint eitherZeroOrOne = Or.newInstance(
-                    And.newInstance(b, Eq.newInstance(b, Sint.ONE)),
-                    And.newInstance(Not.newInstance(b), Eq.newInstance(b, Sint.ZERO))
+                    And.newInstance(b, Eq.newInstance(b, Sint.ConcSint.ONE)),
+                    And.newInstance(Not.newInstance(b), Eq.newInstance(b, Sint.ConcSint.ZERO))
             );
             se.addNewConstraint(eitherZeroOrOne);
         }

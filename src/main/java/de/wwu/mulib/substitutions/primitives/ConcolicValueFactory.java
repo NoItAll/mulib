@@ -33,12 +33,12 @@ public class ConcolicValueFactory extends AbstractValueFactory {
             }
         } else if (throwExceptionOnOOB) {
             // Must be SymSbool since Sint.ZERO is concrete and len has been checked
-            Sbool.SymSbool outOfBounds = (Sbool.SymSbool) se.gte(Sint.ZERO, len);
+            Sbool.SymSbool outOfBounds = (Sbool.SymSbool) se.gte(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();
             }
         } else if (!se.nextIsOnKnownPath()) {
-            Sbool inBounds = se.lte(Sint.ZERO, len);
+            Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
             Constraint actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(inBounds);
             if (actualConstraint instanceof Sbool.SymSbool) {
                 actualConstraint = ((Sbool.SymSbool) actualConstraint).getRepresentedConstraint();

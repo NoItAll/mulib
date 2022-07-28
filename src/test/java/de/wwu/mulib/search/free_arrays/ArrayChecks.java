@@ -766,7 +766,7 @@ public class ArrayChecks {
                 throw Mulib.fail();
             }
             a.store(idx.select(se.concSint(i), se), se.concSint(b[i]), se);
-            usedIdx.store(idx.select(se.concSint(i), se), Sbool.TRUE, se);
+            usedIdx.store(idx.select(se.concSint(i), se), Sbool.ConcSbool.TRUE, se);
         }
         for (int i = 0; i < b.length - 1; i++) {
             if (a.select(se.concSint(i), se).gtChoice(a.select(se.concSint(i + 1), se), se)) {
