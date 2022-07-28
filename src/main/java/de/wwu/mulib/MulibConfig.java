@@ -166,7 +166,7 @@ public class MulibConfig {
             this.GLOBAL_AVOID_SAT_CHECKS = true;
             this.CHOICE_OPTION_DEQUE_TYPE = ChoiceOptionDeques.SIMPLE;
             this.TRANSF_IGNORE_CLASSES = List.of(
-                    Mulib.class
+                    Mulib.class, Fail.class
             );
             this.TRANSF_IGNORE_FROM_PACKAGES = List.of(
                     "java", "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.exceptions",
@@ -230,7 +230,10 @@ public class MulibConfig {
         }
 
         public MulibConfigBuilder setTRANSF_IGNORE_CLASSES(List<Class<?>> TRANSF_IGNORE_CLASSES) {
-            this.TRANSF_IGNORE_CLASSES = TRANSF_IGNORE_CLASSES;
+            List<Class<?>> temp = new ArrayList<>(TRANSF_IGNORE_CLASSES);
+            temp.add(Mulib.class);
+            temp.add(Fail.class);
+            this.TRANSF_IGNORE_CLASSES = Collections.unmodifiableList(temp);
             return this;
         }
 
