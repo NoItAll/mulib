@@ -4,6 +4,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import org.objectweb.asm.ClassWriter;
 import soot.SootClass;
 import soot.baf.BafASMBackend;
+import soot.options.Options;
 
 import java.io.IOException;
 import java.io.OutputStream;
@@ -20,7 +21,8 @@ public class MulibBafASMBackend extends BafASMBackend {
      * @param sc          The SootClass the bytecode is to be generated for
      */
     public MulibBafASMBackend(SootClass sc) {
-        super(sc, 0 /* 0 for automatic detection of Java version */);
+        // Bug if 0 is used
+        super(sc, Options.java_version_1_8 /* 0 for automatic detection of Java version */);
     }
 
     @Override
