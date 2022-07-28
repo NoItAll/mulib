@@ -14,9 +14,6 @@ import java.util.Optional;
 
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
-    // TODO Lt, gt, etc. of Sdouble, Sfloat, and Slong are not used! However, in the future we might want to
-    //  optionally collapse XCMPs into gt etc.
-
     SymbolicChoicePointFactory(MulibConfig config) {}
 
     public static SymbolicChoicePointFactory getInstance(MulibConfig config) {

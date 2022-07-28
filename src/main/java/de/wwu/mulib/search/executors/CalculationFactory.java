@@ -3,13 +3,9 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 public interface CalculationFactory {
-    // TODO We also represent bytecode instructions that cannot be executed when having a primitive mapping from bytecode
-    //  to library classes. For instance: lt(SE, VF, Sdouble, Sdouble). We might later want to collapse, e.g., the DCMP and
-    //  lt(SE, VF, Sint, Sint) to these instructions.
 
     static CalculationFactory getInstance(MulibConfig config) {
         if (config.CONCOLIC) {
