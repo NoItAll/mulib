@@ -171,8 +171,8 @@ public abstract class Sfloat extends Sfpnumber {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return "val=" + value;
+        public String toString() {
+            return "ConcSfloat{value=" + value + " }";
         }
     }
 
@@ -200,6 +200,11 @@ public abstract class Sfloat extends Sfpnumber {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String toString() {
+            return "SymSfloat{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
         }
     }
 }

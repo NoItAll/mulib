@@ -53,17 +53,4 @@ public abstract class AbstractSnumber implements Snumber {
             return super.hashCode();
         }
     }
-
-    @Override
-    public String toString() {
-        return this.getClass().getSimpleName() + "{"
-                + (this instanceof SymNumericExpressionSprimitive
-                && ((SymNumericExpressionSprimitive) this).getRepresentedExpression() != this ?
-                    "e=" + ((SymNumericExpressionSprimitive) this).getRepresentedExpression() + ", "
-                    :
-                    "")
-                + additionToToStringBody()
-                + "}";
-    }
-
 }

@@ -170,8 +170,8 @@ public abstract class Sdouble extends Sfpnumber {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return "val=" + value;
+        public String toString() {
+            return "ConcSdouble{value=" + value + " }";
         }
     }
 
@@ -199,6 +199,11 @@ public abstract class Sdouble extends Sfpnumber {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String toString() {
+            return "SymSdouble{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
         }
     }
 }

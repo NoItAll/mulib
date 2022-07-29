@@ -189,8 +189,8 @@ public abstract class Sint extends AbstractSnumber {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return "val=" + value;
+        public String toString() {
+            return "ConcSint{value=" + value + " }";
         }
     }
 
@@ -217,6 +217,11 @@ public abstract class Sint extends AbstractSnumber {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String toString() {
+            return "SymSint{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
         }
     }
 }

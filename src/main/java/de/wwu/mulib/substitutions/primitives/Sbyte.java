@@ -59,8 +59,8 @@ public abstract class Sbyte extends Sint {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return "val=" + value;
+        public String toString() {
+            return "ConcSbyte{value=" + value + " }";
         }
     }
 
@@ -88,6 +88,11 @@ public abstract class Sbyte extends Sint {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String toString() {
+            return "SymSbyte{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
         }
     }
 }

@@ -74,11 +74,6 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return "val=" + value;
-        }
-
-        @Override
         public boolean equals(Object o) {
             return o instanceof ConcSbool && ((ConcSbool) o).isTrue() == isTrue();
         }
@@ -117,6 +112,11 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         public byte byteVal() {
             return (byte) intVal();
         }
+
+        @Override
+        public String toString() {
+            return "ConcSbool{value=" + value + " }";
+        }
     }
 
     public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
@@ -140,14 +140,6 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
 
         @Override
-        public String additionToToStringBody() {
-            return this.getRepresentedConstraint() != this ?
-                    ",c=" + this.getRepresentedConstraint()
-                    :
-                    "";
-        }
-
-        @Override
         public NumericExpression getRepresentedExpression() {
             return this;
         }
@@ -155,6 +147,11 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         @Override
         public String getId() {
             return id;
+        }
+
+        @Override
+        public String toString() {
+            return "SymSbool{id=" + id + ( representedConstraint == this ? "}" : ",expr=" + representedConstraint.toString() + "}");
         }
     }
 }
