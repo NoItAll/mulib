@@ -13,7 +13,7 @@ import de.wwu.mulib.substitutions.Sarray;
 import java.util.function.Function;
 
 // The creation of concrete numbers is performed in SymbolicValueFactory.
-public class ConcolicValueFactory extends AbstractValueFactory {
+public class ConcolicValueFactory extends AbstractValueFactory implements AssignConcolicLabelEnabledValueFactory {
 
     private final SymbolicValueFactory svf;
     
@@ -258,5 +258,81 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     @Override
     public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
         return svf.cmp(se, n0, n1);
+    }
+
+    @Override
+    public Sbool.SymSbool assignLabel(SymbolicExecution se, Sbool.SymSbool sym) {
+        assert !(sym.getRepresentedConstraint() instanceof ConcolicConstraintContainer) : "Must be a pure symbolic expression";
+        // Concrete value
+        Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
+        // Container for both
+        ConcolicConstraintContainer container = new ConcolicConstraintContainer(sym, conc);
+        return (Sbool.SymSbool) Sbool.newConstraintSbool(container);
+    }
+
+    @Override
+    public Sshort.SymSshort assignLabel(SymbolicExecution se, Sshort.SymSshort sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSshort((Short) o),
+                c -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(c)
+        );
+    }
+
+    @Override
+    public Sbyte.SymSbyte assignLabel(SymbolicExecution se, Sbyte.SymSbyte sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSbyte((Byte) o),
+                c -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(c)
+        );
+    }
+
+    @Override
+    public Sint.SymSint assignLabel(SymbolicExecution se, Sint.SymSint sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSint((Integer) o),
+                c -> (Sint.SymSint) Sint.newExpressionSymbolicSint(c)
+        );
+    }
+
+    @Override
+    public Slong.SymSlong assignLabel(SymbolicExecution se, Slong.SymSlong sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSlong((Long) o),
+                c -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(c)
+        );
+    }
+
+    @Override
+    public Sdouble.SymSdouble assignLabel(SymbolicExecution se, Sdouble.SymSdouble sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSdouble((Double) o),
+                c -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(c)
+        );
+    }
+
+    @Override
+    public Sfloat.SymSfloat assignLabel(SymbolicExecution se, Sfloat.SymSfloat sym) {
+        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> concSfloat((Float) o),
+                c -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(c)
+        );
     }
 }

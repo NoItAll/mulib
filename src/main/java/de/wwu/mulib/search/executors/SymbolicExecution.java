@@ -56,7 +56,7 @@ public final class SymbolicExecution {
         this.predeterminedPath = SearchTree.getPathTo(navigateTo);
         this.currentChoiceOption = predeterminedPath.peek();
         assert currentChoiceOption != null;
-        this.executionBudgetManager = executionBudgetManager.copyFromPrototype();
+        this.executionBudgetManager = executionBudgetManager;
         this.mulibValueTransformer = mulibValueTransformer;
         set();
     }
@@ -95,7 +95,7 @@ public final class SymbolicExecution {
 
     public long getNextNumberInitializedSarray() { return mulibValueTransformer.getNextSarrayIdAndIncrement(); }
 
-    void set() {
+    private void set() {
         se.set(this);
     }
 
@@ -907,6 +907,7 @@ public final class SymbolicExecution {
     }
 
     public Object castTo(Object sarrayOrPartnerClassObject, Class<?> castTo) {
+        /// TODO To CalculationFactory
         if (sarrayOrPartnerClassObject == null) {
             throw new ClassCastException();
         }
