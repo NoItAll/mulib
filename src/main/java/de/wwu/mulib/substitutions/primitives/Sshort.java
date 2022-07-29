@@ -61,7 +61,7 @@ public abstract class Sshort extends Sint {
 
         @Override
         public String toString() {
-            return "ConcSshort{value=" + value + " }";
+            return "ConcSshort{value=" + value + "}";
         }
     }
 

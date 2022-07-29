@@ -60,7 +60,7 @@ public abstract class Sbyte extends Sint {
 
         @Override
         public String toString() {
-            return "ConcSbyte{value=" + value + " }";
+            return "ConcSbyte{value=" + value + "}";
         }
     }
 

@@ -175,7 +175,7 @@ public abstract class Slong extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "ConcSlong{value=" + value + " }";
+            return "ConcSlong{value=" + value + "}";
         }
     }
 

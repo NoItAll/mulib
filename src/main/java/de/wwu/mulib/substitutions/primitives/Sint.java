@@ -190,7 +190,7 @@ public abstract class Sint extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "ConcSint{value=" + value + " }";
+            return "ConcSint{value=" + value + "}";
         }
     }
 
