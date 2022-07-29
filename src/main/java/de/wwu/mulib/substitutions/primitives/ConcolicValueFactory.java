@@ -211,7 +211,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSdouble(se, numericExpression);
     }
 
@@ -219,7 +219,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSfloat(se, numericExpression);
     }
 
@@ -227,7 +227,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSlong(se, numericExpression);
     }
 
@@ -235,7 +235,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSshort(se, numericExpression);
     }
 
@@ -243,7 +243,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSbyte(se, numericExpression);
     }
 
@@ -251,7 +251,7 @@ public class ConcolicValueFactory extends AbstractValueFactory {
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
         assert !(constraint instanceof ConcolicConstraintContainer)
                 && !((constraint instanceof Sbool.SymSbool)
-                && ((Sbool.SymSbool) constraint).getRepresentedExpression() instanceof ConcolicConstraintContainer);
+                    && ((Sbool.SymSbool) constraint).getRepresentedExpression() instanceof ConcolicConstraintContainer);
             return svf.wrappingSymSbool(se, constraint);
     }
 
