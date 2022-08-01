@@ -51,8 +51,6 @@ public class MulibConfig {
 
     /* Free Arrays */
     public final boolean THROW_EXCEPTION_ON_OOB;
-    public final boolean GENERATE_NEW_SYM_AFTER_STORE;
-
     /* Solver */
     public final Solvers GLOBAL_SOLVER_TYPE;
     public final boolean GLOBAL_AVOID_SAT_CHECKS;
@@ -142,7 +140,6 @@ public class MulibConfig {
         private Optional<Byte> SYMSBYTE_LB;
         private Optional<Byte> SYMSBYTE_UB;
         private boolean TREAT_BOOLEANS_AS_INTS;
-        private boolean GENERATE_NEW_SYM_AFTER_STORE;
         private boolean THROW_EXCEPTION_ON_OOB;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
 
@@ -205,7 +202,6 @@ public class MulibConfig {
             this.SYMSBYTE_UB =   Optional.empty();
             this.TREAT_BOOLEANS_AS_INTS = false;
             this.THROW_EXCEPTION_ON_OOB = false;
-            this.GENERATE_NEW_SYM_AFTER_STORE = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
         }
 
@@ -469,11 +465,6 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setGENERATE_NEW_SYM_AFTER_STORE(boolean GENERATE_NEW_SYM_AFTER_STORE) {
-            this.GENERATE_NEW_SYM_AFTER_STORE = GENERATE_NEW_SYM_AFTER_STORE;
-            return this;
-        }
-
         public MulibConfigBuilder setCONCOLIC(boolean CONCOLIC) {
             this.CONCOLIC = CONCOLIC;
             return this;
@@ -673,10 +664,6 @@ public class MulibConfig {
             return TREAT_BOOLEANS_AS_INTS;
         }
 
-        public boolean isGENERATE_NEW_SYM_AFTER_STORE() {
-            return GENERATE_NEW_SYM_AFTER_STORE;
-        }
-
         public boolean isTHROW_EXCEPTION_ON_OOB() {
             return THROW_EXCEPTION_ON_OOB;
         }
@@ -759,7 +746,6 @@ public class MulibConfig {
                     SYMSBYTE_UB,
                     TREAT_BOOLEANS_AS_INTS,
                     THROW_EXCEPTION_ON_OOB,
-                    GENERATE_NEW_SYM_AFTER_STORE,
                     CONCOLIC
             );
         }
@@ -811,7 +797,6 @@ public class MulibConfig {
                         Optional<Byte> SYMSBYTE_UB,
                         boolean TREAT_BOOLEANS_AS_INTS,
                         boolean THROW_EXCEPTION_ON_OOB,
-                        boolean GENERATE_NEW_SYM_AFTER_STORE,
                         boolean CONCOLIC
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
@@ -860,7 +845,6 @@ public class MulibConfig {
         this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
         this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
-        this.GENERATE_NEW_SYM_AFTER_STORE = GENERATE_NEW_SYM_AFTER_STORE;
         this.CONCOLIC = CONCOLIC;
     }
 

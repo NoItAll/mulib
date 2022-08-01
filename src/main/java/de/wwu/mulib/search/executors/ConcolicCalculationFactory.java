@@ -1,17 +1,21 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Set;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
@@ -22,12 +26,10 @@ import static de.wwu.mulib.expressions.ConcolicNumericContainer.tryGetSymFromCon
 public final class ConcolicCalculationFactory implements CalculationFactory {
 
     private final SymbolicCalculationFactory scf;
-    private final boolean shouldGenerateNewSymbolicAfterStore;
     private final boolean throwExceptionOnOOB;
 
     ConcolicCalculationFactory(MulibConfig config) {
         this.scf = SymbolicCalculationFactory.getInstance(config);
-        this.shouldGenerateNewSymbolicAfterStore = config.GENERATE_NEW_SYM_AFTER_STORE;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
     }
 
@@ -727,44 +729,18 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        Sint possiblySymIndex = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
-//        Sint concreteIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
-        SubstitutedVar result = sarray.getForIndex(possiblySymIndex);
+        SubstitutedVar result = sarray.getForIndex(index);
         if (result != null) {
-            if (sarray.onlyConcreteIndicesUsed()) {
-                return result;
-            }
-            if (sarray.storeWasUsed()) {
-                if (!shouldGenerateNewSymbolicAfterStore) {
-                    SubstitutedVar inner;
-                    if (result instanceof Sbool) {
-                        inner = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) result);
-                    } else if (result instanceof Snumber) {
-                        inner = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) result);
-                    } else {
-                        throw new NotYetImplementedException();
-                    }
-                    boolean stillValid = se.checkWithNewArrayConstraint(
-                            new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth()));
-                    if (stillValid) {
-                        return result;
-                    }
-                }
-            } else {
-                return result;
-            }
+            return result;
         }
-//        if (possiblySymIndex instanceof Sint.SymSint) {
-//            se.addTemporaryAssumption(Eq.newInstance(possiblySymIndex, concreteIndex));
-//        }
 
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
+
         // Generate new value
         if (!sarray.defaultIsSymbolic()) {
-            SubstitutedVar nonSymbolicDefaultElement = sarray.nonSymbolicDefaultElement(se);
             if (sarray.onlyConcreteIndicesUsed()) {
-                result = nonSymbolicDefaultElement;
+                result = sarray.nonSymbolicDefaultElement(se);
             } else {
                 /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
                 /// TODO alternative: only allow this for those arrays with fixed length
@@ -773,29 +749,62 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         } else {
             result = sarray.symbolicDefault(se);
         }
-//        if (result instanceof SymNumericExpressionSprimitive) {
-//            ConcSnumber conc = ConcolicNumericContainer.getConcNumericFromConcolic((SymNumericExpressionSprimitive) result);
-//            Snumber possiblySym = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
-//            se.addTemporaryAssumption(Eq.newInstance(conc, possiblySym));
-//        } else if (result instanceof Conc) {
-//            throw new NotYetImplementedException();
-//        }
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setForIndex(possiblySymIndex, result);
-        evaluateRelabeling(se);
+        sarray.setForIndex(index, result);
+        evaluateRelabeling(sarray, se); // TODO Possibly prune the amount of constraints via the given index?
         return result;
+    }
+
+    private static Constraint getEqOfConcolic(SubstitutedVar e, SymbolicExecution se) {
+        Sbool eq;
+        if (e instanceof Sbool) {
+            Sbool.ConcSbool conc = getConcSboolFromConcolic((Sbool) e);
+            eq = conc.isEqualTo((Sbool) e, se);
+        } else if (e instanceof Snumber) {
+            ConcSnumber conc = getConcNumericFromConcolic((NumericExpression) e);
+            if (e instanceof Sint) {
+                eq = se.eq((Sint) e, (Sint) conc);
+            } else if (e instanceof Sdouble) {
+                eq = se.eq((Sdouble) e, (Sdouble) conc);
+            } else if (e instanceof Sfloat) {
+                eq = se.eq((Sfloat) e, (Sfloat) conc);
+            } else if (e instanceof Slong) {
+                eq = se.eq((Slong) e, (Slong) conc);
+            } else {
+                throw new NotYetImplementedException();
+            }
+        } else {
+            throw new NotYetImplementedException();
+        }
+        return tryGetSymFromConcolic(eq);
+    }
+
+    private static void evaluateRelabeling(
+            Sarray<?> s,
+            SymbolicExecution se) {
+        if (se.nextIsOnKnownPath() || s.onlyConcreteIndicesUsed()) {
+            return;
+        }
+        assert s.getCachedElements().stream().allMatch(e -> e instanceof Snumber); // Also holds for Sbool
+        List<SubstitutedVar> symbolicValues = new ArrayList<>(s.getCachedElements());
+        List<Constraint> currentConcolicMapping = new ArrayList<>();
+        for (SubstitutedVar e : symbolicValues) {
+            currentConcolicMapping.add(tryGetSymFromConcolic((Sbool) getEqOfConcolic(e, se)));
+        }
+        Constraint currentAssignment = And.newInstance(currentConcolicMapping);
+        if (!se.checkWithNewConstraint(currentAssignment)) {
+            markForReevaluationAndBacktrack(se);
+        }
     }
 
     @Override
     public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
-        Sarray.checkIfValueIsStorableForSarray(sarray, value);
-        Sint possiblySymIndex = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
-//        Sint concreteIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
-        sarray.setStoreWasUsed();
+
         if (!sarray.onlyConcreteIndicesUsed()) {
+            sarray.clearCachedElements();
             if (!se.nextIsOnKnownPath()) {
                 SubstitutedVar inner;
                 if (value instanceof Sbool) {
@@ -806,28 +815,15 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                     throw new NotYetImplementedException();
                 }
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(sarray.getId(), possiblySymIndex, inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint(sarray.getId(), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
-//        if (possiblySymIndex instanceof Sint.SymSint) {
-//            se.addTemporaryAssumption(Eq.newInstance(possiblySymIndex, concreteIndex));
-//        }
-        sarray.setForIndex(possiblySymIndex, value);
-        evaluateRelabeling(se);
+        sarray.setForIndex(index, value);
         return value;
     }
 
-    private static void evaluateRelabeling(SymbolicExecution se) {
-        if (!se.nextIsOnKnownPath() && !se.isSatisfiable()) {
-            backtrack(se);
-        }
-    }
-
-    private static void backtrack(SymbolicExecution se) {
-//        se.notifyNewChoice(se.getCurrentChoiceOption().getDepth(),
-//                Collections.singletonList(se.getCurrentChoiceOption()));
-        se.resetTemporaryAssumptions();
+    private static void markForReevaluationAndBacktrack(SymbolicExecution se) {
         se.getCurrentChoiceOption().setReevaluationNeeded();
         throw new Backtrack();
     }
@@ -885,7 +881,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 se.addNewConstraint(actualConstraint);
                 Sbool.ConcSbool isLabeledIndexInBounds = ConcolicConstraintContainer.getConcSboolFromConcolic(indexInBound);
                 if (isLabeledIndexInBounds.isFalse()) {
-                    backtrack(se);
+                    markForReevaluationAndBacktrack(se);
                 }
             }
         } else {

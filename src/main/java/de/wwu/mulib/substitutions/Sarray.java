@@ -5,6 +5,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.util.Collection;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Set;
@@ -20,14 +21,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private final boolean defaultIsSymbolic;
 
     private boolean onlyConcreteIndicesUsed;
-    private boolean storeWasUsed;
 
     /** New instance constructor */
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                    boolean defaultIsSymbolic) {
         assert clazz != null && len != null;
         this.id = se.getNextNumberInitializedSarray();
-        this.storeWasUsed = false;
         this.onlyConcreteIndicesUsed = true;
         this.clazz = clazz;
         this.elements = new LinkedHashMap<>();
@@ -62,7 +61,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     protected Sarray(MulibValueTransformer mvt, Sarray<T> s, LinkedHashMap<Sint, T> elements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
-        this.storeWasUsed = s.storeWasUsed;
         this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
         this.clazz = s.clazz;
         this.elements = elements;
@@ -79,10 +77,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
-    public final boolean storeWasUsed() {
-        return storeWasUsed;
-    }
-
     public final boolean onlyConcreteIndicesUsed() {
         return onlyConcreteIndicesUsed;
     }
@@ -91,9 +85,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return defaultIsSymbolic;
     }
 
-    public final void setStoreWasUsed() {
-        storeWasUsed = true;
-    }
 
     /**
      * Returns the type of the elements stored in the Sarray. In the case of Sarray.SarraySarray, the type of
@@ -124,6 +115,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public final Set<Sint> getCachedIndices() {
         return elements.keySet();
+    }
+
+    public final Collection<T> getCachedElements() {
+        return elements.values();
     }
 
     public final void clearCachedElements() {

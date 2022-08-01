@@ -12,11 +12,9 @@ import java.util.Set;
 
 public class SymbolicCalculationFactory implements CalculationFactory {
 
-    private final boolean shouldGenerateNewSymbolicAfterStore;
     private final boolean throwExceptionOnOOB;
 
     SymbolicCalculationFactory(MulibConfig config) {
-        this.shouldGenerateNewSymbolicAfterStore = config.GENERATE_NEW_SYM_AFTER_STORE;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
     }
 
@@ -504,39 +502,18 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
         SubstitutedVar result = sarray.getForIndex(index);
         if (result != null) {
-            if (sarray.onlyConcreteIndicesUsed()) {
-                return result;
-            }
-            if (sarray.storeWasUsed()) {
-                // If this flag is not set, we try to use the cached element and verify that it is not stale
-                if (!shouldGenerateNewSymbolicAfterStore) {
-                    // If store was used and we do not return a fresh symbolic value, we might need to add a new select
-                    // constraint to ensure that no stale indices were used which might still be stored as an element
-                    ArrayConstraint stillValidSelect =
-                            new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
-                    boolean stillValid = se.checkWithNewArrayConstraint(stillValidSelect);
-                    if (stillValid) {
-                        return result;
-                    }
-                    // Otherwise, the index-value-mapping became stale
-                }
-                // If the flag was set, or the result is not still valid, we have to generate a new value and add
-                // a respective constraint for the new value.
-            } else {
-                // If store was not yet used, we can simply return the cached result
-                return result;
-            }
+            // We don't have to check for the validity of the cached index: we remove all indexes if store was used and
+            // symbolic indexes have been used. Thus, the current index is valid.
+            return result;
         }
 
-        if (result == null) {
-            representArrayViaConstraintsIfNeeded(se, sarray, index);
-            checkIndexAccess(sarray, index, se); // index was already checked
-        }
+        representArrayViaConstraintsIfNeeded(se, sarray, index);
+        checkIndexAccess(sarray, index, se);
+
         // Generate new value
         if (!sarray.defaultIsSymbolic()) {
-            SubstitutedVar nonSymbolicDefaultElement = sarray.nonSymbolicDefaultElement(se);
             if (sarray.onlyConcreteIndicesUsed()) {
-                result = nonSymbolicDefaultElement;
+                result = sarray.nonSymbolicDefaultElement(se);
             } else {
                 /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
                 /// TODO alternative: only allow this for those arrays with fixed length
@@ -556,7 +533,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
-        sarray.setStoreWasUsed();
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (!sarray.onlyConcreteIndicesUsed()) {

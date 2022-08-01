@@ -306,7 +306,6 @@ public class ArrayChecks {
         }, "checkValueDominanceDueToCaching");
 
         TestUtility.getAllSolutions((mb) -> {
-            mb.setGENERATE_NEW_SYM_AFTER_STORE(false);
             List<PathSolution> result = TestUtility.executeMulib(
                     "valueDominanceDueToCaching1",
                     ArrayChecks.class,
@@ -767,13 +766,10 @@ public class ArrayChecks {
             assertEquals(1, values[0]);
             assertEquals(1, values[1]);
             assertEquals(5, values[2]);
-            assertEquals(8, values[3]);
-            assertEquals(17, values[4]);
-            assertEquals(27, values[5]);
-            assertEquals(39, values[6]);
-            assertEquals(42, values[7]);
-            assertEquals(56, values[8]);
-            assertEquals(78, values[9]);
+            assertEquals(17, values[3]);
+            assertEquals(39, values[4]);
+            assertEquals(42, values[5]);
+            assertEquals(56, values[6]);
             return result;
         });
     }
@@ -794,15 +790,12 @@ public class ArrayChecks {
             Solution s = pathSolution.getInitialSolution();
             Object[] values = (Object[]) s.value;
             assertEquals(-81, values[0]);
-            assertEquals(-3, values[1]);
-            assertEquals(0, values[2]);
-            assertEquals(1, values[3]);
-            assertEquals(2, values[4]);
-            assertEquals(8, values[5]);
-            assertEquals(9, values[6]);
-            assertEquals(39, values[7]);
-            assertEquals(42, values[8]);
-            assertEquals(78, values[9]);
+            assertEquals(0, values[1]);
+            assertEquals(1, values[2]);
+            assertEquals(8, values[3]);
+            assertEquals(9, values[4]);
+            assertEquals(42, values[5]);
+            assertEquals(78, values[6]);
             return result;
         });
     }
@@ -810,7 +803,7 @@ public class ArrayChecks {
     // Analogous to https://github.com/wwu-pi/muli-env/blob/59dcc66714d7953f68e741c7515e2f8289afbaf7/muli-runtime/src/test/resources/applications/freeArrays/SimpleSort.muli
     public static Sarray.SintSarray simpleSort() {
         SymbolicExecution se = SymbolicExecution.get();
-        int[] b = new int[] {1, 42, 17, 56, 78, 5, 27, 39, 1, 8};
+        int[] b = new int[] {1, 42, 17, 56, 5, 39, 1};
 
         Sarray.SintSarray idx = SymbolicExecution.sintSarray(se.symSint(), true, se);
         Sarray.SboolSarray usedIdx = SymbolicExecution.sboolSarray(se.symSint(), true, se);
@@ -835,7 +828,7 @@ public class ArrayChecks {
 
     public static Sarray.SintSarray simpleSortAlternative() {
         SymbolicExecution se = SymbolicExecution.get();
-        int[] bBeforeFree = {-81, 42, -3, 9, 78, 0, 2, 39, 1, 8};
+        int[] bBeforeFree = {-81, 42, 9, 78, 0, 1, 8};
         int n = bBeforeFree.length;
         Sarray.SintSarray b = SymbolicExecution.sintSarray(se.concSint(n), true, se);
         Sarray.SintSarray idx = SymbolicExecution.sintSarray(se.concSint(n), true, se);

@@ -52,7 +52,6 @@ public final class TestUtility {
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setENLIST_LEAVES(true)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(false)
                         .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
@@ -63,7 +62,6 @@ public final class TestUtility {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setCONCOLIC(true)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
         );
     }
@@ -81,7 +79,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .assumeMulibDefaultValueRanges()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setENLIST_LEAVES(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
@@ -100,7 +97,6 @@ public final class TestUtility {
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(false)
                         .setCONCOLIC(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
@@ -110,7 +106,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setTREAT_BOOLEANS_AS_INTS(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS, DSAS, IDDFS)
@@ -128,7 +123,6 @@ public final class TestUtility {
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(DFS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
@@ -141,12 +135,10 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setINCR_ACTUAL_CP_BUDGET(3)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(false)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(2)
@@ -174,7 +166,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(false)
                         .setENLIST_LEAVES(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
