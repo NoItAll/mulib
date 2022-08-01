@@ -6,6 +6,7 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import soot.*;
 import soot.jimple.*;
 
+import java.lang.invoke.StringConcatFactory;
 import java.util.*;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
@@ -151,8 +152,10 @@ public class TaintAnalyzer {
                 } else if (!declaringClassName.equals(Object.class.getName())
                         && !declaringClassName.equals(Exception.class.getName())
                         && !declaringClassName.equals(RuntimeException.class.getName())
-                        && !declaringClassName.equals(Mulib.class.getName())
-                        && !declaringClassName.equals(String.class.getName())) { // TODO Free Strings
+                        && !declaringClassName.startsWith("de.wwu.mulib")
+                        && !declaringClassName.equals(String.class.getName())
+                        && !declaringClassName.equals(StringConcatFactory.class.getName())
+                        && s.getInvokeExpr().getMethodRef().getParameterTypes().size() > 0) { // TODO Free Strings
                     Mulib.log.log(Level.WARNING, "Behavior for treating untransformed method in Stmt " + s + " is not " +
                             "defined. The generalized signature is used as a default");
                     generalizeSignature.add(s);
