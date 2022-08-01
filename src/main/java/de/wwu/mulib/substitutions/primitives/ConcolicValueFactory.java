@@ -261,8 +261,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sbool.SymSbool assignLabel(SymbolicExecution se, Sbool.SymSbool sym) {
-        assert !(sym.getRepresentedConstraint() instanceof ConcolicConstraintContainer) : "Must be a pure symbolic expression";
+    public Sbool.SymSbool assignLabel(SymbolicExecution se, Sbool.SymSbool potentiallyToUnwrap) {
+        Sbool.SymSbool sym = (Sbool.SymSbool) ConcolicConstraintContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         // Concrete value
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both
@@ -271,8 +271,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sshort.SymSshort assignLabel(SymbolicExecution se, Sshort.SymSshort sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Sshort.SymSshort assignLabel(SymbolicExecution se, Sshort.SymSshort potentiallyToUnwrap) {
+        Sshort.SymSshort sym = (Sshort.SymSshort) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -282,8 +282,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sbyte.SymSbyte assignLabel(SymbolicExecution se, Sbyte.SymSbyte sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Sbyte.SymSbyte assignLabel(SymbolicExecution se, Sbyte.SymSbyte potentiallyToUnwrap) {
+        Sbyte.SymSbyte sym = (Sbyte.SymSbyte) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -293,8 +293,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sint.SymSint assignLabel(SymbolicExecution se, Sint.SymSint sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Sint.SymSint assignLabel(SymbolicExecution se, Sint.SymSint potentiallyToUnwrap) {
+        Sint.SymSint sym = (Sint.SymSint) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -304,8 +304,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Slong.SymSlong assignLabel(SymbolicExecution se, Slong.SymSlong sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Slong.SymSlong assignLabel(SymbolicExecution se, Slong.SymSlong potentiallyToUnwrap) {
+        Slong.SymSlong sym = (Slong.SymSlong) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -315,8 +315,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sdouble.SymSdouble assignLabel(SymbolicExecution se, Sdouble.SymSdouble sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Sdouble.SymSdouble assignLabel(SymbolicExecution se, Sdouble.SymSdouble potentiallyToUnwrap) {
+        Sdouble.SymSdouble sym = (Sdouble.SymSdouble) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -326,8 +326,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sfloat.SymSfloat assignLabel(SymbolicExecution se, Sfloat.SymSfloat sym) {
-        assert !(sym.getRepresentedExpression() instanceof ConcolicNumericContainer) : "Must be a pure symbolic expression";
+    public Sfloat.SymSfloat assignLabel(SymbolicExecution se, Sfloat.SymSfloat potentiallyToUnwrap) {
+        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,

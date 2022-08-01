@@ -720,11 +720,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         upc.add(getField);
 
         if (isPrimitiveOrSprimitive(t)) {
-            AssignStmt directCopy = Jimple.v().newAssignStmt(
-                    copiedValueLocal,
-                    toCopyValueLocal
-            );
-            upc.add(directCopy);
+            copySprimitiveValue(toCopyValueLocal, copiedValueLocal, mvtLocal, localSpawner, upc);
         } else if (isSarray(t)) {
             createSarrayFromCopyOrTransformationConstructor(mvtLocal, toCopyValueLocal, copiedValueLocal, localSpawner, true, upc);
         } else {
@@ -736,6 +732,25 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
         
         upc.add(assignToField);
+    }
+
+    private void copySprimitiveValue(
+            Local toCopyValueLocal,
+            Local copiedValueLocal,
+            Local mvtLocal,
+            LocalSpawner localSpawner,
+            UnitPatchingChain upc) {
+        Local copyCallResultLocal = localSpawner.spawnNewLocal(v.TYPE_OBJECT);
+        AssignStmt copyCallAssign = Jimple.v().newAssignStmt(
+                copyCallResultLocal,
+                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_COPY_SPRIMITIVE.makeRef(), toCopyValueLocal)
+        );
+        upc.add(copyCallAssign);
+        AssignStmt castAssign = Jimple.v().newAssignStmt(
+                copiedValueLocal,
+                Jimple.v().newCastExpr(copyCallResultLocal, copiedValueLocal.getType())
+        );
+        upc.add(castAssign);
     }
 
     private void initializeFieldViaTransformation(
@@ -817,7 +832,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             UnitPatchingChain upc) {
         SootMethod used;
         if (useCopyConstructor) {
-            used = v.SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION;
+            used = v.SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION_OF_NON_SPRIMITIVE;
         } else {
             used = v.SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE;
         }

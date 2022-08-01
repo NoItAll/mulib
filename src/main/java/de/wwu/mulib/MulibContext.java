@@ -37,6 +37,7 @@ public class MulibContext {
     private final ChoicePointFactory choicePointFactory;
     private final ValueFactory valueFactory;
     private final CalculationFactory calculationFactory;
+    private static final Object[] emptyArgs = new Object[0];
 
     protected MulibContext(
             String methodName,
@@ -73,54 +74,39 @@ public class MulibContext {
 
         this.mulibConfig = config;
         this.solverManager = Solvers.getSolverManager(config);
-        this.argsSupplier = (se) -> {
-            Map<Object, Object> replacedMap = null;
-            Object[] arguments = new Object[searchRegionArgs.length];
-            for (int i = 0; i < arguments.length; i++) {
-                if (replacedMap == null) {
-                    replacedMap = new HashMap<>();
-                }
-                Object arg = searchRegionArgs[i];
-                Object newArg;
-                if ((newArg = replacedMap.get(arg)) != null) {
-                    arguments[i] = newArg;
-                    continue;
-                }
-                if (arg instanceof Sprimitive) { // TODO Also regard case where we return concolic values...this should actually not occur! only return syms, not the container
-                    if (config.CONCOLIC
-                            && arg instanceof SymNumericExpressionSprimitive) {
-                        // Creation of wrapper SymSprimitive with concolic container required
-                        if (arg instanceof Sbool.SymSbool) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sbool.SymSbool) arg);
-                        } else if (arg instanceof Sshort.SymSshort) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sshort.SymSshort) arg);
-                        } else if (arg instanceof Sbyte.SymSbyte) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sbyte.SymSbyte) arg);
-                        } else if (arg instanceof Sint.SymSint) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sint.SymSint) arg);
-                        } else if (arg instanceof Slong.SymSlong) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Slong.SymSlong) arg);
-                        } else if (arg instanceof Sdouble.SymSdouble) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sdouble.SymSdouble) arg);
-                        } else if (arg instanceof Sfloat.SymSfloat) {
-                            newArg = ((AssignConcolicLabelEnabledValueFactory) valueFactory).assignLabel(se, (Sfloat.SymSfloat) arg);
+        if (searchRegionArgs.length == 0) {
+            this.argsSupplier = (se) -> { return emptyArgs; };
+        } else {
+            this.argsSupplier = (se) -> {
+                Map<Object, Object> replacedMap = new IdentityHashMap<>();
+                Object[] arguments = new Object[searchRegionArgs.length];
+                for (int i = 0; i < searchRegionArgs.length; i++) {
+                    Object arg = searchRegionArgs[i];
+                    Object newArg;
+                    if ((newArg = replacedMap.get(arg)) != null) {
+                        arguments[i] = newArg;
+                        continue;
+                    }
+                    if (arg instanceof Sprimitive) {
+                        if (config.CONCOLIC
+                                && arg instanceof SymNumericExpressionSprimitive) {
+                            // Creation of wrapper SymSprimitive with concolic container required
+                            newArg = se.getMulibValueTransformer().copySprimitive((Sprimitive) arg);
                         } else {
-                            throw new NotYetImplementedException(arg.getClass().toString());
+                            // Keep value
+                            newArg = arg;
                         }
                     } else {
-                        // Keep value
-                        newArg = arg;
+                        // Is null, Sarray, or PartnerClass
+                        assert arg == null || arg instanceof PartnerClass || arg instanceof Sarray;
+                        newArg = se.getMulibValueTransformer().copySearchRegionRepresentationOfNonSprimitive(arg);
                     }
-                } else {
-                    // Is null, Sarray, or PartnerClass
-                    assert arg == null || arg instanceof PartnerClass || arg instanceof Sarray;
-                    newArg = se.getMulibValueTransformer().copySearchRegionRepresentation(arg);
+                    replacedMap.put(arg, newArg);
+                    arguments[i] = newArg;
                 }
-                replacedMap.put(arg, newArg);
-                arguments[i] = newArg;
-            }
-            return arguments;
-        };
+                return arguments;
+            };
+        }
 
         try {
             Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, searchRegionArgTypes);
@@ -298,7 +284,7 @@ public class MulibContext {
             if (solverManager.isSatisfiable()) { // TODO unify with AbstractMulibExecutor
                 Labels newLabels = LabelUtility.getLabels(
                         solverManager,
-                        mulibValueTransformer.copyFromPrototype(),
+                        mulibValueTransformer.copyFromPrototype(null) /* SE not required for labeling */,
                         l.getIdToNamedVar()
                 );
                 Object solutionValue = pathSolution.getLatestSolution().value;
@@ -343,7 +329,7 @@ public class MulibContext {
             } else if (value instanceof Byte) {
                 wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
             } else {
-                throw new NotYetImplementedException();
+                throw new NotYetImplementedException(sv.getClass().toString());
             }
             return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
         } else {

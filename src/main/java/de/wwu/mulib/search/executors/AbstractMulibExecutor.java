@@ -177,6 +177,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
+                this.currentSymbolicExecution = symbolicExecution;
                 assert solverManager.isSatisfiable();
                 try {
                     Object solutionValue = invokeSearchRegion();

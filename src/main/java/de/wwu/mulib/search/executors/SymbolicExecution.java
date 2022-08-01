@@ -56,9 +56,13 @@ public final class SymbolicExecution {
         this.predeterminedPath = SearchTree.getPathTo(navigateTo);
         this.currentChoiceOption = predeterminedPath.peek();
         assert currentChoiceOption != null;
-        this.executionBudgetManager = executionBudgetManager;
-        this.mulibValueTransformer = mulibValueTransformer;
+        this.executionBudgetManager = executionBudgetManager.copyFromPrototype();
+        this.mulibValueTransformer = mulibValueTransformer.copyFromPrototype(this);
         set();
+    }
+
+    public ValueFactory getValueFactory() {
+        return valueFactory;
     }
 
     public MulibValueTransformer getMulibValueTransformer() {

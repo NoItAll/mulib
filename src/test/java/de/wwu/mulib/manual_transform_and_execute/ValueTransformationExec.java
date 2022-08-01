@@ -44,7 +44,7 @@ public class ValueTransformationExec {
 
     @Test
     public void testIndirectCyclicInputClassesCopy() {
-        Object value = mvt.copySearchRegionRepresentation(new __mulib__IndirectCyclicInputClasses0Manual());
+        Object value = mvt.copySearchRegionRepresentationOfNonSprimitive(new __mulib__IndirectCyclicInputClasses0Manual());
         assertInstanceOf(__mulib__IndirectCyclicInputClasses0Manual.class, value);
         assertInstanceOf(
                 __mulib__IndirectCyclicInputClasses1Manual.class,

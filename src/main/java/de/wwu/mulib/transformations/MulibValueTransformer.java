@@ -8,10 +8,12 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
 
@@ -38,13 +40,17 @@ public final class MulibValueTransformer {
     // If the method at hand did not need to be transformed, we do not have to label or transform into the library-/
     // Partner-classes. This is useful for testing and for manually writing such classes.
     private final boolean transformationRequired;
+    private final boolean isConcolic;
     private long nextSarrayId = 0;
+    private final SymbolicExecution se;
     public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer, boolean transformationRequired) {
         this.mulibTransformer = mulibTransformer;
         this.classesToCopyFunction = config.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         this.classesToTransformation = config.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         this.classesToLabelFunction = config.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         this.transformationRequired = transformationRequired;
+        this.isConcolic = config.CONCOLIC;
+        this.se = null;
     }
 
     public MulibValueTransformer(
@@ -53,13 +59,17 @@ public final class MulibValueTransformer {
             Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> classesToLabelFunction,
             boolean transformationRequired,
             MulibTransformer mulibTransformer,
-            long nextSarrayId) {
+            long nextSarrayId,
+            boolean isConcolic,
+            SymbolicExecution se) {
         this.mulibTransformer = mulibTransformer;
         this.classesToCopyFunction = classesToCopyFunction;
         this.classesToTransformation = classesToTransformation;
         this.classesToLabelFunction = classesToLabelFunction;
         this.transformationRequired = transformationRequired;
         this.nextSarrayId = nextSarrayId;
+        this.isConcolic = isConcolic;
+        this.se = se;
     }
 
     public void setNextSarrayId(Object[] findHighestSarrayIdIn) {
@@ -96,15 +106,24 @@ public final class MulibValueTransformer {
         return o;
     }
 
-    public Object copySearchRegionRepresentation(Object o) {
+    public Object copySearchRegionRepresentationOfNonSprimitive(Object o) {
         if (o == null) {
             return null;
         } else if (o instanceof PartnerClass) {
+            // TODO Currently, we register copies in the copy-constructor to avoid reflection. This can be optimized
+            //  e.g. via a lambda with a constructor passed as an argument
             return ((PartnerClass) o).copy(this);
-        } else if (o instanceof Sprimitive) {
-            return o;
-        } else if (o instanceof Sarray) {
-            return ((Sarray<?>) o).copy(this);
+        }
+
+        Object result;
+        if ((result = this.alreadyCreatedObjects.get(o)) != null) {
+            return result;
+        }
+
+        if (o instanceof Sarray) {
+            result = ((Sarray<?>) o).copy(this);
+            registerCopy(o, result);
+            return result;
         }
         BiFunction<MulibValueTransformer, Object, Object> copier = classesToCopyFunction.get(o.getClass());
         if (copier == null) {
@@ -113,9 +132,39 @@ public final class MulibValueTransformer {
         return copier.apply(this, o);
     }
 
-    public MulibValueTransformer copyFromPrototype() {
+    public Object copySprimitive(Sprimitive o) {
+        if (!isConcolic) {
+            return o;
+        }
+        Object result;
+        if ((result = this.alreadyCreatedObjects.get(o)) != null) {
+            return result;
+        }
+        if (o instanceof Sym) {
+            result = _potentiallyUnpackAndRelabelConcolic((Sym) o);
+        } else {
+            result = o;
+        }
+        registerCopy(o, result);
+        return result;
+    }
+
+    public MulibValueTransformer copyFromPrototype(SymbolicExecution se) {
         return new MulibValueTransformer(classesToCopyFunction, classesToTransformation, 
-                classesToLabelFunction, transformationRequired, mulibTransformer, nextSarrayId);
+                classesToLabelFunction, transformationRequired, mulibTransformer, nextSarrayId, isConcolic, se);
+    }
+
+    private Object _potentiallyUnpackAndRelabelConcolic(Sym currentValue) {
+        // Check if we need to unpack concolic values
+        if (currentValue instanceof Sbool.SymSbool) {
+            Sbool.SymSbool s = (Sbool.SymSbool) ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) currentValue);
+            return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
+        } else if (currentValue instanceof SymNumericExpressionSprimitive) {
+            SymNumericExpressionSprimitive s = (SymNumericExpressionSprimitive) ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) currentValue);
+            return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
+        } else {
+            throw new NotYetImplementedException(currentValue.getClass().toString());
+        }
     }
 
     /**

@@ -116,16 +116,15 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     }
                 }
                 assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1);
-                currentSymbolicExecution = new SymbolicExecution(
+                return Optional.of(new SymbolicExecution(
                         this,
                         choicePointFactory,
                         valueFactory,
                         calculationFactory,
                         optionToBeEvaluated,
-                        prototypicalExecutionBudgetManager.copyFromPrototype(),
-                        prototypicalMulibValueTransformer.copyFromPrototype()
-                );
-                return Optional.of(currentSymbolicExecution);
+                        prototypicalExecutionBudgetManager,
+                        prototypicalMulibValueTransformer
+                ));
             }
             return Optional.empty();
         } catch (Throwable t) {
