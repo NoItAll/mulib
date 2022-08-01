@@ -391,9 +391,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if ((c = resolvedClasses.get(name)) != null) {
             return c;
         }
-        Class<?> clazz = getClassForName(name);
         c = Scene.v().forceResolve(name, SootClass.BODIES);
-//        c.setModifiers(clazz.getModifiers());
         resolvedClasses.put(name, c);
         return c;
     }
