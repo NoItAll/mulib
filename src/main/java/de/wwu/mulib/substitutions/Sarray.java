@@ -126,6 +126,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return elements.keySet();
     }
 
+    public final void clearCachedElements() {
+        elements.clear();
+    }
+
     public final Sint getLength() {
         return len;
     }

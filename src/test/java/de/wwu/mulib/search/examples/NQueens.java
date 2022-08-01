@@ -61,12 +61,14 @@ public class NQueens {
         TestUtility.getSolution(this::_checkExecuteEfficient);
     }
 
-    private Optional<PathSolution> _checkExecuteEfficient(MulibConfig config) {
+    private Optional<PathSolution> _checkExecuteEfficient(MulibConfig.MulibConfigBuilder config) {
         Optional<PathSolution> result = TestUtility.executeMulibForOne(
                 "solveEfficient",
                 NQueens.class,
                 1,
-                config);
+                config,
+                false
+        );
         assertFalse(result.isEmpty());
         return result;
     }

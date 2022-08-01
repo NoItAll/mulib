@@ -291,6 +291,61 @@ public class ArrayChecks {
     }
 
     @Test
+    public void checkValueDominanceDueToCaching() {
+        TestUtility.getAllSolutions((mb) -> {
+            List<PathSolution> result = TestUtility.executeMulib(
+                    "valueDominanceDueToCaching0",
+                    ArrayChecks.class,
+                    1,
+                    mb,
+                    false
+            );
+            assertTrue(result.stream().anyMatch(r -> ((Boolean) r.getInitialSolution().value)));
+            assertTrue(result.stream().anyMatch(r -> !((Boolean) r.getInitialSolution().value)));
+            return result;
+        }, "checkValueDominanceDueToCaching");
+
+        TestUtility.getAllSolutions((mb) -> {
+            mb.setGENERATE_NEW_SYM_AFTER_STORE(false);
+            List<PathSolution> result = TestUtility.executeMulib(
+                    "valueDominanceDueToCaching1",
+                    ArrayChecks.class,
+                    1,
+                    mb,
+                    false
+            );
+            assertTrue(result.size() > 0);
+            return result;
+        }, "checkValueDominanceDueToCaching");
+    }
+
+    public static Sbool valueDominanceDueToCaching0() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SintSarray a = se.sintSarray(se.concSint(2), true);
+        Sint index = se.symSint();
+        Sint val = a.select(index, se);
+        a.store(se.symSint(), se.concSint(12), se);
+        boolean found = false;
+        for (int i = 0; i < 2; i++) {
+            found = found || a.select(se.concSint(i), se).eqChoice(val, se);
+        }
+        return se.concSbool(found);
+    }
+    public static Sbool valueDominanceDueToCaching1() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SintSarray a = se.sintSarray(se.concSint(2), true);
+        Sint index = se.symSint();
+        Sint val = a.select(index, se);
+        a.store(se.symSint(), se.concSint(12), se);
+
+        if (a.select(index, se).eqChoice(val, se)) {
+            throw Mulib.fail();
+        }
+
+        return se.concSbool(true);
+    }
+
+    @Test
     public void checkSymArraySelect() {
         TestUtility.getAllSolutions((mb) -> {
             List<PathSolution> result = TestUtility.executeMulib(
@@ -701,7 +756,8 @@ public class ArrayChecks {
                     "simpleSort",
                     ArrayChecks.class,
                     1,
-                    mb
+                    mb,
+                    false
             );
             assertTrue(result.isPresent());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
@@ -729,7 +785,8 @@ public class ArrayChecks {
                     "simpleSortAlternative",
                     ArrayChecks.class,
                     1,
-                    mb
+                    mb,
+                    false
             );
             assertTrue(result.isPresent());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));

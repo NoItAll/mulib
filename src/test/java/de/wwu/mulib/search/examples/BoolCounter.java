@@ -42,7 +42,7 @@ public class BoolCounter {
     private void testIfAllNumbersInRangeAndNoAdditionalSolutions(List<PathSolution> result) {
         for (int i = 0; i < 16; i++) {
             final Integer I = i;
-            assertTrue(result.stream().anyMatch(s -> I.equals(((Integer) s.getInitialSolution().value))),
+            assertTrue(result.stream().anyMatch(s -> I.equals((s.getInitialSolution().value))),
                     "Value " + i + " is expected but cannot be found.");
         }
         for (PathSolution ps : result) {

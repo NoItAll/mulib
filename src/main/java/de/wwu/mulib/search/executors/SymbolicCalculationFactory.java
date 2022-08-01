@@ -560,6 +560,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (!sarray.onlyConcreteIndicesUsed()) {
+            // We must reset the cached elements, if a symbolic variable is present and store was used
+            sarray.clearCachedElements();
             if (!se.nextIsOnKnownPath()) {
                 ArrayConstraint storeConstraint =
                         new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());

@@ -232,17 +232,17 @@ public final class TestUtility {
     }
 
     public static List<Optional<PathSolution>> getSolution(
-            Function<MulibConfig, Optional<PathSolution>> mulibConfigToPossibleSolution) {
+            Function<MulibConfig.MulibConfigBuilder, Optional<PathSolution>> mulibConfigToPossibleSolution) {
         return getSolution(b -> b, mulibConfigToPossibleSolution);
     }
 
     public static List<Optional<PathSolution>> getSolution(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig, Optional<PathSolution>> mulibConfigToPossibleSolution) {
+            Function<MulibConfig.MulibConfigBuilder, Optional<PathSolution>> mulibConfigToPossibleSolution) {
         final List<MulibConfig.MulibConfigBuilder> executeTestsWith = initBuilders();
         List<Optional<PathSolution>> result = new ArrayList<>();
         for (MulibConfig.MulibConfigBuilder mulibConfigBuilder : executeTestsWith) {
-            MulibConfig config = adjustment.apply(mulibConfigBuilder).build();
+            MulibConfig.MulibConfigBuilder config = adjustment.apply(mulibConfigBuilder);
             result.add(mulibConfigToPossibleSolution.apply(config));
         }
         return result;
@@ -282,8 +282,14 @@ public final class TestUtility {
             String methodName,
             Class<?> containingClass,
             int maxNumberOfSolutionsForEachPath,
-            MulibConfig config) {
-        MulibContext mc = Mulib.generateWithoutTransformation(methodName, containingClass, new Class<?>[0], new Object[0], config);
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired) {
+        MulibContext mc;
+        if (transformationRequired) {
+            mc = Mulib.getMulibContext(methodName, containingClass, mb, new Class<?> [0], new Object[0]);
+        } else {
+            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, new Class<?>[0]);
+        }
         Optional<PathSolution> result = mc.getPathSolution();
 
         if (result.isPresent()) {
