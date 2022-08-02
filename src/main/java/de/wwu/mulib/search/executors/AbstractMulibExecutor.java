@@ -145,8 +145,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public List<PathSolution> runForSolutions() {
-        Optional<PathSolution> possibleSolution = runForSingleSolution();
+    public List<PathSolution> runForPathSolutions() {
+        Optional<PathSolution> possibleSolution = runForSinglePathSolution();
         return possibleSolution.map(Collections::singletonList).orElse(Collections.emptyList());
     }
 
@@ -171,7 +171,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Optional<PathSolution> runForSingleSolution() {
+    public Optional<PathSolution> runForSinglePathSolution() {
         while ((!getDeque().isEmpty() && !terminated) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
@@ -194,10 +194,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     this.mulibExecutorManager.addToPathSolutions(solution);
                     return Optional.of(solution);
                 } catch (Backtrack b) {
-                    // We assume that Backtracking is only executed in a ChoicePointFactory.
-                    // In the ChoicePointFactory, ChoiceOptions are not "swallowed" by backtracking, i.e.,
-                    // we do not have to add back ChoiceOptions to the SearchTree's queue, this is taken care of
-                    // in the ChoicePointFactory.
+                    // We assume that Backtracking is only executed in places where it is guaranteed that
+                    // ChoiceOptions are not "swallowed" by backtracking, i.e.,
+                    // we do not have to add back ChoiceOptions to the SearchTree's queue.
                 } catch (Fail f) {
                     de.wwu.mulib.search.trees.Fail fail = symbolicExecution.getCurrentChoiceOption().setExplicitlyFailed();
                     this.mulibExecutorManager.addToFails(fail);

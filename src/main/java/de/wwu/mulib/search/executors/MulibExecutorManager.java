@@ -81,7 +81,7 @@ public abstract class MulibExecutorManager {
     protected final List<PathSolution> getAllPathSolutions(MulibExecutor executorToDispatch) {
         List<PathSolution> result = new ArrayList<>();
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
-            List<PathSolution> solutions  = executorToDispatch.runForSolutions();
+            List<PathSolution> solutions  = executorToDispatch.runForPathSolutions();
             result.addAll(solutions);
         }
         return result;

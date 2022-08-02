@@ -14,9 +14,9 @@ public interface MulibExecutor {
 
     void addExistingArrayConstraints(List<ArrayConstraint> acs);
 
-    Optional<PathSolution> runForSingleSolution();
+    Optional<PathSolution> runForSinglePathSolution();
 
-    List<PathSolution> runForSolutions();
+    List<PathSolution> runForPathSolutions();
 
     LinkedHashMap<String, String> getStatistics();
 

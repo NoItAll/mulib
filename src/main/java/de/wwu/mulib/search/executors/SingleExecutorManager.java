@@ -37,7 +37,7 @@ public class SingleExecutorManager extends MulibExecutorManager {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         MulibExecutor mulibExecutor = mulibExecutors.get(0);
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
-            Optional<PathSolution> possibleSymbolicExecution = mulibExecutor.runForSingleSolution();
+            Optional<PathSolution> possibleSymbolicExecution = mulibExecutor.runForSinglePathSolution();
             if (possibleSymbolicExecution.isPresent()) {
                 Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
                 return possibleSymbolicExecution;
