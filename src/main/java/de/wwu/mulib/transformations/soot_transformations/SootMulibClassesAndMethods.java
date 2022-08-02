@@ -9,6 +9,8 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import soot.*;
 
@@ -57,6 +59,8 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_PARTNERCLASSSARRAY;
     public final SootClass SC_SE;
     public final SootClass SC_MULIB_VALUE_TRANSFORMER;
+    public final SootClass SC_MULIB_VALUE_COPIER;
+    public final SootClass SC_MULIB_VALUE_LABELER;
     public final SootClass SC_SOLVER_MANAGER;
     public final SootClass SC_SPRIMITIVE;
     public final SootClass SC_SYM_SPRIMITIVE;
@@ -91,6 +95,8 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_PARTNERCLASSSARRAY;
     public final RefType TYPE_SE;
     public final RefType TYPE_MULIB_VALUE_TRANSFORMER;
+    public final RefType TYPE_MULIB_VALUE_COPIER;
+    public final RefType TYPE_MULIB_VALUE_LABELER;
     public final Type TYPE_INT;
     public final Type TYPE_LONG;
     public final Type TYPE_DOUBLE;
@@ -212,15 +218,17 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_INSTANCEOF;
     public final SootMethod SM_SE_CAST_TO;
     public final SootMethod SM_SE_CONCRETIZE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_REGISTER_COPY;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_GET_COPY;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION_OF_NON_SPRIMITIVE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_COPY_SPRIMITIVE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_TYPE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_LABEL_PRIMITIVE_VALUE;
-    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_LABEL_VALUE;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_GET_TRANSFORMED_OBJECT;
+    public final SootMethod SM_MULIB_VALUE_TRANSFORMER_TRANSFORM;
+    public final SootMethod SM_MULIB_VALUE_COPIER_REGISTER_COPY;
+    public final SootMethod SM_MULIB_VALUE_COPIER_ALREADY_COPIED;
+    public final SootMethod SM_MULIB_VALUE_COPIER_GET_COPY;
+    public final SootMethod SM_MULIB_VALUE_COPIER_COPY_NON_SPRIMITIVE;
+    public final SootMethod SM_MULIB_VALUE_COPIER_COPY_SPRIMITIVE;
+    public final SootMethod SM_MULIB_VALUE_LABELER_LABEL_SPRIMITIVE;
+    public final SootMethod SM_MULIB_VALUE_LABELER_LABEL;
     public final SootMethod SM_CONCSINT;
     public final SootMethod SM_CONCSLONG;
     public final SootMethod SM_CONCSDOUBLE;
@@ -408,6 +416,8 @@ public class SootMulibClassesAndMethods {
         SC_SARRAY               = Scene.v().forceResolve(Sarray.class.getName(), SootClass.SIGNATURES);
         SC_SE = Scene.v().forceResolve(SymbolicExecution.class.getName(), SootClass.SIGNATURES);
         SC_MULIB_VALUE_TRANSFORMER = Scene.v().forceResolve(MulibValueTransformer.class.getName(), SootClass.SIGNATURES);
+        SC_MULIB_VALUE_COPIER = Scene.v().forceResolve(MulibValueCopier.class.getName(), SootClass.SIGNATURES);
+        SC_MULIB_VALUE_LABELER = Scene.v().forceResolve(MulibValueLabeler.class.getName(), SootClass.SIGNATURES);
         SC_SOLVER_MANAGER = Scene.v().forceResolve(SolverManager.class.getName(), SootClass.SIGNATURES);
         SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
@@ -423,7 +433,9 @@ public class SootMulibClassesAndMethods {
         TYPE_SBOOL = Scene.v().getRefType(Sbool.class.getName());
         TYPE_PARTNERCLASS = Scene.v().getRefType(PartnerClass.class.getName());
         TYPE_SE = Scene.v().getRefType(SymbolicExecution.class.getName());
-        TYPE_MULIB_VALUE_TRANSFORMER = Scene.v().getRefType(MulibValueTransformer.class.getName());
+        TYPE_MULIB_VALUE_TRANSFORMER = SC_MULIB_VALUE_TRANSFORMER.getType();
+        TYPE_MULIB_VALUE_COPIER = SC_MULIB_VALUE_COPIER.getType();
+        TYPE_MULIB_VALUE_LABELER = SC_MULIB_VALUE_LABELER.getType();
         TYPE_SOLVER_MANAGER = SC_SOLVER_MANAGER.getType();
         TYPE_INT = Scene.v().getType("int");
         TYPE_LONG = Scene.v().getType("long");
@@ -545,15 +557,17 @@ public class SootMulibClassesAndMethods {
         SM_SE_CAST_TO = SC_SE.getMethod("castTo", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_OBJECT);
         SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_SUBSTITUTED_VAR), TYPE_OBJECT);
 
-        SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED = SC_MULIB_VALUE_TRANSFORMER.getMethod("alreadyCreated",                 List.of(TYPE_OBJECT), TYPE_BOOL);
-        SM_MULIB_VALUE_TRANSFORMER_REGISTER_COPY = SC_MULIB_VALUE_TRANSFORMER.getMethod("registerCopy",                   List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
-        SM_MULIB_VALUE_TRANSFORMER_GET_COPY = SC_MULIB_VALUE_TRANSFORMER.getMethod("getCopy",                        List.of(TYPE_OBJECT), TYPE_OBJECT);
-        SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION_OF_NON_SPRIMITIVE = SC_MULIB_VALUE_TRANSFORMER.getMethod("copySearchRegionRepresentationOfNonSprimitive", List.of(TYPE_OBJECT), TYPE_OBJECT);
-        SM_MULIB_VALUE_TRANSFORMER_COPY_SPRIMITIVE = SC_MULIB_VALUE_TRANSFORMER.getMethod("copySprimitive", List.of(TYPE_SPRIMITIVE), TYPE_OBJECT);
-        SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("transformValue",                 List.of(TYPE_OBJECT), TYPE_OBJECT);
-        SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_TYPE = SC_MULIB_VALUE_TRANSFORMER.getMethod("transformType",                  List.of(TYPE_CLASS), TYPE_CLASS);
-        SM_MULIB_VALUE_TRANSFORMER_LABEL_PRIMITIVE_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("labelPrimitiveValue", List.of(TYPE_SPRIMITIVE, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
-        SM_MULIB_VALUE_TRANSFORMER_LABEL_VALUE = SC_MULIB_VALUE_TRANSFORMER.getMethod("labelValue", List.of(TYPE_OBJECT, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
+        SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT      = SC_MULIB_VALUE_TRANSFORMER.getMethod("registerTransformedObject", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
+        SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED              = SC_MULIB_VALUE_TRANSFORMER.getMethod("alreadyTransformed", List.of(TYPE_OBJECT), TYPE_BOOL);
+        SM_MULIB_VALUE_TRANSFORMER_GET_TRANSFORMED_OBJECT           = SC_MULIB_VALUE_TRANSFORMER.getMethod("getTransformedObject", List.of(TYPE_OBJECT), TYPE_OBJECT);
+        SM_MULIB_VALUE_TRANSFORMER_TRANSFORM                        = SC_MULIB_VALUE_TRANSFORMER.getMethod("transform", List.of(TYPE_OBJECT), TYPE_OBJECT);
+        SM_MULIB_VALUE_COPIER_REGISTER_COPY                         = SC_MULIB_VALUE_COPIER.getMethod("registerCopy", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
+        SM_MULIB_VALUE_COPIER_ALREADY_COPIED                        = SC_MULIB_VALUE_COPIER.getMethod("alreadyCopied", List.of(TYPE_OBJECT), TYPE_BOOL);
+        SM_MULIB_VALUE_COPIER_GET_COPY                              = SC_MULIB_VALUE_COPIER.getMethod("getCopy", List.of(TYPE_OBJECT), TYPE_OBJECT);
+        SM_MULIB_VALUE_COPIER_COPY_NON_SPRIMITIVE                   = SC_MULIB_VALUE_COPIER.getMethod("copyNonSprimitive", List.of(TYPE_OBJECT), TYPE_OBJECT);
+        SM_MULIB_VALUE_COPIER_COPY_SPRIMITIVE                       = SC_MULIB_VALUE_COPIER.getMethod("copySprimitive", List.of(TYPE_SPRIMITIVE), TYPE_OBJECT);
+        SM_MULIB_VALUE_LABELER_LABEL_SPRIMITIVE                     = SC_MULIB_VALUE_LABELER.getMethod("labelSprimitive", List.of(TYPE_SPRIMITIVE, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
+        SM_MULIB_VALUE_LABELER_LABEL                                = SC_MULIB_VALUE_LABELER.getMethod("label", List.of(TYPE_OBJECT, TYPE_SOLVER_MANAGER), TYPE_OBJECT);
 
         SM_SINT_ADD                 = SC_SINT.getMethod("add",          List.of(TYPE_SINT, TYPE_SE),    TYPE_SINT);
         SM_SINT_SUB                 = SC_SINT.getMethod("sub",          List.of(TYPE_SINT, TYPE_SE),    TYPE_SINT);
@@ -702,15 +716,15 @@ public class SootMulibClassesAndMethods {
         SM_SBOOL_BOOL_CHOICE_S = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SE),                    TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE_S = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SE),            TYPE_BOOL);
 
-        SM_SINTSARRAY_COPY_CONSTR                   = SC_SINTSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SINTSARRAY), TYPE_VOID);
-        SM_SLONGSARRAY_COPY_CONSTR                  = SC_SLONGSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SLONGSARRAY), TYPE_VOID);
-        SM_SDOUBLESARRAY_COPY_CONSTR                = SC_SDOUBLESARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SDOUBLESARRAY), TYPE_VOID);
-        SM_SFLOATSARRAY_COPY_CONSTR                 = SC_SFLOATSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SFLOATSARRAY), TYPE_VOID);
-        SM_SSHORTSARRAY_COPY_CONSTR                 = SC_SSHORTSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SSHORTSARRAY), TYPE_VOID);
-        SM_SBYTESARRAY_COPY_CONSTR                  = SC_SBYTESARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SBYTESARRAY), TYPE_VOID);
-        SM_SBOOLSARRAY_COPY_CONSTR                  = SC_SBOOLSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SBOOLSARRAY), TYPE_VOID);
-        SM_PARTNERCLASSSARRAY_COPY_CONSTR           = SC_PARTNERCLASSSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_PARTNERCLASSSARRAY), TYPE_VOID);
-        SM_SARRAYSARRAY_COPY_CONSTR                 = SC_SARRAYSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_TRANSFORMER, TYPE_SARRAYSARRAY), TYPE_VOID);
+        SM_SINTSARRAY_COPY_CONSTR                   = SC_SINTSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SINTSARRAY), TYPE_VOID);
+        SM_SLONGSARRAY_COPY_CONSTR                  = SC_SLONGSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SLONGSARRAY), TYPE_VOID);
+        SM_SDOUBLESARRAY_COPY_CONSTR                = SC_SDOUBLESARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SDOUBLESARRAY), TYPE_VOID);
+        SM_SFLOATSARRAY_COPY_CONSTR                 = SC_SFLOATSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SFLOATSARRAY), TYPE_VOID);
+        SM_SSHORTSARRAY_COPY_CONSTR                 = SC_SSHORTSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SSHORTSARRAY), TYPE_VOID);
+        SM_SBYTESARRAY_COPY_CONSTR                  = SC_SBYTESARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SBYTESARRAY), TYPE_VOID);
+        SM_SBOOLSARRAY_COPY_CONSTR                  = SC_SBOOLSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SBOOLSARRAY), TYPE_VOID);
+        SM_PARTNERCLASSSARRAY_COPY_CONSTR           = SC_PARTNERCLASSSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_PARTNERCLASSSARRAY), TYPE_VOID);
+        SM_SARRAYSARRAY_COPY_CONSTR                 = SC_SARRAYSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SARRAYSARRAY), TYPE_VOID);
 
         SM_SINTSARRAY_TRANSFORMATION_CONSTR         = SC_SINTSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
         SM_SLONGSARRAY_TRANSFORMATION_CONSTR        = SC_SLONGSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SLONG, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);

@@ -128,9 +128,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public final Object label(SubstitutedVar var) {
         if (var instanceof Sprimitive) {
-            return currentSymbolicExecution.getMulibValueTransformer().labelPrimitiveValue((Sprimitive) var, solverManager);
+            return currentSymbolicExecution.getMulibValueLabeler().labelSprimitive((Sprimitive) var, solverManager);
         } else {
-            return currentSymbolicExecution.getMulibValueTransformer().labelValue(var, solverManager);
+            return currentSymbolicExecution.getMulibValueLabeler().label(var, solverManager);
         }
     }
 
@@ -151,7 +151,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Object concretize (SubstitutedVar var) {
+    public Object concretize(SubstitutedVar var) {
         if (var instanceof Conc) {
             if (var instanceof Sint.ConcSint) {
                 return ((Sint.ConcSint) var).intVal();
@@ -166,7 +166,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             // TODO add constraint
             return solverManager.getLabel((Sprimitive) var);
         } else {
-            return currentSymbolicExecution.getMulibValueTransformer().labelValue(var, solverManager);
+            return currentSymbolicExecution.getMulibValueLabeler().label(var, solverManager);
         }
     }
 
@@ -247,13 +247,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
         Labels labels = LabelUtility.getLabels(
                 solverManager,
-                symbolicExecution.getMulibValueTransformer(),
+                symbolicExecution.getMulibValueLabeler(),
                 symbolicExecution.getNamedVariables()
         );
         PathSolution solution;
         if (labelResultValue) {
             if (solutionValue != null && solutionValue.getClass().isArray()) {
-                solutionValue = symbolicExecution.getMulibValueTransformer().labelValue(solutionValue, solverManager);
+                solutionValue = symbolicExecution.getMulibValueLabeler().label(solutionValue, solverManager);
             } else if (solutionValue instanceof SubstitutedVar) {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }

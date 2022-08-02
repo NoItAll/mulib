@@ -1,5 +1,6 @@
 package de.wwu.mulib.search.executors;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -12,7 +13,8 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.*;
 
@@ -28,10 +30,9 @@ public final class SymbolicExecution {
 
     // The current choice option. This will also be set to choice options on the known path.
     private Choice.ChoiceOption currentChoiceOption;
-
     private final ExecutionBudgetManager executionBudgetManager;
-    private final MulibValueTransformer mulibValueTransformer;
-
+    private final MulibValueCopier mulibValueCopier;
+    private final MulibValueLabeler mulibValueLabeler;
     private final Map<String, SubstitutedVar> namedVariables = new LinkedHashMap<>();
     private int nextNumberInitializedAtomicSymSints = 0;
     private int nextNumberInitializedAtomicSymSdoubles = 0;
@@ -40,6 +41,7 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
+    private long nextSarrayId;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -48,7 +50,9 @@ public final class SymbolicExecution {
             CalculationFactory calculationFactory,
             Choice.ChoiceOption navigateTo,
             ExecutionBudgetManager executionBudgetManager,
-            MulibValueTransformer mulibValueTransformer) {
+            long nextSarrayId,
+            boolean transformationRequired,
+            MulibConfig config) {
         this.mulibExecutor = mulibExecutor;
         this.choicePointFactory = choicePointFactory;
         this.valueFactory = valueFactory;
@@ -57,7 +61,8 @@ public final class SymbolicExecution {
         this.currentChoiceOption = predeterminedPath.peek();
         assert currentChoiceOption != null;
         this.executionBudgetManager = executionBudgetManager.copyFromPrototype();
-        this.mulibValueTransformer = mulibValueTransformer.copyFromPrototype(this);
+        this.mulibValueCopier = new MulibValueCopier(this, config);
+        this.mulibValueLabeler = new MulibValueLabeler(config, transformationRequired);
         set();
     }
 
@@ -65,8 +70,12 @@ public final class SymbolicExecution {
         return valueFactory;
     }
 
-    public MulibValueTransformer getMulibValueTransformer() {
-        return mulibValueTransformer;
+    public MulibValueCopier getMulibValueCopier() {
+        return mulibValueCopier;
+    }
+
+    public MulibValueLabeler getMulibValueLabeler() {
+        return mulibValueLabeler;
     }
 
     public int getNextNumberInitializedAtomicSymSints() {
@@ -97,7 +106,7 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
-    public long getNextNumberInitializedSarray() { return mulibValueTransformer.getNextSarrayIdAndIncrement(); }
+    public long getNextNumberInitializedSarray() { return nextSarrayId++; }
 
     private void set() {
         se.set(this);

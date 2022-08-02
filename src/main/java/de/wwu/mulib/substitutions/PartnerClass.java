@@ -1,13 +1,14 @@
 package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 
 public interface PartnerClass extends SubstitutedVar {
 
-    Object label(Object originalContainer, MulibValueTransformer mulibValueTransformer, SolverManager solverManager);
+    Object label(Object originalContainer, MulibValueLabeler mulibValueTransformer, SolverManager solverManager);
 
-    Object copy(MulibValueTransformer mulibValueTransformer);
+    Object copy(MulibValueCopier mulibValueTransformer);
 
     Class<?> getOriginalClass();
 }

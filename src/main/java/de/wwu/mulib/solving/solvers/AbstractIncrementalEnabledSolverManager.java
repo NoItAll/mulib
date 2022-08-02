@@ -12,7 +12,7 @@ import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -168,7 +168,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueTransformer mulibValueTransformer) {
+    public List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueLabeler mulibValueLabeler) {
         if (pathSolution.getCurrentlyInitializedSolutions().size() >= N) {
             return new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
         }
@@ -205,7 +205,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             if (isSatisfiable()) {
                 Labels newLabels = LabelUtility.getLabels(
                         this,
-                        mulibValueTransformer.copyFromPrototype(null) /* SE not required for labeling */,
+                        mulibValueLabeler /* SE not required for labeling */,
                         l.getIdToNamedVar()
                 );
                 Object solutionValue = pathSolution.getLatestSolution().value;

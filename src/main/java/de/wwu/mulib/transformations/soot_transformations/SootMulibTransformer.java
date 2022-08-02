@@ -135,7 +135,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             List.of();
             parameterTypesOfCopyConstructor =
                     shouldBeTransformed ?
-                            List.of(transformed.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER)
+                            List.of(transformed.getType(), v.TYPE_MULIB_VALUE_COPIER)
                             :
                             List.of();
         }
@@ -467,10 +467,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 null;
 
         Local seOrMvtLocal;
+        RefType mulibValueTransformerOrCopierIfAny = null;
         if (cc == ChosenConstructor.SE_CONSTR) {
            seOrMvtLocal = localSpawner.spawnNewLocal(v.TYPE_SE);
         } else {
-            seOrMvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_TRANSFORMER);
+            assert cc == ChosenConstructor.COPY_CONSTR || cc == ChosenConstructor.TRANSFORMATION_CONSTR;
+            if (cc == ChosenConstructor.COPY_CONSTR) {
+                mulibValueTransformerOrCopierIfAny = v.TYPE_MULIB_VALUE_COPIER;
+            } else {
+                mulibValueTransformerOrCopierIfAny = v.TYPE_MULIB_VALUE_TRANSFORMER;
+            }
+            seOrMvtLocal = localSpawner.spawnNewLocal(mulibValueTransformerOrCopierIfAny);
         }
         // Get unit chain to add instructions to
         UnitPatchingChain upc = b.getUnits();
@@ -491,7 +498,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if (cc == ChosenConstructor.SE_CONSTR) {
             upc.add(Jimple.v().newIdentityStmt(seOrMvtLocal, Jimple.v().newParameterRef(v.TYPE_SE, localNumber++)));
         } else {
-            upc.add(Jimple.v().newIdentityStmt(seOrMvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_TRANSFORMER, localNumber++)));
+            upc.add(Jimple.v().newIdentityStmt(seOrMvtLocal, Jimple.v().newParameterRef(mulibValueTransformerOrCopierIfAny, localNumber++)));
         }
         // Add super-constructor call
         SootMethodRef refOfInit =
@@ -506,8 +513,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         upc.add(invokeSuperConstructorStmt);
 
         if (cc == ChosenConstructor.TRANSFORMATION_CONSTR || cc == ChosenConstructor.COPY_CONSTR) {
+            SootMethod chosenMethod =
+                    cc == ChosenConstructor.TRANSFORMATION_CONSTR ?
+                            v.SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT
+                            :
+                            v.SM_MULIB_VALUE_COPIER_REGISTER_COPY;
             VirtualInvokeExpr registerCopy =
-                    Jimple.v().newVirtualInvokeExpr(seOrMvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_REGISTER_COPY.makeRef(), additionalLocal, thisLocal);
+                    Jimple.v().newVirtualInvokeExpr(seOrMvtLocal, chosenMethod.makeRef(), additionalLocal, thisLocal);
             upc.add(Jimple.v().newInvokeStmt(registerCopy));
         }
 
@@ -561,11 +573,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else if (cc == ChosenConstructor.TRANSFORMATION_CONSTR) {
                 initializeFieldViaTransformation(
                         thisLocal, additionalLocal, seOrMvtLocal, classLocal, fieldLocal,
-                        localSpawner, oldField, transformedField, upc);
-            } else if (cc == ChosenConstructor.COPY_CONSTR) {
-                initializeFieldViaCopy(thisLocal, additionalLocal, seOrMvtLocal, localSpawner, transformedField, upc);
+                        localSpawner, oldField, transformedField, upc, cc);
             } else {
-                throw new NotYetImplementedException(cc.name());
+                initializeFieldViaCopy(thisLocal, additionalLocal, seOrMvtLocal, localSpawner, transformedField, upc, cc);
             }
         }
 
@@ -732,8 +742,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local mvtLocal,
             LocalSpawner localSpawner,
             SootField f,
-            UnitPatchingChain upc) {
-        assert mvtLocal.getType() == v.TYPE_MULIB_VALUE_TRANSFORMER;
+            UnitPatchingChain upc,
+            ChosenConstructor chosenConstructor) {
+        assert mvtLocal.getType() == v.TYPE_MULIB_VALUE_COPIER;
         Type t = f.getType();
         Local toCopyValueLocal = localSpawner.spawnNewStackLocal(t);
         Local copiedValueLocal = localSpawner.spawnNewStackLocal(t);
@@ -759,7 +770,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Is partnerclass
             initializeObjectFieldInSpecialConstructor(
                     toCopyValueLocal, copiedValueLocal, t,
-                    mvtLocal, assignToField, localSpawner, upc
+                    mvtLocal, assignToField, localSpawner, upc, chosenConstructor
             );
         }
         
@@ -775,7 +786,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         Local copyCallResultLocal = localSpawner.spawnNewLocal(v.TYPE_OBJECT);
         AssignStmt copyCallAssign = Jimple.v().newAssignStmt(
                 copyCallResultLocal,
-                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_COPY_SPRIMITIVE.makeRef(), toCopyValueLocal)
+                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_COPIER_COPY_SPRIMITIVE.makeRef(), toCopyValueLocal)
         );
         upc.add(copyCallAssign);
         AssignStmt castAssign = Jimple.v().newAssignStmt(
@@ -794,7 +805,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             LocalSpawner localSpawner,
             SootField originalField,
             SootField transformedField,
-            UnitPatchingChain upc) {
+            UnitPatchingChain upc,
+            ChosenConstructor chosenConstructor) {
         assert mvtLocal.getType() == v.TYPE_MULIB_VALUE_TRANSFORMER;
         Type transformedType = transformedField.getType();
         Type originalType = originalField.getType();
@@ -848,7 +860,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Is partner class
             initializeObjectFieldInSpecialConstructor(
                     originalValue, transformedValue, transformedType, 
-                    mvtLocal, assignToField, localSpawner, upc
+                    mvtLocal, assignToField, localSpawner, upc, chosenConstructor
             );
         }
 
@@ -864,9 +876,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             UnitPatchingChain upc) {
         SootMethod used;
         if (useCopyConstructor) {
-            used = v.SM_MULIB_VALUE_TRANSFORMER_COPY_SEARCH_REGION_REPRESENTATION_OF_NON_SPRIMITIVE;
+            used = v.SM_MULIB_VALUE_COPIER_COPY_NON_SPRIMITIVE;
         } else {
-            used = v.SM_MULIB_VALUE_TRANSFORMER_TRANSFORM_VALUE;
+            used = v.SM_MULIB_VALUE_TRANSFORMER_TRANSFORM;
         }
         InvokeExpr invokeExpr = Jimple.v().newVirtualInvokeExpr(mvtLocal, used.makeRef(), toCopyOrToTransform);
         Local stillToCast = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
@@ -975,7 +987,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local mvtLocal, 
             Unit fieldSetUnit, // We might need to jump to this instruction
             LocalSpawner localSpawner, 
-            UnitPatchingChain upc) {
+            UnitPatchingChain upc,
+            ChosenConstructor chosenConstructor) {
+        assert chosenConstructor == ChosenConstructor.COPY_CONSTR || chosenConstructor == ChosenConstructor.TRANSFORMATION_CONSTR;
+        boolean isTransformation = chosenConstructor == ChosenConstructor.TRANSFORMATION_CONSTR;
         // Is partner class
         // Check if originalValue == null
         AssignStmt assignNull = Jimple.v().newAssignStmt(resultValue, NullConstant.v());
@@ -985,7 +1000,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         // If the value is not null, we calculate whether the value has already been created
         VirtualInvokeExpr callAlreadyCreated =
-                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_ALREADY_CREATED.makeRef(), originValue);
+                Jimple.v().newVirtualInvokeExpr(
+                        mvtLocal,
+                        isTransformation ? v.SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED.makeRef() : v.SM_MULIB_VALUE_COPIER_ALREADY_COPIED.makeRef(),
+                        originValue
+                );
         Local stackAlreadyCreated = localSpawner.spawnNewStackLocal(v.TYPE_BOOL); // TODO or int?
         AssignStmt computeIfAlreadyCreated =
                 Jimple.v().newAssignStmt(stackAlreadyCreated, callAlreadyCreated);
@@ -993,7 +1012,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         ConditionExpr wasAlreadyCreatedExpr = Jimple.v().newEqExpr(stackAlreadyCreated, IntConstant.v(1)); // Is true?
         // If the object was already created, we jump to get the copy from the value transformer
         VirtualInvokeExpr getCopy =
-                Jimple.v().newVirtualInvokeExpr(mvtLocal, v.SM_MULIB_VALUE_TRANSFORMER_GET_COPY.makeRef(), originValue);
+                Jimple.v().newVirtualInvokeExpr(
+                        mvtLocal,
+                        isTransformation ? v.SM_MULIB_VALUE_TRANSFORMER_GET_TRANSFORMED_OBJECT.makeRef() : v.SM_MULIB_VALUE_COPIER_GET_COPY.makeRef(),
+                        originValue
+                );
         Local stackLocalOfAlreadyCreatedObject = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
         AssignStmt assignCopy = Jimple.v().newAssignStmt(stackLocalOfAlreadyCreatedObject, getCopy);
         CastExpr castedToExpr = Jimple.v().newCastExpr(stackLocalOfAlreadyCreatedObject, resultType);
@@ -1009,7 +1032,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         (RefType) resultType,
                         localSpawner,
                         upc,
-                        List.of(originValue.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER),
+                        List.of(originValue.getType(), isTransformation ? v.TYPE_MULIB_VALUE_TRANSFORMER : v.TYPE_MULIB_VALUE_COPIER),
                         List.of(originValue, mvtLocal)
                 );
         upc.add(Jimple.v().newAssignStmt(resultValue, stackLocalOfNewObject));
@@ -1180,7 +1203,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     protected void generateAndAddCopyMethod(SootClass old, SootClass result) {
         // Create copy method
         SootMethod copyMethod =
-                new SootMethod("copy", List.of(v.TYPE_MULIB_VALUE_TRANSFORMER), v.TYPE_OBJECT, Modifier.PUBLIC);
+                new SootMethod("copy", List.of(v.TYPE_MULIB_VALUE_COPIER), v.TYPE_OBJECT, Modifier.PUBLIC);
 
         // Create parameter locals for method
         JimpleBody b = Jimple.v().newBody(copyMethod);
@@ -1188,17 +1211,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         LocalSpawner localSpawner = new LocalSpawner(b);
         // Create locals for body
         Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_TRANSFORMER);
+        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_COPIER);
 
         // Get unit chain to add instructions to
         UnitPatchingChain upc = b.getUnits();
         // Create identity statement for parameter locals
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
-        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_TRANSFORMER, 0)));
+        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_COPIER, 0)));
 
         Local stackResultOfCopyConstructor = createStmtsForConstructorCall(
                     result.getType(), localSpawner, upc,
-                    List.of(result.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER),
+                    List.of(result.getType(), v.TYPE_MULIB_VALUE_COPIER),
                     List.of(thisLocal, mvtLocal)
                 );
         upc.add(Jimple.v().newReturnStmt(stackResultOfCopyConstructor));
@@ -1213,7 +1236,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootMethod labelMethod =
                 new SootMethod(
                         "label",
-                        List.of(v.TYPE_OBJECT, v.TYPE_MULIB_VALUE_TRANSFORMER, v.TYPE_SOLVER_MANAGER),
+                        List.of(v.TYPE_OBJECT, v.TYPE_MULIB_VALUE_LABELER, v.TYPE_SOLVER_MANAGER),
                         v.TYPE_OBJECT,
                         Modifier.PUBLIC
                 );
@@ -1225,7 +1248,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Create locals for body
         Local thisLocal = localSpawner.spawnNewLocal(result.getType());
         Local labelTo = localSpawner.spawnNewLocal(v.TYPE_OBJECT);
-        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_TRANSFORMER);
+        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_LABELER);
         Local smLocal = localSpawner.spawnNewLocal(v.TYPE_SOLVER_MANAGER);
 
         // Get unit chain to add instructions to
@@ -1233,7 +1256,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Create identity statement for parameter locals
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
         upc.add(Jimple.v().newIdentityStmt(labelTo, Jimple.v().newParameterRef(v.TYPE_OBJECT, 0)));
-        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_TRANSFORMER, 1)));
+        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_LABELER, 1)));
         upc.add(Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 2)));
         Local castedToLabelTo = localSpawner.spawnNewLocal(old.getType());
         AssignStmt castObjectToActualType = Jimple.v().newAssignStmt(
@@ -1280,7 +1303,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         toCastPrimitiveValueWrapper,
                         Jimple.v().newVirtualInvokeExpr(
                                 mvtLocal,
-                                v.SM_MULIB_VALUE_TRANSFORMER_LABEL_PRIMITIVE_VALUE.makeRef(),
+                                v.SM_MULIB_VALUE_LABELER_LABEL_SPRIMITIVE.makeRef(),
                                 transformedValue,
                                 smLocal
                         )
@@ -1319,7 +1342,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         toCastPrimitiveValueWrapper,
                         Jimple.v().newVirtualInvokeExpr(
                                 mvtLocal,
-                                v.SM_MULIB_VALUE_TRANSFORMER_LABEL_VALUE.makeRef(),
+                                v.SM_MULIB_VALUE_LABELER_LABEL.makeRef(),
                                 transformedValue,
                                 smLocal
                         )

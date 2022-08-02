@@ -6,6 +6,8 @@ import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.io.PrintStream;
@@ -74,9 +76,9 @@ public class MulibConfig {
     public final List<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
     public final List<Class<?>> TRANSF_CONCRETIZE_FOR;
     public final List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-    public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
+    public final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
     public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-    public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+    public final Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
     public final boolean TRANSF_WRITE_TO_FILE;
     public final String TRANSF_GENERATED_CLASSES_PATH;
     public final boolean TRANSF_VALIDATE_TRANSFORMATION;
@@ -104,9 +106,9 @@ public class MulibConfig {
         private List<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
         private List<Class<?>> TRANSF_CONCRETIZE_FOR;
         private List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-        private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
+        private Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-        private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+        private Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         private SearchStrategy GLOBAL_SEARCH_STRATEGY;
         private boolean CONCOLIC;
         private List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
@@ -350,12 +352,12 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS(Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> m) {
+        public MulibConfigBuilder setTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS(Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> m) {
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = m;
             return this;
         }
 
-        public MulibConfigBuilder addTRANSF_IGNORED_CLASS_TO_COPY_FUNCTION(Class<?> clazz, BiFunction<MulibValueTransformer, Object, Object> copyFunction) {
+        public MulibConfigBuilder addTRANSF_IGNORED_CLASS_TO_COPY_FUNCTION(Class<?> clazz, BiFunction<MulibValueCopier, Object, Object> copyFunction) {
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS.put(clazz, copyFunction);
             return this;
         }
@@ -365,7 +367,7 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Class<?> clazz, BiFunction<MulibValueTransformer, Object, Object> transformation) {
+        public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Class<?> clazz, BiFunction<MulibValueLabeler, Object, Object> transformation) {
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS.put(clazz, transformation);
             return this;
         }
@@ -520,7 +522,7 @@ public class MulibConfig {
             return TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
         }
 
-        public Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS() {
+        public Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS() {
             return TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         }
 
@@ -528,7 +530,7 @@ public class MulibConfig {
             return TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         }
 
-        public Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS() {
+        public Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS() {
             return TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         }
 
@@ -777,9 +779,9 @@ public class MulibConfig {
                         boolean TRANSF_VALIDATE_TRANSFORMATION,
                         List<Class<?>> TRANSF_CONCRETIZE_FOR,
                         List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
-                        Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
+                        Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
                         Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
-                        Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
+                        Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                         ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE,
                         long ACTIVATE_PARALLEL_FOR,

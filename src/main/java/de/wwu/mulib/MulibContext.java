@@ -13,6 +13,7 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
@@ -37,6 +38,7 @@ public class MulibContext {
     private final ValueFactory valueFactory;
     private final CalculationFactory calculationFactory;
     private static final Object[] emptyArgs = new Object[0];
+    private final boolean transformationRequired;
 
     protected MulibContext(
             String methodName,
@@ -54,6 +56,7 @@ public class MulibContext {
         this.choicePointFactory = ChoicePointFactory.getInstance(config);
         this.valueFactory = ValueFactory.getInstance(config);
         this.calculationFactory = CalculationFactory.getInstance(config);
+        this.transformationRequired = transformationRequired;
         if (transformationRequired) {
             this.mulibTransformer = MulibTransformer.get(config);
             this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
@@ -90,7 +93,7 @@ public class MulibContext {
                         if (config.CONCOLIC
                                 && arg instanceof SymNumericExpressionSprimitive) {
                             // Creation of wrapper SymSprimitive with concolic container required
-                            newArg = se.getMulibValueTransformer().copySprimitive((Sprimitive) arg);
+                            newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
                         } else {
                             // Keep value
                             newArg = arg;
@@ -98,7 +101,7 @@ public class MulibContext {
                     } else {
                         // Is null, Sarray, or PartnerClass
                         assert arg == null || arg instanceof PartnerClass || arg instanceof Sarray;
-                        newArg = se.getMulibValueTransformer().copySearchRegionRepresentationOfNonSprimitive(arg);
+                        newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
                     }
                     replacedMap.put(arg, newArg);
                     arguments[i] = newArg;
@@ -135,6 +138,49 @@ public class MulibContext {
                         calculationFactory,
                         mulibValueTransformer
                 );
+    }
+
+    public synchronized List<PathSolution> getAllPathSolutions() {
+        long startTime = System.nanoTime();
+        List<PathSolution> result = mulibExecutorManager.getAllPathSolutions();
+        long endTime = System.nanoTime();
+        Mulib.log.log(Level.INFO, "Took " + (endTime - startTime) + "ns");
+        return result;
+    }
+
+    public synchronized Optional<PathSolution> getPathSolution() {
+        return mulibExecutorManager.getPathSolution();
+    }
+
+    public synchronized List<Solution> getAllSolutions(PathSolution pathSolution) {
+        return getUpToNSolutions(pathSolution, Integer.MAX_VALUE);
+    }
+
+    public synchronized List<Solution> getUpToNSolutions(PathSolution pathSolution, int N) {
+        if (solverManager == null) {
+            solverManager = Solvers.getSolverManager(mulibConfig);
+        }
+        return solverManager.getUpToNSolutions(pathSolution, N, new MulibValueLabeler(mulibConfig, transformationRequired));
+    }
+
+    private static Object[] transformArguments(
+            MulibValueTransformer mulibValueTransformer,
+            Object[] args) {
+        Object[] result = new Object[args.length];
+        for (int i = 0; i < args.length; i++) {
+            result[i] = mulibValueTransformer.transform(args[i]);
+        }
+        return result;
+    }
+
+    private static Class<?>[] transformArgumentTypes(
+            MulibValueTransformer mulibValueTransformer,
+            Class<?>[] argTypes) {
+        Class<?>[] result = new Class[argTypes.length];
+        for (int i = 0; i < argTypes.length; i++) {
+            result[i] = mulibValueTransformer.transformType(argTypes[i]);
+        }
+        return result;
     }
 
     // Returns an array of parameter types fitting for the given list of arguments, if such a fit exists.
@@ -210,50 +256,4 @@ public class MulibContext {
         return mulibWrapper.isAssignableFrom(checkIfWrapper) || javaWrapper == checkIfWrapper;
     }
 
-    public synchronized List<PathSolution> getAllPathSolutions() {
-        long startTime = System.nanoTime();
-        List<PathSolution> result = mulibExecutorManager.getAllPathSolutions();
-        long endTime = System.nanoTime();
-        Mulib.log.log(Level.INFO, "Took " + (endTime - startTime) + "ns");
-        return result;
-    }
-
-    public synchronized Optional<PathSolution> getPathSolution() {
-        return mulibExecutorManager.getPathSolution();
-    }
-
-    public synchronized List<Solution> getAllSolutions(PathSolution pathSolution) {
-        return getUpToNSolutions(pathSolution, Integer.MAX_VALUE);
-    }
-
-    private static Object[] transformArguments(
-            MulibValueTransformer mulibValueTransformer,
-            Object[] args) {
-        Object[] result = new Object[args.length];
-        for (int i = 0; i < args.length; i++) {
-            result[i] = mulibValueTransformer.transformValue(args[i]);
-        }
-        return result;
-    }
-
-    private static Class<?>[] transformArgumentTypes(
-            MulibValueTransformer mulibValueTransformer,
-            Class<?>[] argTypes) {
-        Class<?>[] result = new Class[argTypes.length];
-        for (int i = 0; i < argTypes.length; i++) {
-            result[i] = mulibValueTransformer.transformType(argTypes[i]);
-        }
-        return result;
-    }
-
-    public synchronized List<Solution> getUpToNSolutions(PathSolution pathSolution, int N) {
-        spawnSolverManagerIfNeeded();
-        return solverManager.getUpToNSolutions(pathSolution, N, mulibValueTransformer);
-    }
-
-    private void spawnSolverManagerIfNeeded() {
-        if (solverManager == null) {
-            solverManager = Solvers.getSolverManager(mulibConfig);
-        }
-    }
 }

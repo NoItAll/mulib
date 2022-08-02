@@ -4,6 +4,8 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.HashSet;
@@ -20,22 +22,22 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
     }
 
     public __mulib__IndirectCyclicInputClasses0Manual(IndirectCyclicInputClasses0Manual __mulib__originalObject, MulibValueTransformer var2) {
-        var2.registerCopy(__mulib__originalObject, this);
-        this.c = __mulib__originalObject.c != null ? (!var2.alreadyCreated(__mulib__originalObject.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__originalObject.c, var2) : (__mulib__IndirectCyclicInputClasses1Manual)var2.getCopy(__mulib__originalObject)) : null;
+        var2.registerTransformedObject(__mulib__originalObject, this);
+        this.c = __mulib__originalObject.c != null ? (!var2.alreadyTransformed(__mulib__originalObject.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__originalObject.c, var2) : (__mulib__IndirectCyclicInputClasses1Manual)var2.getTransformedObject(__mulib__originalObject)) : null;
     }
 
-    public __mulib__IndirectCyclicInputClasses0Manual(__mulib__IndirectCyclicInputClasses0Manual __mulib__toCopy, MulibValueTransformer __mulib__valueTransformer) {
+    public __mulib__IndirectCyclicInputClasses0Manual(__mulib__IndirectCyclicInputClasses0Manual __mulib__toCopy, MulibValueCopier __mulib__valueTransformer) {
         __mulib__valueTransformer.registerCopy(__mulib__toCopy, this);
-        this.c = __mulib__toCopy.c != null ? (!__mulib__valueTransformer.alreadyCreated(__mulib__toCopy.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__toCopy.c, __mulib__valueTransformer) : (__mulib__IndirectCyclicInputClasses1Manual)__mulib__valueTransformer.getCopy(__mulib__toCopy)) : null;
+        this.c = __mulib__toCopy.c != null ? (!__mulib__valueTransformer.alreadyCopied(__mulib__toCopy.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__toCopy.c, __mulib__valueTransformer) : (__mulib__IndirectCyclicInputClasses1Manual)__mulib__valueTransformer.getCopy(__mulib__toCopy)) : null;
     }
 
-    public Object copy(MulibValueTransformer var1) {
+    public Object copy(MulibValueCopier var1) {
         return new __mulib__IndirectCyclicInputClasses0Manual(this, var1);
     }
 
-    public Object label(Object var1, MulibValueTransformer __mulib__valueTransformer, SolverManager var3) {
+    public Object label(Object var1, MulibValueLabeler __mulib__valueTransformer, SolverManager var3) {
         IndirectCyclicInputClasses0Manual __mulib__originalObject = (IndirectCyclicInputClasses0Manual)var1;
-        __mulib__originalObject.c = (IndirectCyclicInputClasses1Manual)(__mulib__valueTransformer.labelValue(this.c, var3));
+        __mulib__originalObject.c = (IndirectCyclicInputClasses1Manual)(__mulib__valueTransformer.label(this.c, var3));
         return __mulib__originalObject;
     }
 

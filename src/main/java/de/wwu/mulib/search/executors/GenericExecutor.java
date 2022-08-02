@@ -27,6 +27,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private long dsasMissed;
     private final MulibValueTransformer prototypicalMulibValueTransformer;
+    private final MulibConfig config;
 
     public GenericExecutor(
             Choice.ChoiceOption rootChoiceOption,
@@ -52,6 +53,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         }
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
         this.prototypicalMulibValueTransformer = mulibValueTransformer;
+        this.config = config;
     }
 
     @Override
@@ -122,7 +124,9 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                         calculationFactory,
                         optionToBeEvaluated,
                         prototypicalExecutionBudgetManager,
-                        prototypicalMulibValueTransformer
+                        prototypicalMulibValueTransformer.getNextSarrayId(),
+                        prototypicalMulibValueTransformer.isTransformationRequired(),
+                        config
                 ));
             }
             return Optional.empty();
@@ -210,13 +214,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             satEvals++;
             return true;
         } else {
-            // The AbstractIncrementalEnabledSolverManager will used the cached result,
-            // i.e., no costly sat-check is executed if not needed
-            if (solverManager.isSatisfiable()) {
-                choiceOption.setSatisfiable();
-                satEvals++;
-                return true;
-            }
             choiceOption.setUnsatisfiable();
             unsatEvals++;
             // Needed during chooseNextChoiceOption(Choice) for when one is unsatisfiable. This way

@@ -30,13 +30,13 @@ public final class TestUtility {
         return List.of(
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
-                        .setGLOBAL_SEARCH_STRATEGY(DFS)
-//                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
+                        .setGLOBAL_SEARCH_STRATEGY(DSAS)
+                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
                         .setCONCOLIC(false)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-//                        .setTRANSF_WRITE_TO_FILE(true)
+                        .setTRANSF_WRITE_TO_FILE(true)
 //                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
 //                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
         );

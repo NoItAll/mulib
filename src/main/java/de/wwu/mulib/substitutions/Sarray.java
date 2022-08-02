@@ -3,6 +3,7 @@ package de.wwu.mulib.substitutions;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.Collection;
@@ -41,24 +42,24 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     protected Sarray(
             T[] arrayElements,
             MulibValueTransformer mvt) {
-        this.id = mvt.getNextSarrayIdAndIncrement();
+        this.id = mvt.getNextSarrayId();
         this.clazz = (Class<T>) arrayElements.getClass().getComponentType();
         int length = arrayElements.length;
-        this.len = (Sint) mvt.transformValue(length);
+        this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
         this.elements = new LinkedHashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
-            elements.put((Sint) mvt.transformValue(i), arrayElements[i]);
+            elements.put((Sint) mvt.transform(i), arrayElements[i]);
         }
     }
 
     /** Copy constructor for all Sarrays but SarraySarray */
-    protected Sarray(MulibValueTransformer mvt, Sarray<T> s) {
+    protected Sarray(MulibValueCopier mvt, Sarray<T> s) {
         this(mvt, s, new LinkedHashMap<>(s.elements));
     }
 
     /** Copy constructor for SarraySarrays */
-    protected Sarray(MulibValueTransformer mvt, Sarray<T> s, LinkedHashMap<Sint, T> elements) {
+    protected Sarray(MulibValueCopier mvt, Sarray<T> s, LinkedHashMap<Sint, T> elements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
         this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
@@ -147,7 +148,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return id;
     }
 
-    public abstract Sarray<T> copy(MulibValueTransformer mvt);
+    public abstract Sarray<T> copy(MulibValueCopier mvt);
 
     @SuppressWarnings("rawtypes")
     public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
@@ -198,7 +199,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SintSarray(MulibValueTransformer mvt, SintSarray s) {
+        public SintSarray(MulibValueCopier mvt, SintSarray s) {
             super(mvt, s);
         }
 
@@ -223,7 +224,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SintSarray copy(MulibValueTransformer mvt) {
+        public SintSarray copy(MulibValueCopier mvt) {
             return new SintSarray(mvt, this);
         }
     }
@@ -241,7 +242,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SdoubleSarray(MulibValueTransformer mvt, SdoubleSarray s) {
+        public SdoubleSarray(MulibValueCopier mvt, SdoubleSarray s) {
             super(mvt, s);
         }
 
@@ -266,7 +267,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SdoubleSarray copy(MulibValueTransformer mvt) {
+        public SdoubleSarray copy(MulibValueCopier mvt) {
             return new SdoubleSarray(mvt, this);
         }
     }
@@ -284,7 +285,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SfloatSarray(MulibValueTransformer mvt, SfloatSarray s) {
+        public SfloatSarray(MulibValueCopier mvt, SfloatSarray s) {
             super(mvt, s);
         }
 
@@ -309,7 +310,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SfloatSarray copy(MulibValueTransformer mvt) {
+        public SfloatSarray copy(MulibValueCopier mvt) {
             return new SfloatSarray(mvt, this);
         }
     }
@@ -327,7 +328,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SlongSarray(MulibValueTransformer mvt, SlongSarray s) {
+        public SlongSarray(MulibValueCopier mvt, SlongSarray s) {
             super(mvt, s);
         }
 
@@ -352,7 +353,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SlongSarray copy(MulibValueTransformer mvt) {
+        public SlongSarray copy(MulibValueCopier mvt) {
             return new SlongSarray(mvt, this);
         }
     }
@@ -370,7 +371,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SshortSarray(MulibValueTransformer mvt, SshortSarray s) {
+        public SshortSarray(MulibValueCopier mvt, SshortSarray s) {
             super(mvt, s);
         }
 
@@ -395,7 +396,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SshortSarray copy(MulibValueTransformer mvt) {
+        public SshortSarray copy(MulibValueCopier mvt) {
             return new SshortSarray(mvt, this);
         }
     }
@@ -413,7 +414,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SbyteSarray(MulibValueTransformer mvt, SbyteSarray s) {
+        public SbyteSarray(MulibValueCopier mvt, SbyteSarray s) {
             super(mvt, s);
         }
 
@@ -438,7 +439,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SbyteSarray copy(MulibValueTransformer mvt) {
+        public SbyteSarray copy(MulibValueCopier mvt) {
             return new SbyteSarray(mvt, this);
         }
     }
@@ -456,7 +457,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SboolSarray(MulibValueTransformer mvt, SboolSarray s) {
+        public SboolSarray(MulibValueCopier mvt, SboolSarray s) {
             super(mvt, s);
         }
 
@@ -481,7 +482,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SboolSarray copy(MulibValueTransformer mvt) {
+        public SboolSarray copy(MulibValueCopier mvt) {
             return new SboolSarray(mvt, this);
         }
     }
@@ -500,7 +501,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public PartnerClassSarray(MulibValueTransformer mvt, PartnerClassSarray<T> s) {
+        public PartnerClassSarray(MulibValueCopier mvt, PartnerClassSarray<T> s) {
             super(mvt, s);
         }
 
@@ -527,7 +528,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public PartnerClassSarray<T> copy(MulibValueTransformer mvt) {
+        public PartnerClassSarray<T> copy(MulibValueCopier mvt) {
             return new PartnerClassSarray<T>(mvt, this);
         }
     }
@@ -586,13 +587,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** Copy constructor */
-        public SarraySarray(MulibValueTransformer mvt, SarraySarray s) {
+        public SarraySarray(MulibValueCopier mvt, SarraySarray s) {
             super(mvt, s, copyArrayElements(mvt, s.elements));
             this.dim = s.dim;
             this.elementType = s.elementType;
         }
 
-        private static LinkedHashMap<Sint, Sarray> copyArrayElements(MulibValueTransformer mvt, LinkedHashMap<Sint, Sarray> elements) {
+        private static LinkedHashMap<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, LinkedHashMap<Sint, Sarray> elements) {
             LinkedHashMap<Sint, Sarray> result = new LinkedHashMap<>();
             for (Map.Entry<Sint, Sarray> entry : elements.entrySet()) {
                 result.put(entry.getKey(), entry.getValue().copy(mvt));
@@ -694,7 +695,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public SarraySarray copy(MulibValueTransformer mvt) {
+        public SarraySarray copy(MulibValueCopier mvt) {
             return new SarraySarray(mvt, this);
         }
     }
