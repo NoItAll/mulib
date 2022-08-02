@@ -1,14 +1,22 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.LabelUtility;
+import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.Sym;
+import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 /**
@@ -24,6 +32,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     private boolean satisfiabilityWasCalculated;
     protected final MulibConfig config;
 
+    @SuppressWarnings("unchecked")
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
         this.incrementalSolverState = IncrementalSolverState.newInstance(config);
@@ -105,18 +114,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         resetSatisfiabilityWasCalculatedAndModel();
     }
 
-    protected final M getCurrentModel() {
-        if (currentModel == null) {
-            try {
-                currentModel = calculateCurrentModel();
-            } catch (Throwable t) {
-                t.printStackTrace();
-                throw new MulibRuntimeException(t);
-            }
-        }
-        return currentModel;
-    }
-
     @Override
     public final void addConstraint(Constraint c) {
         incrementalSolverState.addConstraint(c);
@@ -168,6 +165,109 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     @Override
     public final int getLevel() {
         return incrementalSolverState.getLevel();
+    }
+
+    @Override
+    public List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueTransformer mulibValueTransformer) {
+        if (pathSolution.getCurrentlyInitializedSolutions().size() >= N) {
+            return new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
+        }
+        backtrackAll();
+        List<Constraint> constraintList = new ArrayList<>();
+        constraintList.add(Sbool.ConcSbool.TRUE);
+        constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
+        addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
+        addArrayConstraints(pathSolution.getArrayConstraints());
+        List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
+        while (isSatisfiable() && solutions.size() < N) {
+            Solution latestSolution = pathSolution.getLatestSolution();
+            Constraint[] latestSolutionConstraint = latestSolution.additionalConstraints;
+            Labels l = latestSolution.labels;
+            if (l.getNamedVars().length == 0) {
+                return solutions; // No named variables --> nothing to negate.
+            }
+
+            SubstitutedVar[] namedVars = l.getNamedVars();
+            List<Constraint> disjunctionConstraints = new ArrayList<>();
+            for (int i = 0; i < namedVars.length; i++) {
+                SubstitutedVar sv = namedVars[i];
+                if (sv instanceof Sprimitive) {
+                    Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
+                    disjunctionConstraints.add(disjunctionConstraint);
+                }
+            }
+
+            Constraint newConstraint = Or.newInstance(disjunctionConstraints.toArray(new Constraint[0]));
+            Constraint[] additionalSolutionConstraints = new Constraint[latestSolutionConstraint.length + 1];
+            System.arraycopy(latestSolutionConstraint, 0 , additionalSolutionConstraints, 0, latestSolutionConstraint.length);
+            additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
+            addConstraintAfterNewBacktrackingPoint(newConstraint);
+            if (isSatisfiable()) {
+                Labels newLabels = LabelUtility.getLabels(
+                        this,
+                        mulibValueTransformer.copyFromPrototype(null) /* SE not required for labeling */,
+                        l.getIdToNamedVar()
+                );
+                Object solutionValue = pathSolution.getLatestSolution().value;
+                if (solutionValue instanceof Sym) {
+                    solutionValue = l.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
+                }
+                Solution newSolution = new Solution(
+                        solutionValue,
+                        newLabels,
+                        additionalSolutionConstraints
+                );
+                pathSolution.addSolution(newSolution);
+                solutions.add(newSolution);
+            } else {
+                break;
+            }
+        }
+        return solutions;
+    }
+
+    protected static Constraint getNeq(SubstitutedVar sv, Object value) {
+        if (sv instanceof Conc) {
+            return Sbool.ConcSbool.FALSE;
+        }
+        if (sv instanceof Sbool) {
+            Sbool bv = (Sbool) sv;
+            Sbool bvv = Sbool.concSbool((boolean) value);
+            return Xor.newInstance(bv, bvv);
+        }
+        if (sv instanceof Snumber) {
+            Snumber wrappedPreviousValue;
+            if (value instanceof Integer) {
+                wrappedPreviousValue = Sint.concSint((Integer) value);
+            } else if (value instanceof Double) {
+                wrappedPreviousValue = Sdouble.concSdouble((Double) value);
+            } else if (value instanceof Float) {
+                wrappedPreviousValue = Sfloat.concSfloat((Float) value);
+            } else if (value instanceof Long) {
+                wrappedPreviousValue = Slong.concSlong((Long) value);
+            } else if (value instanceof Short) {
+                wrappedPreviousValue = Sshort.concSshort((Short) value);
+            } else if (value instanceof Byte) {
+                wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
+            } else {
+                throw new NotYetImplementedException(sv.getClass().toString());
+            }
+            return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
+        } else {
+            throw new NotYetImplementedException();
+        }
+    }
+
+    protected final M getCurrentModel() {
+        if (currentModel == null) {
+            try {
+                currentModel = calculateCurrentModel();
+            } catch (Throwable t) {
+                t.printStackTrace();
+                throw new MulibRuntimeException(t);
+            }
+        }
+        return currentModel;
     }
 
     protected abstract M calculateCurrentModel();

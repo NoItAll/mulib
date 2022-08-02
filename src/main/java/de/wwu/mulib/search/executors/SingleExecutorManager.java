@@ -33,7 +33,7 @@ public class SingleExecutorManager extends MulibExecutorManager {
     }
 
     @Override
-    public Optional<PathSolution> getSolution() {
+    public Optional<PathSolution> getPathSolution() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         MulibExecutor mulibExecutor = mulibExecutors.get(0);
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
@@ -48,9 +48,9 @@ public class SingleExecutorManager extends MulibExecutorManager {
     }
 
     @Override
-    public List<PathSolution> getAllSolutions() {
+    public List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
-        List<PathSolution> result = super.getAllSolutions(mulibExecutors.get(0));
+        List<PathSolution> result = super.getAllPathSolutions(mulibExecutors.get(0));
         Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
         return result;
     }

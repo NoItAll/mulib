@@ -7,7 +7,9 @@ import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 public abstract class MulibExecutorManager {
 
@@ -45,9 +47,9 @@ public abstract class MulibExecutorManager {
         this.globalExecutionManagerBudgetManager = new GlobalExecutionBudgetManager(config);
     }
 
-    public abstract Optional<PathSolution> getSolution();
+    public abstract Optional<PathSolution> getPathSolution();
 
-    public abstract List<PathSolution> getAllSolutions();
+    public abstract List<PathSolution> getAllPathSolutions();
 
     public final void addToFails(Fail fail) {
         this.observedTree.addToFails(fail);
@@ -76,7 +78,7 @@ public abstract class MulibExecutorManager {
         return timeBudgetExceeded || failBudgetExceeded || pathSolutionBudget || exceededBudgetBudget;
     }
 
-    protected final List<PathSolution> getAllSolutions(MulibExecutor executorToDispatch) {
+    protected final List<PathSolution> getAllPathSolutions(MulibExecutor executorToDispatch) {
         List<PathSolution> result = new ArrayList<>();
         while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
             List<PathSolution> solutions  = executorToDispatch.runForSolutions();

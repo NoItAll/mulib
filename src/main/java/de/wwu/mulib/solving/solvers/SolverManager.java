@@ -2,7 +2,10 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -36,4 +39,6 @@ public interface SolverManager {
     List<ArrayConstraint> getArrayConstraints();
 
     int getLevel();
+
+    List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueTransformer mulibValueTransformer);
 }

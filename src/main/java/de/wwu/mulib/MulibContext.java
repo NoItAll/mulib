@@ -1,6 +1,5 @@
 package de.wwu.mulib;
 
-import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -8,11 +7,10 @@ import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.LabelUtility;
-import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.*;
+import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -24,13 +22,14 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
+@SuppressWarnings("FieldCanBeLocal")
 public class MulibContext {
     @SuppressWarnings("all")
     private final MulibConfig mulibConfig;
     @SuppressWarnings("all")
     private final MethodHandle methodHandle;
     private final MulibExecutorManager mulibExecutorManager;
-    private final SolverManager solverManager;
+    private SolverManager solverManager = null;
     private final Function<SymbolicExecution, Object[]> argsSupplier;
     private final MulibTransformer mulibTransformer;
     private final MulibValueTransformer mulibValueTransformer;
@@ -73,7 +72,7 @@ public class MulibContext {
         this.mulibValueTransformer.setNextSarrayId(args);
 
         this.mulibConfig = config;
-        this.solverManager = Solvers.getSolverManager(config);
+
         if (searchRegionArgs.length == 0) {
             this.argsSupplier = (se) -> { return emptyArgs; };
         } else {
@@ -213,14 +212,14 @@ public class MulibContext {
 
     public synchronized List<PathSolution> getAllPathSolutions() {
         long startTime = System.nanoTime();
-        List<PathSolution> result = mulibExecutorManager.getAllSolutions();
+        List<PathSolution> result = mulibExecutorManager.getAllPathSolutions();
         long endTime = System.nanoTime();
         Mulib.log.log(Level.INFO, "Took " + (endTime - startTime) + "ns");
         return result;
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {
-        return mulibExecutorManager.getSolution();
+        return mulibExecutorManager.getPathSolution();
     }
 
     public synchronized List<Solution> getAllSolutions(PathSolution pathSolution) {
@@ -248,92 +247,13 @@ public class MulibContext {
     }
 
     public synchronized List<Solution> getUpToNSolutions(PathSolution pathSolution, int N) {
-        if (pathSolution.getCurrentlyInitializedSolutions().size() >= N) {
-            return new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
-        }
-        solverManager.backtrackAll();
-        List<Constraint> constraintList = new ArrayList<>();
-        constraintList.add(Sbool.ConcSbool.TRUE);
-        constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
-        solverManager.addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
-        solverManager.addArrayConstraints(pathSolution.getArrayConstraints());
-        List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
-        while (solverManager.isSatisfiable() && solutions.size() < N) {
-            Solution latestSolution = pathSolution.getLatestSolution();
-            Constraint[] latestSolutionConstraint = latestSolution.additionalConstraints;
-            Labels l = latestSolution.labels;
-            if (l.getNamedVars().length == 0) {
-                return solutions; // No named variables --> nothing to negate.
-            }
-
-            SubstitutedVar[] namedVars = l.getNamedVars();
-            List<Constraint> disjunctionConstraints = new ArrayList<>();
-            for (int i = 0; i < namedVars.length; i++) {
-                SubstitutedVar sv = namedVars[i];
-                if (sv instanceof Sprimitive) {
-                    Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
-                    disjunctionConstraints.add(disjunctionConstraint);
-                }
-            }
-
-            Constraint newConstraint = Or.newInstance(disjunctionConstraints.toArray(new Constraint[0]));
-            Constraint[] additionalSolutionConstraints = new Constraint[latestSolutionConstraint.length + 1];
-            System.arraycopy(latestSolutionConstraint, 0 , additionalSolutionConstraints, 0, latestSolutionConstraint.length);
-            additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
-            solverManager.addConstraintAfterNewBacktrackingPoint(newConstraint);
-            if (solverManager.isSatisfiable()) { // TODO unify with AbstractMulibExecutor
-                Labels newLabels = LabelUtility.getLabels(
-                        solverManager,
-                        mulibValueTransformer.copyFromPrototype(null) /* SE not required for labeling */,
-                        l.getIdToNamedVar()
-                );
-                Object solutionValue = pathSolution.getLatestSolution().value;
-                if (solutionValue instanceof Sym) {
-                    solutionValue = l.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
-                }
-                Solution newSolution = new Solution(
-                        solutionValue,
-                        newLabels,
-                        additionalSolutionConstraints
-                );
-                pathSolution.addSolution(newSolution);
-                solutions.add(newSolution);
-            } else {
-                break;
-            }
-        }
-        return solutions;
+        spawnSolverManagerIfNeeded();
+        return solverManager.getUpToNSolutions(pathSolution, N, mulibValueTransformer);
     }
 
-    private static Constraint getNeq(SubstitutedVar sv, Object value) {
-        if (sv instanceof Conc) {
-            return Sbool.ConcSbool.FALSE;
-        }
-        if (sv instanceof Sbool) {
-            Sbool bv = (Sbool) sv;
-            Sbool bvv = Sbool.concSbool((boolean) value);
-            return Xor.newInstance(bv, bvv);
-        }
-        if (sv instanceof Snumber) {
-            Snumber wrappedPreviousValue;
-            if (value instanceof Integer) {
-                wrappedPreviousValue = Sint.concSint((Integer) value);
-            } else if (value instanceof Double) {
-                wrappedPreviousValue = Sdouble.concSdouble((Double) value);
-            } else if (value instanceof Float) {
-                wrappedPreviousValue = Sfloat.concSfloat((Float) value);
-            } else if (value instanceof Long) {
-                wrappedPreviousValue = Slong.concSlong((Long) value);
-            } else if (value instanceof Short) {
-                wrappedPreviousValue = Sshort.concSshort((Short) value);
-            } else if (value instanceof Byte) {
-                wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
-            } else {
-                throw new NotYetImplementedException(sv.getClass().toString());
-            }
-            return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
-        } else {
-            throw new NotYetImplementedException();
+    private void spawnSolverManagerIfNeeded() {
+        if (solverManager == null) {
+            solverManager = Solvers.getSolverManager(mulibConfig);
         }
     }
 }

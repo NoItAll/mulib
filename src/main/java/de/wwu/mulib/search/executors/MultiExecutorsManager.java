@@ -91,7 +91,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     @Override
-    public List<PathSolution> getAllSolutions() {
+    public List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
 
         // We constantly poll with the mainExecutor.
@@ -121,7 +121,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         Mulib.log.log(Level.INFO, b.toString());
     }
     @Override
-    public Optional<PathSolution> getSolution() {
+    public Optional<PathSolution> getPathSolution() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         while (!checkShutdown()) {
             if (pathSolutions.size() > 0) {
@@ -145,7 +145,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     private void addToPathSolutions(MulibExecutor mulibExecutor) {
-        List<PathSolution> solutionsOfGlobalSolver = getAllSolutions(mulibExecutor);
+        List<PathSolution> solutionsOfGlobalSolver = getAllPathSolutions(mulibExecutor);
         pathSolutions.addAll(solutionsOfGlobalSolver);
     }
 
