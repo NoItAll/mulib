@@ -865,6 +865,7 @@ public class MulibConfig {
                 + MAX_FAILS.map(v -> ", MAX_FAILS=" + v).orElse("")
                 + MAX_PATH_SOLUTIONS.map(v -> ", MAX_PATH_SOLUTIONS=" + v).orElse("")
                 + MAX_EXCEEDED_BUDGETS.map(v -> ", MAX_EXCEEDED_BUDGETS=" + v).orElse("")
+                + ", TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER=" + TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER
                 + "}";
     }
 }

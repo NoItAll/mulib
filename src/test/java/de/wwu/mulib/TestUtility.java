@@ -79,7 +79,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .assumeMulibDefaultValueRanges()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
-                        .setENLIST_LEAVES(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
@@ -91,19 +90,10 @@ public final class TestUtility {
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
-                        .setINCR_ACTUAL_CP_BUDGET(2)
-                        .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS, DSAS)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
-                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setCONCOLIC(true)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
-                MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS)
+                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, IDDFS)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
+                        .setINCR_ACTUAL_CP_BUDGET(13)
                         .setTREAT_BOOLEANS_AS_INTS(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
@@ -137,10 +127,6 @@ public final class TestUtility {
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
-                MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
@@ -159,7 +145,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setENLIST_LEAVES(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(16)
@@ -167,13 +152,6 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setENLIST_LEAVES(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
-                MulibConfig.builder()
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
-                        .setGLOBAL_SEARCH_STRATEGY(BFS)
-                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
-                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(DFS)

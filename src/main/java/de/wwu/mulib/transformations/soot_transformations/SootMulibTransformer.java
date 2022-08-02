@@ -348,11 +348,48 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private static final String JAVA_CLASS_PATH;
     private static final String DEFAULT_SOOT_JCP;
+    private final Map<String, SootClass> resolvedClasses = new HashMap<>();
     static {
         JAVA_CLASS_PATH = System.getProperty("java.class.path").replace("build/resources/test", "build");
         DEFAULT_SOOT_JCP = Scene.defaultJavaClassPath();
+        Options.v().set_soot_classpath(JAVA_CLASS_PATH + ":" + DEFAULT_SOOT_JCP);
+        v = new SootMulibClassesAndMethods();
     }
-    private final SootMulibClassesAndMethods v;
+    private static final SootMulibClassesAndMethods v;
+
+    @Override
+    public void transformAndLoadClasses(Class<?>... toTransform) {
+        try {
+            synchronized (syncObject) {
+                super.transformAndLoadClasses(toTransform);
+            }
+        } catch (Exception e) {
+            throw new MulibRuntimeException("Exception during transformation", e);
+        }
+    }
+
+    @Override
+    public synchronized Class<?> getTransformedClass(Class<?> beforeTransformation) {
+        return super.getTransformedClass(beforeTransformation);
+    }
+
+    @Override
+    public synchronized Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation) {
+        return super.getPossiblyTransformedClass(beforeTransformation);
+    }
+
+    @Override
+    public synchronized void setPartnerClass(Class<?> original, Class<?> partnerClass) {
+        super.setPartnerClass(original, partnerClass);
+    }
+
+    @Override
+    protected void transformClass(Class<?> toTransform) {
+        synchronized (syncObject) {
+            super.transformClass(toTransform);
+        }
+    }
+
 
     /**
      * Constructs an instance of MulibTransformer according to the configuration.
@@ -361,10 +398,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
      */
     public SootMulibTransformer(MulibConfig config) {
         super(config);
-        //// TODO Synchronize with synchronization object; since soot works on singletons everywhere
-//        G.reset();
-        Options.v().set_soot_classpath(JAVA_CLASS_PATH + ":" + DEFAULT_SOOT_JCP);
-        v = new SootMulibClassesAndMethods();
     }
 
     @Override
@@ -382,7 +415,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return classNode.isInterface();
     }
 
-    private final Map<String, SootClass> resolvedClasses = new HashMap<>();
     @Override
     protected SootClass getClassNodeForName(String name) {
         SootClass c;
@@ -3085,26 +3117,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return transformedParameterTypes;
     }
 
-    // We currently lose information when transforming to PartnerClass and SarraySarrays. Hence, we store the original
-    // array type.
-    // TODO Remove these sections once we preserve the information of PartnerClassSarrays and SarraySarrays via suitable
-    //  types
-    private final Map<Object, List<OriginalToTransformedSarrayType>> objectReferencingSarrayTypes = new HashMap<>();
-    private class OriginalToTransformedSarrayType {
-        // E.g. int[][]
-        private final ArrayType originalType;
-        // E.g. Sint[][]
-        private final ArrayType semiTransformedArrayType;
-        // E.g. SarraySarray<SintSarray>
-        private final Type transformedType;
-
-        public OriginalToTransformedSarrayType(ArrayType originalType, Type transformedType) {
-            this.originalType = originalType;
-            Type transformedBaseType = transformType(originalType.getElementType());
-            this.semiTransformedArrayType = ArrayType.v(transformedBaseType, originalType.numDimensions);
-            this.transformedType = transformedType;
-        }
-    }
     private final Map<Type, Type> toTransformedType = new HashMap<>();
     private Type transformType(Type toTransform) {
         Type result;
@@ -3215,20 +3227,22 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private SootClass transformEnrichAndValidateIfNotSpecialCase(String toTransformName) {
-        SootClass result;
-        if ((result = resolvedClasses.get(addPrefixToName(toTransformName))) != null) {
-            return result;
-        }
-        if (shouldBeTransformed(toTransformName)) {
-            if (!isAlreadyTransformedOrToBeTransformedPath(toTransformName)) {
-                decideOnAddToClassesToTransform(toTransformName);
+        synchronized (syncObject) {
+            SootClass result;
+            if ((result = resolvedClasses.get(addPrefixToName(toTransformName))) != null) {
+                return result;
             }
-            assert transformedClassNodes.get(toTransformName) == null;
-            transformClass(getClassForName(toTransformName));
-            assert transformedClassNodes.get(toTransformName) != null;
-            return transformedClassNodes.get(toTransformName);
-        } else {
-            return getClassNodeForName(toTransformName);
+            if (shouldBeTransformed(toTransformName)) {
+                if (!isAlreadyTransformedOrToBeTransformedPath(toTransformName)) {
+                    decideOnAddToClassesToTransform(toTransformName);
+                }
+                assert transformedClassNodes.get(toTransformName) == null;
+                transformClass(getClassForName(toTransformName));
+                assert transformedClassNodes.get(toTransformName) != null : "Setting class in transformedClassNodes failed! Config: " + config;
+                return transformedClassNodes.get(toTransformName);
+            } else {
+                return getClassNodeForName(toTransformName);
+            }
         }
     }
 

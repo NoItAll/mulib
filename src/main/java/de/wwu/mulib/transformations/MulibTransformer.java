@@ -11,7 +11,6 @@ public interface MulibTransformer {
 
     Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation);
 
-    /// TODO Is this here still necessary for a public interface?
     void setPartnerClass(Class<?> clazz, Class<?> partnerClass);
 
     boolean shouldBeConcretizedFor(String methodOwner);
@@ -26,7 +25,7 @@ public interface MulibTransformer {
 
     boolean shouldBeTransformedFromDesc(String desc);
 
-    static MulibTransformer get(MulibConfig config) {
+    static MulibTransformer get(MulibConfig config) { /// TODO Share SootMulibTransformer if configs are compatible?
         return new SootMulibTransformer(config);
     }
 }

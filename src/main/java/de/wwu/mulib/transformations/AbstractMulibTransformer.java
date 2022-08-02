@@ -74,7 +74,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * of the MulibTransformer instance.
      * @param toTransform Those classes that are transformed, even if they have been set to be ignored.
      */
-    public void transformAndLoadClasses(Class<?>... toTransform) {
+    public synchronized void transformAndLoadClasses(Class<?>... toTransform) {
         List<Class<?>> definitelyTransform = Arrays.asList(toTransform);
         explicitlyAddedClasses.addAll(definitelyTransform);
         classesToTransform.addAll(definitelyTransform);
@@ -113,7 +113,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * @param beforeTransformation The class the partner class of which is to be returned.
      * @return The partner class.
      */
-    public final Class<?> getTransformedClass(Class<?> beforeTransformation) {
+    public Class<?> getTransformedClass(Class<?> beforeTransformation) {
         Class<?> result = transformedClasses.get(beforeTransformation.getName());
         if (result == null) {
             throw new MulibRuntimeException("Class has not been transformed: " + beforeTransformation);
@@ -125,7 +125,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * @param beforeTransformation The class before transforming it into the partner class.
      * @return Either the partner class, or, if not available, the original class.
      */
-    public final Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation) {
+    public Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation) {
         Class<?> result = transformedClasses.get(beforeTransformation.getName());
         if (result == null) {
             return beforeTransformation;
@@ -133,7 +133,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return result;
     }
 
-    public final void setPartnerClass(Class<?> original, Class<?> partnerClass) {
+    public void setPartnerClass(Class<?> original, Class<?> partnerClass) {
         transformedClasses.put(original.getName(), partnerClass);
     }
 
@@ -343,22 +343,18 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
-                Class<?> loadedClass = getClass().getClassLoader().loadClass(addPrefixToName(toTransform.getName()));
+                String transformedName = addPrefixToName(toTransform.getName());
+                Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
                 // If loading succeeded there already is a class file in the build
                 transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
+                transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
                 return;
-            } catch (ClassNotFoundException ignored) {
-            }
+            } catch (ClassFormatError | ClassNotFoundException ignored) { }
         }
         if (isIgnored(toTransform) || transformedClassNodes.containsKey(toTransform.getName())) {
             return;
         }
-        T result = transformedClassNodes.get(toTransform.getName());
-        if (result != null) {
-            return;
-        }
-
-        result = transformEnrichAndValidate(toTransform.getName());
+        transformEnrichAndValidate(toTransform.getName());
     }
 
     /**
