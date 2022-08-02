@@ -178,7 +178,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 this.currentSymbolicExecution = symbolicExecution;
-                assert solverManager.isSatisfiable();
+                assert solverManager.isSatisfiable() : config.toString();
                 try {
                     Object solutionValue = invokeSearchRegion();
                     if (!solverManager.isSatisfiable()) {
@@ -227,16 +227,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public final boolean isSatisfiable() {
         return solverManager.isSatisfiable();
-    }
-
-    @Override
-    public final void addTemporaryAssumption(Constraint c) {
-        solverManager.addTemporaryAssumption(c);
-    }
-
-    @Override
-    public final void resetTemporaryAssumptions() {
-        solverManager.resetTemporaryAssumptions();
     }
 
     protected abstract Optional<SymbolicExecution> createExecution(

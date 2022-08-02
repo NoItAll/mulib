@@ -1,7 +1,6 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -10,7 +9,6 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
-import java.util.Collections;
 import java.util.List;
 
 /**
@@ -71,10 +69,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     public final boolean isSatisfiable() {
         assert incrementalSolverState.getLevel() != 0: "The initial choice should always be present";
         if (!satisfiabilityWasCalculated) {
-            isSatisfiable = incrementalSolverState.getTemporaryAssumptions().size() > 0 ?
-                    calculateSatisfiabilityWithSolverBoolRepresentation(transformConstraint(And.newInstance(incrementalSolverState.getTemporaryAssumptions())))
-                    :
-                    calculateIsSatisfiable();
+            isSatisfiable = calculateIsSatisfiable();
             satisfiabilityWasCalculated = true;
         }
         return isSatisfiable;
@@ -145,25 +140,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             t.printStackTrace();
             throw new MulibRuntimeException(t);
         }
-    }
-
-    @Override
-    public void addTemporaryAssumption(Constraint c) {
-        resetSatisfiabilityWasCalculatedAndModel();
-        incrementalSolverState.addTemporaryAssumption(c);
-    }
-
-    @Override
-    public void resetTemporaryAssumptions() {
-        if (!incrementalSolverState.getTemporaryAssumptions().isEmpty()) {
-            resetSatisfiabilityWasCalculatedAndModel();
-            incrementalSolverState.resetTemporaryAssumptions();
-        }
-    }
-
-    @Override
-    public List<Constraint> getTemporaryAssumptions() {
-        return Collections.unmodifiableList(incrementalSolverState.getTemporaryAssumptions());
     }
 
     @Override

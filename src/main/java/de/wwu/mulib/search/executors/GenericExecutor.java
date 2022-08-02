@@ -98,7 +98,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     // Relabeling case for concolic execution
                     assert isConcolic;
                     if (!solverManager.isSatisfiable()) {
-                        assert solverManager.getTemporaryAssumptions().isEmpty();
                         optionToBeEvaluated.setUnsatisfiable();
                         continue;
                     }
@@ -211,9 +210,8 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             satEvals++;
             return true;
         } else {
-            solverManager.resetTemporaryAssumptions();
-            // If there are no temporary assumptions, the AbstractIncrementalEnabledSolverManager will used the cached result,
-            // i.e., no costly sat-check is executed
+            // The AbstractIncrementalEnabledSolverManager will used the cached result,
+            // i.e., no costly sat-check is executed if not needed
             if (solverManager.isSatisfiable()) {
                 choiceOption.setSatisfiable();
                 satEvals++;

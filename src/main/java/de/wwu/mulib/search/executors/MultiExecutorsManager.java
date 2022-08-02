@@ -67,7 +67,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     private void checkForFailure() {
         if (failureInThread != null) {
             throw new MulibRuntimeException("Failure caught in one of the threads: "
-                    + Arrays.toString(failureInThread.getStackTrace()),
+                    + Arrays.toString(failureInThread.getStackTrace()) + config,
                     failureInThread
             );
         }

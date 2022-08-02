@@ -40,10 +40,6 @@ public interface MulibExecutor {
 
     void addNewArrayConstraint(ArrayConstraint ac);
 
-    void addTemporaryAssumption(Constraint c);
-
-    void resetTemporaryAssumptions();
-
     boolean checkWithNewArrayConstraint(ArrayConstraint ac);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);

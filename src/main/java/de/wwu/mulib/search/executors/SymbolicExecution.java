@@ -186,14 +186,6 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewArrayConstraint(ac);
     }
 
-    public void addTemporaryAssumption(Constraint c) {
-        mulibExecutor.addTemporaryAssumption(c);
-    }
-
-    public void resetTemporaryAssumptions() {
-        mulibExecutor.resetTemporaryAssumptions();
-    }
-
     /* FREE ARRAY OPERATIONS */
 
     public Sint select(Sarray.SintSarray sarray, Sint index) {
