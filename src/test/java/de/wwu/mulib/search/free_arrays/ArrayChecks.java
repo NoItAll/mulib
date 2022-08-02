@@ -748,7 +748,7 @@ public class ArrayChecks {
         return true;
     }
 
-    @Test
+//    @Test @Disabled(value="Subsumed by FreeArraysExec.testSimpleSort0")
     public void checkSimpleSort() {
         TestUtility.getSolution((mb) -> {
             Optional<PathSolution> result = TestUtility.executeMulibForOne(
@@ -774,7 +774,7 @@ public class ArrayChecks {
         });
     }
 
-    @Test
+//    @Test @Disabled(value="Subsumed by FreeArraysExec.testSimpleSort1")
     public void checkSimpleSortAlternative() {
         TestUtility.getSolution((mb) -> {
             Optional<PathSolution> result = TestUtility.executeMulibForOne(

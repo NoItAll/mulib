@@ -1744,7 +1744,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
 
         toTransform.setSource(a.originalMethodSource);
-        toTransform.releaseActiveBody(); //// TODO Synchronize on toTransform
+        toTransform.releaseActiveBody();
         return result;
     }
 
@@ -1904,7 +1904,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         args.addUnit(r);
     }
 
-    private InvokeExpr getInvokeExprIfIndicatorMethodExprElseNull(InvokeExpr invokeExpr, TcArgs args) {
+    private InvokeExpr getInvokeExprIfIndicatorMethodExprElseNull(Stmt containingStmt, InvokeExpr invokeExpr, TcArgs args) {
         String methodName = invokeExpr.getMethodRef().getName();
         InvokeExpr result = null;
         if (methodName.equals("freeObject") || methodName.equals("namedFreeObject")) {
@@ -1983,6 +1983,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 VirtualInvokeExpr getSymSintExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_FREE_SINT.makeRef());
                 AssignStmt assignSymbolicLength = Jimple.v().newAssignStmt(symbolicLengthLocal, getSymSintExpr);
                 args.addUnit(assignSymbolicLength);
+                containingStmt.redirectJumpsToThisTo(assignSymbolicLength);
                 invokeArgs.add(symbolicLengthLocal);
                 invokeArgs.add(IntConstant.v(1)); // Default is symbolic!
                 result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeArgs);
@@ -2003,7 +2004,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private void transform(InvokeStmt invoke, TcArgs args) {
         // If this InvokeStmt would produce a result, the InvokeExpr would be part of an AssignStmt
         assert !args.isToWrap();
-        InvokeExpr possiblyTransformedIndicatorMethod = getInvokeExprIfIndicatorMethodExprElseNull(invoke.getInvokeExpr(), args);
+        InvokeExpr possiblyTransformedIndicatorMethod = getInvokeExprIfIndicatorMethodExprElseNull(invoke, invoke.getInvokeExpr(), args);
         if (possiblyTransformedIndicatorMethod != null) {
             InvokeStmt newInvokeStmt = Jimple.v().newInvokeStmt(possiblyTransformedIndicatorMethod);
             invoke.redirectJumpsToThisTo(newInvokeStmt);
@@ -2523,7 +2524,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     assignNewValueRedirectAndAdd(virtualInvokeExpr, firstStatement, a, valueBox, args);
                 } else if (value instanceof InvokeExpr) {
                     InvokeExpr invokeExpr = (InvokeExpr) value;
-                    InvokeExpr possiblyTransformedIndicatorMethod = getInvokeExprIfIndicatorMethodExprElseNull(invokeExpr, args);
+                    InvokeExpr possiblyTransformedIndicatorMethod = getInvokeExprIfIndicatorMethodExprElseNull(a, invokeExpr, args);
 
                     if (possiblyTransformedIndicatorMethod != null) {
                         AssignStmt newAssignStmt = Jimple.v().newAssignStmt(var, possiblyTransformedIndicatorMethod);

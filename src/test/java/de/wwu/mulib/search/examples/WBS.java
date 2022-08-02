@@ -7,8 +7,6 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import org.junit.jupiter.api.Disabled;
-import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -289,7 +287,7 @@ public class WBS {
         wbs.update(pedal3, auto3, skid3);
     }
 
-    @Test @Disabled(value="Subsumed by WBSTransfExec")
+//    @Test @Disabled(value="Subsumed by WBSTransfExec")
     public void testLaunch() {
         TestUtility.getAllSolutions(this::_checkLaunch, "launch");
     }

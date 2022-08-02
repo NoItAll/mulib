@@ -30,13 +30,13 @@ public final class TestUtility {
         return List.of(
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
-                        .setGLOBAL_SEARCH_STRATEGY(DSAS)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
+                        .setGLOBAL_SEARCH_STRATEGY(DFS)
+//                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
                         .setCONCOLIC(false)
-                        .setGENERATE_NEW_SYM_AFTER_STORE(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
+//                        .setTRANSF_WRITE_TO_FILE(true)
 //                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
 //                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
         );
@@ -231,11 +231,30 @@ public final class TestUtility {
             int maxNumberOfSolutionsForEachPath,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired) {
+        return executeMulib(
+                methodName,
+                containingClass,
+                maxNumberOfSolutionsForEachPath,
+                mb,
+                transformationRequired,
+                new Class[0],
+                new Object[0]
+        );
+    }
+
+    public static List<PathSolution> executeMulib(
+            String methodName,
+            Class<?> containingClass,
+            int maxNumberOfSolutionsForEachPath,
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired,
+            Class<?>[] argTypes,
+            Object[] args) {
         MulibContext mc;
         if (transformationRequired) {
-            mc = Mulib.getMulibContext(methodName, containingClass, mb, new Class<?>[0], new Object[0]);
+            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
         } else {
-            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, new Class<?>[0]);
+            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
         }
         List<PathSolution> result = mc.getAllPathSolutions();
 
@@ -253,11 +272,30 @@ public final class TestUtility {
             int maxNumberOfSolutionsForEachPath,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired) {
+        return executeMulibForOne(
+                methodName,
+                containingClass,
+                maxNumberOfSolutionsForEachPath,
+                mb,
+                transformationRequired,
+                new Class[0],
+                new Object[0]
+        );
+    }
+
+    public static Optional<PathSolution> executeMulibForOne(
+            String methodName,
+            Class<?> containingClass,
+            int maxNumberOfSolutionsForEachPath,
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired,
+            Class<?>[] argTypes,
+            Object[] args) {
         MulibContext mc;
         if (transformationRequired) {
-            mc = Mulib.getMulibContext(methodName, containingClass, mb, new Class<?> [0], new Object[0]);
+            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
         } else {
-            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, new Class<?>[0]);
+            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
         }
         Optional<PathSolution> result = mc.getPathSolution();
 
