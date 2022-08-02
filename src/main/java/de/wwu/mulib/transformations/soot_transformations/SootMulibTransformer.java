@@ -48,10 +48,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return methodInfoContainer.seLocal;
         }
 
-        private Local thisLocal() {
-            return methodInfoContainer.thisLocal;
-        }
-
         private TaintAnalysis taintAnalysis() {
             return methodInfoContainer.taintAnalysis;
         }
@@ -74,18 +70,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         private void addUnit(Unit u) {
             methodInfoContainer.toAddTo.add(u);
-        }
-
-        private JimpleBody newBody() {
-            return methodInfoContainer.newBody;
-        }
-
-        private JimpleBody oldBody() {
-            return methodInfoContainer.oldBody;
-        }
-
-        private SootMethod oldMethod() {
-            return methodInfoContainer.oldMethod;
         }
     }
 
@@ -138,10 +122,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             List.of(transformed.getType(), v.TYPE_MULIB_VALUE_COPIER)
                             :
                             List.of();
-        }
-
-        private boolean shouldBeTransformed() {
-            return shouldBeTransformed;
         }
 
         private Local getAdditionalLocal(ChosenConstructor cc, LocalSpawner localSpawner) {
@@ -222,32 +202,20 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private static class MethodInfoContainer {
         private final SootMethod newMethod;
-        private final JimpleBody newBody;
         private final UnitPatchingChain toAddTo;
         private final LocalSpawner localSpawner;
         private final Local seLocal;
-        private final Local thisLocal;
-        private final SootMethod oldMethod;
-        private final JimpleBody oldBody;
         private final TaintAnalysis taintAnalysis;
 
         private MethodInfoContainer(
                 final SootMethod newMethod,
-                final JimpleBody newBody,
                 final UnitPatchingChain toAddTo,
                 final LocalSpawner localSpawner,
                 final Local seLocal,
-                final Local thisLocal,
-                final SootMethod oldMethod,
-                final JimpleBody oldBody,
                 final TaintAnalysis taintAnalysis) {
             this.newMethod = newMethod;
-            this.newBody = newBody;
-            this.oldMethod = oldMethod;
-            this.oldBody = oldBody;
             this.toAddTo = toAddTo;
             this.seLocal = seLocal;
-            this.thisLocal = thisLocal;
             this.localSpawner = localSpawner;
             this.taintAnalysis = taintAnalysis;
         }
@@ -626,8 +594,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private SootField getTransformedFieldForOldField(SootField oldField, SootClass newClass) {
         Type transformedType = transformType(oldField.getType());
-        SootField result = newClass.getField(oldField.getName(), transformedType);
-        return result;
+        return newClass.getField(oldField.getName(), transformedType);
     }
 
     private ClassConstant getWrapperAwareClassConstantForType(Type t) {
@@ -1663,7 +1630,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private SootMethod transformMethod(final SootMethod toTransform, final SootClass declaringTransformedClass) {
         // Replace parameter types and return types
-        List<Type> transformedParameterTypes = transformTypes(toTransform, toTransform.getParameterTypes());
+        List<Type> transformedParameterTypes = transformTypes(toTransform.getParameterTypes());
         Type transformedReturnType = transformType(toTransform.getReturnType());
         int modifiers = toTransform.getModifiers();
         SootMethod result = new SootMethod(
@@ -1706,13 +1673,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         UnitPatchingChain upc = transformedBody.getUnits();
         MethodInfoContainer methodInfoContainer = new MethodInfoContainer(
                 result,
-                transformedBody,
                 upc,
                 ls,
                 seLocal,
-                result.isStatic() ? null : toTransformBody.getThisLocal(),
-                toTransform,
-                toTransformBody,
                 a
         );
         StaticInvokeExpr seGetExpr = Jimple.v().newStaticInvokeExpr(v.SM_SE_GET.makeRef());
@@ -1761,9 +1724,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Replace types of exceptions
         for (Trap t : toTransformBody.getTraps()) {
             // This was already handled during the transformation of the method body
-            Trap newTrap = t;
-            newTrap.setException(transformEnrichAndValidateIfNotSpecialCase(newTrap.getException().getName()));
-            transformedBody.getTraps().add(newTrap);
+            t.setException(transformEnrichAndValidateIfNotSpecialCase(t.getException().getName()));
+            transformedBody.getTraps().add(t);
         }
 
         toTransform.setSource(a.originalMethodSource);
@@ -1772,10 +1734,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     /* TODO isXOrSX methods are a workaround until we decide how to deal with mutability in Soot. Perhaps transform local etc. later on */
-
-    private static boolean isArrayOrSarray(Type t) {
-        return t instanceof ArrayType || isSarray(t);
-    }
 
     private static boolean isSarray(Type t) {
         return isSarraySarray(t) || isPartnerClassSarray(t) || isPrimitiveSarray(t);
@@ -2079,12 +2037,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (lhsIsBool) {
                 assert rhsCondition instanceof IntConstant;
                 assert ((IntConstant) rhsCondition).value == 0 || ((IntConstant) rhsCondition).value == 1;
-                comparisonWithZero = ((IntConstant) rhsCondition).value == 0;
             } else {
                 assert lhsCondition instanceof IntConstant;
                 assert ((IntConstant) lhsCondition).value == 0 || ((IntConstant) lhsCondition).value == 1;
-                comparisonWithZero = ((IntConstant) rhsCondition).value == 0;
             }
+            comparisonWithZero = ((IntConstant) rhsCondition).value == 0;
             // Invert comparisonWithZero if condition is NeExpr
             comparisonWithZero = (conditionExpr instanceof NeExpr) != comparisonWithZero;
             used = comparisonWithZero ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_S.makeRef() : v.SM_SBOOL_BOOL_CHOICE_S.makeRef();
@@ -2097,7 +2054,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             assert args.isTainted(lhsCondition) || args.isTainted(rhsCondition);
             if (!args.isTainted(lhsCondition)) {
                 WrapPair wp = wrap(args, lhsConditionExprBox);
-                firstStatement = firstStatement == null ? wp.newFirstStmt : firstStatement;
+                firstStatement = wp.newFirstStmt;
                 lhsCondition = wp.newValue;
             }
             if (!args.isTainted(rhsCondition)) {
@@ -2112,7 +2069,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (!args.isTainted(lhsCondition)) {
                 WrapPair wp = wrap(args, lhsConditionExprBox);
                 lhsCondition = wp.newValue;
-                firstStatement = firstStatement == null ? wp.newFirstStmt : firstStatement;
+                firstStatement = wp.newFirstStmt;
             }
             if (!args.isTainted(rhsCondition)) {
                 WrapPair wp = wrap(args, rhsConditionExprBox);
@@ -2225,7 +2182,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
         assert args.isTainted(a.getLeftOp())
                 || a.getLeftOp().getType() instanceof RefType
-                || a.containsInvokeExpr() && this.v.isIndicatorMethodName(a.getInvokeExpr().getMethodRef().getName());
+                || a.containsInvokeExpr() && v.isIndicatorMethodName(a.getInvokeExpr().getMethodRef().getName());
         final ValueBox variableBox = a.getLeftOpBox();
         final Value var = variableBox.getValue();
         final ValueBox valueBox = a.getRightOpBox();
@@ -2865,7 +2822,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
     }
 
-    private Value assignNewValueRedirectAndAdd(
+    private void assignNewValueRedirectAndAdd(
             Value valueToCreateStackLocalFor,
             Stmt firstStatement,
             Unit redirectJumpsFrom,
@@ -2890,16 +2847,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             AssignStmt a = Jimple.v().newAssignStmt(value, transformedStackLocal);
             args.addUnit(a);
         }
-        return stackLocal;
     }
 
-    private Local assignNewValueRedirectAndAdd(
+    private void assignNewValueRedirectAndAdd(
             Value valueToCreateStackLocalFor,
             Stmt firstStatement,
             Unit redirectJumpsFrom,
             ValueBox changeValueFor,
             TcArgs args) {
-        return (Local) assignNewValueRedirectAndAdd(
+        assignNewValueRedirectAndAdd(
                 valueToCreateStackLocalFor,
                 firstStatement,
                 redirectJumpsFrom,
@@ -3121,7 +3077,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private SootMethodRef transformMethodRef(SootMethodRef toTransform) {
         SootClass declaringClassOfInvokedMethod = decideOnWhetherStillToCreatePartnerClass(toTransform.getDeclaringClass());
         String name = toTransform.getName();
-        List<Type> newTransformedParameterTypes = transformTypes(toTransform, toTransform.getParameterTypes());
+        List<Type> newTransformedParameterTypes = transformTypes(toTransform.getParameterTypes());
         Type newTransformedReturnType = transformType(toTransform.getReturnType());
         boolean isStatic = toTransform.isStatic();
         SootMethodRef invokedRef = new SootMethodRefImpl(
@@ -3134,11 +3090,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return invokedRef;
     }
 
-    private List<Type> transformTypes(Object objectReferencingTypes, List<Type> toTransform) {
-        List<Type> transformedParameterTypes = toTransform.stream()
+    private List<Type> transformTypes(List<Type> toTransform) {
+        return toTransform.stream()
                 .map(this::transformType)
                 .collect(Collectors.toList());
-        return transformedParameterTypes;
     }
 
     private final Map<Type, Type> toTransformedType = new HashMap<>();
