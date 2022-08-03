@@ -117,8 +117,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
 
     @Override
     protected boolean checkForPause() {
+        checkForFailure();
         if (globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty()) {
-            checkForFailure();
             return true;
         }
         return false;
@@ -126,8 +126,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
 
     @Override
     protected boolean checkForShutdown() {
+        checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
-            checkForFailure();
             executorService.shutdown();
             try {
                 boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);

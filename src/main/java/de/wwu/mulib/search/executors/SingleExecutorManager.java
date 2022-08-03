@@ -38,4 +38,7 @@ public class SingleExecutorManager extends MulibExecutorManager {
     protected boolean checkForShutdown() {
         return checkForPause();
     }
+
+    @Override
+    public void checkForFailure() { }
 }

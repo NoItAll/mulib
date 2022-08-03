@@ -79,6 +79,7 @@ public class MulibConfig {
     public final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
     public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
     public final Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+    public final boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
     public final boolean TRANSF_WRITE_TO_FILE;
     public final String TRANSF_GENERATED_CLASSES_PATH;
     public final boolean TRANSF_VALIDATE_TRANSFORMATION;
@@ -128,6 +129,7 @@ public class MulibConfig {
         private boolean TRANSF_VALIDATE_TRANSFORMATION;
         private boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         private boolean TRANSF_INCLUDE_PACKAGE_NAME;
+        private boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         private long PARALLEL_TIMEOUT_IN_MS;
         private Optional<Integer> SYMSINT_LB;
         private Optional<Integer> SYMSINT_UB;
@@ -184,6 +186,7 @@ public class MulibConfig {
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
             this.TRANSF_INCLUDE_PACKAGE_NAME = false;
             this.TRANSF_VALIDATE_TRANSFORMATION = false;
+            this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = false;
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = new HashMap<>();
@@ -467,6 +470,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER) {
+            this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
+            return this;
+        }
+
         public MulibConfigBuilder setCONCOLIC(boolean CONCOLIC) {
             this.CONCOLIC = CONCOLIC;
             return this;
@@ -732,6 +740,7 @@ public class MulibConfig {
                     TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
                     TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                     TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
+                    TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
                     CHOICE_OPTION_DEQUE_TYPE,
                     ACTIVATE_PARALLEL_FOR,
                     SYMSINT_LB,
@@ -783,6 +792,7 @@ public class MulibConfig {
                         Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
                         Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
+                        boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
                         ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE,
                         long ACTIVATE_PARALLEL_FOR,
                         Optional<Integer> SYMSINT_LB,
@@ -830,6 +840,7 @@ public class MulibConfig {
         this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS);
         this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS);
         this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
+        this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.PARALLEL_TIMEOUT_IN_MS = PARALLEL_TIMEOUT_IN_MS;
         this.CHOICE_OPTION_DEQUE_TYPE = CHOICE_OPTION_DEQUE_TYPE;
         this.ACTIVATE_PARALLEL_FOR = ACTIVATE_PARALLEL_FOR < 1 ? Optional.empty() : Optional.of(ACTIVATE_PARALLEL_FOR);

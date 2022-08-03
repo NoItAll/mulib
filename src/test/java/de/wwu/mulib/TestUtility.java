@@ -15,6 +15,10 @@ import static de.wwu.mulib.search.executors.SearchStrategy.*;
 
 public final class TestUtility {
 
+    private static final int longSingleThreadedExecutorsCheckBatchSize = 6;
+    private static final int longParallelExecutorsCheckBatchSize = 2;
+    private static final int quickParallelExecutorsCheckBatchSize = 3;
+
     private static final boolean longSingleThreadedExecutorsCheck = false;
     private static final boolean longParallelExecutorsCheck =       false;
     private static final boolean quickParallelExecutorsCheck =      false;
@@ -37,8 +41,9 @@ public final class TestUtility {
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setTRANSF_WRITE_TO_FILE(true)
-//                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-//                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
+                        .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
         );
     }
 
@@ -120,6 +125,7 @@ public final class TestUtility {
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
@@ -144,6 +150,7 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
+                        .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setCONCOLIC(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
@@ -194,11 +201,11 @@ public final class TestUtility {
         int currentFirstElementOfNextList = 0;
         int batchSize;
         if (longParallelExecutorsCheck) {
-            batchSize = 1;
+            batchSize = longParallelExecutorsCheckBatchSize;
         } else if (longSingleThreadedExecutorsCheck) {
-            batchSize = 4;
+            batchSize = longSingleThreadedExecutorsCheckBatchSize;
         } else {
-            batchSize = 2;
+            batchSize = quickParallelExecutorsCheckBatchSize;
         }
         List<List<PathSolution>> result = new ArrayList<>();
         while (currentFirstElementOfNextList < executeTestsWith.size()) {

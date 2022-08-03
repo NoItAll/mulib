@@ -33,6 +33,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final Set<Class<?>> explicitlyAddedClasses = new HashSet<>();
     protected final List<Class<?>> concretizeFor;
     protected final List<Class<?>> generalizeMethodCallsFor;
+    protected final boolean overWriteFileForSystemClassLoader;
 
     // original class -> class transformed for symbolic execution
     protected final Map<String, Class<?>> transformedClasses = new HashMap<>();
@@ -62,6 +63,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         this.concretizeFor = config.TRANSF_CONCRETIZE_FOR;
         this.generalizeMethodCallsFor = config.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
         this.includePackageName = config.TRANSF_INCLUDE_PACKAGE_NAME;
+        this.overWriteFileForSystemClassLoader = config.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.config = config;
     }
 
@@ -87,7 +89,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 // Optionally, conduct some checks and write class node to class file
-                if (!usedLoadedVersion.contains(entry.getKey())) {
+                if (!usedLoadedAndAlreadyWrittenVersion.contains(entry.getKey())) {
                     maybeWriteToFile(entry.getValue());
                 }
                 maybeCheckIsValidWrittenClassNode(entry.getValue());
@@ -341,7 +343,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     }
 
     // If set contains toTransformName: partnerclass-class was loaded and does not have to be written anymore
-    private Set<String> usedLoadedVersion = new HashSet<>();
+    private Set<String> usedLoadedAndAlreadyWrittenVersion = new HashSet<>();
     // Transforms one class. Checks whether the class is ignored and whether the class has already been transformed.
     protected void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
@@ -349,11 +351,13 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 synchronized (syncObject) {
                     String transformedName = addPrefixToName(toTransform.getName());
                     Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
-                    // If loading succeeded there already is a class file in the build
-                    transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
-                    transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
-                    usedLoadedVersion.add(toTransform.getName());
-                    return;
+                    if (!overWriteFileForSystemClassLoader) {
+                        // If loading succeeded there already is a class file in the build
+                        transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
+                        transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
+                        usedLoadedAndAlreadyWrittenVersion.add(toTransform.getName());
+                        return;
+                    }
                 }
             } catch (ClassNotFoundException ignored) {
             } catch (ClassFormatError e) {

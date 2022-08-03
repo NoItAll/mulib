@@ -109,7 +109,7 @@ public abstract class MulibExecutorManager {
         return timeBudgetExceeded || failBudgetExceeded || pathSolutionBudget || exceededBudgetBudget;
     }
 
-    protected void checkForFailure() { }
+    protected abstract void checkForFailure();
 
     protected void printStatistics() {
         StringBuilder b = new StringBuilder();

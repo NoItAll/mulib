@@ -78,16 +78,16 @@ public class SatPrimes01Transf {
     // HW: Changed from main
     public static void exec0() {
         int n = Mulib.namedFreeInt("n");
-        if (n < 1 || n > 46340) {
+        if (n < 1 || n > 4) { // HW: Reduced for test case
             return;
         }
         int result = is_prime(n);
         int f1 = Mulib.namedFreeInt("f1");
-        if (f1 < 1 || f1 > 46340) {
+        if (f1 < 1 || f1 > 4) { // HW: Reduced for test case
             return;
         }
         int f2 = Mulib.namedFreeInt("f2");
-        if (f1 < 1 || f1 > 46340) {
+        if (f1 < 1 || f1 > 4) { // HW: Reduced for test case
             return;
         }
 
