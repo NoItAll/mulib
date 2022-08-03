@@ -94,42 +94,40 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             CalculationFactory calculationFactory) {
         Choice.ChoiceOption optionToBeEvaluated;
         try {
-            while ((!terminated && !deque.isEmpty() && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
-                if (currentChoiceOption.reevaluationNeeded()) {
-                    optionToBeEvaluated = currentChoiceOption;
-                    // Relabeling case for concolic execution
-                    assert isConcolic;
-                    if (!solverManager.isSatisfiable()) {
-                        optionToBeEvaluated.setUnsatisfiable();
-                        continue;
-                    }
-                    optionToBeEvaluated.setSatisfiable();
+            if (currentChoiceOption.reevaluationNeeded()) {
+                optionToBeEvaluated = currentChoiceOption;
+                // Relabeling case for concolic execution
+                assert isConcolic;
+                if (!solverManager.isSatisfiable()) {
+                    optionToBeEvaluated.setUnsatisfiable();
+                    return Optional.empty();
                 } else {
-                    Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
-                    if (optionalChoiceOption.isEmpty()) {
-                        continue;
-                    }
-                    optionToBeEvaluated = optionalChoiceOption.get();
-                    assert !optionToBeEvaluated.isUnsatisfiable();
-                    adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-                    if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
-                        continue;
-                    }
+                    optionToBeEvaluated.setSatisfiable();
                 }
-                assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1);
-                return Optional.of(new SymbolicExecution(
-                        this,
-                        choicePointFactory,
-                        valueFactory,
-                        calculationFactory,
-                        optionToBeEvaluated,
-                        prototypicalExecutionBudgetManager,
-                        mulibValueTransformer.getNextSarrayId(),
-                        mulibValueTransformer.isTransformationRequired(),
-                        config
-                ));
+            } else {
+                Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
+                if (optionalChoiceOption.isEmpty()) {
+                    return Optional.empty();
+                }
+                optionToBeEvaluated = optionalChoiceOption.get();
+                assert !optionToBeEvaluated.isUnsatisfiable();
+                adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
+                if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
+                    return Optional.empty();
+                }
             }
-            return Optional.empty();
+            assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1);
+            return Optional.of(new SymbolicExecution(
+                    this,
+                    choicePointFactory,
+                    valueFactory,
+                    calculationFactory,
+                    optionToBeEvaluated,
+                    prototypicalExecutionBudgetManager,
+                    mulibValueTransformer.getNextSarrayId(),
+                    mulibValueTransformer.isTransformationRequired(),
+                    config
+            ));
         } catch (Throwable t) {
             t.printStackTrace();
             throw new MulibRuntimeException(t);

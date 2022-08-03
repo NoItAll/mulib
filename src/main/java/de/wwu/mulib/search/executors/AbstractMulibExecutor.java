@@ -163,7 +163,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Optional<PathSolution> getSinglePathSolution() {
-        while ((!getDeque().isEmpty() && !terminated) || currentChoiceOption.reevaluationNeeded()) {
+        while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
