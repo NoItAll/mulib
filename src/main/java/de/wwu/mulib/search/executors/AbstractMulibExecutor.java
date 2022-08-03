@@ -25,7 +25,6 @@ import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -86,8 +85,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final void setTerminated(boolean terminated) {
-        this.terminated = terminated;
+    public final void terminate() {
+        this.terminated = true;
     }
 
     @Override
@@ -137,17 +136,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public final MulibExecutorManager getExecutorManager() {
         return mulibExecutorManager;
-    }
-
-    @Override
-    public final Choice.ChoiceOption getCurrentChoiceOption() {
-        return currentChoiceOption;
-    }
-
-    @Override
-    public List<PathSolution> runForPathSolutions() {
-        Optional<PathSolution> possibleSolution = runForSinglePathSolution();
-        return possibleSolution.map(Collections::singletonList).orElse(Collections.emptyList());
     }
 
     @Override

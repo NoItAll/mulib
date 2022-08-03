@@ -16,15 +16,11 @@ public interface MulibExecutor {
 
     Optional<PathSolution> runForSinglePathSolution();
 
-    List<PathSolution> runForPathSolutions();
-
     LinkedHashMap<String, String> getStatistics();
 
     MulibExecutorManager getExecutorManager();
 
     SearchStrategy getSearchStrategy();
-
-    Choice.ChoiceOption getCurrentChoiceOption();
 
     Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options);
 
@@ -32,7 +28,7 @@ public interface MulibExecutor {
 
     Object concretize(SubstitutedVar substitutedVar);
 
-    void setTerminated(boolean terminated);
+    void terminate();
 
     boolean checkWithNewConstraint(Constraint c);
 
