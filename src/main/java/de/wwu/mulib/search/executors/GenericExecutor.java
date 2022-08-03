@@ -224,7 +224,8 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         }
     }
 
-    private void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
+    @Override
+    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
         Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
         int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());

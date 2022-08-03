@@ -17,6 +17,7 @@ import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
@@ -24,10 +25,12 @@ import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public abstract class AbstractMulibExecutor implements MulibExecutor {
@@ -159,7 +162,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Optional<PathSolution> runForSinglePathSolution() {
+    public Optional<PathSolution> getSinglePathSolution() {
         while ((!getDeque().isEmpty() && !terminated) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
@@ -179,7 +182,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         t.printStackTrace();
                         throw new MulibRuntimeException(t);
                     }
-                    this.mulibExecutorManager.addToPathSolutions(solution);
+                    this.mulibExecutorManager.addToPathSolutions(solution, this);
                     return Optional.of(solution);
                 } catch (Backtrack b) {
                     // We assume that Backtracking is only executed in places where it is guaranteed that
@@ -200,7 +203,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     throw e;
                 } catch (Exception | AssertionError e) {
                     PathSolution solution = generateSolution(e, symbolicExecution, true);
-                    this.mulibExecutorManager.addToPathSolutions(solution);
+                    this.mulibExecutorManager.addToPathSolutions(solution, this);
                     return Optional.of(solution);
                 } catch (Throwable t) {
                     t.printStackTrace();
@@ -210,6 +213,16 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             }
         }
         return Optional.empty();
+    }
+
+    protected abstract void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption adjustTo);
+
+    @Override
+    public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
+        // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
+        // thus, in general, we must adjust the current choice option
+        adjustSolverManagerToNewChoiceOption(searchIn.parent);
+        return solverManager.getUpToNSolutions(searchIn, N, new MulibValueLabeler(config, true));
     }
 
     @Override

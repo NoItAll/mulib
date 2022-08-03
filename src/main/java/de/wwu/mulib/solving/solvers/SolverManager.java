@@ -9,6 +9,7 @@ import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public interface SolverManager {
 
@@ -40,5 +41,5 @@ public interface SolverManager {
 
     int getLevel();
 
-    List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueLabeler mulibValueLabeler);
+    List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler);
 }

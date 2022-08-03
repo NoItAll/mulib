@@ -2,14 +2,18 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.logging.Level;
 
 public abstract class MulibExecutorManager {
@@ -23,6 +27,8 @@ public abstract class MulibExecutorManager {
     protected final CalculationFactory calculationFactory;
     protected final GlobalExecutionBudgetManager globalExecutionManagerBudgetManager;
     protected final MulibValueTransformer mulibValueTransformer;
+    private AtomicInteger numberRequestedSolutions;
+    protected final List<Solution> solutions;
 
     protected MulibExecutorManager(
             MulibConfig config,
@@ -39,7 +45,7 @@ public abstract class MulibExecutorManager {
         this.calculationFactory = calculationFactory;
         this.mulibExecutors = mulibExecutorsList;
         this.mulibValueTransformer = mulibValueTransformer;
-        mulibExecutors.add(new GenericExecutor(
+        this.mulibExecutors.add(new GenericExecutor(
                 observedTree.root.getOption(0),
                 this,
                 this.mulibValueTransformer,
@@ -48,13 +54,20 @@ public abstract class MulibExecutorManager {
         ));
         this.globalExecutionManagerBudgetManager = new GlobalExecutionBudgetManager(config);
         this.mainExecutor = this.mulibExecutors.get(0);
+        this.solutions =
+                config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty()
+                        ?
+                        new ArrayList<>()
+                        :
+                        Collections.synchronizedList(new ArrayList<>());
+        this.numberRequestedSolutions = new AtomicInteger(Integer.MIN_VALUE);
     }
 
     public Optional<PathSolution> getPathSolution() {
-        int currentNumberSolutions = observedTree.getSolutionsList().size();
+        int currentNumberPathSolutions = observedTree.getPathSolutionsList().size();
         globalExecutionManagerBudgetManager.resetTimeBudget();
         while (!checkForShutdown()) {
-            Optional<PathSolution> possiblePathSolution = mainExecutor.runForSinglePathSolution();
+            Optional<PathSolution> possiblePathSolution = mainExecutor.getSinglePathSolution();
             checkForFailure();
             if (possiblePathSolution.isPresent()) {
                 printStatistics();
@@ -62,11 +75,11 @@ public abstract class MulibExecutorManager {
             }
         }
         printStatistics();
-        if (observedTree.getSolutionsList().size() > currentNumberSolutions) {
+        if (observedTree.getPathSolutionsList().size() > currentNumberPathSolutions) {
             // Potentially, the result has been computed by another thread. In this case, we simply return
             // the last path solution added to the observed tree. It is mandatory that, in fact, a new path-solution
             // was added
-            return Optional.of(observedTree.getSolutionsList().get(observedTree.getSolutionsList().size() - 1));
+            return Optional.of(observedTree.getPathSolutionsList().get(observedTree.getPathSolutionsList().size() - 1));
         }
         return Optional.empty();
     }
@@ -76,10 +89,23 @@ public abstract class MulibExecutorManager {
         // We constantly poll with the mainExecutor.
         while (!checkForShutdown()) {
             checkForFailure();
-            mainExecutor.runForSinglePathSolution();
+            mainExecutor.getSinglePathSolution();
         }
         printStatistics();
-        return observedTree.getSolutionsList();
+        return observedTree.getPathSolutionsList();
+    }
+
+    public synchronized List<Solution> getUpToNSolutions(int N) {
+        if (numberRequestedSolutions.get() > 0) {
+            throw new MulibIllegalStateException("The previous request for solutions has not been completed");
+        }
+        numberRequestedSolutions = new AtomicInteger(N);
+        int currentNumberSolutions = solutions.size();
+        while (!checkForShutdown()) {
+            getPathSolution();
+        }
+        numberRequestedSolutions.set(Integer.MIN_VALUE);
+        return solutions.subList(currentNumberSolutions, Math.min(N, solutions.size()));
     }
 
     public final void addToFails(Fail fail) {
@@ -87,9 +113,15 @@ public abstract class MulibExecutorManager {
         globalExecutionManagerBudgetManager.incrementFailBudget();
     }
 
-    public final void addToPathSolutions(PathSolution pathSolution) {
+
+    public final void addToPathSolutions(PathSolution pathSolution, MulibExecutor responsibleExecutor) {
+        // TODO Perhaps also have FakePathSolution which can be used to divide that
+        //  up between the executors...
         this.observedTree.addToPathSolutions(pathSolution);
         this.globalExecutionManagerBudgetManager.incrementPathSolutionBudget();
+        if (numberRequestedSolutions.get() > 0) {
+            responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions);
+        }
     }
 
     public final void addToExceededBudgets(ExceededBudget exceededBudget) {
@@ -106,7 +138,11 @@ public abstract class MulibExecutorManager {
         boolean failBudgetExceeded = globalExecutionManagerBudgetManager.fixedFailBudgetIsExceeded();
         boolean pathSolutionBudget = globalExecutionManagerBudgetManager.fixedPathSolutionBudgetIsExceeded();
         boolean exceededBudgetBudget = globalExecutionManagerBudgetManager.fixedExceededBudgetBudgetsIsExceeded();
-        return timeBudgetExceeded || failBudgetExceeded || pathSolutionBudget || exceededBudgetBudget;
+        return timeBudgetExceeded
+                || failBudgetExceeded
+                || pathSolutionBudget
+                || exceededBudgetBudget
+                || shouldStopSinceEnoughSolutionsWereFound();
     }
 
     protected abstract void checkForFailure();
@@ -129,13 +165,18 @@ public abstract class MulibExecutorManager {
         Mulib.log.log(Level.INFO, b.toString());
     }
 
-    protected abstract boolean checkForPause();
+    protected boolean checkForPause() {
+        return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
+    }
 
-    protected abstract boolean checkForShutdown();
+    protected boolean checkForShutdown() {
+        return checkForPause();
+    }
 
-    protected void computePathSolutionsWithNonMainExecutor(MulibExecutor mulibExecutor) {
-        while (!checkForPause()) {
-            mulibExecutor.runForSinglePathSolution();
-        }
+    // Returns false if numberRequestedSolutions == Integer.MIN_VALUE, which is true if we did not ask for
+    // Solutions
+    private boolean shouldStopSinceEnoughSolutionsWereFound() {
+        int i = numberRequestedSolutions.get();
+        return i <= 0 && i != Integer.MIN_VALUE;
     }
 }

@@ -18,6 +18,7 @@ import java.util.ArrayDeque;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 /**
  *
@@ -168,18 +169,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public List<Solution> getUpToNSolutions(PathSolution pathSolution, int N, MulibValueLabeler mulibValueLabeler) {
-        if (pathSolution.getCurrentlyInitializedSolutions().size() >= N) {
-            return new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
-        }
-        backtrackAll();
+    public List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler) {
+        backtrackAll(); // TODO optimize
         List<Constraint> constraintList = new ArrayList<>();
         constraintList.add(Sbool.ConcSbool.TRUE);
         constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
         addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
         addArrayConstraints(pathSolution.getArrayConstraints());
         List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
-        while (isSatisfiable() && solutions.size() < N) {
+        while (isSatisfiable() && N.decrementAndGet() > 0) {
             Solution latestSolution = pathSolution.getLatestSolution();
             Constraint[] latestSolutionConstraint = latestSolution.additionalConstraints;
             Labels l = latestSolution.labels;

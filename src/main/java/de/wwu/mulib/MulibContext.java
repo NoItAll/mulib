@@ -20,6 +20,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -152,15 +153,32 @@ public class MulibContext {
         return mulibExecutorManager.getPathSolution();
     }
 
-    public synchronized List<Solution> getAllSolutions(PathSolution pathSolution) {
-        return getUpToNSolutions(pathSolution, Integer.MAX_VALUE);
+    public synchronized List<Solution> getAllSolutions() {
+        return getUpToNSolutions(Integer.MAX_VALUE);
     }
 
-    public synchronized List<Solution> getUpToNSolutions(PathSolution pathSolution, int N) {
+    public synchronized List<Solution> getUpToNSolutions(int N) {
+        return mulibExecutorManager.getUpToNSolutions(N);
+    }
+
+    public synchronized Optional<Solution> getSolution() {
+        List<Solution> result = mulibExecutorManager.getUpToNSolutions(1);
+        if (result.size() > 0) {
+            return Optional.of(result.get(0));
+        } else {
+            return Optional.empty();
+        }
+    }
+
+    public synchronized List<Solution> getAllSolutionsInPathSolution(PathSolution pathSolution) {
+        return getUpToNSolutionsInPathSolution(pathSolution, Integer.MAX_VALUE);
+    }
+
+    public synchronized List<Solution> getUpToNSolutionsInPathSolution(PathSolution pathSolution, int N) {
         if (solverManager == null) {
             solverManager = Solvers.getSolverManager(mulibConfig);
         }
-        return solverManager.getUpToNSolutions(pathSolution, N, new MulibValueLabeler(mulibConfig, transformationRequired));
+        return solverManager.getUpToNSolutions(pathSolution, new AtomicInteger(N), new MulibValueLabeler(mulibConfig, transformationRequired));
     }
 
     private static Object[] transformArguments(

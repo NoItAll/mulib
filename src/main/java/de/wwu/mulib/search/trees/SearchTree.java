@@ -162,7 +162,7 @@ public final class SearchTree {
         this.solutionsList.add(pathSolution);
     }
 
-    public List<PathSolution> getSolutionsList() {
+    public List<PathSolution> getPathSolutionsList() {
         return solutionsList;
     }
 

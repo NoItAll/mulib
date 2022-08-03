@@ -30,15 +30,5 @@ public class SingleExecutorManager extends MulibExecutorManager {
     }
 
     @Override
-    protected boolean checkForPause() {
-        return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
-    }
-
-    @Override
-    protected boolean checkForShutdown() {
-        return checkForPause();
-    }
-
-    @Override
     public void checkForFailure() { }
 }

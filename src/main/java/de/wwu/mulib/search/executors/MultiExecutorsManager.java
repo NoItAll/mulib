@@ -62,7 +62,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
         super.notifyNewChoice(depth, choiceOptions);
         // Additional functionality compared to SingleExecutorManager: Start new executor if there are choices
-        while ((!nextStrategiesToInitialize.isEmpty() || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor) {
+        while ((!nextStrategiesToInitialize.isEmpty()
+                || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor) {
             // Case 1: An existing MulibExecutor is idle, use this
             MulibExecutor nextExecutor = idle.poll();
             if (nextExecutor != null) {
@@ -87,7 +88,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                         );
                         finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
                                 observedTree.root.getOption(0).getOptionConstraint());
-                        finalNextExecutor.addExistingArrayConstraints(observedTree.root.getOption(0).getArrayConstraints());
+                        finalNextExecutor.addExistingArrayConstraints(
+                                observedTree.root.getOption(0).getArrayConstraints());
                         mulibExecutors.add(finalNextExecutor);
                         computePathSolutionsWithNonMainExecutor(finalNextExecutor);
                         idle.add(finalNextExecutor);
@@ -101,14 +103,13 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     public void signalFailure(Throwable failureInThread) {
-        assert failureInThread != null;
         this.failureInThread = failureInThread;
     }
 
     @Override
     protected void checkForFailure() {
         if (failureInThread != null) {
-            throw new MulibRuntimeException("Failure caught in one of the threads: "
+            throw new MulibRuntimeException("Throwable thrown in one of the threads: "
                     + Arrays.toString(failureInThread.getStackTrace()) + config,
                     failureInThread
             );
@@ -118,16 +119,16 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     @Override
     protected boolean checkForPause() {
         checkForFailure();
-        if (globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty()) {
-            return true;
-        }
-        return false;
+        return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
     }
 
     @Override
     protected boolean checkForShutdown() {
         checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
+            for (MulibExecutor executor : mulibExecutors) {
+                executor.terminate();
+            }
             executorService.shutdown();
             try {
                 boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
@@ -140,6 +141,12 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             return true;
         } else {
             return false;
+        }
+    }
+
+    private void computePathSolutionsWithNonMainExecutor(MulibExecutor mulibExecutor) {
+        while (!checkForPause()) {
+            mulibExecutor.getSinglePathSolution();
         }
     }
 }

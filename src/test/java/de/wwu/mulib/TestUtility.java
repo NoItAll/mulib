@@ -289,7 +289,7 @@ public final class TestUtility {
 
         if (maxNumberOfSolutionsForEachPath > 1) {
             for (PathSolution ps : result) {
-                mc.getUpToNSolutions(ps, maxNumberOfSolutionsForEachPath);
+                mc.getUpToNSolutionsInPathSolution(ps, maxNumberOfSolutionsForEachPath);
             }
         }
         return result;
@@ -328,7 +328,7 @@ public final class TestUtility {
         }
         Optional<PathSolution> result = mc.getPathSolution();
 
-        result.ifPresent(pathSolution -> mc.getUpToNSolutions(pathSolution, maxNumberOfSolutionsForEachPath));
+        result.ifPresent(pathSolution -> mc.getUpToNSolutionsInPathSolution(pathSolution, maxNumberOfSolutionsForEachPath));
         return result;
     }
 
