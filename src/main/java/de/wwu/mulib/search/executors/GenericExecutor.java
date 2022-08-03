@@ -26,7 +26,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
     private final boolean continueExecution;
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private long dsasMissed;
-    private final MulibValueTransformer prototypicalMulibValueTransformer;
+    private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
 
     public GenericExecutor(
@@ -52,7 +52,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             throw new NotYetImplementedException();
         }
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
-        this.prototypicalMulibValueTransformer = mulibValueTransformer;
+        this.mulibValueTransformer = mulibValueTransformer;
         this.config = config;
     }
 
@@ -124,8 +124,8 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                         calculationFactory,
                         optionToBeEvaluated,
                         prototypicalExecutionBudgetManager,
-                        prototypicalMulibValueTransformer.getNextSarrayId(),
-                        prototypicalMulibValueTransformer.isTransformationRequired(),
+                        mulibValueTransformer.getNextSarrayId(),
+                        mulibValueTransformer.isTransformationRequired(),
                         config
                 ));
             }

@@ -19,8 +19,7 @@ public class WBSTransfExec {
 
     @Test
     public void testWBSTransf() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(this::_testWBSTransf, "launch");
+        TestUtility.getAllSolutions(this::_testWBSTransf, "launch");
     }
 
     private List<PathSolution> _testWBSTransf(MulibConfig.MulibConfigBuilder mb) {
@@ -38,8 +37,7 @@ public class WBSTransfExec {
 
     @Test
     public void testUpdate0() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(this::_testUpdate0, "update0");
+        TestUtility.getAllSolutions(this::_testUpdate0, "update0");
     }
 
     private List<PathSolution> _testUpdate0(MulibConfig.MulibConfigBuilder mb) {

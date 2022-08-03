@@ -200,6 +200,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     throw e;
                 } catch (Exception | AssertionError e) {
                     PathSolution solution = generateSolution(e, symbolicExecution, true);
+                    this.mulibExecutorManager.addToPathSolutions(solution);
                     return Optional.of(solution);
                 } catch (Throwable t) {
                     t.printStackTrace();

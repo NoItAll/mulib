@@ -16,7 +16,7 @@ public class IincCheckExec {
 
     @Test
     public void testIincCheck() {
-        List<List<PathSolution>> solutions = TestUtility.getAllSolutions((mb) -> _testIincCheck(mb), "exec");
+        TestUtility.getAllSolutions((mb) -> _testIincCheck(mb), "exec");
     }
 
     private List<PathSolution> _testIincCheck(MulibConfig.MulibConfigBuilder mb) {

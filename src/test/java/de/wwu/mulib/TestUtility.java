@@ -140,11 +140,12 @@ public final class TestUtility {
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
-                        .setINCR_ACTUAL_CP_BUDGET(1)
+                        .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
+                        .setCONCOLIC(true)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(16)
@@ -179,25 +180,46 @@ public final class TestUtility {
         return List.copyOf(result);
     }
 
-    public static List<List<PathSolution>> getAllSolutions(
+    public static void getAllSolutions(
             Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mbToList,
             String testedMethodName) {
-        return getAllSolutions(b -> b, mbToList, testedMethodName);
+        getAllSolutions(b -> b, mbToList, testedMethodName);
     }
 
-    public static List<List<PathSolution>> getAllSolutions(
+    public static void getAllSolutions(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
             Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mulibConfigToList,
             String testedMethodName) {
         final List<MulibConfig.MulibConfigBuilder> executeTestsWith = initBuilders();
-        return
-            executeTestsWith.parallelStream().map(mcb -> {
-                MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
-                Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
-                List<PathSolution> pathSolutions = mulibConfigToList.apply(mb);
-                Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
-                return pathSolutions;
-            }).collect(Collectors.toList());
+        int currentFirstElementOfNextList = 0;
+        int batchSize;
+        if (longParallelExecutorsCheck) {
+            batchSize = 1;
+        } else if (longSingleThreadedExecutorsCheck) {
+            batchSize = 4;
+        } else {
+            batchSize = 2;
+        }
+        List<List<PathSolution>> result = new ArrayList<>();
+        while (currentFirstElementOfNextList < executeTestsWith.size()) {
+            int nextEndpoint = currentFirstElementOfNextList + batchSize;
+            List<MulibConfig.MulibConfigBuilder> currentBatch =
+                    executeTestsWith.subList(
+                            currentFirstElementOfNextList,
+                            Math.min(nextEndpoint, executeTestsWith.size())
+                    );
+            result.addAll(
+                    currentBatch.parallelStream().map(mcb -> {
+                        MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
+                        Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
+                        List<PathSolution> pathSolutions = mulibConfigToList.apply(mb);
+                        Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
+                        return pathSolutions;
+                    }).collect(Collectors.toList())
+            );
+
+            currentFirstElementOfNextList = nextEndpoint;
+        }
     }
 
     public static List<Optional<PathSolution>> getSolution(
@@ -299,9 +321,7 @@ public final class TestUtility {
         }
         Optional<PathSolution> result = mc.getPathSolution();
 
-        if (result.isPresent()) {
-            mc.getUpToNSolutions(result.get(), maxNumberOfSolutionsForEachPath);
-        }
+        result.ifPresent(pathSolution -> mc.getUpToNSolutions(pathSolution, maxNumberOfSolutionsForEachPath));
         return result;
     }
 

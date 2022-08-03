@@ -16,7 +16,7 @@ public class GraphColoringExec {
 
     @Test
     public void testGraphColoring() {
-        List<List<PathSolution>> solutions = TestUtility.getAllSolutions((mb) -> _testGraphColoring(mb), "exec");
+        TestUtility.getAllSolutions((mb) -> _testGraphColoring(mb), "exec");
     }
 
     private List<PathSolution> _testGraphColoring(MulibConfig.MulibConfigBuilder mb) {

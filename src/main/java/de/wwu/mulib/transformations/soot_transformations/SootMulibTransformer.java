@@ -328,9 +328,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     public void transformAndLoadClasses(Class<?>... toTransform) {
         try {
-            synchronized (syncObject) {
-                super.transformAndLoadClasses(toTransform);
-            }
+            super.transformAndLoadClasses(toTransform);
         } catch (Exception e) {
             throw new MulibRuntimeException("Exception during transformation", e);
         }
@@ -353,9 +351,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     @Override
     protected void transformClass(Class<?> toTransform) {
-        synchronized (syncObject) {
-            super.transformClass(toTransform);
-        }
+        super.transformClass(toTransform);
     }
 
 

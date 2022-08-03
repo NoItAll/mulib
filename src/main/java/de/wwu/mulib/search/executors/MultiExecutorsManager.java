@@ -1,11 +1,9 @@
 package de.wwu.mulib.search.executors;
 
-import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
-import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -14,16 +12,13 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class MultiExecutorsManager extends MulibExecutorManager {
     private final SimpleSyncedQueue<SearchStrategy> nextStrategiesToInitialize;
     private final SimpleSyncedQueue<MulibExecutor> idle;
-    private final List<PathSolution> pathSolutions = Collections.synchronizedList(new ArrayList<>());
     private final ExecutorService executorService;
-    private final MulibExecutor mainExecutor;
-    private volatile boolean terminated = false;
     private final long activateParallelFor;
+    private volatile Throwable failureInThread = null;
 
     public MultiExecutorsManager(
             MulibConfig config,
@@ -35,7 +30,6 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
                 choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer);
         this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
-        this.mainExecutor = this.mulibExecutors.get(0);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
         this.idle = new SimpleSyncedQueue<>();
         this.activateParallelFor = config.ACTIVATE_PARALLEL_FOR.isPresent() ? config.ACTIVATE_PARALLEL_FOR.get() : 1;
@@ -58,107 +52,22 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         private synchronized int size() {
             return queue.size();
         }
+        @SuppressWarnings("BooleanMethodIsAlwaysInverted")
         private synchronized boolean isEmpty() {
             return queue.isEmpty();
         }
-    }
-
-
-    private void checkForFailure() {
-        if (failureInThread != null) {
-            throw new MulibRuntimeException("Failure caught in one of the threads: "
-                    + Arrays.toString(failureInThread.getStackTrace()) + config,
-                    failureInThread
-            );
-        }
-    }
-
-    private boolean checkShutdown() {
-        if (terminated || globalBudgetExceeded() || (idle.size() == mulibExecutors.size() - 1 && observedTree.getChoiceOptionDeque().isEmpty())) {
-            try {
-                checkForFailure();
-                executorService.shutdown();
-                boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
-                if (!terminated) {
-                    throw new MulibRuntimeException("Executor service did not terminate in time");
-                }
-                return true;
-            } catch (Exception e) {
-                throw new MulibRuntimeException(e);
-            }
-        }
-        return false;
-    }
-
-    @Override
-    public List<PathSolution> getAllPathSolutions() {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-
-        // We constantly poll with the mainExecutor.
-        while (!checkShutdown()) {
-            checkForFailure();
-            addToPathSolutions(mainExecutor);
-        }
-
-        printStatistics();
-        return pathSolutions;
-    }
-
-    private void printStatistics() {
-        StringBuilder b = new StringBuilder();
-        MulibExecutor last = mulibExecutors.get(mulibExecutors.size() - 1);
-        b.append("\r\n");
-        b.append("\r\n");
-        for (MulibExecutor me : mulibExecutors) {
-            b.append("   ")
-                    .append(me.getSearchStrategy())
-                    .append(": ")
-                    .append(me.getStatistics().toString());
-            if (me != last) {
-                b.append("\r\n");
-            }
-        }
-        Mulib.log.log(Level.INFO, b.toString());
-    }
-    @Override
-    public Optional<PathSolution> getPathSolution() {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-        while (!checkShutdown()) {
-            if (pathSolutions.size() > 0) {
-                checkShutdown();
-                printStatistics();
-                return Optional.of(pathSolutions.get(pathSolutions.size() - 1));
-            }
-            Optional<PathSolution> possibleSymbolicExecution = mainExecutor.runForSinglePathSolution();
-            if (possibleSymbolicExecution.isPresent()) {
-                checkShutdown();
-                this.observedTree.getChoiceOptionDeque().setEmpty();
-                printStatistics();
-                return possibleSymbolicExecution;
-            }
-        }
-        if (pathSolutions.size() > 0) {
-            checkShutdown();
-            return Optional.of(pathSolutions.get(pathSolutions.size() - 1));
-        }
-        return Optional.empty();
-    }
-
-    private void addToPathSolutions(MulibExecutor mulibExecutor) {
-        List<PathSolution> solutionsOfGlobalSolver = getAllPathSolutions(mulibExecutor);
-        pathSolutions.addAll(solutionsOfGlobalSolver);
     }
 
     @Override
     public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
         super.notifyNewChoice(depth, choiceOptions);
         // Additional functionality compared to SingleExecutorManager: Start new executor if there are choices
-        while (!terminated && (!nextStrategiesToInitialize.isEmpty() || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor) {
+        while ((!nextStrategiesToInitialize.isEmpty() || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor) {
             // Case 1: An existing MulibExecutor is idle, use this
             MulibExecutor nextExecutor = idle.poll();
             if (nextExecutor != null) {
                 executorService.execute(() -> {
-                    addToPathSolutions(nextExecutor);
+                    computePathSolutionsWithNonMainExecutor(nextExecutor);
                     idle.add(nextExecutor);
                 });
             } else {
@@ -172,7 +81,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                         MulibExecutor finalNextExecutor = new GenericExecutor(
                                 observedTree.root.getOption(0),
                                 this,
-                                prototypicalMulibValueTransformer,
+                                mulibValueTransformer,
                                 config,
                                 searchStrategy
                         );
@@ -180,7 +89,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                                 observedTree.root.getOption(0).getOptionConstraint());
                         finalNextExecutor.addExistingArrayConstraints(observedTree.root.getOption(0).getArrayConstraints());
                         mulibExecutors.add(finalNextExecutor);
-                        addToPathSolutions(finalNextExecutor);
+                        computePathSolutionsWithNonMainExecutor(finalNextExecutor);
                         idle.add(finalNextExecutor);
                     });
 
@@ -191,9 +100,46 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         }
     }
 
-    private volatile Throwable failureInThread = null;
     public void signalFailure(Throwable failureInThread) {
         assert failureInThread != null;
         this.failureInThread = failureInThread;
+    }
+
+    @Override
+    protected void checkForFailure() {
+        if (failureInThread != null) {
+            throw new MulibRuntimeException("Failure caught in one of the threads: "
+                    + Arrays.toString(failureInThread.getStackTrace()) + config,
+                    failureInThread
+            );
+        }
+    }
+
+    @Override
+    protected boolean checkForPause() {
+        if (globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty()) {
+            checkForFailure();
+            return true;
+        }
+        return false;
+    }
+
+    @Override
+    protected boolean checkForShutdown() {
+        if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
+            checkForFailure();
+            executorService.shutdown();
+            try {
+                boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
+                if (!terminated) {
+                    throw new MulibRuntimeException("Executor service did not terminate in time");
+                }
+            } catch (Exception e) {
+                throw new MulibRuntimeException(e);
+            }
+            return true;
+        } else {
+            return false;
+        }
     }
 }

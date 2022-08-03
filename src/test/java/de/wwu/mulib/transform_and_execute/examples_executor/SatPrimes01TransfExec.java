@@ -15,20 +15,18 @@ public class SatPrimes01TransfExec {
 
     @Test
     public void testSatPrimes01_0() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(
+        TestUtility.getAllSolutions(
                         this::_testSatPrimes01_0,
                         "testSatPrimes01_0"
-                );
+        );
     }
 
     @Test
     public void testSatPrimes01_1() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(
+        TestUtility.getAllSolutions(
                         this::_testSatPrimes01_1,
                         "testSatPrimes01_1"
-                );
+        );
     }
 
     private List<PathSolution> _testSatPrimes01_0(MulibConfig.MulibConfigBuilder mb) {
@@ -45,8 +43,8 @@ public class SatPrimes01TransfExec {
     }
 
     private List<PathSolution> _testSatPrimes01_1(MulibConfig.MulibConfigBuilder mb) {
-        mb.setFIXED_POSSIBLE_CP_BUDGET(0);
-        mb.setFIXED_ACTUAL_CP_BUDGET(0);
+        mb.setFIXED_POSSIBLE_CP_BUDGET(0); // This means no budget
+        mb.setFIXED_ACTUAL_CP_BUDGET(0); // This means no budget
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec1",
                 SatPrimes01Transf.class,

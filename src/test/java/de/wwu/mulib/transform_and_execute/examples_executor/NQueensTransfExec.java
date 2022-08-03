@@ -15,12 +15,10 @@ import static org.junit.jupiter.api.Assertions.*;
 public class NQueensTransfExec {
 
     @Test
-    public void testNQueensTransf() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(this::_testNQueens, "solve");
-
-        List<List<PathSolution>> solutionsAlt =
-                TestUtility.getAllSolutions(this::_testNQueensAlt, "solveAlt");
+    public void testNQueensTransfSolve() {
+        TestUtility.getAllSolutions(this::_testNQueens, "solve");
+        // Check sequenece
+        TestUtility.getAllSolutions(this::_testNQueensAlt, "solveAlt");
     }
 
     private List<PathSolution> _testNQueens(MulibConfig.MulibConfigBuilder mb) {

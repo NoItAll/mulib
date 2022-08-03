@@ -1,19 +1,16 @@
 package de.wwu.mulib.search.executors;
 
-import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
-import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.logging.Level;
 
 public class SingleExecutorManager extends MulibExecutorManager {
+
+
     public SingleExecutorManager(
             MulibConfig config,
             SearchTree observedTree,
@@ -33,25 +30,12 @@ public class SingleExecutorManager extends MulibExecutorManager {
     }
 
     @Override
-    public Optional<PathSolution> getPathSolution() {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-        MulibExecutor mulibExecutor = mulibExecutors.get(0);
-        while (!observedTree.getChoiceOptionDeque().isEmpty() && !globalBudgetExceeded()) {
-            Optional<PathSolution> possibleSymbolicExecution = mulibExecutor.runForSinglePathSolution();
-            if (possibleSymbolicExecution.isPresent()) {
-                Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
-                return possibleSymbolicExecution;
-            }
-        }
-        Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
-        return Optional.empty();
+    protected boolean checkForPause() {
+        return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
     }
 
     @Override
-    public List<PathSolution> getAllPathSolutions() {
-        globalExecutionManagerBudgetManager.resetTimeBudget();
-        List<PathSolution> result = super.getAllPathSolutions(mulibExecutors.get(0));
-        Mulib.log.log(Level.INFO, mulibExecutors.get(0).getStatistics().toString());
-        return result;
+    protected boolean checkForShutdown() {
+        return checkForPause();
     }
 }

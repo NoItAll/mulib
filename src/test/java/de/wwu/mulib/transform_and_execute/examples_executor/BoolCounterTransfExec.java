@@ -15,8 +15,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 public class BoolCounterTransfExec {
     @Test
     public void testBoolCounterTransf() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(this::_testBooleanCounterSized4, "count4");
+        TestUtility.getAllSolutions(this::_testBooleanCounterSized4, "count4");
     }
 
     private List<PathSolution> _testBooleanCounterSized4(MulibConfig.MulibConfigBuilder mb) {

@@ -74,36 +74,37 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * of the MulibTransformer instance.
      * @param toTransform Those classes that are transformed, even if they have been set to be ignored.
      */
-    public synchronized void transformAndLoadClasses(Class<?>... toTransform) {
-        List<Class<?>> definitelyTransform = Arrays.asList(toTransform);
-        explicitlyAddedClasses.addAll(definitelyTransform);
-        classesToTransform.addAll(definitelyTransform);
+    public void transformAndLoadClasses(Class<?>... toTransform) {
+        synchronized (syncObject) {
+            List<Class<?>> definitelyTransform = Arrays.asList(toTransform);
+            explicitlyAddedClasses.addAll(definitelyTransform);
+            classesToTransform.addAll(definitelyTransform);
 
-        while (!classesToTransform.isEmpty()) {
-            transformClass(classesToTransform.poll());
-        }
-
-
-        for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
-            // Optionally, conduct some checks and write class node to class file
-            maybeWriteToFile(entry.getValue());
-            maybeCheckIsValidWrittenClassNode(entry.getValue());
-            if (transformedClasses.get(entry.getKey()) != null) {
-                continue;
+            while (!classesToTransform.isEmpty()) {
+                transformClass(classesToTransform.poll());
             }
 
-            try {
-                synchronized (syncObject) {
+
+            for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+                // Optionally, conduct some checks and write class node to class file
+                if (!usedLoadedVersion.contains(entry.getKey())) {
+                    maybeWriteToFile(entry.getValue());
+                }
+                maybeCheckIsValidWrittenClassNode(entry.getValue());
+                if (transformedClasses.get(entry.getKey()) != null) {
+                    continue;
+                }
+                try {
                     Class<?> result = classLoader.loadClass(getNameToLoadOfClassNode(entry.getValue()));
                     transformedClasses.put(entry.getKey(), result);
+                } catch (ClassNotFoundException e) {
+                    e.printStackTrace();
+                    throw new MulibRuntimeException(e);
                 }
-            } catch (ClassNotFoundException e) {
-                e.printStackTrace();
-                throw new MulibRuntimeException(e);
             }
-        }
 
-        maybeCheckAreValidInitializedClasses(transformedClasses.values());
+            maybeCheckAreValidInitializedClasses(transformedClasses.values());
+        }
     }
 
     protected abstract String getNameToLoadOfClassNode(T classNode);
@@ -339,17 +340,25 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         transformedClasses.put(className, c);
     }
 
+    // If set contains toTransformName: partnerclass-class was loaded and does not have to be written anymore
+    private Set<String> usedLoadedVersion = new HashSet<>();
     // Transforms one class. Checks whether the class is ignored and whether the class has already been transformed.
     protected void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
-                String transformedName = addPrefixToName(toTransform.getName());
-                Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
-                // If loading succeeded there already is a class file in the build
-                transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
-                transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
-                return;
-            } catch (ClassFormatError | ClassNotFoundException ignored) { }
+                synchronized (syncObject) {
+                    String transformedName = addPrefixToName(toTransform.getName());
+                    Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
+                    // If loading succeeded there already is a class file in the build
+                    transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
+                    transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
+                    usedLoadedVersion.add(toTransform.getName());
+                    return;
+                }
+            } catch (ClassNotFoundException ignored) {
+            } catch (ClassFormatError e) {
+                throw new MulibRuntimeException(e);
+            }
         }
         if (isIgnored(toTransform) || transformedClassNodes.containsKey(toTransform.getName())) {
             return;

@@ -31,20 +31,24 @@ public final class SearchTree {
         this.argsSupplier = argsProvider;
         this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
-        if (enlistLeaves) {
-            if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
-                solutionsList = Collections.synchronizedList(new ArrayList<>());
+        if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
+            solutionsList = Collections.synchronizedList(new ArrayList<>());
+            if (enlistLeaves) {
                 failsList = Collections.synchronizedList(new ArrayList<>());
                 exceededBudgetList = Collections.synchronizedList(new ArrayList<>());
             } else {
-                solutionsList = new ArrayList<>();
-                failsList = new ArrayList<>();
-                exceededBudgetList = new ArrayList<>();
+                failsList = null;
+                exceededBudgetList = null;
             }
         } else {
-            solutionsList = null;
-            failsList = null;
-            exceededBudgetList = null;
+            solutionsList = new ArrayList<>();
+            if (enlistLeaves) {
+                failsList = new ArrayList<>();
+                exceededBudgetList = new ArrayList<>();
+            } else {
+                failsList = null;
+                exceededBudgetList = null;
+            }
         }
         choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
     }
@@ -155,7 +159,11 @@ public final class SearchTree {
     }
 
     public void addToPathSolutions(PathSolution pathSolution) {
-        if (enlistLeaves) this.solutionsList.add(pathSolution);
+        this.solutionsList.add(pathSolution);
+    }
+
+    public List<PathSolution> getSolutionsList() {
+        return solutionsList;
     }
 
     public void addToFails(Fail fail) {

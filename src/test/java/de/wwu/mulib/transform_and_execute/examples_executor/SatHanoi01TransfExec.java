@@ -9,18 +9,18 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SatHanoi01TransfExec {
 
     @Test
     public void testSatHanoi01Transf() {
-        List<List<PathSolution>> solutions =
-                TestUtility.getAllSolutions(
+        TestUtility.getAllSolutions(
                         mulibConfig -> mulibConfig.setFIXED_ACTUAL_CP_BUDGET(2500).setFIXED_POSSIBLE_CP_BUDGET(2500),
                         this::_testSatHanoi01,
                         "exec"
-                );
+        );
     }
 
     private List<PathSolution> _testSatHanoi01(MulibConfig.MulibConfigBuilder mb) {
