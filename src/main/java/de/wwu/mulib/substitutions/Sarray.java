@@ -7,7 +7,7 @@ import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.Collection;
-import java.util.LinkedHashMap;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
@@ -17,7 +17,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
-    protected final LinkedHashMap<Sint, T> elements;
+    protected final Map<Sint, T> elements;
 
     private final boolean defaultIsSymbolic;
 
@@ -30,7 +30,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.id = se.getNextNumberInitializedSarray();
         this.onlyConcreteIndicesUsed = true;
         this.clazz = clazz;
-        this.elements = new LinkedHashMap<>();
+        this.elements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
         if (len instanceof ConcSnumber && !(len instanceof Sint.ConcSint)) {
             len = se.concSint(((ConcSnumber) len).intVal());
@@ -47,7 +47,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         int length = arrayElements.length;
         this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
-        this.elements = new LinkedHashMap<>();
+        this.elements = new HashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
             elements.put((Sint) mvt.transform(i), arrayElements[i]);
         }
@@ -55,11 +55,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     /** Copy constructor for all Sarrays but SarraySarray */
     protected Sarray(MulibValueCopier mvt, Sarray<T> s) {
-        this(mvt, s, new LinkedHashMap<>(s.elements));
+        this(mvt, s, new HashMap<>(s.elements));
     }
 
     /** Copy constructor for SarraySarrays */
-    protected Sarray(MulibValueCopier mvt, Sarray<T> s, LinkedHashMap<Sint, T> elements) {
+    protected Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> elements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
         this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
@@ -139,8 +139,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     }
 
     public final void setForIndex(Sint index, T value) {
-        // Keep order in LinkedHashMap
-        elements.remove(index);
         elements.put(index, value);
     }
 
@@ -593,8 +591,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             this.elementType = s.elementType;
         }
 
-        private static LinkedHashMap<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, LinkedHashMap<Sint, Sarray> elements) {
-            LinkedHashMap<Sint, Sarray> result = new LinkedHashMap<>();
+        private static Map<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, Map<Sint, Sarray> elements) {
+            Map<Sint, Sarray> result = new HashMap<>();
             for (Map.Entry<Sint, Sarray> entry : elements.entrySet()) {
                 result.put(entry.getKey(), entry.getValue().copy(mvt));
             }
