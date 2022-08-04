@@ -7,6 +7,12 @@ public interface MulibTransformer {
 
     void transformAndLoadClasses(Class<?>... toTransform);
 
+    Class<?> transformType(Class<?> toTransform, boolean sarrayToRealArrayTypes);
+
+    default Class<?> transformType(Class<?> toTransform) {
+        return transformType(toTransform, false);
+    }
+
     Class<?> getTransformedClass(Class<?> beforeTransformation);
 
     Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation);

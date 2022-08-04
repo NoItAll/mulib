@@ -111,7 +111,7 @@ public final class MulibValueTransformer {
 
         // Treat objects
         Class<?> beforeTransformation = currentValue.getClass();
-        Class<?> possiblyTransformed = transformType(beforeTransformation);
+        Class<?> possiblyTransformed = mulibTransformer.transformType(beforeTransformation);
         if (beforeTransformation != possiblyTransformed) {
             assert PartnerClass.class.isAssignableFrom(possiblyTransformed);
             Constructor<?> constr;
@@ -151,7 +151,7 @@ public final class MulibValueTransformer {
         int length = Array.getLength(array);
         Class<?> componentType = beforeTransformation.getComponentType();
         // Maintain information of array-arrays; - create, e.g., Sint[] instead of SintSarray:
-        Class<?> transformed = transformType(beforeTransformation, true);
+        Class<?> transformed = mulibTransformer.transformType(beforeTransformation, true);
         Class<?> transformedComponentType = transformed.getComponentType();
         // Get innermost type
         Class<?> innermostTransformedComponentType = transformedComponentType;
@@ -222,84 +222,5 @@ public final class MulibValueTransformer {
             Array.set(values, i, transformedValue);
         }
         return values;
-    }
-    /**
-     * Transforms type. Arrays are transformed to their respective subclass of Sarray.
-     * @param toTransform Type to transform
-     * @return Transformed type
-     */
-    public Class<?> transformType(Class<?> toTransform) {
-        return transformType(toTransform, false);
-    }
-
-    /**
-     * Transforms type. Arrays are transformed to their respective subclass of Sarray.
-     * @param toTransform Type to transform
-     * @param sarraysToRealArrayTypes Should, e.g., Sint[].class be returned insted of SintSarray?
-     * @return Transformed type
-     */
-    public Class<?> transformType(Class<?> toTransform, boolean sarraysToRealArrayTypes) {
-        if (toTransform == null) {
-            throw new MulibRuntimeException("Type to transform must not be null.");
-        }
-        if (SubstitutedVar.class.isAssignableFrom(toTransform)) {
-            return toTransform;
-        }
-        if (toTransform == int.class) {
-            return Sint.class;
-        } else if (toTransform == long.class) {
-            return Slong.class;
-        } else if (toTransform == double.class) {
-            return Sdouble.class;
-        } else if (toTransform == float.class) {
-            return Sfloat.class;
-        } else if (toTransform == short.class) {
-            return Sshort.class;
-        } else if (toTransform == byte.class) {
-            return Sbyte.class;
-        } else if (toTransform == boolean.class) {
-            return Sbool.class;
-        } else if (toTransform == String.class) {
-            return String.class; // TODO Free Strings
-        } else if (toTransform.isArray()) {
-            Class<?> componentType = toTransform.getComponentType();
-            if (componentType.isArray()) {
-                if (sarraysToRealArrayTypes) {
-                    int nesting = 1; // Already is outer array
-                    while (componentType.isArray()) {
-                        nesting++; // Always at least one
-                        componentType = componentType.getComponentType();
-                    }
-                    @SuppressWarnings("redundant")
-                    Class<?> transformedInnermostComponentType = transformType(componentType);
-                    Class<?> result = transformedInnermostComponentType;
-                    // Now wrap the innermost transformed component type in arrays
-                    for (int i = 0; i < nesting; i++) {
-                        result = Array.newInstance(result, 0).getClass();
-                    }
-                    return result;
-                } else {
-                    return Sarray.SarraySarray.class;
-                }
-            } else if (componentType == int.class) {
-                return sarraysToRealArrayTypes ? Sint[].class : Sarray.SintSarray.class;
-            } else if (componentType == long.class) {
-                return sarraysToRealArrayTypes ? Slong[].class : Sarray.SlongSarray.class;
-            } else if (componentType == double.class) {
-                return sarraysToRealArrayTypes ? Sdouble[].class : Sarray.SdoubleSarray.class;
-            } else if (componentType == float.class) {
-                return sarraysToRealArrayTypes ? Sfloat[].class : Sarray.SfloatSarray.class;
-            } else if (componentType == short.class) {
-                return sarraysToRealArrayTypes ? Sshort[].class : Sarray.SshortSarray.class;
-            } else if (componentType == boolean.class) {
-                return sarraysToRealArrayTypes ? Sbool[].class : Sarray.SboolSarray.class;
-            } else if (componentType == byte.class) {
-                return sarraysToRealArrayTypes ? Sbyte[].class : Sarray.SbyteSarray.class;
-            } else {
-                throw new NotYetImplementedException(toTransform.getName());
-            }
-        } else {
-            return mulibTransformer.getPossiblyTransformedClass(toTransform);
-        }
     }
 }

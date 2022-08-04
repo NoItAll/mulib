@@ -51,7 +51,7 @@ public final class MulibContext {
             possiblyTransformedMethodClass = mulibTransformer.getTransformedClass(owningMethodClass);
             mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
-            searchRegionArgTypes = transformArgumentTypes(mulibValueTransformer, untransformedArgs);
+            searchRegionArgTypes = transformArgumentTypes(mulibTransformer, untransformedArgs);
         } else {
             mulibValueTransformer = new MulibValueTransformer(config, null);
             possiblyTransformedMethodClass = owningMethodClass;
@@ -168,11 +168,11 @@ public final class MulibContext {
     }
 
     private static Class<?>[] transformArgumentTypes(
-            MulibValueTransformer mulibValueTransformer,
+            MulibTransformer mulibTransformer,
             Class<?>[] argTypes) {
         Class<?>[] result = new Class[argTypes.length];
         for (int i = 0; i < argTypes.length; i++) {
-            result[i] = mulibValueTransformer.transformType(argTypes[i]);
+            result[i] = mulibTransformer.transformType(argTypes[i]);
         }
         return result;
     }
