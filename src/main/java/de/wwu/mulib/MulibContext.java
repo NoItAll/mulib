@@ -18,50 +18,64 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 public final class MulibContext {
-    @SuppressWarnings("all")
-    private final MulibConfig mulibConfig;
-    @SuppressWarnings("all")
-    private final MethodHandle methodHandle;
-    private final MulibExecutorManager mulibExecutorManager;
+    private final MulibConfig config;
     private static final Object[] emptyArgs = new Object[0];
+    private final Class<?>[] untransformedArgTypes;
+    private final Class<?>[] transformedArgTypes;
+    private final String methodName;
+    private final MulibTransformer mulibTransformer;
+    private final Class<?> possiblyTransformedMethodClass;
 
     protected MulibContext(
             String methodName,
             Class<?> owningMethodClass,
             MulibConfig config,
-            Class<?>[] untransformedArgs,
-            Object[] args) {
-        Class<?> possiblyTransformedMethodClass;
-        Object[] searchRegionArgs;
-        Class<?>[] searchRegionArgTypes;
-        if (untransformedArgs == null) {
-            untransformedArgs = findMethodFittingToArgs(args, methodName, owningMethodClass);
+            Class<?>[] untransformedArgTypes,
+            Object... prototypicalArgs) {
+        this.methodName = methodName;
+        this.config = config;
+        if (untransformedArgTypes == null) {
+            untransformedArgTypes = findMethodFittingToArgs(prototypicalArgs, methodName, owningMethodClass);
         }
-        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
-        ValueFactory valueFactory = ValueFactory.getInstance(config);
-        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
-        MulibTransformer mulibTransformer;
-        MulibValueTransformer mulibValueTransformer;
+        this.untransformedArgTypes = untransformedArgTypes;
         if (config.TRANSF_TRANSFORMATION_REQUIRED) {
             mulibTransformer = MulibTransformer.get(config);
             mulibTransformer.transformAndLoadClasses(owningMethodClass);
             possiblyTransformedMethodClass = mulibTransformer.getTransformedClass(owningMethodClass);
+            transformedArgTypes = transformArgumentTypes(mulibTransformer, untransformedArgTypes);
+        } else {
+            mulibTransformer = null;
+            possiblyTransformedMethodClass = owningMethodClass;
+            transformedArgTypes = untransformedArgTypes;
+        }
+    }
+
+    private void _throwExceptionOnArgumentMismatch(Object[] providedArgs) {
+        if (providedArgs == null || providedArgs.length != transformedArgTypes.length) {
+            throw new MulibRuntimeException("The calls to MulibContext must contain the arguments you which to use!");
+        }
+    }
+
+    private MulibExecutorManager generateNewMulibExecutorManagerForPreInitializedContext(Object[] args) {
+        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
+        ValueFactory valueFactory = ValueFactory.getInstance(config);
+        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
+
+        Object[] searchRegionArgs;
+        MulibValueTransformer mulibValueTransformer;
+        if (config.TRANSF_TRANSFORMATION_REQUIRED) {
             mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
-            searchRegionArgTypes = transformArgumentTypes(mulibTransformer, untransformedArgs);
         } else {
+            assert mulibTransformer == null;
             mulibValueTransformer = new MulibValueTransformer(config, null);
-            possiblyTransformedMethodClass = owningMethodClass;
             searchRegionArgs = args;
-            searchRegionArgTypes = untransformedArgs;
         }
+
         // Find the next sarray-id if any of the arguments are sarrays
         mulibValueTransformer.setNextSarrayId(args);
-
-        this.mulibConfig = config;
 
         Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {
@@ -98,17 +112,16 @@ public final class MulibContext {
             };
         }
 
+        MethodHandle methodHandle;
         try {
-            Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, searchRegionArgTypes);
-            this.methodHandle = MethodHandles.lookup().unreflect(method);
-        } catch (NoSuchMethodException | IllegalAccessException e) {
+            Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, transformedArgTypes);
+            methodHandle = MethodHandles.lookup().unreflect(method);
+        } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
+            e.printStackTrace();
             throw new MulibRuntimeException(e);
-        } catch (VerifyError t) {
-            t.printStackTrace();
-            throw new MulibRuntimeException(t);
         }
         SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
-        this.mulibExecutorManager = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
+        return config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
                         searchTree,
@@ -128,28 +141,29 @@ public final class MulibContext {
                 );
     }
 
-    public synchronized List<PathSolution> getAllPathSolutions() {
-        long startTime = System.nanoTime();
-        List<PathSolution> result = mulibExecutorManager.getAllPathSolutions();
-        long endTime = System.nanoTime();
-        Mulib.log.log(Level.INFO, "Took " + (endTime - startTime) + "ns");
-        return result;
+    public List<PathSolution> getAllPathSolutions(Object... args) {
+        _throwExceptionOnArgumentMismatch(args);
+        return generateNewMulibExecutorManagerForPreInitializedContext(args).getAllPathSolutions();
     }
 
-    public synchronized Optional<PathSolution> getPathSolution() {
-        return mulibExecutorManager.getPathSolution();
+    public Optional<PathSolution> getPathSolution(Object... args) {
+        _throwExceptionOnArgumentMismatch(args);
+        return generateNewMulibExecutorManagerForPreInitializedContext(args).getPathSolution();
     }
 
-    public synchronized List<Solution> getAllSolutions() {
-        return getUpToNSolutions(Integer.MAX_VALUE);
+    public List<Solution> getAllSolutions(Object... args) {
+        _throwExceptionOnArgumentMismatch(args);
+        return getUpToNSolutions(Integer.MAX_VALUE, args);
     }
 
-    public synchronized List<Solution> getUpToNSolutions(int N) {
-        return mulibExecutorManager.getUpToNSolutions(N);
+    public List<Solution> getUpToNSolutions(int N, Object... args) {
+        _throwExceptionOnArgumentMismatch(args);
+        return generateNewMulibExecutorManagerForPreInitializedContext(args).getUpToNSolutions(N);
     }
 
-    public synchronized Optional<Solution> getSolution() {
-        List<Solution> result = mulibExecutorManager.getUpToNSolutions(1);
+    public Optional<Solution> getSolution(Object... args) {
+        _throwExceptionOnArgumentMismatch(args);
+        List<Solution> result = generateNewMulibExecutorManagerForPreInitializedContext(args).getUpToNSolutions(1);
         if (result.size() > 0) {
             return Optional.of(result.get(0));
         } else {
@@ -170,6 +184,9 @@ public final class MulibContext {
     private static Class<?>[] transformArgumentTypes(
             MulibTransformer mulibTransformer,
             Class<?>[] argTypes) {
+        if (argTypes == null) {
+            return null;
+        }
         Class<?>[] result = new Class[argTypes.length];
         for (int i = 0; i < argTypes.length; i++) {
             result[i] = mulibTransformer.transformType(argTypes[i]);
@@ -178,10 +195,10 @@ public final class MulibContext {
     }
 
     // Returns an array of parameter types fitting for the given list of arguments, if such a fit exists.
-    private static Class<?>[] findMethodFittingToArgs(Object[] untransformedArgs, String methodName, Class<?> owningMethodClass) {
+    private static Class<?>[] findMethodFittingToArgs(Object[] untransformedArgTypes, String methodName, Class<?> owningMethodClass) {
         // Get types of arguments
         Class<?>[] directTypesOfArgs =
-                Arrays.stream(untransformedArgs).map(arg -> arg == null ? null : arg.getClass()).toArray(Class<?>[]::new);
+                Arrays.stream(untransformedArgTypes).map(arg -> arg == null ? null : arg.getClass()).toArray(Class<?>[]::new);
         // Get methods matching the name and length of arguments
         Method[] candidates = Arrays.stream(owningMethodClass.getDeclaredMethods())
                 .filter(m -> m.getName().equals(methodName) && m.getParameterCount() == directTypesOfArgs.length)

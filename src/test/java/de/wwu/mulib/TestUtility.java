@@ -231,7 +231,6 @@ public final class TestUtility {
                 mulibConfigToList.apply(mb);
                 Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
             });
-
             currentFirstElementOfNextList = nextEndpoint;
         }
     }
@@ -276,8 +275,8 @@ public final class TestUtility {
             Class<?>[] argTypes,
             Object[] args) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
-        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        List<PathSolution> result = mc.getAllPathSolutions();
+        MulibContext mc = Mulib.getMulibContext(containingClass, methodName, mb, argTypes);
+        List<PathSolution> result = mc.getAllPathSolutions(args);
         return result;
     }
 
@@ -304,8 +303,8 @@ public final class TestUtility {
             Class<?>[] argTypes,
             Object[] args) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
-        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        Optional<PathSolution> result = mc.getPathSolution();
+        MulibContext mc = Mulib.getMulibContext(containingClass, methodName, mb, argTypes);
+        Optional<PathSolution> result = mc.getPathSolution(args);
         return result;
     }
 
@@ -336,7 +335,7 @@ public final class TestUtility {
             Class<?>[] argTypes,
             Object[] args) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
-        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        return mc.getUpToNSolutions(N);
+        MulibContext mc = Mulib.getMulibContext(containingClass, methodName, mb, argTypes);
+        return mc.getUpToNSolutions(N, args);
     }
 }

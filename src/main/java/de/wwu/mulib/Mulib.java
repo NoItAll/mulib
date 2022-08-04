@@ -15,7 +15,7 @@ public final class Mulib {
     public static final Logger log = Logger.getLogger("mulib");
 
     private Mulib() {}
-    
+
     public static List<PathSolution> executeMulib(
             String methodName,
             Class<?> mainClass,
@@ -30,11 +30,11 @@ public final class Mulib {
             MulibConfig.MulibConfigBuilder mb,
             Class<?>[] argTypes,
             Object... args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getAllPathSolutions();
+        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getAllPathSolutions(args);
     }
 
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolution();
+        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolution(args);
     }
 
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
@@ -42,17 +42,17 @@ public final class Mulib {
         return executeMulibForOne(methodName, methodOwnerClass, mb, argTypes, args);
     }
 
-    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build());
+    public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes) {
+        return generateMulibContext(methodName, methodOwnerClass, argTypes, null, mb.build());
     }
 
-    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
-        return getMulibContext(methodName, methodOwnerClass, mb, null, args);
+    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object[] prototypicalArgs) {
+        return generateMulibContext(methodName, methodOwnerClass, null, prototypicalArgs, mb.build());
     }
 
-    public static MulibContext getMulibContextWithoutTransformation(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
+    public static MulibContext getMulibContextWithoutTransformation(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... prototypicalArgs) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(false);
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build());
+        return generateMulibContext(methodName, methodOwnerClass, argTypes, prototypicalArgs, mb.build());
     }
 
     private static MulibContext generateMulibContext(
