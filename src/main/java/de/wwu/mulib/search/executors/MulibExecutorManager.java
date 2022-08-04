@@ -63,7 +63,7 @@ public abstract class MulibExecutorManager {
         this.numberRequestedSolutions = null;
     }
 
-    public Optional<PathSolution> getPathSolution() {
+    public synchronized Optional<PathSolution> getPathSolution() {
         Optional<PathSolution> result = _getPathSolution();
         printStatistics();
         return result;
@@ -88,7 +88,7 @@ public abstract class MulibExecutorManager {
         return Optional.empty();
     }
 
-    public List<PathSolution> getAllPathSolutions() {
+    public synchronized List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         // We constantly poll with the mainExecutor.
         while (!checkForShutdown()) {
@@ -118,10 +118,7 @@ public abstract class MulibExecutorManager {
         globalExecutionManagerBudgetManager.incrementFailBudget();
     }
 
-
-    public final void addToPathSolutions(PathSolution pathSolution, MulibExecutor responsibleExecutor) {
-        // TODO Perhaps also have FakePathSolution which can be used to divide that
-        //  up between the executors...
+    public void addToPathSolutions(PathSolution pathSolution, MulibExecutor responsibleExecutor) {
         this.observedTree.addToPathSolutions(pathSolution);
         this.globalExecutionManagerBudgetManager.incrementPathSolutionBudget();
         if (numberRequestedSolutions != null) {
@@ -142,14 +139,10 @@ public abstract class MulibExecutorManager {
     }
 
     public final boolean globalBudgetExceeded() {
-        boolean timeBudgetExceeded = globalExecutionManagerBudgetManager.timeBudgetIsExceeded() ;
-        boolean failBudgetExceeded = globalExecutionManagerBudgetManager.fixedFailBudgetIsExceeded();
-        boolean pathSolutionBudget = globalExecutionManagerBudgetManager.fixedPathSolutionBudgetIsExceeded();
-        boolean exceededBudgetBudget = globalExecutionManagerBudgetManager.fixedExceededBudgetBudgetsIsExceeded();
-        return timeBudgetExceeded
-                || failBudgetExceeded
-                || pathSolutionBudget
-                || exceededBudgetBudget
+        return globalExecutionManagerBudgetManager.timeBudgetIsExceeded()
+                || globalExecutionManagerBudgetManager.fixedFailBudgetIsExceeded()
+                || globalExecutionManagerBudgetManager.fixedPathSolutionBudgetIsExceeded()
+                || globalExecutionManagerBudgetManager.fixedExceededBudgetBudgetsIsExceeded()
                 || shouldStopSinceEnoughSolutionsWereFound();
     }
 
@@ -177,6 +170,7 @@ public abstract class MulibExecutorManager {
         return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
     }
 
+    @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     protected boolean checkForShutdown() {
         return checkForPause();
     }
