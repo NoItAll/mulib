@@ -85,7 +85,6 @@ public class BoolCounter {
         List<PathSolution> resultList = TestUtility.executeMulib(
                 "_count4Times3Manual",
                 BoolCounter.class,
-                1,
                 mb,
                 false
         );

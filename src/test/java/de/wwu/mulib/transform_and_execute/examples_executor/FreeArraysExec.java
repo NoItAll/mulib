@@ -21,7 +21,6 @@ public class FreeArraysExec {
                     Optional<PathSolution> result = TestUtility.executeMulibForOne(
                             "sort",
                             SimpleSort0.class,
-                            1,
                             mb,
                             true,
                             new Class[] { int[].class },
@@ -51,7 +50,6 @@ public class FreeArraysExec {
                     Optional<PathSolution> result = TestUtility.executeMulibForOne(
                             "sort",
                             SimpleSort1.class,
-                            1,
                             mb,
                             true,
                             new Class[] { int[].class },

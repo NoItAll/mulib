@@ -296,7 +296,6 @@ public class WBS {
         List<PathSolution> result = TestUtility.executeMulib(
                 "launch",
                 WBS.class,
-                1,
                 mb,
                 false
         );

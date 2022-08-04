@@ -25,7 +25,6 @@ public class Partition3TransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 Partition3Transf.class,
-                1,
                 mb,
                 true
         );

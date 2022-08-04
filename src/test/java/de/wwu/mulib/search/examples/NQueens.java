@@ -30,7 +30,6 @@ public class NQueens {
         List<PathSolution> result = TestUtility.executeMulib(
                 "solve",
                 NQueens.class,
-                1,
                 mb,
                 false
         );
@@ -66,7 +65,6 @@ public class NQueens {
         Optional<PathSolution> result = TestUtility.executeMulibForOne(
                 "solveEfficient",
                 NQueens.class,
-                1,
                 config,
                 false
         );

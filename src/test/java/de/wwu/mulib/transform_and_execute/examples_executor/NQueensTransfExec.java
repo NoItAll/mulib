@@ -25,7 +25,6 @@ public class NQueensTransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "solve",
                 NQueensTransf.class,
-                1,
                 mb,
                 true
         );

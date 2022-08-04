@@ -968,7 +968,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         isTransformation ? v.SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED.makeRef() : v.SM_MULIB_VALUE_COPIER_ALREADY_COPIED.makeRef(),
                         originValue
                 );
-        Local stackAlreadyCreated = localSpawner.spawnNewStackLocal(v.TYPE_BOOL); // TODO or int?
+        Local stackAlreadyCreated = localSpawner.spawnNewStackLocal(v.TYPE_BOOL);
         AssignStmt computeIfAlreadyCreated =
                 Jimple.v().newAssignStmt(stackAlreadyCreated, callAlreadyCreated);
         upc.add(computeIfAlreadyCreated);
@@ -1125,7 +1125,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             LocalSpawner localSpawner,
             UnitPatchingChain upc,
             List<Type> constructorParameterTypes,
-            List<Value> constructorArguments) { // TODO make lazy
+            List<Value> constructorArguments) {
         String className = transformedType.getClassName();
         String originalClassName = className.replace(_TRANSFORMATION_PREFIX, "");
         Local stackLocalForNew = localSpawner.spawnNewStackLocal(transformedType);

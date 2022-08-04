@@ -28,7 +28,6 @@ public class SatHanoi01TransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 SatHanoi01Transf.class,
-                1,
                 mb,
                 true
         );

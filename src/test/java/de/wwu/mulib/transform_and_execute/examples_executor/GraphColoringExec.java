@@ -23,7 +23,6 @@ public class GraphColoringExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 GraphColoring.class,
-                1,
                 mb,
                 true
         );

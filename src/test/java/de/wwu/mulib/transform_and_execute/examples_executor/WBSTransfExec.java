@@ -26,7 +26,6 @@ public class WBSTransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "launch",
                 WBSTransf.class,
-                1,
                 mb,
                 true
         );

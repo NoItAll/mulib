@@ -23,7 +23,6 @@ public class IincCheckExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 IincCheck.class,
-                1,
                 mb,
                 true
         );

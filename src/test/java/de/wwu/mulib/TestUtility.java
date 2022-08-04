@@ -258,19 +258,9 @@ public final class TestUtility {
             Class<?> containingClass,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired) {
-        return executeMulib(methodName, containingClass, 2, mb, transformationRequired);
-    }
-
-    public static List<PathSolution> executeMulib(
-            String methodName,
-            Class<?> containingClass,
-            int maxNumberOfSolutionsForEachPath,
-            MulibConfig.MulibConfigBuilder mb,
-            boolean transformationRequired) {
         return executeMulib(
                 methodName,
                 containingClass,
-                maxNumberOfSolutionsForEachPath,
                 mb,
                 transformationRequired,
                 new Class[0],
@@ -281,7 +271,6 @@ public final class TestUtility {
     public static List<PathSolution> executeMulib(
             String methodName,
             Class<?> containingClass,
-            int maxNumberOfSolutionsForEachPath,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired,
             Class<?>[] argTypes,
@@ -299,13 +288,11 @@ public final class TestUtility {
     public static Optional<PathSolution> executeMulibForOne(
             String methodName,
             Class<?> containingClass,
-            int maxNumberOfSolutionsForEachPath,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired) {
         return executeMulibForOne(
                 methodName,
                 containingClass,
-                maxNumberOfSolutionsForEachPath,
                 mb,
                 transformationRequired,
                 new Class[0],
@@ -316,7 +303,6 @@ public final class TestUtility {
     public static Optional<PathSolution> executeMulibForOne(
             String methodName,
             Class<?> containingClass,
-            int maxNumberOfSolutionsForEachPath,
             MulibConfig.MulibConfigBuilder mb,
             boolean transformationRequired,
             Class<?>[] argTypes,
@@ -329,7 +315,6 @@ public final class TestUtility {
         }
         Optional<PathSolution> result = mc.getPathSolution();
 
-//        result.ifPresent(pathSolution -> mc.getUpToNSolutionsInPathSolution(pathSolution, maxNumberOfSolutionsForEachPath));
         return result;
     }
 

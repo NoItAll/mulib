@@ -325,7 +325,6 @@ public class TaintAnalyzer {
                     addValueToTainted(((ArrayRef) a.getRightOp()).getBase());
                 }
             }
-            // TODO In some situations something like Sbyte[] is currently not possible due to this:
             if (a.getLeftOp() instanceof ArrayRef) {
                 addValueToTainted(((ArrayRef) a.getLeftOp()).getBase());
             }

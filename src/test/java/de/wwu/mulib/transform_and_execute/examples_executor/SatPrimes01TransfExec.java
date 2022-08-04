@@ -33,7 +33,6 @@ public class SatPrimes01TransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec0",
                 SatPrimes01Transf.class,
-                1,
                 mb,
                 true
         );
@@ -48,7 +47,6 @@ public class SatPrimes01TransfExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec1",
                 SatPrimes01Transf.class,
-                1,
                 mb,
                 true
         );

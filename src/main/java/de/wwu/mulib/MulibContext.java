@@ -7,20 +7,16 @@ import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.Solvers;
-import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Function;
 import java.util.logging.Level;
 
@@ -31,7 +27,6 @@ public class MulibContext {
     @SuppressWarnings("all")
     private final MethodHandle methodHandle;
     private final MulibExecutorManager mulibExecutorManager;
-    private SolverManager solverManager = null;
     private final Function<SymbolicExecution, Object[]> argsSupplier;
     private final MulibTransformer mulibTransformer;
     private final MulibValueTransformer mulibValueTransformer;
@@ -39,7 +34,6 @@ public class MulibContext {
     private final ValueFactory valueFactory;
     private final CalculationFactory calculationFactory;
     private static final Object[] emptyArgs = new Object[0];
-    private final boolean transformationRequired;
 
     protected MulibContext(
             String methodName,
@@ -57,7 +51,6 @@ public class MulibContext {
         this.choicePointFactory = ChoicePointFactory.getInstance(config);
         this.valueFactory = ValueFactory.getInstance(config);
         this.calculationFactory = CalculationFactory.getInstance(config);
-        this.transformationRequired = transformationRequired;
         if (transformationRequired) {
             this.mulibTransformer = MulibTransformer.get(config);
             this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
@@ -168,17 +161,6 @@ public class MulibContext {
         } else {
             return Optional.empty();
         }
-    }
-
-    public synchronized List<Solution> getAllSolutionsInPathSolution(PathSolution pathSolution) {
-        return getUpToNSolutionsInPathSolution(pathSolution, Integer.MAX_VALUE);
-    }
-
-    public synchronized List<Solution> getUpToNSolutionsInPathSolution(PathSolution pathSolution, int N) {
-        if (solverManager == null) {
-            solverManager = Solvers.getSolverManager(mulibConfig);
-        }
-        return solverManager.getUpToNSolutions(pathSolution, new AtomicInteger(N), new MulibValueLabeler(mulibConfig, transformationRequired));
     }
 
     private static Object[] transformArguments(

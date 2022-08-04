@@ -122,7 +122,6 @@ public class TspSolver {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 TspSolver.class,
-                1,
                 mb,
                 false
         );

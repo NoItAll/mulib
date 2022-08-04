@@ -25,7 +25,6 @@ public class FloatInstructionsExec {
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec",
                 FloatInstructions.class,
-                1,
                 mb,
                 true
         );
