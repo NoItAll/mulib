@@ -7,6 +7,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sdouble;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -26,7 +27,7 @@ public class BoolCounter {
         TestUtility.getAllSolutions(this::_testBooleanCounterSized4, "count4");
     }
 
-    private List<PathSolution> _testBooleanCounterSized4(MulibConfig.MulibConfigBuilder mb) {
+    private Boolean _testBooleanCounterSized4(MulibConfig.MulibConfigBuilder mb) {
         List<PathSolution> result = TestUtility.executeMulib(
                 "_count4",
                 BoolCounter.class,
@@ -36,17 +37,24 @@ public class BoolCounter {
         assertEquals(16, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         testIfAllNumbersInRangeAndNoAdditionalSolutions(result);
-        return result;
+        List<Solution> solutions = TestUtility.getUpToNSolutions(
+                100, // Only 16 possible
+                "_count4",
+                BoolCounter.class,
+                mb,
+                false,
+                new Class[0],
+                new Object[0]
+        );
+        assertEquals(16, solutions.size());
+        return true;
     }
 
     private void testIfAllNumbersInRangeAndNoAdditionalSolutions(List<PathSolution> result) {
         for (int i = 0; i < 16; i++) {
             final Integer I = i;
-            assertTrue(result.stream().anyMatch(s -> I.equals((s.getInitialSolution().value))),
+            assertTrue(result.stream().anyMatch(s -> I.equals((s.getSolution().returnValue))),
                     "Value " + i + " is expected but cannot be found.");
-        }
-        for (PathSolution ps : result) {
-            assertEquals(1, ps.getCurrentlyInitializedSolutions().size());
         }
     }
 
@@ -86,7 +94,7 @@ public class BoolCounter {
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         int[] count = new int[46];
         while (!result.isEmpty()) {
-            Integer res = (Integer) result.remove().getInitialSolution().value;
+            Integer res = (Integer) result.remove().getSolution().returnValue;
             count[res]++;
         }
 

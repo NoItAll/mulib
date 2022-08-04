@@ -59,11 +59,6 @@ public class StdLabels implements Labels {
     }
 
     @Override
-    public Map<String, Sprimitive> getIdToNamedPrimitiveVar() {
-        return identifiersToSPrimitives;
-    }
-
-    @Override
     public Map<String, Object> getIdToLabel() {
         return identifiersToValues;
     }

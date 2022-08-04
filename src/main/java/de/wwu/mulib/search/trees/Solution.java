@@ -1,22 +1,17 @@
 package de.wwu.mulib.search.trees;
 
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class Solution {
-
-    public final Object value;
+    public final Object returnValue;
     public final Labels labels;
-    public final Constraint[] additionalConstraints;
 
-    public Solution(Object value, Labels labels, Constraint... additionalConstraints) {
-        this.value = value;
+    public Solution(Object returnValue, Labels labels) {
+        this.returnValue = returnValue;
         this.labels = labels;
-        if (additionalConstraints.length == 0) {
-            this.additionalConstraints = new Constraint[] { Sbool.ConcSbool.TRUE };
-        } else {
-            this.additionalConstraints = additionalConstraints;
-        }
+    }
+
+    public String toString() {
+        return "Solution{labels=" + labels + ", returnValue=" + returnValue + "}";
     }
 }

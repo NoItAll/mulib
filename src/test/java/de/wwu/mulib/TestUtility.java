@@ -293,12 +293,6 @@ public final class TestUtility {
             mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
         }
         List<PathSolution> result = mc.getAllPathSolutions();
-
-        if (maxNumberOfSolutionsForEachPath > 1) {
-            for (PathSolution ps : result) {
-                mc.getUpToNSolutionsInPathSolution(ps, maxNumberOfSolutionsForEachPath);
-            }
-        }
         return result;
     }
 
@@ -335,7 +329,7 @@ public final class TestUtility {
         }
         Optional<PathSolution> result = mc.getPathSolution();
 
-        result.ifPresent(pathSolution -> mc.getUpToNSolutionsInPathSolution(pathSolution, maxNumberOfSolutionsForEachPath));
+//        result.ifPresent(pathSolution -> mc.getUpToNSolutionsInPathSolution(pathSolution, maxNumberOfSolutionsForEachPath));
         return result;
     }
 

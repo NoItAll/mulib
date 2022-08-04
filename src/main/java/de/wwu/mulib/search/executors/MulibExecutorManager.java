@@ -64,17 +64,21 @@ public abstract class MulibExecutorManager {
     }
 
     public Optional<PathSolution> getPathSolution() {
+        Optional<PathSolution> result = _getPathSolution();
+        printStatistics();
+        return result;
+    }
+
+    private Optional<PathSolution> _getPathSolution() {
         int currentNumberPathSolutions = observedTree.getPathSolutionsList().size();
         globalExecutionManagerBudgetManager.resetTimeBudget();
         while (!checkForShutdown()) {
-            Optional<PathSolution> possiblePathSolution = mainExecutor.getSinglePathSolution();
+            Optional<PathSolution> possiblePathSolution = mainExecutor.getPathSolution();
             checkForFailure();
             if (possiblePathSolution.isPresent()) {
-                printStatistics();
                 return possiblePathSolution;
             }
         }
-        printStatistics();
         if (observedTree.getPathSolutionsList().size() > currentNumberPathSolutions) {
             // Potentially, the result has been computed by another thread. In this case, we simply return
             // the last path solution added to the observed tree. It is mandatory that, in fact, a new path-solution
@@ -89,7 +93,7 @@ public abstract class MulibExecutorManager {
         // We constantly poll with the mainExecutor.
         while (!checkForShutdown()) {
             checkForFailure();
-            mainExecutor.getSinglePathSolution();
+            mainExecutor.getPathSolution();
         }
         printStatistics();
         return observedTree.getPathSolutionsList();
@@ -102,8 +106,9 @@ public abstract class MulibExecutorManager {
         numberRequestedSolutions = new AtomicInteger(N);
         int currentNumberSolutions = solutions.size();
         while (!checkForShutdown()) {
-            getPathSolution();
+            _getPathSolution();
         }
+        printStatistics();
         numberRequestedSolutions = null;
         return solutions.subList(currentNumberSolutions, Math.min(N, solutions.size()));
     }
@@ -119,8 +124,11 @@ public abstract class MulibExecutorManager {
         //  up between the executors...
         this.observedTree.addToPathSolutions(pathSolution);
         this.globalExecutionManagerBudgetManager.incrementPathSolutionBudget();
-        if (numberRequestedSolutions != null && numberRequestedSolutions.get() > 0) {
-            solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
+        if (numberRequestedSolutions != null) {
+            int numberOfSolutionsStillNeeded = numberRequestedSolutions.decrementAndGet();
+            if (numberOfSolutionsStillNeeded > 0) {
+                solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
+            }
         }
     }
 

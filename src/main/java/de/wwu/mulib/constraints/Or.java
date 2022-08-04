@@ -2,6 +2,9 @@ package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+import java.util.List;
+import java.util.RandomAccess;
+
 public class Or extends AbstractTwoSidedConstraint {
 
     private Or(Constraint lhs, Constraint rhs) {
@@ -27,15 +30,20 @@ public class Or extends AbstractTwoSidedConstraint {
     }
 
     public static Constraint newInstance(Constraint... constraints) {
-        if (constraints.length == 0) {
+        return newInstance(List.of(constraints));
+    }
+
+    public static Constraint newInstance(List<Constraint> constraints) {
+        assert constraints instanceof RandomAccess;
+        if (constraints.size() == 0) {
             throw new IllegalArgumentException("There must be at least one constraint.");
-        } else if (constraints.length == 1) {
-            return constraints[0];
+        } else if (constraints.size() == 1) {
+            return constraints.get(0);
         }
 
-        Constraint result = constraints[0];
-        for (int i = 1; i < constraints.length; i++) {
-            result = newInstance(result, constraints[i]);
+        Constraint result = constraints.get(0);
+        for (int i = 1; i < constraints.size(); i++) {
+            result = newInstance(result, constraints.get(i));
         }
 
         return result;

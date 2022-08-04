@@ -33,8 +33,8 @@ public class Partition3TransfExec {
                 result.parallelStream().anyMatch(ps -> {
                     for (PathSolution psInner : result) {
                         if (psInner == ps) continue;
-                        if (ps.getInitialSolution().labels.getIdToLabel().equals(
-                                psInner.getInitialSolution().labels.getIdToLabel())) {
+                        if (ps.getSolution().labels.getIdToLabel().equals(
+                                psInner.getSolution().labels.getIdToLabel())) {
                             return true;
                         }
                     }

@@ -4,51 +4,33 @@ import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.Labels;
 
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-
 public class PathSolution extends TreeNode {
 
     private final Constraint[] pathConstraints;
-    private final List<ArrayConstraint> arrayConstraints;
-    private final List<Solution> solutions;
+    private final ArrayConstraint[] arrayConstraints;
+    private final Solution solution;
 
-    public PathSolution(Choice.ChoiceOption parent, Object value, Labels labels, Constraint[] pathConstraints, List<ArrayConstraint> arrayConstraints) {
+    public PathSolution(Choice.ChoiceOption parent, Object value, Labels labels, Constraint[] pathConstraints, ArrayConstraint[] arrayConstraints) {
         super(parent);
-        this.solutions = new ArrayList<>();
         this.pathConstraints = pathConstraints;
         this.arrayConstraints = arrayConstraints;
-        Solution initialSolution = new Solution(value, labels);
-        solutions.add(initialSolution);
+        this.solution = new Solution(value, labels);
     }
 
     public final Constraint[] getPathConstraints() {
         return pathConstraints;
     }
 
-    public final List<ArrayConstraint> getArrayConstraints() {
+    public final ArrayConstraint[] getArrayConstraints() {
         return arrayConstraints;
     }
 
-    public final List<Solution> getCurrentlyInitializedSolutions() {
-        return Collections.unmodifiableList(solutions);
-    }
-
-    public final Solution getInitialSolution() {
-        return solutions.get(0);
-    }
-
-    public final Solution getLatestSolution() {
-        return solutions.get(solutions.size() - 1);
-    }
-
-    public final void addSolution(Solution solution) {
-        solutions.add(solution);
+    public final Solution getSolution() {
+        return solution;
     }
 
     @Override
     public String toString() {
-        return "PathSolution{depth=" + depth + ",solutions=" + getCurrentlyInitializedSolutions() +"}";
+        return getClass().getSimpleName() + "{depth=" + depth + ",solution=" + solution +"}";
     }
 }

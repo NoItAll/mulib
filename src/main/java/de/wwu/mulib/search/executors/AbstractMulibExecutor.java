@@ -3,10 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.ConcolicConstraintContainer;
-import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -162,7 +159,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Optional<PathSolution> getSinglePathSolution() {
+    public Optional<PathSolution> getPathSolution() {
         while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
@@ -177,7 +174,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     }
                     PathSolution solution;
                     try {
-                        solution = generateSolution(solutionValue, symbolicExecution, false);
+                        solution = getSolution(solutionValue, symbolicExecution, false);
                     } catch (Throwable t) {
                         t.printStackTrace();
                         throw new MulibRuntimeException(t);
@@ -202,7 +199,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     Mulib.log.log(Level.WARNING, config.toString());
                     throw e;
                 } catch (Exception | AssertionError e) {
-                    PathSolution solution = generateSolution(e, symbolicExecution, true);
+                    PathSolution solution = getSolution(e, symbolicExecution, true);
                     this.mulibExecutorManager.addToPathSolutions(solution, this);
                     return Optional.of(solution);
                 } catch (Throwable t) {
@@ -236,7 +233,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             ValueFactory valueFactory,
             CalculationFactory calculationFactory);
 
-    protected PathSolution generateSolution(
+    protected PathSolution getSolution(
             Object solutionValue,
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
@@ -274,14 +271,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     (Throwable) solutionValue,
                     labels,
                     solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getArrayConstraints()
+                    solverManager.getArrayConstraints().toArray(new ArrayConstraint[0])
             );
         } else {
             solution = currentChoiceOption.setSolution(
                     solutionValue,
                     labels,
                     solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getArrayConstraints()
+                    solverManager.getArrayConstraints().toArray(new ArrayConstraint[0])
             );
         }
         return solution;
@@ -319,5 +316,64 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     protected Object invokeSearchRegion() throws Throwable {
         return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
+    }
+
+    protected boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
+        assert !choiceOption.isEvaluated();
+        assert !choiceOption.isBudgetExceeded();
+        assert !choiceOption.isUnsatisfiable();
+        assert !choiceOption.isCutOff();
+        assert !choiceOption.isExplicitlyFailed();
+        assert currentChoiceOption == null ||
+                (currentChoiceOption.getChild() instanceof Choice
+                        && ((Choice) currentChoiceOption.getChild()).getChoiceOptions().stream()
+                        .anyMatch(co -> choiceOption == co));
+        if (choiceOption.isSatisfiable()) {
+            addAfterBacktrackingPoint(choiceOption);
+            return true;
+        } else if (choiceOption.isUnsatisfiable()) {
+            return false;
+        }
+
+        int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
+        if (choiceOption.getChoice().getChoiceOptions().size() == 2
+                && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
+                && choiceOption.getParent().isEvaluated()) {
+            // If the first choice option is not satisfiable, the choice is binary, and the parent
+            // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
+            // of the first choice.
+            Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
+            assert other != choiceOption;
+            Constraint c0 = other.getOptionConstraint();
+            Constraint c1 = choiceOption.getOptionConstraint();
+            if ((c1 instanceof Not && ((Not) c1).isNegationOf(c0))
+                    || (c0 instanceof Not && ((Not) c0).isNegationOf(c1))) {
+                choiceOption.setSatisfiable();
+                choiceOption.setOptionConstraint(Sbool.ConcSbool.TRUE);
+                addAfterBacktrackingPoint(choiceOption);
+                heuristicSatEvals++;
+                assert solverManager.isSatisfiable();
+                return true;
+            }
+        }
+
+        addAfterBacktrackingPoint(choiceOption);
+        return checkSatWithSolver(solverManager, choiceOption);
+    }
+
+    protected boolean checkSatWithSolver(SolverManager solverManager, Choice.ChoiceOption choiceOption) {
+        if (solverManager.isSatisfiable()) {
+            choiceOption.setSatisfiable();
+            satEvals++;
+            return true;
+        } else {
+            choiceOption.setUnsatisfiable();
+            unsatEvals++;
+            // Needed during chooseNextChoiceOption(Choice) for when one is unsatisfiable. This way
+            // calling isSatisfiable(ChoiceOption) always leaves the MulibExecutor on a satisfiable
+            // ChoiceOption.
+            backtrackOnce();
+            return false;
+        }
     }
 }

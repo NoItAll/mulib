@@ -16,6 +16,7 @@ import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -169,29 +170,27 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     @Override
     public List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler) {
-        List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
-        while (isSatisfiable() && N.decrementAndGet() > 0) {
-            Solution latestSolution = pathSolution.getLatestSolution();
-            Constraint[] latestSolutionConstraint = latestSolution.additionalConstraints;
+        Solution latestSolution = pathSolution.getSolution();
+        if (latestSolution.labels.getNamedVars().length == 0) {
+            return Collections.emptyList(); // No named variables --> nothing to negate.
+        }
+        List<Solution> solutions = new ArrayList<>();
+        int backtrackAfter = 0;
+        int currentN = N.get();
+        while (currentN > 0) {
             Labels l = latestSolution.labels;
-            if (l.getNamedVars().length == 0) {
-                return solutions; // No named variables --> nothing to negate.
-            }
 
             SubstitutedVar[] namedVars = l.getNamedVars();
             List<Constraint> disjunctionConstraints = new ArrayList<>();
-            for (int i = 0; i < namedVars.length; i++) {
-                SubstitutedVar sv = namedVars[i];
+            for (SubstitutedVar sv : namedVars) {
                 if (sv instanceof Sprimitive) {
                     Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
                     disjunctionConstraints.add(disjunctionConstraint);
                 }
             }
 
-            Constraint newConstraint = Or.newInstance(disjunctionConstraints.toArray(new Constraint[0]));
-            Constraint[] additionalSolutionConstraints = new Constraint[latestSolutionConstraint.length + 1];
-            System.arraycopy(latestSolutionConstraint, 0 , additionalSolutionConstraints, 0, latestSolutionConstraint.length);
-            additionalSolutionConstraints[latestSolutionConstraint.length] = newConstraint;
+            Constraint newConstraint = Or.newInstance(disjunctionConstraints);
+            backtrackAfter++;
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
                 Labels newLabels = LabelUtility.getLabels(
@@ -199,21 +198,23 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                         mulibValueLabeler,
                         l.getIdToNamedVar()
                 );
-                Object solutionValue = pathSolution.getLatestSolution().value;
+                Object solutionValue = latestSolution.returnValue;
                 if (solutionValue instanceof Sym) {
                     solutionValue = l.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
                 }
                 Solution newSolution = new Solution(
                         solutionValue,
-                        newLabels,
-                        additionalSolutionConstraints
+                        newLabels
                 );
-                pathSolution.addSolution(newSolution);
+                currentN = N.decrementAndGet();
                 solutions.add(newSolution);
+                latestSolution = newSolution;
             } else {
                 break;
             }
         }
+        backtrack(backtrackAfter);
+        solutions.add(pathSolution.getSolution());
         return solutions;
     }
 

@@ -146,7 +146,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
 
     private void computePathSolutionsWithNonMainExecutor(MulibExecutor mulibExecutor) {
         while (!checkForPause()) {
-            mulibExecutor.getSinglePathSolution();
+            mulibExecutor.getPathSolution();
         }
     }
 }

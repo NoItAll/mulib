@@ -1,8 +1,6 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
@@ -10,8 +8,6 @@ import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -163,65 +159,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         return choiceOptionDeque.pollFirst();
     }
 
-    private boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
-        assert !choiceOption.isEvaluated();
-        assert !choiceOption.isBudgetExceeded();
-        assert !choiceOption.isUnsatisfiable();
-        assert !choiceOption.isCutOff();
-        assert !choiceOption.isExplicitlyFailed();
-        assert currentChoiceOption == null ||
-                (currentChoiceOption.getChild() instanceof Choice
-                        && ((Choice) currentChoiceOption.getChild()).getChoiceOptions().stream()
-                        .anyMatch(co -> choiceOption == co));
-        if (choiceOption.isSatisfiable()) {
-            addAfterBacktrackingPoint(choiceOption);
-            return true;
-        } else if (choiceOption.isUnsatisfiable()) {
-            return false;
-        }
-
-        int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
-        if (choiceOption.getChoice().getChoiceOptions().size() == 2
-                && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
-                && choiceOption.getParent().isEvaluated()) {
-            // If the first choice option is not satisfiable, the choice is binary, and the parent
-            // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
-            // of the first choice.
-            Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
-            assert other != choiceOption;
-            Constraint c0 = other.getOptionConstraint();
-            Constraint c1 = choiceOption.getOptionConstraint();
-            if ((c1 instanceof Not && ((Not) c1).isNegationOf(c0))
-                    || (c0 instanceof Not && ((Not) c0).isNegationOf(c1))) {
-                choiceOption.setSatisfiable();
-                choiceOption.setOptionConstraint(Sbool.ConcSbool.TRUE);
-                addAfterBacktrackingPoint(choiceOption);
-                heuristicSatEvals++;
-                assert solverManager.isSatisfiable();
-                return true;
-            }
-        }
-
-        addAfterBacktrackingPoint(choiceOption);
-        return checkSatWithSolver(solverManager, choiceOption);
-    }
-
-    private boolean checkSatWithSolver(SolverManager solverManager, Choice.ChoiceOption choiceOption) {
-        if (solverManager.isSatisfiable()) {
-            choiceOption.setSatisfiable();
-            satEvals++;
-            return true;
-        } else {
-            choiceOption.setUnsatisfiable();
-            unsatEvals++;
-            // Needed during chooseNextChoiceOption(Choice) for when one is unsatisfiable. This way
-            // calling isSatisfiable(ChoiceOption) always leaves the MulibExecutor on a satisfiable
-            // ChoiceOption.
-            backtrackOnce();
-            return false;
-        }
-    }
-
     @Override
     protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
@@ -235,6 +172,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             addExistingArrayConstraints(co.getArrayConstraints());
             addedAfterBacktrackingPoint++;
         }
-        currentChoiceOption = optionToBeEvaluated.getParent();
+        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
     }
 }

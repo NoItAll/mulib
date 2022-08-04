@@ -35,7 +35,7 @@ public class AbsValueMul {
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         boolean first = false; boolean second = false; boolean third = false; boolean fourth = false;
         for (PathSolution s : result) {
-            Sint.SymSint solContent = (Sint.SymSint) s.getInitialSolution().value;
+            Sint.SymSint solContent = (Sint.SymSint) s.getSolution().returnValue;
             NumericExpression representedExpression = solContent.getRepresentedExpression();
             assertTrue(representedExpression instanceof Mul);
             NumericExpression expr0 = ((Mul) representedExpression).getExpr0();

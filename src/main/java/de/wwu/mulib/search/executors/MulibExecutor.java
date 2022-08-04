@@ -16,7 +16,7 @@ public interface MulibExecutor {
 
     void addExistingArrayConstraints(List<ArrayConstraint> acs);
 
-    Optional<PathSolution> getSinglePathSolution();
+    Optional<PathSolution> getPathSolution();
 
     List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N);
 

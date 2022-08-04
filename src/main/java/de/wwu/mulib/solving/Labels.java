@@ -19,8 +19,6 @@ public interface Labels {
 
     Map<String, SubstitutedVar> getIdToNamedVar();
 
-    Map<String, Sprimitive> getIdToNamedPrimitiveVar();
-
     Map<String, Object> getIdToLabel();
 
 }

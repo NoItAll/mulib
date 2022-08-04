@@ -30,8 +30,8 @@ public class FreeArraysExec {
                     assertTrue(result.isPresent());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
                     PathSolution pathSolution = result.get();
-                    Solution s = pathSolution.getInitialSolution();
-                    Object[] values = (Object[]) s.value;
+                    Solution s = pathSolution.getSolution();
+                    Object[] values = (Object[]) s.returnValue;
                     assertEquals(-81, values[0]);
                     assertEquals(0, values[1]);
                     assertEquals(1, values[2]);
@@ -60,8 +60,8 @@ public class FreeArraysExec {
                     assertTrue(result.isPresent(), mb.build().toString());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution), mb.build().toString());
                     PathSolution pathSolution = result.get();
-                    Solution s = pathSolution.getInitialSolution();
-                    Object[] values = (Object[]) s.value;
+                    Solution s = pathSolution.getSolution();
+                    Object[] values = (Object[]) s.returnValue;
                     assertEquals(1, values[0], mb.build().toString());
                     assertEquals(1, values[1], mb.build().toString());
                     assertEquals(5, values[2], mb.build().toString());

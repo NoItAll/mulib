@@ -551,7 +551,7 @@ public class GeneratedMethodsCheckExec {
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
                     PathSolution ps = result.get(0);
-                    Object returnValue = ps.getInitialSolution().value;
+                    Object returnValue = ps.getSolution().returnValue;
                     assertInstanceOf(CyclicInputClasses.class, returnValue);
                     CyclicInputClasses cic = (CyclicInputClasses) returnValue;
                     assertEquals(84, (cic.getS()));
@@ -574,7 +574,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    assertEquals(3, result.get(0).getInitialSolution().value);
+                    assertEquals(3, result.get(0).getSolution().returnValue);
                     return result;
                 },
                 "testIndirectCyclicInputClassesCalc0"
@@ -591,7 +591,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    assertEquals(3, result.get(0).getInitialSolution().value);
+                    assertEquals(3, result.get(0).getSolution().returnValue);
                     return result;
                 },
                 "testIndirectCyclicInputClassesCalc1"

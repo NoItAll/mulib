@@ -158,12 +158,12 @@ public final class Choice extends TreeNode {
             return result;
         }
 
-        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints, List<ArrayConstraint> arrayConstraints) {
+        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints, ArrayConstraint[] arrayConstraints) {
             _checkChildIsUnset();
             return new PathSolution(this, value, l, constraints, arrayConstraints);
         }
 
-        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints, List<ArrayConstraint> arrayConstraints) {
+        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints, ArrayConstraint[] arrayConstraints) {
             _checkChildIsUnset();
             return new ExceptionPathSolution(this, throwable, labels, constraints, arrayConstraints);
         }
