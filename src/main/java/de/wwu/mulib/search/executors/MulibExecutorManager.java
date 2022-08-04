@@ -60,7 +60,7 @@ public abstract class MulibExecutorManager {
                         new ArrayList<>()
                         :
                         Collections.synchronizedList(new ArrayList<>());
-        this.numberRequestedSolutions = new AtomicInteger(Integer.MIN_VALUE);
+        this.numberRequestedSolutions = null;
     }
 
     public Optional<PathSolution> getPathSolution() {
@@ -96,7 +96,7 @@ public abstract class MulibExecutorManager {
     }
 
     public synchronized List<Solution> getUpToNSolutions(int N) {
-        if (numberRequestedSolutions.get() > 0) {
+        if (numberRequestedSolutions != null) {
             throw new MulibIllegalStateException("The previous request for solutions has not been completed");
         }
         numberRequestedSolutions = new AtomicInteger(N);
@@ -104,7 +104,7 @@ public abstract class MulibExecutorManager {
         while (!checkForShutdown()) {
             getPathSolution();
         }
-        numberRequestedSolutions.set(Integer.MIN_VALUE);
+        numberRequestedSolutions = null;
         return solutions.subList(currentNumberSolutions, Math.min(N, solutions.size()));
     }
 
@@ -119,8 +119,8 @@ public abstract class MulibExecutorManager {
         //  up between the executors...
         this.observedTree.addToPathSolutions(pathSolution);
         this.globalExecutionManagerBudgetManager.incrementPathSolutionBudget();
-        if (numberRequestedSolutions.get() > 0) {
-            responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions);
+        if (numberRequestedSolutions != null && numberRequestedSolutions.get() > 0) {
+            solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
         }
     }
 
@@ -173,10 +173,9 @@ public abstract class MulibExecutorManager {
         return checkForPause();
     }
 
-    // Returns false if numberRequestedSolutions == Integer.MIN_VALUE, which is true if we did not ask for
+    // Returns false if numberRequestedSolutions == null, which is true if we did not ask for
     // Solutions
     private boolean shouldStopSinceEnoughSolutionsWereFound() {
-        int i = numberRequestedSolutions.get();
-        return i <= 0 && i != Integer.MIN_VALUE;
+        return numberRequestedSolutions != null && numberRequestedSolutions.get() <= 0;
     }
 }

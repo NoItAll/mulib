@@ -16,7 +16,6 @@ import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -170,12 +169,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     @Override
     public List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler) {
-        backtrackAll(); // TODO optimize
-        List<Constraint> constraintList = new ArrayList<>();
-        constraintList.add(Sbool.ConcSbool.TRUE);
-        constraintList.addAll(Arrays.asList(pathSolution.getPathConstraints()));
-        addConstraintAfterNewBacktrackingPoint(And.newInstance(constraintList));
-        addArrayConstraints(pathSolution.getArrayConstraints());
         List<Solution> solutions = new ArrayList<>(pathSolution.getCurrentlyInitializedSolutions());
         while (isSatisfiable() && N.decrementAndGet() > 0) {
             Solution latestSolution = pathSolution.getLatestSolution();
@@ -203,7 +196,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             if (isSatisfiable()) {
                 Labels newLabels = LabelUtility.getLabels(
                         this,
-                        mulibValueLabeler /* SE not required for labeling */,
+                        mulibValueLabeler,
                         l.getIdToNamedVar()
                 );
                 Object solutionValue = pathSolution.getLatestSolution().value;

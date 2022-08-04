@@ -349,9 +349,9 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
                 synchronized (syncObject) {
-                    String transformedName = addPrefixToName(toTransform.getName());
-                    Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
                     if (!overWriteFileForSystemClassLoader) {
+                        String transformedName = addPrefixToName(toTransform.getName());
+                        Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
                         // If loading succeeded there already is a class file in the build
                         transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
                         transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));

@@ -34,20 +34,19 @@ public class NQueensTransfExec {
         return result;
     }
 
-    private List<PathSolution> _testNQueensAlt(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = TestUtility.executeMulib(
+    private List<Solution> _testNQueensAlt(MulibConfig.MulibConfigBuilder mb) {
+        List<Solution> result = TestUtility.getUpToNSolutions(
+                120, // Only 92 possible
                 "solveAlt",
                 NQueensTransf.class,
-                120,
                 mb,
-                true
+                new Class[0],
+                new Object[0]
         );
-        assertEquals(1, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        assertEquals(92, result.get(0).getCurrentlyInitializedSolutions().size());
+        assertEquals(92, result.size());
         assertFalse(
-                result.get(0).getCurrentlyInitializedSolutions().parallelStream().anyMatch(s -> {
-                    for (Solution sInner : result.get(0).getCurrentlyInitializedSolutions()) {
+                result.parallelStream().anyMatch(s -> {
+                    for (Solution sInner : result) {
                         if (s == sInner) continue;
                         if (s.labels.getIdToLabel().equals(sInner.labels.getIdToLabel())) {
                             return true;

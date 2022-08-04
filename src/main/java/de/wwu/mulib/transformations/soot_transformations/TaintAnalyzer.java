@@ -360,11 +360,11 @@ public class TaintAnalyzer {
                 || (u instanceof AssignStmt && ((AssignStmt) u).containsInvokeExpr()));
     }
 
-    private boolean isToTransformMethodCallStmt(Stmt u) {
+    private boolean isToTransformMethodCallStmt(Stmt u) { // TODO Invokedynamic and static bootstrap methods
         return ((u instanceof InvokeStmt && mulibTransformer.shouldBeTransformed(u.getInvokeExpr().getMethodRef().getDeclaringClass().getName()))
                 || (u instanceof AssignStmt && u.containsInvokeExpr()
-                && ((u.getInvokeExpr() instanceof DynamicInvokeExpr && mulibTransformer.shouldBeTransformed(((DynamicInvokeExpr) u.getInvokeExpr()).getBootstrapMethodRef().getDeclaringClass().getName()))
-                    || (!(u.getInvokeExpr() instanceof DynamicInvokeExpr) && mulibTransformer.shouldBeTransformed(u.getInvokeExpr().getMethodRef().getDeclaringClass().getName())))));
+                    && ((u.getInvokeExpr() instanceof DynamicInvokeExpr && mulibTransformer.shouldBeTransformed(((DynamicInvokeExpr) u.getInvokeExpr()).getBootstrapMethodRef().getDeclaringClass().getName()))
+                        || (!(u.getInvokeExpr() instanceof DynamicInvokeExpr) && mulibTransformer.shouldBeTransformed(u.getInvokeExpr().getMethodRef().getDeclaringClass().getName())))));
     }
 
     private boolean isSpecialMulibIndicatorMethod(Stmt s) {

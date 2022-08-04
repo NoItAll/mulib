@@ -3,13 +3,13 @@ package de.wwu.mulib;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.Solvers;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 import static de.wwu.mulib.search.executors.SearchStrategy.*;
 
@@ -188,26 +188,36 @@ public final class TestUtility {
     }
 
     public static void getAllSolutions(
-            Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mbToList,
+            Function<MulibConfig.MulibConfigBuilder, ?> mbToList,
             String testedMethodName) {
         getAllSolutions(b -> b, mbToList, testedMethodName);
     }
 
     public static void getAllSolutions(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig.MulibConfigBuilder, List<PathSolution>> mulibConfigToList,
+            Function<MulibConfig.MulibConfigBuilder, ?> mulibConfigToList,
             String testedMethodName) {
-        final List<MulibConfig.MulibConfigBuilder> executeTestsWith = initBuilders();
-        int currentFirstElementOfNextList = 0;
-        int batchSize;
-        if (longParallelExecutorsCheck) {
-            batchSize = longParallelExecutorsCheckBatchSize;
-        } else if (longSingleThreadedExecutorsCheck) {
-            batchSize = longSingleThreadedExecutorsCheckBatchSize;
-        } else {
-            batchSize = quickParallelExecutorsCheckBatchSize;
+        if (quickCheck) {
+            executeTestConfigsBatched(quickCheck(), adjustment, mulibConfigToList, testedMethodName, 1);
         }
-        List<List<PathSolution>> result = new ArrayList<>();
+        if (quickParallelExecutorsCheck) {
+            executeTestConfigsBatched(quickParallelExecutorsCheck(), adjustment, mulibConfigToList, testedMethodName, quickParallelExecutorsCheckBatchSize);
+        }
+        if (longParallelExecutorsCheck) {
+            executeTestConfigsBatched(longParallelCheck(), adjustment, mulibConfigToList, testedMethodName, longParallelExecutorsCheckBatchSize);
+        }
+        if (longSingleThreadedExecutorsCheck) {
+            executeTestConfigsBatched(longSingleThreadedExecutorsCheck(), adjustment, mulibConfigToList, testedMethodName, longSingleThreadedExecutorsCheckBatchSize);
+        }
+    }
+
+    private static void executeTestConfigsBatched(
+            List<MulibConfig.MulibConfigBuilder> executeTestsWith,
+            Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
+            Function<MulibConfig.MulibConfigBuilder, ?> mulibConfigToList,
+            String testedMethodName,
+            int batchSize) {
+        int currentFirstElementOfNextList = 0;
         while (currentFirstElementOfNextList < executeTestsWith.size()) {
             int nextEndpoint = currentFirstElementOfNextList + batchSize;
             List<MulibConfig.MulibConfigBuilder> currentBatch =
@@ -215,15 +225,12 @@ public final class TestUtility {
                             currentFirstElementOfNextList,
                             Math.min(nextEndpoint, executeTestsWith.size())
                     );
-            result.addAll(
-                    currentBatch.parallelStream().map(mcb -> {
-                        MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
-                        Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
-                        List<PathSolution> pathSolutions = mulibConfigToList.apply(mb);
-                        Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
-                        return pathSolutions;
-                    }).collect(Collectors.toList())
-            );
+            currentBatch.parallelStream().forEach(mcb -> {
+                MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
+                Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
+                mulibConfigToList.apply(mb);
+                Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
+            });
 
             currentFirstElementOfNextList = nextEndpoint;
         }
@@ -332,4 +339,38 @@ public final class TestUtility {
         return result;
     }
 
+    public static List<Solution> getUpToNSolutions(
+            int N,
+            String methodName,
+            Class<?> containingClass,
+            MulibConfig.MulibConfigBuilder mb) {
+        return getUpToNSolutions(N, methodName, containingClass, mb, new Class[0], new Object[0]);
+    }
+
+    public static List<Solution> getUpToNSolutions(
+            int N,
+            String methodName,
+            Class<?> containingClass,
+            MulibConfig.MulibConfigBuilder mb,
+            Class<?>[] argTypes,
+            Object[] args) {
+        return getUpToNSolutions(N, methodName, containingClass, mb, true, argTypes, args);
+    }
+
+    public static List<Solution> getUpToNSolutions(
+            int N,
+            String methodName,
+            Class<?> containingClass,
+            MulibConfig.MulibConfigBuilder mb,
+            boolean transformationRequired,
+            Class<?>[] argTypes,
+            Object[] args) {
+        MulibContext mc;
+        if (transformationRequired) {
+            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
+        } else {
+            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
+        }
+        return mc.getUpToNSolutions(N);
+    }
 }
