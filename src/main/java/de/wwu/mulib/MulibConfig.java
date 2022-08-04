@@ -83,6 +83,8 @@ public class MulibConfig {
     public final boolean TRANSF_WRITE_TO_FILE;
     public final String TRANSF_GENERATED_CLASSES_PATH;
     public final boolean TRANSF_VALIDATE_TRANSFORMATION;
+    // For debugging and testing, it sometimes is helpful to directly write library-code without a transformation
+    public final boolean TRANSF_TRANSFORMATION_REQUIRED;
     // For the system classloader to work, it is required that TRANSF_GENERATED_CLASSES_PATH is set to the same root
     // folder of the usual system classes.
     public final boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
@@ -130,6 +132,7 @@ public class MulibConfig {
         private boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         private boolean TRANSF_INCLUDE_PACKAGE_NAME;
         private boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
+        private boolean TRANSF_TRANSFORMATION_REQUIRED;
         private long PARALLEL_TIMEOUT_IN_MS;
         private Optional<Integer> SYMSINT_LB;
         private Optional<Integer> SYMSINT_UB;
@@ -191,6 +194,7 @@ public class MulibConfig {
             this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = new HashMap<>();
             this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = false;
+            this.TRANSF_TRANSFORMATION_REQUIRED = true;
             this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = Collections.emptyList();
             this.PARALLEL_TIMEOUT_IN_MS = 5000;
             this.SYMSINT_LB =    Optional.empty();
@@ -480,6 +484,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setTRANSF_TRANSFORMATION_REQUIRED(boolean TRANSF_TRANSFORMATION_REQUIRED) {
+            this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
+            return this;
+        }
+
         public MulibConfigBuilder putSOLVER_ARGS(String key, String val) {
             SOLVER_ARGS.put(key, val);
             return this;
@@ -682,6 +691,10 @@ public class MulibConfig {
             return SOLVER_ARGS;
         }
 
+        public boolean getTRANSF_TRANSFORMATION_REQUIRED() {
+            return TRANSF_TRANSFORMATION_REQUIRED;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -741,6 +754,7 @@ public class MulibConfig {
                     TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                     TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                     TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
+                    TRANSF_TRANSFORMATION_REQUIRED,
                     CHOICE_OPTION_DEQUE_TYPE,
                     ACTIVATE_PARALLEL_FOR,
                     SYMSINT_LB,
@@ -793,6 +807,7 @@ public class MulibConfig {
                         Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                         boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
+                        boolean TRANSF_TRANSFORMATION_REQUIRED,
                         ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE,
                         long ACTIVATE_PARALLEL_FOR,
                         Optional<Integer> SYMSINT_LB,
@@ -841,6 +856,7 @@ public class MulibConfig {
         this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS);
         this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
+        this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
         this.PARALLEL_TIMEOUT_IN_MS = PARALLEL_TIMEOUT_IN_MS;
         this.CHOICE_OPTION_DEQUE_TYPE = CHOICE_OPTION_DEQUE_TYPE;
         this.ACTIVATE_PARALLEL_FOR = ACTIVATE_PARALLEL_FOR < 1 ? Optional.empty() : Optional.of(ACTIVATE_PARALLEL_FOR);

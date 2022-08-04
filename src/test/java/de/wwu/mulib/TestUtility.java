@@ -275,12 +275,8 @@ public final class TestUtility {
             boolean transformationRequired,
             Class<?>[] argTypes,
             Object[] args) {
-        MulibContext mc;
-        if (transformationRequired) {
-            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        } else {
-            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
-        }
+        mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
+        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
         List<PathSolution> result = mc.getAllPathSolutions();
         return result;
     }
@@ -307,14 +303,9 @@ public final class TestUtility {
             boolean transformationRequired,
             Class<?>[] argTypes,
             Object[] args) {
-        MulibContext mc;
-        if (transformationRequired) {
-            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        } else {
-            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
-        }
+        mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
+        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
         Optional<PathSolution> result = mc.getPathSolution();
-
         return result;
     }
 
@@ -344,12 +335,8 @@ public final class TestUtility {
             boolean transformationRequired,
             Class<?>[] argTypes,
             Object[] args) {
-        MulibContext mc;
-        if (transformationRequired) {
-            mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
-        } else {
-            mc = Mulib.getMulibContextWithoutTransformation(methodName, containingClass, mb, argTypes, args);
-        }
+        mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
+        MulibContext mc = Mulib.getMulibContext(methodName, containingClass, mb, argTypes, args);
         return mc.getUpToNSolutions(N);
     }
 }

@@ -31,10 +31,10 @@ public final class MulibValueTransformer {
     // Partner-classes. This is useful for testing and for manually writing such classes.
     private final boolean transformationRequired;
     private long nextSarrayId = 0;
-    public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer, boolean transformationRequired) {
+    public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer) {
         this.mulibTransformer = mulibTransformer;
         this.classesToTransformation = config.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-        this.transformationRequired = transformationRequired;
+        this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
     public boolean isTransformationRequired() {

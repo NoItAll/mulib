@@ -2,16 +2,20 @@ package de.wwu.mulib.examples;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.GraphColoring;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.NQueens;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.Partition3;
+import de.wwu.mulib.examples.sac22_mulib_benchmark.TspSolver;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
-import de.wwu.mulib.examples.sac22_mulib_benchmark.*;
 
 import java.util.List;
 
-import static de.wwu.mulib.search.executors.SearchStrategy.*;
+import static de.wwu.mulib.search.executors.SearchStrategy.DFS;
+import static de.wwu.mulib.search.executors.SearchStrategy.DSAS;
 
 public class ExamplesExecutor {
     private ExamplesExecutor(){}
@@ -101,7 +105,8 @@ public class ExamplesExecutor {
     }
 
     private static List<PathSolution> runTsp(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulibWithoutTransformation("exec", TspSolver.class, builder);
+        builder.setTRANSF_TRANSFORMATION_REQUIRED(false);
+        return Mulib.executeMulib("exec", TspSolver.class, builder);
     }
 
     private static List<PathSolution> runGraphColoring(MulibConfig.MulibConfigBuilder builder) {

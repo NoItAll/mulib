@@ -20,26 +20,18 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.logging.Level;
 
-@SuppressWarnings("FieldCanBeLocal")
-public class MulibContext {
+public final class MulibContext {
     @SuppressWarnings("all")
     private final MulibConfig mulibConfig;
     @SuppressWarnings("all")
     private final MethodHandle methodHandle;
     private final MulibExecutorManager mulibExecutorManager;
-    private final Function<SymbolicExecution, Object[]> argsSupplier;
-    private final MulibTransformer mulibTransformer;
-    private final MulibValueTransformer mulibValueTransformer;
-    private final ChoicePointFactory choicePointFactory;
-    private final ValueFactory valueFactory;
-    private final CalculationFactory calculationFactory;
     private static final Object[] emptyArgs = new Object[0];
 
     protected MulibContext(
             String methodName,
             Class<?> owningMethodClass,
             MulibConfig config,
-            boolean transformationRequired,
             Class<?>[] untransformedArgs,
             Object[] args) {
         Class<?> possiblyTransformedMethodClass;
@@ -48,32 +40,34 @@ public class MulibContext {
         if (untransformedArgs == null) {
             untransformedArgs = findMethodFittingToArgs(args, methodName, owningMethodClass);
         }
-        this.choicePointFactory = ChoicePointFactory.getInstance(config);
-        this.valueFactory = ValueFactory.getInstance(config);
-        this.calculationFactory = CalculationFactory.getInstance(config);
-        if (transformationRequired) {
-            this.mulibTransformer = MulibTransformer.get(config);
-            this.mulibTransformer.transformAndLoadClasses(owningMethodClass);
-            possiblyTransformedMethodClass = this.mulibTransformer.getTransformedClass(owningMethodClass);
-            this.mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer, true);
+        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
+        ValueFactory valueFactory = ValueFactory.getInstance(config);
+        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
+        MulibTransformer mulibTransformer;
+        MulibValueTransformer mulibValueTransformer;
+        if (config.TRANSF_TRANSFORMATION_REQUIRED) {
+            mulibTransformer = MulibTransformer.get(config);
+            mulibTransformer.transformAndLoadClasses(owningMethodClass);
+            possiblyTransformedMethodClass = mulibTransformer.getTransformedClass(owningMethodClass);
+            mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
             searchRegionArgTypes = transformArgumentTypes(mulibValueTransformer, untransformedArgs);
         } else {
-            this.mulibTransformer = null;
-            this.mulibValueTransformer = new MulibValueTransformer(config, null, false);
+            mulibValueTransformer = new MulibValueTransformer(config, null);
             possiblyTransformedMethodClass = owningMethodClass;
             searchRegionArgs = args;
             searchRegionArgTypes = untransformedArgs;
         }
         // Find the next sarray-id if any of the arguments are sarrays
-        this.mulibValueTransformer.setNextSarrayId(args);
+        mulibValueTransformer.setNextSarrayId(args);
 
         this.mulibConfig = config;
 
+        Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {
-            this.argsSupplier = (se) -> { return emptyArgs; };
+            argsSupplier = (se) -> { return emptyArgs; };
         } else {
-            this.argsSupplier = (se) -> {
+            argsSupplier = (se) -> {
                 Map<Object, Object> replacedMap = new IdentityHashMap<>();
                 Object[] arguments = new Object[searchRegionArgs.length];
                 for (int i = 0; i < searchRegionArgs.length; i++) {
