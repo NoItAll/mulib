@@ -35,6 +35,7 @@ public final class MulibContext {
             MulibConfig config,
             Class<?>[] untransformedArgTypes,
             Object... prototypicalArgs) {
+        long start = System.nanoTime();
         this.methodName = methodName;
         this.config = config;
         if (untransformedArgTypes == null) {
@@ -51,6 +52,8 @@ public final class MulibContext {
             possiblyTransformedMethodClass = owningMethodClass;
             transformedArgTypes = untransformedArgTypes;
         }
+        long end = System.nanoTime();
+        Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibContext");
     }
 
     private void _throwExceptionOnArgumentMismatch(Object[] providedArgs) {
@@ -60,6 +63,7 @@ public final class MulibContext {
     }
 
     private MulibExecutorManager generateNewMulibExecutorManagerForPreInitializedContext(Object[] args) {
+        long start = System.nanoTime();
         ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
         ValueFactory valueFactory = ValueFactory.getInstance(config);
         CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
@@ -122,7 +126,7 @@ public final class MulibContext {
             throw new MulibRuntimeException(e);
         }
         SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
-        return config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
+        MulibExecutorManager result = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
                         searchTree,
@@ -140,6 +144,9 @@ public final class MulibContext {
                         calculationFactory,
                         mulibValueTransformer
                 );
+        long end = System.nanoTime();
+        Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");
+        return result;
     }
 
     private <T> T _checkExecuteAndLog(Object[] args, Function<Object[], T> argsToResult) {
@@ -147,7 +154,7 @@ public final class MulibContext {
         long start = System.nanoTime();
         T result = argsToResult.apply(args);
         long end = System.nanoTime();
-        Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to finish");
+        Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to retrieve the solution(s)");
         return result;
     }
 
