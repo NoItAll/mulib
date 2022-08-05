@@ -2,7 +2,6 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import de.wwu.mulib.transformations.MulibValueLabeler;
@@ -41,5 +40,5 @@ public interface SolverManager {
 
     int getLevel();
 
-    List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler);
+    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler);
 }

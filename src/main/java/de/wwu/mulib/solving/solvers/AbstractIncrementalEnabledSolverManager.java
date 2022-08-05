@@ -4,7 +4,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
@@ -169,10 +168,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public List<Solution> getUpToNSolutions(PathSolution pathSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler) {
-        Solution latestSolution = pathSolution.getSolution();
+    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler) {
+        Solution latestSolution = initialSolution;
         if (latestSolution.labels.getNamedVars().length == 0) {
-            return Collections.emptyList(); // No named variables --> nothing to negate.
+            return Collections.singletonList(initialSolution); // No named variables --> nothing to negate.
         }
         List<Solution> solutions = new ArrayList<>();
         int backtrackAfter = 0;
@@ -214,7 +213,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             }
         }
         backtrack(backtrackAfter);
-        solutions.add(pathSolution.getSolution());
+        solutions.add(initialSolution);
         return solutions;
     }
 

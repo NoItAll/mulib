@@ -126,14 +126,14 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     protected boolean checkForShutdown() {
         checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
-            for (MulibExecutor executor : mulibExecutors) {
-                executor.terminate();
-            }
             executorService.shutdown();
             try {
                 boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
                 if (!terminated) {
                     throw new MulibRuntimeException("Executor service did not terminate in time");
+                }
+                for (MulibExecutor executor : mulibExecutors) {
+                    executor.terminate();
                 }
             } catch (Exception e) {
                 throw new MulibRuntimeException(e);

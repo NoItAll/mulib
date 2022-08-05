@@ -210,7 +210,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
         // thus, in general, we must adjust the current choice option
         adjustSolverManagerToNewChoiceOption(searchIn.parent);
-        return solverManager.getUpToNSolutions(searchIn, N, new MulibValueLabeler(config, true));
+        return solverManager.getUpToNSolutions(searchIn.getSolution(), N, new MulibValueLabeler(config, true));
     }
 
     @Override

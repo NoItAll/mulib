@@ -18,6 +18,7 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
+import java.util.logging.Level;
 
 public final class MulibContext {
     private final MulibConfig config;
@@ -141,29 +142,33 @@ public final class MulibContext {
                 );
     }
 
-    public List<PathSolution> getAllPathSolutions(Object... args) {
+    private <T> T _checkExecuteAndLog(Object[] args, Function<Object[], T> argsToResult) {
         _throwExceptionOnArgumentMismatch(args);
-        return generateNewMulibExecutorManagerForPreInitializedContext(args).getAllPathSolutions();
+        long start = System.nanoTime();
+        T result = argsToResult.apply(args);
+        long end = System.nanoTime();
+        Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to finish");
+        return result;
+    }
+
+    public List<PathSolution> getAllPathSolutions(Object... args) {
+        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
     }
 
     public Optional<PathSolution> getPathSolution(Object... args) {
-        _throwExceptionOnArgumentMismatch(args);
-        return generateNewMulibExecutorManagerForPreInitializedContext(args).getPathSolution();
+        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getPathSolution());
     }
 
     public List<Solution> getAllSolutions(Object... args) {
-        _throwExceptionOnArgumentMismatch(args);
-        return getUpToNSolutions(Integer.MAX_VALUE, args);
+        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(Integer.MAX_VALUE));
     }
 
     public List<Solution> getUpToNSolutions(int N, Object... args) {
-        _throwExceptionOnArgumentMismatch(args);
-        return generateNewMulibExecutorManagerForPreInitializedContext(args).getUpToNSolutions(N);
+        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(N));
     }
 
     public Optional<Solution> getSolution(Object... args) {
-        _throwExceptionOnArgumentMismatch(args);
-        List<Solution> result = generateNewMulibExecutorManagerForPreInitializedContext(args).getUpToNSolutions(1);
+        List<Solution> result = _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(1));
         if (result.size() > 0) {
             return Optional.of(result.get(0));
         } else {
