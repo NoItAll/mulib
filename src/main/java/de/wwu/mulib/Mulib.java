@@ -5,7 +5,6 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.reflect.InvocationTargetException;
-import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.Logger;
@@ -38,8 +37,7 @@ public final class Mulib {
     }
 
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
-        Class<?>[] argTypes = Arrays.stream(args).map(Object::getClass).toArray(Class<?>[]::new);
-        return executeMulibForOne(methodName, methodOwnerClass, mb, argTypes, args);
+        return executeMulibForOne(methodName, methodOwnerClass, mb, null, args);
     }
 
     public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>... argTypes) {
