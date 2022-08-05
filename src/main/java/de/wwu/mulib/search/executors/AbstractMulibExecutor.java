@@ -6,7 +6,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.ExceededBudget;
 import de.wwu.mulib.search.choice_points.Backtrack;
@@ -19,9 +18,11 @@ import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
+import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.LinkedHashMap;
@@ -140,19 +141,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Object concretize(SubstitutedVar var) {
-        if (var instanceof Conc) {
-            if (var instanceof Sint.ConcSint) {
-                return ((Sint.ConcSint) var).intVal();
-            } else if (var instanceof Sdouble.ConcSdouble) {
-                return ((Sdouble.ConcSdouble) var).doubleVal();
-            } else if (var instanceof Sfloat.ConcSfloat) {
-                return ((Sfloat.ConcSfloat) var).floatVal();
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else if (var instanceof Sprimitive) {
+        if (var instanceof Sprimitive) {
             // TODO add constraint
-            return solverManager.getLabel((Sprimitive) var);
+            return currentSymbolicExecution.getMulibValueLabeler().labelSprimitive((Sprimitive) var, solverManager);
         } else {
             return currentSymbolicExecution.getMulibValueLabeler().label(var, solverManager);
         }

@@ -572,7 +572,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
-        if (i instanceof Sint.ConcSint && ((Sint.ConcSint) i).intVal() < 0) {
+        if (i instanceof ConcSnumber && ((ConcSnumber) i).intVal() < 0) {
             throw new ArrayIndexOutOfBoundsException();
         }
         if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
@@ -594,8 +594,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
                 se.addNewConstraint(indexInBound);
             }
         } else {
-            Sint.ConcSint concLen = (Sint.ConcSint) sarray.getLength();
-            Sint.ConcSint concI = (Sint.ConcSint) i;
+            ConcSnumber concLen = (ConcSnumber) sarray.getLength();
+            ConcSnumber concI = (ConcSnumber) i;
             if (concLen.intVal() <= concI.intVal() || concI.intVal() < 0) {
                 throw new ArrayIndexOutOfBoundsException();
             }

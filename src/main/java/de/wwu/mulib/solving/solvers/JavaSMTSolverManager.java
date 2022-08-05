@@ -433,42 +433,16 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             if (result != null) {
                 return result;
             }
-            if (i instanceof Sshort) {
-                result = _transformSnumber(
-                        i,
-                        () -> i instanceof Sshort.ConcSshort,
-                        () -> i instanceof Sshort.SymSshort,
-                        () -> integerFormulaManager.makeNumber(((Sshort.ConcSshort) i).shortVal()),
-                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
-                );
-            } else if (i instanceof Sbyte) {
-                result = _transformSnumber(
-                        i,
-                        () -> i instanceof Sbyte.ConcSbyte,
-                        () -> i instanceof Sbyte.SymSbyte,
-                        () -> integerFormulaManager.makeNumber(((Sbyte.ConcSbyte) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
-                );
-            } else if (i instanceof Sbool) {
-                if (!treatSboolsAsInts) {
-                    throw new MulibRuntimeException("Must not occur");
-                }
-                return _transformSnumber(
-                        i,
-                        () -> i instanceof Sbool.ConcSbool,
-                        () -> i instanceof Sbool.SymSbool,
-                        () -> integerFormulaManager.makeNumber(((Sbool.ConcSbool) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId() + "_int")
-                );
-            } else {
-                result = _transformSnumber(
-                        i,
-                        () -> i instanceof Sint.ConcSint,
-                        () -> i instanceof Sint.SymSint,
-                        () -> integerFormulaManager.makeNumber(((Sint.ConcSint) i).intVal()),
-                        () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
-                );
+            if (i instanceof Sbool && !treatSboolsAsInts) {
+                throw new MulibRuntimeException("Must not occur");
             }
+            result = _transformSnumber(
+                    i,
+                    () -> i instanceof ConcSnumber,
+                    () -> i instanceof SymSprimitive,
+                    () -> integerFormulaManager.makeNumber(((ConcSnumber) i).intVal()),
+                    () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
+            );
             numericExpressionStore.put(i, result);
             return result;
         }

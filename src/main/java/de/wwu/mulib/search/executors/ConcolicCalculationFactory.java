@@ -590,7 +590,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     @Override
     public Sint cmp(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
         Sint sym = scf.cmp(se, vf, (Slong) tryGetSymFromConcolic(lhs), (Slong) tryGetSymFromConcolic(rhs));
-        if (sym instanceof Sint.ConcSint) {
+        if (sym instanceof ConcSnumber) {
             return sym;
         }
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
@@ -604,7 +604,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     @Override
     public Sint cmp(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
         Sint sym = scf.cmp(se, vf, (Sdouble) tryGetSymFromConcolic(lhs), (Sdouble) tryGetSymFromConcolic(rhs));
-        if (sym instanceof Sint.ConcSint) {
+        if (sym instanceof ConcSnumber) {
             return sym;
         }
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
@@ -618,7 +618,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     @Override
     public Sint cmp(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
         Sint sym = scf.cmp(se, vf, (Sfloat) tryGetSymFromConcolic(lhs), (Sfloat) tryGetSymFromConcolic(rhs));
-        if (sym instanceof Sint.ConcSint) {
+        if (sym instanceof ConcSnumber) {
             return sym;
         }
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
@@ -858,10 +858,10 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
-        if (i instanceof Sint.ConcSint && ((Sint.ConcSint) i).intVal() < 0) {
+        if (i instanceof ConcSnumber && ((ConcSnumber) i).intVal() < 0) {
             throw new ArrayIndexOutOfBoundsException();
         }
-        if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
+        if (sarray.getLength() instanceof SymNumericExpressionSprimitive || i instanceof SymNumericExpressionSprimitive) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.
             Sbool indexInBound = se.and(se.lt(i, sarray.getLength()), se.lte(Sint.ConcSint.ZERO, i));
@@ -885,8 +885,8 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 }
             }
         } else {
-            Sint.ConcSint concLen = (Sint.ConcSint) sarray.getLength();
-            Sint.ConcSint concI = (Sint.ConcSint) i;
+            ConcSnumber concLen = (ConcSnumber) sarray.getLength();
+            ConcSnumber concI = (ConcSnumber) i;
             if (concLen.intVal() <= concI.intVal() || concI.intVal() < 0) {
                 throw new ArrayIndexOutOfBoundsException();
             }
@@ -927,7 +927,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private Sint toSint(ValueFactory vf, Snumber original, Sint sym) {
-        if (sym instanceof Sint.ConcSint) {
+        if (sym instanceof ConcSnumber) {
             return sym;
         }
         ConcSnumber iconc = getConcNumericFromConcolic(original);

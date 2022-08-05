@@ -26,8 +26,8 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     protected void restrictLength(SymbolicExecution se, Sint len) {
-        if (len instanceof Sint.ConcSint) {
-            if (((Sint.ConcSint) len).intVal() < 0) {
+        if (len instanceof ConcSnumber) {
+            if (((ConcSnumber) len).intVal() < 0) {
                 throw new NegativeArraySizeException();
             }
         } else if (throwExceptionOnOOB) {

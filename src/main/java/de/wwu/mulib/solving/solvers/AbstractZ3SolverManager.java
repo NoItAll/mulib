@@ -350,42 +350,16 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         }
 
         private Expr transformSintegerNumber(Sint i) {
-            if (i instanceof Sshort) {
-                return _transformSnumber(
-                        i,
-                        () -> i instanceof Sshort.ConcSshort,
-                        () -> i instanceof Sshort.SymSshort,
-                        () -> ctx.mkInt(((Sshort.ConcSshort) i).shortVal()),
-                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
-                );
-            } else if (i instanceof Sbyte) {
-                return _transformSnumber(
-                        i,
-                        () -> i instanceof Sbyte.ConcSbyte,
-                        () -> i instanceof Sbyte.SymSbyte,
-                        () -> ctx.mkInt(((Sbyte.ConcSbyte) i).byteVal()),
-                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
-                );
-            } else if (i instanceof Sbool) {
-                if (!treatSboolsAsInts) {
-                    throw new MulibRuntimeException("Must not occur.");
-                }
-                return _transformSnumber(
-                        i,
-                        () -> i instanceof Sbool.ConcSbool,
-                        () -> i instanceof Sbool.SymSbool,
-                        () -> ctx.mkInt(((Sbool.ConcSbool) i).intVal()),
-                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
-                );
-            } else {
-                return _transformSnumber(
-                        i,
-                        () -> i instanceof Sint.ConcSint,
-                        () -> i instanceof Sint.SymSint,
-                        () -> ctx.mkInt(((Sint.ConcSint) i).intVal()),
-                        () -> ctx.mkIntConst(((SymSprimitive) i).getId())
-                );
+            if (i instanceof Sbool && !treatSboolsAsInts) {
+                throw new MulibRuntimeException("Must not occur");
             }
+            return _transformSnumber(
+                    i,
+                    () -> i instanceof ConcSnumber,
+                    () -> i instanceof SymSprimitive,
+                    () -> ctx.mkInt(((ConcSnumber) i).intVal()),
+                    () -> ctx.mkIntConst(((SymSprimitive) i).getId())
+            );
         }
 
 

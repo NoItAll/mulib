@@ -32,9 +32,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.clazz = clazz;
         this.elements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
-        if (len instanceof ConcSnumber && !(len instanceof Sint.ConcSint)) {
-            len = se.concSint(((ConcSnumber) len).intVal());
-        }
         this.len = len;
     }
 
@@ -105,7 +102,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i) {
         if (onlyConcreteIndicesUsed) {
-            if (i instanceof Sint.SymSint) {
+            if (i instanceof SymNumericExpressionSprimitive) {
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
                 return !elements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once

@@ -122,8 +122,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     private void restrictLength(SymbolicExecution se, Sint len) {
-        if (len instanceof Sint.ConcSint) {
-            if (((Sint.ConcSint) len).intVal() < 0) {
+        if (len instanceof ConcSnumber) {
+            if (((ConcSnumber) len).intVal() < 0) {
                 throw new NegativeArraySizeException();
             }
         } else if (throwExceptionOnOOB) {
