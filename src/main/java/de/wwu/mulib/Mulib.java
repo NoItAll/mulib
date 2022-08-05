@@ -42,15 +42,15 @@ public final class Mulib {
         return executeMulibForOne(methodName, methodOwnerClass, mb, argTypes, args);
     }
 
-    public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes) {
+    public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>... argTypes) {
         return generateMulibContext(methodName, methodOwnerClass, argTypes, null, mb.build());
     }
 
-    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object[] prototypicalArgs) {
+    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... prototypicalArgs) {
         return generateMulibContext(methodName, methodOwnerClass, null, prototypicalArgs, mb.build());
     }
 
-    public static MulibContext getMulibContextWithoutTransformation(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... prototypicalArgs) {
+    public static MulibContext getMulibContextWithoutTransformation(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object[] prototypicalArgs) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(false);
         return generateMulibContext(methodName, methodOwnerClass, argTypes, prototypicalArgs, mb.build());
     }
