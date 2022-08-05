@@ -15,9 +15,6 @@ repositories {
 
 dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-    implementation group: 'org.ow2.asm', name: 'asm', version: '9.1'
-    implementation group: 'org.ow2.asm', name: 'asm-analysis', version: '9.1'
-    implementation group: 'org.ow2.asm', name: 'asm-util', version: '9.1'
     implementation group: 'org.soot-oss', name: 'soot', version: '4.3.0'
     implementation (group: 'org.sosy-lab', name: 'java-smt', version: '3.11.0') {
         // Exclude external dependency required by princess

@@ -13,8 +13,9 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
-import static de.wwu.mulib.transformations.StringConstants.*;
-import static de.wwu.mulib.transformations.TransformationUtility.*;
+import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
+import static de.wwu.mulib.transformations.TransformationUtility.determineNestHostFieldName;
+import static de.wwu.mulib.transformations.TransformationUtility.getClassForPath;
 import static de.wwu.mulib.transformations.soot_transformations.SootMulibTransformer.addPrefixToName;
 
 /**
@@ -319,26 +320,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     /* METHODS FOR CHECKING HOW CLASSES SHOULD BE TREATED. */
 
     /**
-     * Checks whether, given the configuration, the method of the class represented by the given path, should be concretized.
-     * @param methodOwner The path of the class.
-     * @return true, if the method should be concretized, else false.
-     */
-    public boolean shouldBeConcretizedFor(String methodOwner) {
-        Class<?> c = getClassForPath(methodOwner);
-        return shouldBeConcretizedFor(c);
-    }
-
-    /**
-     * Checks whether, given the configuration, the method of the class represented by the given path, should be generalized.
-     * @param methodOwner The path of the class.
-     * @return true, if the method should be generalized, else false.
-     */
-    public boolean shouldTryToUseGeneralizedMethodCall(String methodOwner) {
-        Class<?> c = getClassForPath(methodOwner);
-        return shouldTryToUseGeneralizedMethodCall(c);
-    }
-
-    /**
      * Checks whether, given the configuration, the method of the class, should be concretized.
      * @param methodOwner The class.
      * @return true, if the method should be concretized, else false.
@@ -365,18 +346,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     public boolean shouldBeTransformed(String classAsPath) {
         Class<?> c = getClassForPath(classAsPath);
         return !isIgnored(c);
-    }
-
-    public boolean shouldBeTransformedFromDesc(String desc) {
-        if (desc.startsWith("[")) {
-            int last = desc.lastIndexOf('[');
-            desc = desc.substring(last + 1);
-        }
-        if (desc.length() == 1 && primitiveTypes.contains(desc)) {
-            return true;
-        }
-        assert (desc.startsWith("L") && desc.endsWith(";"));
-        return shouldBeTransformed(desc.substring(1, desc.length() - 1));
     }
 
     /* TO OVERRIDE */
@@ -419,7 +388,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     }
 
     // If set contains toTransformName: partnerclass-class was loaded and does not have to be written anymore
-    private Set<String> usedLoadedAndAlreadyWrittenVersion = new HashSet<>();
+    private final Set<String> usedLoadedAndAlreadyWrittenVersion = new HashSet<>();
     // Transforms one class. Checks whether the class is ignored and whether the class has already been transformed.
     protected void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
@@ -454,86 +423,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected abstract T transformClassNode(T toTransform);
 
     /* TRANSFORMING CLASS TO PARTNER CLASS */
-    protected String calculateSignatureForSarrayIfNecessary(String desc) {
-        // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
-        if (desc.startsWith("[[") || desc.startsWith("[L")) {
-            String result = _calculateSignatureForSarrayIfNecessary(desc);
-            return result;
-        }
-        return null;
-    }
 
     public abstract MulibClassFileWriter<T> generateMulibClassFileWriter();
-
-    private String _calculateSignatureForSarrayIfNecessary(String fieldNodeDesc) {
-        // Check if is array of arrays or array of objects, in both cases, we want to set a parameter
-        if (fieldNodeDesc.startsWith("[[")) {
-            // Is a nested sarray
-            return "L" + sarraySarrayCp + "<" + _calculateSignatureForSarrayIfNecessary(fieldNodeDesc.substring(1)) +  ">;";
-        } else if (fieldNodeDesc.startsWith("[L")) {
-            // Is a PartnerClassSarray
-            return "L" + partnerClassSarrayCp + "<" + decideOnReplaceDesc(fieldNodeDesc.substring(1)) + ">;";
-        }
-        return decideOnReplaceDesc(fieldNodeDesc);
-    }
-
-    protected static String transformToSarrayCpWithSarray(String originalArDesc) {
-        assert originalArDesc.startsWith("[");
-        if (originalArDesc.startsWith("[[")) {
-            return sarraySarrayCp;
-        }
-        if (originalArDesc.startsWith("[L")) {
-            return partnerClassSarrayCp;
-        }
-        if (originalArDesc.startsWith("[I")) {
-            return sintSarrayCp;
-        }
-        if (originalArDesc.startsWith("[J")) {
-            return slongSarrayCp;
-        }
-        if (originalArDesc.startsWith("[D")) {
-            return sdoubleSarrayCp;
-        }
-        if (originalArDesc.startsWith("[F")) {
-            return sfloatSarrayCp;
-        }
-        if (originalArDesc.startsWith("[S")) {
-            return sshortSarrayCp;
-        }
-        if (originalArDesc.startsWith("[B")) {
-            return sbyteSarrayCp;
-        }
-        if (originalArDesc.startsWith("[Z")) {
-            return sshortSarrayCp;
-        }
-        if (originalArDesc.startsWith("[C")) {
-            return partnerClassSarrayCp;
-        }
-        throw new MulibRuntimeException("Array type is not treated: " + originalArDesc);
-    }
-
-    protected String transformToSarrayCpWithPrimitiveArray(String originalCp) {
-        assert originalCp.startsWith("[");
-        int nestingLevel;
-        for (nestingLevel = 0; nestingLevel < originalCp.length(); nestingLevel++) {
-            if (originalCp.charAt(nestingLevel) != '[') {
-                break;
-            }
-        }
-        String result = originalCp.substring(0, nestingLevel);
-        result += decideOnReplaceDesc(originalCp.substring(nestingLevel));
-        return result;
-    }
-
-    // Does NOT return Sarray-descs!
-    protected String getTransformedArrayTypeDesc(String arrayTypeDesc) {
-        assert arrayTypeDesc.startsWith("[");
-        String newTypeDesc = arrayTypeDesc.replace("[", "");
-        newTypeDesc = decideOnReplaceDesc(newTypeDesc);
-        newTypeDesc = "[".repeat(arrayTypeDesc.lastIndexOf('[') + 1) + newTypeDesc;
-        return newTypeDesc;
-    }
-
 
     /* PROTECTED METHODS FOR TRANSFORMING PARAMETERS AND TYPES */
 
@@ -559,94 +450,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // without reflection
             return !Modifier.isPublic(access) || Modifier.isFinal(access);
         }
-    }
-
-    // Decide on the value by means of which we replace the given descriptor.
-    protected String decideOnReplaceDesc(String currentDesc) {
-        char startChar = currentDesc.charAt(0);
-        switch (startChar) {
-            case 'I': // int
-                return sintDesc;
-            case 'D': // double
-                return sdoubleDesc;
-            case 'Z': // boolean
-                return sboolDesc;
-            case 'J': // long
-                return slongDesc;
-            case 'F': // float
-                return sfloatDesc;
-            case 'S': // short
-                return sshortDesc;
-            case 'B': // byte
-                return sbyteDesc;
-            case 'C': // char
-                throw new NotYetImplementedException();
-            case 'V':
-                return currentDesc;
-            case '[': // array
-                char nextChar = currentDesc.charAt(1);
-                switch (nextChar) {
-                    case 'I': // int
-                        return sintSarrayDesc;
-                    case 'J': // long
-                        return slongSarrayDesc;
-                    case 'D': // double
-                        return sdoubleSarrayDesc;
-                    case 'F': // float
-                        return sfloatSarrayDesc;
-                    case 'S': // short
-                        return sshortSarrayDesc;
-                    case 'B': // byte
-                        return sbyteSarrayDesc;
-                    case 'Z': // boolean
-                        return sboolSarrayDesc;
-                    case 'L':
-                        return partnerClassSarrayDesc;
-                    case '[':
-                        return sarraySarrayDesc;
-                    default:
-                        throw new NotYetImplementedException(String.valueOf(nextChar));
-                }
-            case 'L': // object
-                String typeName = currentDesc.substring(1, currentDesc.length() - 1);
-                if (shouldBeTransformed(typeName)) {
-                    currentDesc = addPrefix(currentDesc);
-                }
-                return currentDesc;
-            default:
-                throw new IllegalStateException();
-        }
-    }
-
-    // Transform a method descriptor.
-    protected String transformMethodDesc(String mdesc) {
-        String[] splitMethodDesc = splitMethodDesc(mdesc);
-
-        return addPrefixToParameterPart(splitMethodDesc[0]) + decideOnReplaceDesc(splitMethodDesc[1]);
-    }
-
-    // Adds the prefix to those parts of the parameter where needed.
-    protected String addPrefixToParameterPart(String parameterPart) {
-        StringBuilder sb = new StringBuilder();
-        for (int i = 1; i < parameterPart.length() - 1; i++) { // Without parentheses
-            char firstPosition = parameterPart.charAt(i);
-            StringBuilder currentDesc = new StringBuilder(String.valueOf(firstPosition));
-            while (firstPosition == '[') {
-                i++;
-                // Get type of array
-                currentDesc.append(parameterPart.charAt(i));
-                firstPosition = parameterPart.charAt(i);
-            }
-            if (currentDesc.toString().contains("L")) {
-                int endOfObjectDesc = parameterPart.indexOf(';', i);
-                i++;
-                currentDesc.append(parameterPart, i, endOfObjectDesc + 1);
-                i = endOfObjectDesc;
-            }
-            sb.append(decideOnReplaceDesc(currentDesc.toString()));
-        }
-
-        return "(" + sb + ")";
     }
 
     /* OPTIONALLY EXECUTED METHODS */

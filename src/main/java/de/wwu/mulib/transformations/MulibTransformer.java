@@ -19,17 +19,7 @@ public interface MulibTransformer {
 
     void setPartnerClass(Class<?> clazz, Class<?> partnerClass);
 
-    boolean shouldBeConcretizedFor(String methodOwner);
-
-    boolean shouldBeConcretizedFor(Class<?> methodOwner);
-
-    boolean shouldTryToUseGeneralizedMethodCall(String methodOwner);
-
-    boolean shouldTryToUseGeneralizedMethodCall(Class<?> methodOwner);
-
     boolean shouldBeTransformed(String classAsPath);
-
-    boolean shouldBeTransformedFromDesc(String desc);
 
     static MulibTransformer get(MulibConfig config) { /// TODO Share SootMulibTransformer if configs are compatible?
         return new SootMulibTransformer(config);
