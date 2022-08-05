@@ -190,9 +190,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     Mulib.log.log(Level.WARNING, config.toString());
                     throw e;
                 } catch (Exception | AssertionError e) {
-                    PathSolution solution = getSolution(e, symbolicExecution, true);
-                    this.mulibExecutorManager.addToPathSolutions(solution, this);
-                    return Optional.of(solution);
+                    if (config.ALLOW_EXCEPTIONS) {
+                        PathSolution solution = getSolution(e, symbolicExecution, true);
+                        this.mulibExecutorManager.addToPathSolutions(solution, this);
+                        return Optional.of(solution);
+                    } else {
+                        throw new MulibRuntimeException("Exception was thrown but not expected", e);
+                    }
                 } catch (Throwable t) {
                     t.printStackTrace();
                     Mulib.log.log(Level.WARNING, config.toString());

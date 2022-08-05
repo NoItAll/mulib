@@ -29,6 +29,7 @@ public class MulibConfig {
     public final ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
     public final Optional<Long> ACTIVATE_PARALLEL_FOR;
     public final boolean CONCOLIC;
+    public final boolean ALLOW_EXCEPTIONS;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -114,6 +115,7 @@ public class MulibConfig {
         private Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         private SearchStrategy GLOBAL_SEARCH_STRATEGY;
         private boolean CONCOLIC;
+        private boolean ALLOW_EXCEPTIONS;
         private List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
         private ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
         private long ACTIVATE_PARALLEL_FOR;
@@ -156,6 +158,7 @@ public class MulibConfig {
             this.LABEL_RESULT_VALUE = true;
             this.ENLIST_LEAVES = false;
             this.CONCOLIC = false;
+            this.ALLOW_EXCEPTIONS = true;
             this.TREE_INDENTATION = "    ";
             this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
             this.GLOBAL_SOLVER_TYPE = Solvers.Z3;
@@ -469,6 +472,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setALLOW_EXCEPTIONS(boolean ALLOW_EXCEPTIONS) {
+            this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
+            return this;
+        }
+
         public MulibConfigBuilder setTHROW_EXCEPTION_ON_OOB(boolean THROW_EXCEPTION_ON_OOB) {
             this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
             return this;
@@ -771,7 +779,8 @@ public class MulibConfig {
                     SYMSBYTE_UB,
                     TREAT_BOOLEANS_AS_INTS,
                     THROW_EXCEPTION_ON_OOB,
-                    CONCOLIC
+                    CONCOLIC,
+                    ALLOW_EXCEPTIONS
             );
         }
     }
@@ -824,7 +833,8 @@ public class MulibConfig {
                         Optional<Byte> SYMSBYTE_UB,
                         boolean TREAT_BOOLEANS_AS_INTS,
                         boolean THROW_EXCEPTION_ON_OOB,
-                        boolean CONCOLIC
+                        boolean CONCOLIC,
+                        boolean ALLOW_EXCEPTIONS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -875,6 +885,7 @@ public class MulibConfig {
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
         this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
         this.CONCOLIC = CONCOLIC;
+        this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
     }
 
     @Override
