@@ -350,15 +350,21 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         }
 
         private Expr transformSintegerNumber(Sint i) {
-            if (i instanceof Sbool && !treatSboolsAsInts) {
-                throw new MulibRuntimeException("Must not occur");
+            Supplier<Expr> makeSym;
+            if (i instanceof Sbool) {
+                if (!treatSboolsAsInts) {
+                    throw new MulibRuntimeException("Must not occur");
+                }
+                makeSym = () -> ctx.mkIntConst(((SymSprimitive) i).getId() + "_int");
+            } else {
+                makeSym = () -> ctx.mkIntConst(((SymSprimitive) i).getId());
             }
             return _transformSnumber(
                     i,
                     () -> i instanceof ConcSnumber,
                     () -> i instanceof SymSprimitive,
                     () -> ctx.mkInt(((ConcSnumber) i).intVal()),
-                    () -> ctx.mkIntConst(((SymSprimitive) i).getId())
+                    makeSym
             );
         }
 

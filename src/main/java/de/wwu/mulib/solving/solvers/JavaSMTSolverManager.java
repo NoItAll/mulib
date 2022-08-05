@@ -433,15 +433,21 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             if (result != null) {
                 return result;
             }
-            if (i instanceof Sbool && !treatSboolsAsInts) {
-                throw new MulibRuntimeException("Must not occur");
+            Supplier<NumeralFormula> makeSym;
+            if (i instanceof Sbool) {
+                if (!treatSboolsAsInts) {
+                    throw new MulibRuntimeException("Must not occur");
+                }
+                makeSym =  () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId() + "_int");
+            } else {
+                makeSym = () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId());
             }
             result = _transformSnumber(
                     i,
                     () -> i instanceof ConcSnumber,
                     () -> i instanceof SymSprimitive,
                     () -> integerFormulaManager.makeNumber(((ConcSnumber) i).intVal()),
-                    () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId())
+                    makeSym
             );
             numericExpressionStore.put(i, result);
             return result;
