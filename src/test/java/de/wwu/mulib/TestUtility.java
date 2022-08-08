@@ -19,9 +19,9 @@ public final class TestUtility {
     private static final int longParallelExecutorsCheckBatchSize = 2;
     private static final int quickParallelExecutorsCheckBatchSize = 3;
 
-    private static final boolean longSingleThreadedExecutorsCheck = false;
+    private static final boolean longSingleThreadedExecutorsCheck = true;
     private static final boolean longParallelExecutorsCheck =       false;
-    private static final boolean quickParallelExecutorsCheck =      false;
+    private static final boolean quickParallelExecutorsCheck =      true;
     private static final boolean quickCheck =                       true;
 
     public static final long TEST_FIXED_POSSIBLE_CP_BUDGET = 1000;

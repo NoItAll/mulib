@@ -198,8 +198,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             return Collections.singletonList(initialSolution); // No named variables --> nothing to negate.
         }
         List<Solution> solutions = new ArrayList<>();
-        int backtrackAfter = 0;
-        int currentN = N.get();
+        solutions.add(initialSolution);
+        int backtrackAfterwards = 0;
+        int currentN = N.decrementAndGet();
         while (currentN > 0) {
             Labels l = latestSolution.labels;
 
@@ -207,22 +208,23 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             List<Constraint> disjunctionConstraints = new ArrayList<>();
             for (SubstitutedVar sv : namedVars) {
                 if (sv instanceof Sprimitive) {
-                    Constraint disjunctionConstraint = getNeq(sv, l.getLabelForNamedSubstitutedVar(sv));
+                    Object label = l.getLabelForNamedSubstitutedVar(sv);
+                    Constraint disjunctionConstraint = getNeq(sv, label);
                     disjunctionConstraints.add(disjunctionConstraint);
                 }
             }
 
             Constraint newConstraint = Or.newInstance(disjunctionConstraints);
-            backtrackAfter++;
+            backtrackAfterwards++;
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
                 Labels newLabels = LabelUtility.getLabels(
                         this,
                         l.getIdToNamedVar()
                 );
-                Object solutionValue = latestSolution.returnValue;
+                Object solutionValue = newLabels.getIdToLabel().get("return");
                 if (solutionValue instanceof Sym) {
-                    solutionValue = l.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
+                    solutionValue = newLabels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
                 }
                 Solution newSolution = new Solution(
                         solutionValue,
@@ -235,8 +237,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 break;
             }
         }
-        backtrack(backtrackAfter);
-        solutions.add(initialSolution);
+        backtrack(backtrackAfterwards);
         return solutions;
     }
 
@@ -278,12 +279,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         if (sprimitive instanceof Sbool.SymSbool) {
             Constraint c = ((Sbool.SymSbool) sprimitive).getRepresentedConstraint();
             if (c instanceof ConcolicConstraintContainer) {
-                return ((ConcolicConstraintContainer) c).getConc().isTrue();
+                sprimitive = ((ConcolicConstraintContainer) c).getSym();
             }
         } else {
             NumericExpression ne = ((SymNumericExpressionSprimitive) sprimitive).getRepresentedExpression();
             if (ne instanceof ConcolicNumericContainer) {
-                return labelConcSnumber(((ConcolicNumericContainer) ne).getConc());
+                sprimitive = ((ConcolicNumericContainer) ne).getSym();
             }
         }
         return labelSymSprimitive((SymSprimitive) sprimitive);
@@ -318,11 +319,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         int length = (Integer) labelSprimitive(sarray.getLength());
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
-        Set<Sint> indices = sarray.getCachedIndices();
-        for (Sint i : indices) {
-            SubstitutedVar value = sarray.getForIndex(i);
-            int labeledIndex = (Integer) labelSprimitive(i);
-            Object labeledValue = getLabel(value);
+        ArrayConstraint[] arrayConstraints =
+                getArrayConstraints().stream()
+                        .filter(ac -> ac.getArrayId() == sarray.getId())
+                        .toArray(ArrayConstraint[]::new);
+        for (ArrayConstraint ac : arrayConstraints) {
+            Integer labeledIndex = (Integer) labelSprimitive(ac.getIndex());
+            Object labeledValue = getLabel(ac.getValue());
             result[labeledIndex] = labeledValue;
         }
         return result;

@@ -122,10 +122,7 @@ public abstract class MulibExecutorManager {
         this.observedTree.addToPathSolutions(pathSolution);
         this.globalExecutionManagerBudgetManager.incrementPathSolutionBudget();
         if (numberRequestedSolutions != null) {
-            int numberOfSolutionsStillNeeded = numberRequestedSolutions.decrementAndGet();
-            if (numberOfSolutionsStillNeeded > 0) {
-                solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
-            }
+            solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
         }
     }
 

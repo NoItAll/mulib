@@ -15,6 +15,7 @@ public class LabelUtility {
     public static Labels getLabels(
             SolverManager solverManager,
             Map<String, SubstitutedVar> idToNamedVar) {
+        solverManager.setupForNewExecution();
         Map<String, SubstitutedVar> identifiersToSubstitutedVars = new HashMap<>();
         Map<String, Object> idToLabel = new HashMap<>();
         Map<SubstitutedVar, Object> namedVarToLabel = new HashMap<>();

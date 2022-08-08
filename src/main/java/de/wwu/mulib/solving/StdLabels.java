@@ -3,6 +3,7 @@ package de.wwu.mulib.solving;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -17,13 +18,14 @@ public class StdLabels implements Labels {
             Map<String, SubstitutedVar> identifiersToSubstitutedVars,
             Map<SubstitutedVar, Object> substitutedVarsToOriginalRepresentation,
             Map<String, Object> identifiersToOriginalRepresentation) {
-        this.identifiersToSVars = identifiersToSubstitutedVars;
-        this.identifiersToSPrimitives = new HashMap<>();
+        this.identifiersToSVars = Collections.unmodifiableMap(identifiersToSubstitutedVars);
+        Map<String, Sprimitive> identifiersToSPrimitives = new HashMap<>();
         for (Map.Entry<String, SubstitutedVar> entry : identifiersToSVars.entrySet()) {
             if (entry.getValue() instanceof Sprimitive) {
                 identifiersToSPrimitives.put(entry.getKey(), (Sprimitive) entry.getValue());
             }
         }
+        this.identifiersToSPrimitives = Collections.unmodifiableMap(identifiersToSPrimitives);
         this.svariablesToValues = Map.copyOf(substitutedVarsToOriginalRepresentation);
         this.identifiersToValues = Map.copyOf(identifiersToOriginalRepresentation);
     }
@@ -61,6 +63,11 @@ public class StdLabels implements Labels {
     @Override
     public Map<String, Object> getIdToLabel() {
         return identifiersToValues;
+    }
+
+    @Override
+    public String toString() {
+        return "StdLabels{" + getIdToLabel() + "}";
     }
 
 }

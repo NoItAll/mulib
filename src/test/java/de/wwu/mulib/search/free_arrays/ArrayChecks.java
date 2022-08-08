@@ -15,8 +15,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ArrayChecks {
 
@@ -835,5 +834,55 @@ public class ArrayChecks {
         }
 
         return a;
+    }
+
+    @Test
+    public void checkArrayLabeling() {
+        TestUtility.getAllSolutions((mb) -> {
+            List<Solution> solutions =
+                    TestUtility.getUpToNSolutions(
+                            100,
+                            "arrayLabeling",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+            assertEquals(2, solutions.size());
+            boolean seen14 = false;
+            boolean seen13 = false;
+            for (Solution s : solutions) {
+                assertTrue(s.returnValue.getClass().isArray());
+                Object[] sArray = (Object[]) s.returnValue;
+                assertEquals(1, (int) ((Integer) sArray[1]));
+                if ((Integer) sArray[0] == 13) {
+                    assertFalse(seen13);
+                    seen13 = true;
+                } else if ((Integer) sArray[0] == 14) {
+                    assertFalse(seen14);
+                    seen14 = true;
+                } else {
+                    fail();
+                }
+            }
+            return solutions;
+        }, "arrayLabeling");
+    }
+
+    public static Sarray.SintSarray arrayLabeling() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SintSarray sintSarray = se.sintSarray(se.concSint(2), true);
+        Sint i0Index = se.namedSymSint("i0Index");
+        Sint i1Index = se.namedSymSint("i1Index");
+        Sint i0Value = sintSarray.select(i0Index, se);
+        Sint i1Value = sintSarray.select(i1Index, se);
+        if (!i0Value.eqChoice(se.concSint(13), se)
+                || !i1Value.eqChoice(se.concSint(14), se)
+                || i0Index.eqChoice(i1Index, se)) {
+            throw Mulib.fail();
+        }
+        sintSarray.store(se.concSint(1), se.concSint(1), se);
+        return sintSarray;
     }
 }
