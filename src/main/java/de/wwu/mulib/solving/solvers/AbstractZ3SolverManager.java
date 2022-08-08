@@ -3,7 +3,6 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.*;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.LabelingNotPossibleException;
 import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -128,10 +127,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     @Override
-    public Object getLabel(Sprimitive var) {
-        if (!isSatisfiable()) {
-            throw new LabelingNotPossibleException("Must be satisfiable.");
-        }
+    public Object labelSymSprimitive(SymSprimitive var) {
         // This order is important since Sbool is also a NumericExpression (in analogy to Java's bytecode):
         Expr expr = var instanceof Constraint ?
                 adapter.getBoolExprForConstraint((Constraint) var)

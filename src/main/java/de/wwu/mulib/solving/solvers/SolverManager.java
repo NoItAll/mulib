@@ -3,8 +3,6 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -32,7 +30,18 @@ public interface SolverManager {
 
     void backtrackAll();
 
-    Object getLabel(Sprimitive var);
+    void setupForNewExecution();
+
+    void registerLabelPair(Object searchRegionRepresentation, Object labeled);
+
+    /**
+     * Transforms the search space-representation of an object into the original representation useable by a usual
+     * Java program.
+     * @param var The to-be-transformed Object. The type 'SubstitutedVar' is not used here, since, e.g., ArrayLists might also
+     *            be labeled with a custom labeling strategy.
+     * @return The labeled object.
+     */
+    Object getLabel(Object var);
 
     ArrayDeque<Constraint> getConstraints();
 
@@ -40,5 +49,5 @@ public interface SolverManager {
 
     int getLevel();
 
-    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N, MulibValueLabeler mulibValueLabeler);
+    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
 }

@@ -7,9 +7,9 @@ import de.wwu.mulib.manual_transform_and_execute.manually_generated_classes.__mu
 import de.wwu.mulib.manual_transform_and_execute.manually_generated_classes.__mulib__IndirectCyclicInputClasses1Manual;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
+import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueCopier;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -21,7 +21,6 @@ public class ValueTransformationExec {
     MulibTransformer mt;
     MulibValueCopier mvc;
     MulibValueTransformer mvt;
-    MulibValueLabeler mvl;
     SolverManager sm;
 
 
@@ -33,7 +32,6 @@ public class ValueTransformationExec {
         mt.setPartnerClass(IndirectCyclicInputClasses1Manual.class, __mulib__IndirectCyclicInputClasses1Manual.class);
         mvt = new MulibValueTransformer(mc, mt);
         mvc = new MulibValueCopier(null, mc);
-        mvl = new MulibValueLabeler(mc, true);
         sm = new Z3IncrementalSolverManager(mc);
     }
 
@@ -59,11 +57,13 @@ public class ValueTransformationExec {
 
     @Test
     public void testIndirectCyclicInputClassesLabel() {
-        Object value = mvl.label(new __mulib__IndirectCyclicInputClasses0Manual(), sm);
+        sm.addConstraintAfterNewBacktrackingPoint(Sbool.ConcSbool.TRUE);
+        Object value = sm.getLabel(new __mulib__IndirectCyclicInputClasses0Manual());
         assertInstanceOf(IndirectCyclicInputClasses0Manual.class, value);
         assertInstanceOf(
                 IndirectCyclicInputClasses1Manual.class,
                 ((IndirectCyclicInputClasses0Manual) value).c
         );
+        sm.backtrackAll();
     }
 }

@@ -1199,7 +1199,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootMethod labelMethod =
                 new SootMethod(
                         "label",
-                        List.of(v.TYPE_OBJECT, v.TYPE_MULIB_VALUE_LABELER, v.TYPE_SOLVER_MANAGER),
+                        List.of(v.TYPE_OBJECT, v.TYPE_SOLVER_MANAGER),
                         v.TYPE_OBJECT,
                         Modifier.PUBLIC
                 );
@@ -1211,7 +1211,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Create locals for body
         Local thisLocal = localSpawner.spawnNewLocal(result.getType());
         Local labelTo = localSpawner.spawnNewLocal(v.TYPE_OBJECT);
-        Local mvtLocal = localSpawner.spawnNewLocal(v.TYPE_MULIB_VALUE_LABELER);
         Local smLocal = localSpawner.spawnNewLocal(v.TYPE_SOLVER_MANAGER);
 
         // Get unit chain to add instructions to
@@ -1219,8 +1218,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Create identity statement for parameter locals
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
         upc.add(Jimple.v().newIdentityStmt(labelTo, Jimple.v().newParameterRef(v.TYPE_OBJECT, 0)));
-        upc.add(Jimple.v().newIdentityStmt(mvtLocal, Jimple.v().newParameterRef(v.TYPE_MULIB_VALUE_LABELER, 1)));
-        upc.add(Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 2)));
+        upc.add(Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 1)));
         Local castedToLabelTo = localSpawner.spawnNewLocal(old.getType());
         AssignStmt castObjectToActualType = Jimple.v().newAssignStmt(
                 castedToLabelTo,
@@ -1264,11 +1262,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Local toCastPrimitiveValueWrapper = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
                 AssignStmt labelPrimitiveValue = Jimple.v().newAssignStmt(
                         toCastPrimitiveValueWrapper,
-                        Jimple.v().newVirtualInvokeExpr(
-                                mvtLocal,
-                                v.SM_MULIB_VALUE_LABELER_LABEL_SPRIMITIVE.makeRef(),
-                                transformedValue,
-                                smLocal
+                        Jimple.v().newInterfaceInvokeExpr(
+                                smLocal,
+                                v.SM_SOLVER_MANAGER_GET_LABEL.makeRef(),
+                                transformedValue
                         )
                 );
                 upc.add(labelPrimitiveValue);
@@ -1303,11 +1300,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Local toCastPrimitiveValueWrapper = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
                 AssignStmt labelValue = Jimple.v().newAssignStmt(
                         toCastPrimitiveValueWrapper,
-                        Jimple.v().newVirtualInvokeExpr(
-                                mvtLocal,
-                                v.SM_MULIB_VALUE_LABELER_LABEL.makeRef(),
-                                transformedValue,
-                                smLocal
+                        Jimple.v().newInterfaceInvokeExpr(
+                                smLocal,
+                                v.SM_SOLVER_MANAGER_GET_LABEL.makeRef(),
+                                transformedValue
                         )
                 );
                 upc.add(labelValue);

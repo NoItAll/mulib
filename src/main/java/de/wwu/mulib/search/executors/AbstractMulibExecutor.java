@@ -10,21 +10,17 @@ import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.ExceededBudget;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
-import de.wwu.mulib.search.trees.Choice;
-import de.wwu.mulib.search.trees.ChoiceOptionDeque;
-import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 
+import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -126,12 +122,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final Object label(SubstitutedVar var) {
-        if (var instanceof Sprimitive) {
-            return currentSymbolicExecution.getMulibValueLabeler().labelSprimitive((Sprimitive) var, solverManager);
-        } else {
-            return currentSymbolicExecution.getMulibValueLabeler().label(var, solverManager);
-        }
+    public final Object label(Object var) {
+        return solverManager.getLabel(var);
     }
 
     @Override
@@ -140,13 +132,10 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Object concretize(SubstitutedVar var) {
-        if (var instanceof Sprimitive) {
-            // TODO add constraint
-            return currentSymbolicExecution.getMulibValueLabeler().labelSprimitive((Sprimitive) var, solverManager);
-        } else {
-            return currentSymbolicExecution.getMulibValueLabeler().label(var, solverManager);
-        }
+    public Object concretize(Object var) {
+        Object result = label(var);
+        // TODO add constraint
+        return result;
     }
 
     @Override
@@ -155,10 +144,12 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
             if (possibleSymbolicExecution.isPresent()) {
+                solverManager.setupForNewExecution();
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 this.currentSymbolicExecution = symbolicExecution;
                 assert solverManager.isSatisfiable() : config.toString();
                 try {
+                    // This executes the search region with the choice path predetermined by the chosen choice option
                     Object solutionValue = invokeSearchRegion();
                     if (!solverManager.isSatisfiable()) {
                         throw new Fail();
@@ -207,14 +198,27 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
-    protected abstract void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption adjustTo);
+    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
+        // Backtrack with solver's push- and pop-capabilities
+        Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
+        int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
+        solverManager.backtrack(depthDifference);
+        solverBacktrack += depthDifference;
+        ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
+        for (Choice.ChoiceOption co : getPathBetween) {
+            solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
+            addExistingArrayConstraints(co.getArrayConstraints());
+            addedAfterBacktrackingPoint++;
+        }
+        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
+    }
 
     @Override
     public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
         // thus, in general, we must adjust the current choice option
         adjustSolverManagerToNewChoiceOption(searchIn.parent);
-        return solverManager.getUpToNSolutions(searchIn.getSolution(), N, new MulibValueLabeler(config, true));
+        return solverManager.getUpToNSolutions(searchIn.getSolution(), N);
     }
 
     @Override
@@ -240,13 +244,12 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
         Labels labels = LabelUtility.getLabels(
                 solverManager,
-                symbolicExecution.getMulibValueLabeler(),
                 symbolicExecution.getNamedVariables()
         );
         PathSolution solution;
         if (labelResultValue) {
             if (solutionValue != null && solutionValue.getClass().isArray()) {
-                solutionValue = symbolicExecution.getMulibValueLabeler().label(solutionValue, solverManager);
+                solutionValue = solverManager.getLabel(solutionValue);
             } else if (solutionValue instanceof SubstitutedVar) {
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }

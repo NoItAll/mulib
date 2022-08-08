@@ -5,7 +5,6 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -28,9 +27,9 @@ public interface MulibExecutor {
 
     Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options);
 
-    Object label(SubstitutedVar var);
+    Object label(Object var);
 
-    Object concretize(SubstitutedVar substitutedVar);
+    Object concretize(Object substitutedVar);
 
     void terminate();
 

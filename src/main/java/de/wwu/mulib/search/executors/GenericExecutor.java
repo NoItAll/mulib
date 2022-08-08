@@ -7,11 +7,9 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
-import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -121,7 +119,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     optionToBeEvaluated,
                     prototypicalExecutionBudgetManager,
                     mulibValueTransformer.getNextSarrayId(),
-                    mulibValueTransformer.isTransformationRequired(),
                     config
             ));
         } catch (Throwable t) {
@@ -157,21 +154,5 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         }
         dsasMissed++;
         return choiceOptionDeque.pollFirst();
-    }
-
-    @Override
-    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
-        // Backtrack with solver's push- and pop-capabilities
-        Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
-        int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
-        solverManager.backtrack(depthDifference);
-        solverBacktrack += depthDifference;
-        ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
-        for (Choice.ChoiceOption co : getPathBetween) {
-            solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
-            addExistingArrayConstraints(co.getArrayConstraints());
-            addedAfterBacktrackingPoint++;
-        }
-        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
     }
 }

@@ -5,9 +5,9 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.solving.Solvers;
+import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.io.PrintStream;
@@ -79,7 +79,7 @@ public class MulibConfig {
     public final List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
     public final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
     public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-    public final Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+    public final Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
     public final boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
     public final boolean TRANSF_WRITE_TO_FILE;
     public final String TRANSF_GENERATED_CLASSES_PATH;
@@ -112,7 +112,7 @@ public class MulibConfig {
         private List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
         private Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-        private Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+        private Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         private SearchStrategy GLOBAL_SEARCH_STRATEGY;
         private boolean CONCOLIC;
         private boolean ALLOW_EXCEPTIONS;
@@ -377,7 +377,7 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Class<?> clazz, BiFunction<MulibValueLabeler, Object, Object> transformation) {
+        public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Class<?> clazz, BiFunction<SolverManager, Object, Object> transformation) {
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS.put(clazz, transformation);
             return this;
         }
@@ -555,7 +555,7 @@ public class MulibConfig {
             return TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         }
 
-        public Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS() {
+        public Map<Class<?>, BiFunction<SolverManager, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS() {
             return TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         }
 
@@ -813,7 +813,7 @@ public class MulibConfig {
                         List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
                         Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
                         Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
-                        Map<Class<?>, BiFunction<MulibValueLabeler, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
+                        Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                         boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
                         boolean TRANSF_TRANSFORMATION_REQUIRED,

@@ -4,7 +4,6 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.transformations.MulibValueCopier;
-import de.wwu.mulib.transformations.MulibValueLabeler;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass {
@@ -31,9 +30,9 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
         return new __mulib__IndirectCyclicInputClasses1Manual(this, var1);
     }
 
-    public Object label(Object var1, MulibValueLabeler __mulib__valueTransformer, SolverManager var3) {
+    public Object label(Object var1, SolverManager var3) {
         IndirectCyclicInputClasses1Manual __mulib__originalObject = (IndirectCyclicInputClasses1Manual)var1;
-        __mulib__originalObject.c = (IndirectCyclicInputClasses0Manual)(__mulib__valueTransformer.label(this.c, var3));
+        __mulib__originalObject.c = (IndirectCyclicInputClasses0Manual)(var3.getLabel(this.c));
         return __mulib__originalObject;
     }
 

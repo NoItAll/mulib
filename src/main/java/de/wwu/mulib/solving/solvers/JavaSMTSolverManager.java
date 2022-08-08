@@ -2,7 +2,6 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.LabelingNotPossibleException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
@@ -165,12 +164,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             throw new MulibRuntimeException(e);
         }
     }
-    
+
     @Override
-    public Object getLabel(Sprimitive var) {
-        if (!isSatisfiable()) {
-            throw new LabelingNotPossibleException("Must be satisfiable.");
-        }
+    protected Object labelSymSprimitive(SymSprimitive var) {
         Formula f = var instanceof Sbool ?
                 adapter.getBooleanFormulaForConstraint((Constraint) var)
                 :
