@@ -6,6 +6,7 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Set;
@@ -550,8 +551,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index) && !se.nextIsOnKnownPath()) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
+            assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =
                         new ArrayConstraint(sarray.getId(), i, sarray.getForIndex(i), ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());

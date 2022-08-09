@@ -12,6 +12,7 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
@@ -829,8 +830,9 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index) && !se.nextIsOnKnownPath()) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
+            assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getForIndex(i);
                 ArrayConstraint ac =
