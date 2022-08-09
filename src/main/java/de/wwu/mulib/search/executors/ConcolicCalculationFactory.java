@@ -5,11 +5,13 @@ import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.choice_points.Backtrack;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
@@ -24,14 +26,19 @@ import static de.wwu.mulib.constraints.ConcolicConstraintContainer.tryGetSymFrom
 import static de.wwu.mulib.expressions.ConcolicNumericContainer.getConcNumericFromConcolic;
 import static de.wwu.mulib.expressions.ConcolicNumericContainer.tryGetSymFromConcolic;
 
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public final class ConcolicCalculationFactory implements CalculationFactory {
 
     private final SymbolicCalculationFactory scf;
     private final boolean throwExceptionOnOOB;
+    private final boolean useEagerIndexesForFreeArrayPrimitiveElements;
+    private final boolean useEagerIndexesForFreeArrayObjectElements;
 
     ConcolicCalculationFactory(MulibConfig config) {
         this.scf = SymbolicCalculationFactory.getInstance(config);
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
+        this.useEagerIndexesForFreeArrayPrimitiveElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
     }
 
     public static ConcolicCalculationFactory getInstance(MulibConfig config) {
@@ -729,7 +736,15 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
+    public Sprimitive select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
+        if (useEagerIndexesForFreeArrayPrimitiveElements) {
+            return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
+        } else {
+            return (Sprimitive) _selectWithSymbolicIndexes(se, sarray, index);
+        }
+    }
+
+    private SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
         SubstitutedVar result = sarray.getFromCacheForIndex(index);
         if (result != null) {
             return result;
@@ -745,7 +760,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
             result = sarray.symbolicDefault(se);
         }
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setForIndex(index, result);
+        sarray.setInCacheForIndex(index, result);
         evaluateRelabeling(sarray, se); // TODO Possibly prune the amount of constraints via the given index?
         return result;
     }
@@ -793,7 +808,15 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value) {
+    public Sprimitive store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, Sprimitive value) {
+        if (useEagerIndexesForFreeArrayPrimitiveElements) {
+            return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
+        } else {
+            return (Sprimitive) _storeWithSymbolicIndexes(se, sarray, index, value);
+        }
+    }
+
+    private SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
@@ -814,7 +837,87 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
-        sarray.setForIndex(index, value);
+        sarray.setInCacheForIndex(index, value);
+        return value;
+    }
+
+    @Override
+    public Sarray<?> select(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index) {
+        if (useEagerIndexesForFreeArrayObjectElements) {
+            return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
+        } else {
+            return (Sarray<?>) _selectWithSymbolicIndexes(se, sarraySarray, index);
+        }
+    }
+
+    @Override
+    public Sarray<?> store(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
+        if (useEagerIndexesForFreeArrayObjectElements) {
+            return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
+        } else {
+            return (Sarray<?>) _storeWithSymbolicIndexes(se, sarraySarray, index, value);
+        }
+    }
+
+    @Override
+    public PartnerClass select(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
+        if (useEagerIndexesForFreeArrayObjectElements) {
+            return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
+        } else {
+            return (PartnerClass) _selectWithSymbolicIndexes(se, partnerClassSarray, index);
+        }
+    }
+
+    @Override
+    public PartnerClass store(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
+        if (useEagerIndexesForFreeArrayObjectElements) {
+            return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
+        } else {
+            return (PartnerClass) _storeWithSymbolicIndexes(se, partnerClassSarray, index, value);
+        }
+    }
+
+    private static Sint decideOnConcreteIndex(SymbolicExecution se, Sint index) {
+        if (index instanceof ConcSnumber) {
+            return index;
+        }
+        Sint concIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
+        Sint symSint = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
+        if (!se.eqChoice(concIndex, symSint)) { // Adds constraint and allows another evaluation
+            throw new MulibIllegalStateException("Constraint system is inconsistent");
+        }
+        return concIndex;
+    }
+
+    private SubstitutedVar _selectWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
+        SubstitutedVar result = sarray.getFromCacheForIndex(index);
+        if (result != null) {
+            return result;
+        }
+        checkIndexAccess(sarray, index, se);
+        Sint concsIndex = decideOnConcreteIndex(se, index);
+        result = sarray.getFromCacheForIndex(concsIndex);
+        if (result != null) {
+            sarray.setInCacheForIndex(index, result);
+            return result;
+        }
+        if (!sarray.defaultIsSymbolic() && sarray.onlyConcreteIndicesUsed()) {
+            result = sarray.nonSymbolicDefaultElement(se);
+        } else {
+            // If symbolic is required, optional aliasing etc. is handled here
+            result = sarray.symbolicDefault(se);
+        }
+        sarray.setInCacheForIndex(concsIndex, result);
+        sarray.setInCacheForIndex(index, result);
+        return result;
+    }
+
+    private SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
+        checkIndexAccess(sarray, index, se);
+        Sarray.checkIfValueIsStorableForSarray(sarray, value);
+        Sint concsIndex = decideOnConcreteIndex(se, index);
+        sarray.setInCacheForIndex(concsIndex, value);
+        sarray.setInCacheForIndex(index, value);
         return value;
     }
 

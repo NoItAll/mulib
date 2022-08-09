@@ -218,7 +218,7 @@ public final class SymbolicExecution {
         return (Slong) calculationFactory.select(this, valueFactory, sarray, index);
     }
 
-    public Slong store(Sarray.SlongSarray sarray, Sint index, SubstitutedVar value) {
+    public Slong store(Sarray.SlongSarray sarray, Sint index, Slong value) {
         return (Slong) calculationFactory.store(this, valueFactory, sarray, index, value);
     }
 
@@ -226,7 +226,7 @@ public final class SymbolicExecution {
         return (Sbyte) calculationFactory.select(this, valueFactory, sarray, index);
     }
 
-    public Sbyte store(Sarray.SbyteSarray sarray, Sint index, SubstitutedVar value) {
+    public Sbyte store(Sarray.SbyteSarray sarray, Sint index, Sbyte value) {
         return (Sbyte) calculationFactory.store(this, valueFactory, sarray, index, value);
     }
 
@@ -234,7 +234,7 @@ public final class SymbolicExecution {
         return (Sshort) calculationFactory.select(this, valueFactory, sarray, index);
     }
 
-    public Sshort store(Sarray.SshortSarray sarray, Sint index, SubstitutedVar value) {
+    public Sshort store(Sarray.SshortSarray sarray, Sint index, Sshort value) {
         return (Sshort) calculationFactory.store(this, valueFactory, sarray, index, value);
     }
 
@@ -247,19 +247,19 @@ public final class SymbolicExecution {
     }
 
     public PartnerClass select(Sarray.PartnerClassSarray sarray, Sint index) {
-        return (PartnerClass) calculationFactory.select(this, valueFactory, sarray, index);
+        return calculationFactory.select(this, valueFactory, sarray, index);
     }
 
     public PartnerClass store(Sarray.PartnerClassSarray sarray, Sint index, PartnerClass value) {
-        return (PartnerClass) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return calculationFactory.store(this, valueFactory, sarray, index, value);
     }
 
     public Sarray select(Sarray.SarraySarray sarray, Sint index) {
-        return (Sarray) calculationFactory.select(this, valueFactory, sarray, index);
+        return calculationFactory.select(this, valueFactory, sarray, index);
     }
 
     public Sarray store(Sarray.SarraySarray sarray, Sint index, Sarray value) {
-        return (Sarray) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return calculationFactory.store(this, valueFactory, sarray, index, value);
     }
 
     /* SYMBOLIC VARIABLE CREATION */

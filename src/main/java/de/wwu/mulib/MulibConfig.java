@@ -53,6 +53,8 @@ public class MulibConfig {
     public final boolean TREAT_BOOLEANS_AS_INTS;
 
     /* Free Arrays */
+    public final boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+    public final boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
     public final boolean THROW_EXCEPTION_ON_OOB;
     public final boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
     /* Solver */
@@ -150,6 +152,8 @@ public class MulibConfig {
         private Optional<Byte> SYMSBYTE_LB;
         private Optional<Byte> SYMSBYTE_UB;
         private boolean TREAT_BOOLEANS_AS_INTS;
+        private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         private boolean THROW_EXCEPTION_ON_OOB;
         private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
@@ -214,6 +218,8 @@ public class MulibConfig {
             this.SYMSSHORT_UB =  Optional.empty();
             this.SYMSBYTE_LB =   Optional.empty();
             this.SYMSBYTE_UB =   Optional.empty();
+            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = false;
+            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = false;
             this.TREAT_BOOLEANS_AS_INTS = false;
             this.THROW_EXCEPTION_ON_OOB = false;
             this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
@@ -515,6 +521,16 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+            return this;
+        }
+
+        public MulibConfigBuilder setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
+            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -590,6 +606,8 @@ public class MulibConfig {
                     SYMSBYTE_LB,
                     SYMSBYTE_UB,
                     TREAT_BOOLEANS_AS_INTS,
+                    USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
+                    USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
                     THROW_EXCEPTION_ON_OOB,
                     HIGH_LEVEL_FREE_ARRAY_THEORY,
                     CONCOLIC,
@@ -645,6 +663,8 @@ public class MulibConfig {
                         Optional<Byte> SYMSBYTE_LB,
                         Optional<Byte> SYMSBYTE_UB,
                         boolean TREAT_BOOLEANS_AS_INTS,
+                        boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
+                        boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
                         boolean THROW_EXCEPTION_ON_OOB,
                         boolean HIGH_LEVEL_FREE_ARRAY_THEORY,
                         boolean CONCOLIC,
@@ -697,6 +717,8 @@ public class MulibConfig {
         this.SYMSBYTE_LB =   SYMSBYTE_LB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_LB.get()));
         this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
+        this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
         this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
         this.CONCOLIC = CONCOLIC;

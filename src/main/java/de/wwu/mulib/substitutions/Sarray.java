@@ -147,7 +147,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return cachedElements.get(index);
     }
 
-    public final void setForIndex(Sint index, T value) {
+    public final void setInCacheForIndex(Sint index, T value) {
         cachedElements.put(index, value);
     }
 

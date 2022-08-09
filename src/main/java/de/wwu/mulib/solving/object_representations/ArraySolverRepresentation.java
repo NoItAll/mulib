@@ -28,7 +28,12 @@ public class ArraySolverRepresentation {
         this.arrayId = beforeStore.arrayId;
         this.selects = new ArrayDeque<>(beforeStore.selects);
         this.store = beforeStore.store;
-        this.beforeStore = beforeStore.beforeStore == null ? null : new ArraySolverRepresentation(beforeStore.beforeStore);
+        this.beforeStore =
+                beforeStore.beforeStore == null
+                        ?
+                        null
+                        :
+                        new ArraySolverRepresentation(beforeStore.beforeStore);
     }
 
     private ArraySolverRepresentation(

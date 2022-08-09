@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -127,9 +128,17 @@ public interface CalculationFactory {
 
     Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i);
 
-    SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index);
+    Sprimitive select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index);
 
-    SubstitutedVar store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, SubstitutedVar value);
+    Sprimitive store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, Sprimitive value);
+
+    Sarray<?> select(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index);
+
+    Sarray<?> store(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value);
+
+    PartnerClass select(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index);
+
+    PartnerClass store(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
 
 
 }
