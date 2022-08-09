@@ -85,6 +85,7 @@ public final class TestUtility {
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
+                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING)
                         .assumeMulibDefaultValueRanges()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
@@ -126,6 +127,7 @@ public final class TestUtility {
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
+                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING)
                         .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
@@ -154,6 +156,7 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
+                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)

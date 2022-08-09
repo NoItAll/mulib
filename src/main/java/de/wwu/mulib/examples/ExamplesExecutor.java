@@ -35,7 +35,7 @@ public class ExamplesExecutor {
                 case "DFSN":
                     b.setGLOBAL_SEARCH_STRATEGY(DFS)
                             .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS, DFS)
-                            .setGLOBAL_SOLVER_TYPE(Solvers.Z3_NON_INCREMENTAL);
+                            .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING); // Improved implementation compared to the SAC benchmark!
                     break;
                 case "DFS":
                     b.setGLOBAL_SOLVER_TYPE(Solvers.Z3)

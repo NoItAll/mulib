@@ -4,12 +4,12 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.solving.solvers.JavaSMTSolverManager;
 import de.wwu.mulib.solving.solvers.SolverManager;
+import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;
 import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
-import de.wwu.mulib.solving.solvers.Z3NonIncrementalSolverManager;
 
 public enum Solvers {
     Z3,
-    Z3_NON_INCREMENTAL,
+    Z3_GLOBAL_LEARNING,
     JACOP,
     JSMT_Z3,
     JSMT_SMTINTERPOL,
@@ -24,8 +24,8 @@ public enum Solvers {
         switch (config.GLOBAL_SOLVER_TYPE) {
             case Z3:
                 return new Z3IncrementalSolverManager(config);
-            case Z3_NON_INCREMENTAL:
-                return new Z3NonIncrementalSolverManager(config);
+            case Z3_GLOBAL_LEARNING:
+                return new Z3GlobalLearningSolverManager(config);
             case JSMT_Z3:
             case JSMT_SMTINTERPOL:
             case JSMT_PRINCESS:

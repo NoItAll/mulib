@@ -183,7 +183,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     protected static final class Z3MulibAdapter {
-        private final Context ctx;
+        final Context ctx;
         private final Map<NumericExpression, Expr> numericExpressionsStore = new WeakHashMap<>();
         // Constraint --> BoolExpr; if booleans are used in {0,1}-encoding (due to them appearing in arithmetic operations)
         // it can also be Expr --> BoolExpr, where Expr is the 0,1-encoding-integer.
