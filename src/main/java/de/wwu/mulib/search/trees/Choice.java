@@ -71,6 +71,7 @@ public final class Choice extends TreeNode {
         // This constraint must be fulfilled to further evaluate the ChoiceOption
         private Constraint optionConstraint;
         // Separate ArrayConstraints. These are added after the fact.
+        @SuppressWarnings("unchecked")
         private List<ArrayConstraint> arrayConstraints = Collections.EMPTY_LIST;
 
         // The possible child of this ChoiceOption is set after evaluating the option.

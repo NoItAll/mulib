@@ -111,6 +111,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public final void addNewArrayConstraint(ArrayConstraint ac) {
+        assert !currentSymbolicExecution.nextIsOnKnownPath();
         solverManager.addArrayConstraint(ac);
         currentChoiceOption.addArrayConstraint(ac);
     }
@@ -118,7 +119,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
-        return solverManager.checkWithNewArraySelectConstraint(ac);
+        return solverManager.checkWithNewArrayConstraint(ac);
     }
 
     @Override
@@ -198,21 +199,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
-    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
-        // Backtrack with solver's push- and pop-capabilities
-        Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
-        int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
-        solverManager.backtrack(depthDifference);
-        solverBacktrack += depthDifference;
-        ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
-        for (Choice.ChoiceOption co : getPathBetween) {
-            solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
-            addExistingArrayConstraints(co.getArrayConstraints());
-            addedAfterBacktrackingPoint++;
-        }
-        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
-    }
-
     @Override
     public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
@@ -282,7 +268,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return solution;
     }
 
-    protected void addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
+    private void _addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
+        assert currentChoiceOption != choiceOption;
+        assert choiceOption.getArrayConstraints().isEmpty();
         solverManager.addConstraintAfterNewBacktrackingPoint(choiceOption.getOptionConstraint());
         addedAfterBacktrackingPoint++;
         currentChoiceOption = choiceOption;
@@ -316,18 +304,30 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
     }
 
+    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
+        // Backtrack with solver's push- and pop-capabilities
+        Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
+        int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
+        solverManager.backtrack(depthDifference);
+        solverBacktrack += depthDifference;
+        ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
+        for (Choice.ChoiceOption co : getPathBetween) {
+            solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
+            addExistingArrayConstraints(co.getArrayConstraints());
+            addedAfterBacktrackingPoint++;
+        }
+        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
+    }
+
     protected boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
-        assert !choiceOption.isEvaluated();
-        assert !choiceOption.isBudgetExceeded();
-        assert !choiceOption.isUnsatisfiable();
-        assert !choiceOption.isCutOff();
-        assert !choiceOption.isExplicitlyFailed();
+        assert !choiceOption.isEvaluated() && !choiceOption.isBudgetExceeded() && !choiceOption.isUnsatisfiable()
+                && !choiceOption.isCutOff() && !choiceOption.isExplicitlyFailed() : choiceOption.stateToString();
         assert currentChoiceOption == null ||
                 (currentChoiceOption.getChild() instanceof Choice
                         && ((Choice) currentChoiceOption.getChild()).getChoiceOptions().stream()
                         .anyMatch(co -> choiceOption == co));
         if (choiceOption.isSatisfiable()) {
-            addAfterBacktrackingPoint(choiceOption);
+            _addAfterBacktrackingPoint(choiceOption);
             return true;
         } else if (choiceOption.isUnsatisfiable()) {
             return false;
@@ -340,6 +340,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             // If the first choice option is not satisfiable, the choice is binary, and the parent
             // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
             // of the first choice.
+            // Array constraints do not yet need to be regarded since they are only added while exploring a specific
+            // choice option
             Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
             assert other != choiceOption;
             Constraint c0 = other.getOptionConstraint();
@@ -348,14 +350,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     || (c0 instanceof Not && ((Not) c0).isNegationOf(c1))) {
                 choiceOption.setSatisfiable();
                 choiceOption.setOptionConstraint(Sbool.ConcSbool.TRUE);
-                addAfterBacktrackingPoint(choiceOption);
+                _addAfterBacktrackingPoint(choiceOption);
                 heuristicSatEvals++;
                 assert solverManager.isSatisfiable();
                 return true;
             }
         }
 
-        addAfterBacktrackingPoint(choiceOption);
+        _addAfterBacktrackingPoint(choiceOption);
         return checkSatWithSolver(solverManager, choiceOption);
     }
 

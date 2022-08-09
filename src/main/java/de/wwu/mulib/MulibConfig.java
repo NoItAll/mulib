@@ -54,6 +54,7 @@ public class MulibConfig {
 
     /* Free Arrays */
     public final boolean THROW_EXCEPTION_ON_OOB;
+    public final boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
     /* Solver */
     public final Solvers GLOBAL_SOLVER_TYPE;
     public final boolean GLOBAL_AVOID_SAT_CHECKS;
@@ -150,6 +151,7 @@ public class MulibConfig {
         private Optional<Byte> SYMSBYTE_UB;
         private boolean TREAT_BOOLEANS_AS_INTS;
         private boolean THROW_EXCEPTION_ON_OOB;
+        private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
 
         private MulibConfigBuilder() {
@@ -214,6 +216,7 @@ public class MulibConfig {
             this.SYMSBYTE_UB =   Optional.empty();
             this.TREAT_BOOLEANS_AS_INTS = false;
             this.THROW_EXCEPTION_ON_OOB = false;
+            this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
         }
 
@@ -456,6 +459,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setHIGH_LEVEL_FREE_ARRAY_THEORY(boolean HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
+            return this;
+        }
+
         public MulibConfigBuilder assumeMulibDefaultValueRanges() {
             this.SYMSINT_LB =    Optional.of(Integer.MIN_VALUE);
             this.SYMSINT_UB =    Optional.of(Integer.MAX_VALUE);
@@ -505,202 +513,6 @@ public class MulibConfig {
         public MulibConfigBuilder putSOLVER_ARGS(String key, Function<?, ?> val) {
             SOLVER_ARGS.put(key, val);
             return this;
-        }
-
-        public String getTREE_INDENTATION() {
-            return TREE_INDENTATION;
-        }
-
-        public boolean isLABEL_RESULT_VALUE() {
-            return LABEL_RESULT_VALUE;
-        }
-
-        public boolean isENLIST_LEAVES() {
-            return ENLIST_LEAVES;
-        }
-
-        public boolean isCONCRETIZE_IF_NEEDED() {
-            return CONCRETIZE_IF_NEEDED;
-        }
-
-        public List<String> getTRANSF_IGNORE_FROM_PACKAGES() {
-            return TRANSF_IGNORE_FROM_PACKAGES;
-        }
-
-        public List<Class<?>> getTRANSF_IGNORE_CLASSES() {
-            return TRANSF_IGNORE_CLASSES;
-        }
-
-        public List<Class<?>> getTRANSF_IGNORE_SUBCLASSES_OF() {
-            return TRANSF_IGNORE_SUBCLASSES_OF;
-        }
-
-        public List<Class<?>> getTRANSF_REGARD_SPECIAL_CASE() {
-            return TRANSF_REGARD_SPECIAL_CASE;
-        }
-
-        public List<Class<?>> getTRANSF_CONCRETIZE_FOR() {
-            return TRANSF_CONCRETIZE_FOR;
-        }
-
-        public List<Class<?>> getTRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR() {
-            return TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-        }
-
-        public Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS() {
-            return TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
-        }
-
-        public Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS() {
-            return TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
-        }
-
-        public Map<Class<?>, BiFunction<SolverManager, Object, Object>> getTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS() {
-            return TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
-        }
-
-        public SearchStrategy getGLOBAL_SEARCH_STRATEGY() {
-            return GLOBAL_SEARCH_STRATEGY;
-        }
-
-        public boolean isCONCOLIC() {
-            return CONCOLIC;
-        }
-
-        public List<SearchStrategy> getADDITIONAL_PARALLEL_SEARCH_STRATEGIES() {
-            return ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
-        }
-
-        public ChoiceOptionDeques getCHOICE_OPTION_DEQUE_TYPE() {
-            return CHOICE_OPTION_DEQUE_TYPE;
-        }
-
-        public long getACTIVATE_PARALLEL_FOR() {
-            return ACTIVATE_PARALLEL_FOR;
-        }
-
-        public Solvers getGLOBAL_SOLVER_TYPE() {
-            return GLOBAL_SOLVER_TYPE;
-        }
-
-        public boolean isGLOBAL_AVOID_SAT_CHECKS() {
-            return GLOBAL_AVOID_SAT_CHECKS;
-        }
-
-        public long getFIXED_POSSIBLE_CP_BUDGET() {
-            return FIXED_POSSIBLE_CP_BUDGET;
-        }
-
-        public long getFIXED_ACTUAL_CP_BUDGET() {
-            return FIXED_ACTUAL_CP_BUDGET;
-        }
-
-        public long getINCR_ACTUAL_CP_BUDGET() {
-            return INCR_ACTUAL_CP_BUDGET;
-        }
-
-        public long getSECONDS_PER_INVOCATION() {
-            return SECONDS_PER_INVOCATION;
-        }
-
-        public long getMAX_FAILS() {
-            return MAX_FAILS;
-        }
-
-        public long getMAX_PATH_SOLUTIONS() {
-            return MAX_PATH_SOLUTIONS;
-        }
-
-        public long getMAX_EXCEEDED_BUDGETS() {
-            return MAX_EXCEEDED_BUDGETS;
-        }
-
-        public boolean isTRANSF_WRITE_TO_FILE() {
-            return TRANSF_WRITE_TO_FILE;
-        }
-
-        public String getTRANSF_GENERATED_CLASSES_PATH() {
-            return TRANSF_GENERATED_CLASSES_PATH;
-        }
-
-        public boolean isTRANSF_VALIDATE_TRANSFORMATION() {
-            return TRANSF_VALIDATE_TRANSFORMATION;
-        }
-
-        public boolean isTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER() {
-            return TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
-        }
-
-        public boolean isTRANSF_INCLUDE_PACKAGE_NAME() {
-            return TRANSF_INCLUDE_PACKAGE_NAME;
-        }
-
-        public long getPARALLEL_TIMEOUT_IN_MS() {
-            return PARALLEL_TIMEOUT_IN_MS;
-        }
-
-        public Optional<Integer> getSYMSINT_LB() {
-            return SYMSINT_LB;
-        }
-
-        public Optional<Integer> getSYMSINT_UB() {
-            return SYMSINT_UB;
-        }
-
-        public Optional<Long> getSYMSLONG_LB() {
-            return SYMSLONG_LB;
-        }
-
-        public Optional<Long> getSYMSLONG_UB() {
-            return SYMSLONG_UB;
-        }
-
-        public Optional<Double> getSYMSDOUBLE_LB() {
-            return SYMSDOUBLE_LB;
-        }
-
-        public Optional<Double> getSYMSDOUBLE_UB() {
-            return SYMSDOUBLE_UB;
-        }
-
-        public Optional<Float> getSYMSFLOAT_LB() {
-            return SYMSFLOAT_LB;
-        }
-
-        public Optional<Float> getSYMSFLOAT_UB() {
-            return SYMSFLOAT_UB;
-        }
-
-        public Optional<Short> getSYMSSHORT_LB() {
-            return SYMSSHORT_LB;
-        }
-
-        public Optional<Short> getSYMSSHORT_UB() {
-            return SYMSSHORT_UB;
-        }
-
-        public Optional<Byte> getSYMSBYTE_LB() {
-            return SYMSBYTE_LB;
-        }
-
-        public Optional<Byte> getSYMSBYTE_UB() {
-            return SYMSBYTE_UB;
-        }
-
-        public boolean isTREAT_BOOLEANS_AS_INTS() {
-            return TREAT_BOOLEANS_AS_INTS;
-        }
-
-        public boolean isTHROW_EXCEPTION_ON_OOB() {
-            return THROW_EXCEPTION_ON_OOB;
-        }
-
-        public LinkedHashMap<String, Object> getSOLVER_ARGS() {
-            return SOLVER_ARGS;
-        }
-
-        public boolean getTRANSF_TRANSFORMATION_REQUIRED() {
-            return TRANSF_TRANSFORMATION_REQUIRED;
         }
 
         public MulibConfig build() {
@@ -779,6 +591,7 @@ public class MulibConfig {
                     SYMSBYTE_UB,
                     TREAT_BOOLEANS_AS_INTS,
                     THROW_EXCEPTION_ON_OOB,
+                    HIGH_LEVEL_FREE_ARRAY_THEORY,
                     CONCOLIC,
                     ALLOW_EXCEPTIONS
             );
@@ -833,6 +646,7 @@ public class MulibConfig {
                         Optional<Byte> SYMSBYTE_UB,
                         boolean TREAT_BOOLEANS_AS_INTS,
                         boolean THROW_EXCEPTION_ON_OOB,
+                        boolean HIGH_LEVEL_FREE_ARRAY_THEORY,
                         boolean CONCOLIC,
                         boolean ALLOW_EXCEPTIONS
     ) {
@@ -884,6 +698,7 @@ public class MulibConfig {
         this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
         this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
+        this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
         this.CONCOLIC = CONCOLIC;
         this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
     }

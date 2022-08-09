@@ -10,6 +10,7 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
@@ -27,8 +28,12 @@ import java.util.function.BiFunction;
  * @param <B> Class representing constraints in the solver
  * @param <AR> Class representing array expressions in the solver
  */
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implements SolverManager {
-    private final IncrementalSolverState<AR> incrementalSolverState;
+
+    // Raw use in this abstract superclass so that sub-classes can overwrite with their specific array representations
+    // while we can still use a own layer or high-level array theory
+    private final IncrementalSolverState incrementalSolverState;
     private M currentModel;
     private boolean isSatisfiable;
     private boolean satisfiabilityWasCalculated;
@@ -77,8 +82,32 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public final boolean checkWithNewArraySelectConstraint(ArrayConstraint ac) {
-        B bool = newArraySelectConstraint(incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()), ac.getIndex(), ac.getValue());
+    public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
+        if (ac.getType() == ArrayConstraint.Type.STORE) {
+            // It is always possible to store a new value in an array
+            return true;
+        }
+        // If we select, we must check if the selected value can legally be contained in the array
+        boolean result;
+        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            result = _checkWithNewFreeArrayCompatibilityLayerArraySelectConstraint(ac);
+        } else {
+            // Solver specific treatment
+            result = _checkWithNewSolverSpecificArraySelectConstraint(ac);
+        }
+        return result;
+    }
+
+    private boolean _checkWithNewFreeArrayCompatibilityLayerArraySelectConstraint(ArrayConstraint ac) {
+        ArraySolverRepresentation asr = (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+        Constraint selectConstraint = asr.select(ac.getIndex(), ac.getValue());
+        boolean result = checkWithNewConstraint(selectConstraint);
+        _resetSatisfiabilityWasCalculatedAndModel();
+        return result;
+    }
+
+    private boolean _checkWithNewSolverSpecificArraySelectConstraint(ArrayConstraint ac) {
+        B bool = newArraySelectConstraint((AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()), ac.getIndex(), ac.getValue());
         return _check(bool);
     }
 
@@ -117,10 +146,42 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     // Treatment of free arrays is inspired by that of Muli, yet modified. E.g., the ArrayConstraint is not a subtype of Constraint in Mulib:
     // https://github.com/wwu-pi/muggl/blob/53a2874cba2b193ec99d2aea8a454a88481656c7/muggl-solver-z3/src/main/java/de/wwu/muggl/solvers/z3/Z3MugglAdapter.java
+    // It was also extended by an own alternative abstraction layer
     @Override
     public final void addArrayConstraint(ArrayConstraint ac) {
         incrementalSolverState.addArrayConstraint(ac);
-        AR arrayRepresentation = incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            _freeArrayCompatibilityLayerArrayConstraintTreatement(ac);
+        } else {
+            // Solver specific treatment
+            _solverSpecificArrayConstraintTreatment(ac);
+        }
+        _resetSatisfiabilityWasCalculatedAndModel();
+    }
+
+    private void _freeArrayCompatibilityLayerArrayConstraintTreatement(ArrayConstraint ac) {
+        ArraySolverRepresentation arrayRepresentation =
+                (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+        if (ac.getType() == ArrayConstraint.Type.SELECT) {
+            if (arrayRepresentation == null) {
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId());
+                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            }
+            Constraint arraySelectConstraint = arrayRepresentation.select(ac.getIndex(), ac.getValue());
+            addConstraint(arraySelectConstraint);
+        } else {
+            // Is store
+            assert ac.getType() == ArrayConstraint.Type.STORE;
+            if (arrayRepresentation == null) {
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId());
+            }
+            arrayRepresentation = arrayRepresentation.store(ac.getIndex(), ac.getValue());
+            incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+        }
+    }
+
+    private void _solverSpecificArrayConstraintTreatment(ArrayConstraint ac) {
+        AR arrayRepresentation = (AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         if (ac.getType() == ArrayConstraint.Type.SELECT) {
             if (arrayRepresentation == null) {
                 arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
@@ -135,7 +196,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             arrayRepresentation = createNewArrayRepresentationForStore(ac, arrayRepresentation);
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
-        _resetSatisfiabilityWasCalculatedAndModel();
     }
 
     @Override

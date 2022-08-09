@@ -18,7 +18,7 @@ public interface SolverManager {
 
     void addArrayConstraints(List<ArrayConstraint> acs);
 
-    boolean checkWithNewArraySelectConstraint(ArrayConstraint ac);
+    boolean checkWithNewArrayConstraint(ArrayConstraint ac);
 
     boolean checkWithNewConstraint(Constraint c);
 

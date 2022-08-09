@@ -56,10 +56,12 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
         boolean isActualIncrementalBudgetExceeded =
                 ebm.incrementalActualChoicePointBudgetIsExceeded();
-        for (Choice.ChoiceOption choiceOption : options) {
-            if (continueExecution && checkIfSatisfiableAndSet(choiceOption)) {
-                result = choiceOption;
-                break;
+        if (continueExecution) {
+            for (Choice.ChoiceOption choiceOption : options) {
+                if (checkIfSatisfiableAndSet(choiceOption)) {
+                    result = choiceOption;
+                    break;
+                }
             }
         }
         if (terminated || result == null || isActualIncrementalBudgetExceeded) {
@@ -110,7 +112,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     return Optional.empty();
                 }
             }
-            assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1);
+            assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1); // SolverManager has level starting at 1 after pushing initial TRUE
             return Optional.of(new SymbolicExecution(
                     this,
                     choicePointFactory,
