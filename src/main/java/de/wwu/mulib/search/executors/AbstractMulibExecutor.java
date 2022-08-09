@@ -218,14 +218,12 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             ValueFactory valueFactory,
             CalculationFactory calculationFactory);
 
-    protected PathSolution getSolution(
+    private PathSolution getSolution(
             Object solutionValue,
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
-        if (solutionValue != null
-                && labelResultValue
-                && !solutionValue.getClass().isArray()
-                && solutionValue instanceof SubstitutedVar) {
+        if (solutionValue instanceof SubstitutedVar
+                && labelResultValue) {
             symbolicExecution.addNamedVariable("return", (SubstitutedVar) solutionValue);
         }
         Labels labels = LabelUtility.getLabels(

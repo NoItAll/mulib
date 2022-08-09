@@ -2,7 +2,6 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -501,7 +500,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.getForIndex(index);
+        SubstitutedVar result = sarray.getFromCacheForIndex(index);
         if (result != null) {
             // We don't have to check for the validity of the cached index: we remove all indexes if store was used and
             // symbolic indexes have been used. Thus, the current index is valid.
@@ -512,14 +511,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         checkIndexAccess(sarray, index, se);
 
         // Generate new value
-        if (!sarray.defaultIsSymbolic()) {
-            if (sarray.onlyConcreteIndicesUsed()) {
+        if (!sarray.defaultIsSymbolic() && sarray.onlyConcreteIndicesUsed()) {
                 result = sarray.nonSymbolicDefaultElement(se);
-            } else {
-                /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
-                /// TODO alternative: only allow this for those arrays with fixed length
-                throw new NotYetImplementedException();
-            }
         } else {
             result = sarray.symbolicDefault(se);
         }
@@ -551,12 +544,12 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index) && !se.nextIsOnKnownPath()) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =
-                        new ArrayConstraint(sarray.getId(), i, sarray.getForIndex(i), ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint(sarray.getId(), i, sarray.getFromCacheForIndex(i), ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(ac);
             }
         }

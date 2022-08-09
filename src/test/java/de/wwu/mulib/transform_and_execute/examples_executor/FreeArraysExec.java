@@ -4,10 +4,12 @@ import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.transform_and_execute.examples.PrimitiveEncodingCapacityAssignmentProblem;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort0;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort1;
 import org.junit.jupiter.api.Test;
 
+import java.util.List;
 import java.util.Optional;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -69,6 +71,39 @@ public class FreeArraysExec {
                     assertEquals(56, values[6], mb.build().toString());
                     return result;
                 }
+        );
+    }
+
+    @Test
+    public void testPrimitiveEncodingCapacityAssignment() {
+        TestUtility.getAllSolutions(
+                (mb) -> {
+                    List<Solution> result = TestUtility.getUpToNSolutions(
+                            3,
+                            "assign",
+                            PrimitiveEncodingCapacityAssignmentProblem.class,
+                            mb,
+                            new Class[] { int[].class, int[].class },
+                            new Object[] { new int[] { 5, 3, 2 }, new int[] { 1, 2, 4, 3 } }
+                    );
+                    assertEquals(1, result.size());
+                    Solution singleSolution = result.get(0);
+                    int workload0AssignedTo = (Integer) singleSolution.labels.getLabelForId("workload_0");
+                    int workload1AssignedTo = (Integer) singleSolution.labels.getLabelForId("workload_1");
+                    int workload2AssignedTo = (Integer) singleSolution.labels.getLabelForId("workload_2");
+                    int workload3AssignedTo = (Integer) singleSolution.labels.getLabelForId("workload_3");
+                    assertEquals(0, workload0AssignedTo);
+                    assertEquals(0, workload2AssignedTo);
+                    assertEquals(2, workload1AssignedTo);
+                    assertEquals(1, workload3AssignedTo);
+                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    assertEquals(0, returnValue[0]);
+                    assertEquals(2, returnValue[1]);
+                    assertEquals(0, returnValue[2]);
+                    assertEquals(1, returnValue[3]);
+                    return result;
+                },
+                "PrimitiveEncodingCapacityAssignmentProblem.assign"
         );
     }
 }

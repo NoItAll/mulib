@@ -730,7 +730,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
 
     @Override
     public SubstitutedVar select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.getForIndex(index);
+        SubstitutedVar result = sarray.getFromCacheForIndex(index);
         if (result != null) {
             return result;
         }
@@ -739,14 +739,8 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         checkIndexAccess(sarray, index, se);
 
         // Generate new value
-        if (!sarray.defaultIsSymbolic()) {
-            if (sarray.onlyConcreteIndicesUsed()) {
-                result = sarray.nonSymbolicDefaultElement(se);
-            } else {
-                /// A symbolic element could already be stored in the respective place, we must ensure this is not the case
-                /// TODO alternative: only allow this for those arrays with fixed length
-                throw new NotYetImplementedException();
-            }
+        if (!sarray.defaultIsSymbolic() && sarray.onlyConcreteIndicesUsed()) {
+            result = sarray.nonSymbolicDefaultElement(se);
         } else {
             result = sarray.symbolicDefault(se);
         }
@@ -830,11 +824,11 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index) && !se.nextIsOnKnownPath()) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
-                SubstitutedVar val = sarray.getForIndex(i);
+                SubstitutedVar val = sarray.getFromCacheForIndex(i);
                 ArrayConstraint ac =
                         new ArrayConstraint(sarray.getId(), i, val, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(ac);

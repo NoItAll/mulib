@@ -13,11 +13,11 @@ import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
-    private final long id;
+    private long id;
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
-    protected final Map<Sint, T> elements;
+    protected final Map<Sint, T> cachedElements;
 
     private final boolean defaultIsSymbolic;
 
@@ -27,48 +27,59 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                    boolean defaultIsSymbolic) {
         assert clazz != null && len != null;
-        this.id = se.getNextNumberInitializedSarray();
+        this.id = -1;
         this.onlyConcreteIndicesUsed = true;
         this.clazz = clazz;
-        this.elements = new HashMap<>();
+        this.cachedElements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.len = len;
+        if (!defaultIsSymbolic) {
+            if (len instanceof ConcSnumber) {
+                int length = ((ConcSnumber) len).intVal();
+                for (int i = 0; i < length; i++) {
+                    cachedElements.put(se.concSint(i), nonSymbolicDefaultElement(se));
+                }
+            } else {
+                throw new NotYetImplementedException("Behavior if length is not concrete and default is not symbolic is not yet implemented");
+            }
+        }
     }
 
     /** Transformation constructor */
     protected Sarray(
             T[] arrayElements,
             MulibValueTransformer mvt) {
-        this.id = mvt.getNextSarrayId();
+        this.id = -1;
         this.clazz = (Class<T>) arrayElements.getClass().getComponentType();
         int length = arrayElements.length;
         this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
-        this.elements = new HashMap<>();
+        this.onlyConcreteIndicesUsed = true;
+        this.cachedElements = new HashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
-            elements.put((Sint) mvt.transform(i), arrayElements[i]);
+            cachedElements.put((Sint) mvt.transform(i), arrayElements[i]);
         }
     }
 
     /** Copy constructor for all Sarrays but SarraySarray */
     protected Sarray(MulibValueCopier mvt, Sarray<T> s) {
-        this(mvt, s, new HashMap<>(s.elements));
+        this(mvt, s, new HashMap<>(s.cachedElements));
     }
 
     /** Copy constructor for SarraySarrays */
-    protected Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> elements) {
+    private Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
         this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
         this.clazz = s.clazz;
-        this.elements = elements;
+        this.cachedElements = cachedElements;
         this.defaultIsSymbolic = s.defaultIsSymbolic;
         this.len = s.len;
     }
 
     @Override
     public String toString() {
-        return "Sarray{id=" + id + ", elements=" + elements + "}";
+        return "Sarray{id=" + id + ", elements=" + cachedElements + "}";
     }
 
     public abstract T symbolicDefault(SymbolicExecution se);
@@ -100,27 +111,28 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public final boolean checkIfNeedsToRepresentOldEntries(Sint i) {
+    public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof SymNumericExpressionSprimitive) {
+                this.id = se.getNextNumberInitializedSarray();
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
-                return !elements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once
+                return !cachedElements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once
             }
         }
         return false;
     }
 
     public final Set<Sint> getCachedIndices() {
-        return elements.keySet();
+        return cachedElements.keySet();
     }
 
     public final Collection<T> getCachedElements() {
-        return elements.values();
+        return cachedElements.values();
     }
 
     public final void clearCachedElements() {
-        elements.clear();
+        cachedElements.clear();
     }
 
     public final Sint getLength() {
@@ -131,12 +143,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return getLength();
     }
 
-    public final T getForIndex(Sint index) {
-        return elements.get(index);
+    public final T getFromCacheForIndex(Sint index) {
+        return cachedElements.get(index);
     }
 
     public final void setForIndex(Sint index, T value) {
-        elements.put(index, value);
+        cachedElements.put(index, value);
     }
 
     public final long getId() {
@@ -583,7 +595,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         /** Copy constructor */
         public SarraySarray(MulibValueCopier mvt, SarraySarray s) {
-            super(mvt, s, copyArrayElements(mvt, s.elements));
+            super(mvt, s, copyArrayElements(mvt, s.cachedElements));
             this.dim = s.dim;
             this.elementType = s.elementType;
         }

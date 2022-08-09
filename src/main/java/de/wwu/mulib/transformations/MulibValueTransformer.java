@@ -37,10 +37,6 @@ public final class MulibValueTransformer {
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
-    public boolean isTransformationRequired() {
-        return transformationRequired;
-    }
-
     public void setNextSarrayId(Object[] findHighestSarrayIdIn) {
         long currentHighestId = -1;
         for (Object o : findHighestSarrayIdIn) {

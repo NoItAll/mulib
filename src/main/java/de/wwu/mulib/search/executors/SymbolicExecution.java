@@ -50,6 +50,7 @@ public final class SymbolicExecution {
             ExecutionBudgetManager executionBudgetManager,
             long nextSarrayId,
             MulibConfig config) {
+        this.nextSarrayId = nextSarrayId;
         this.mulibExecutor = mulibExecutor;
         this.choicePointFactory = choicePointFactory;
         this.valueFactory = valueFactory;

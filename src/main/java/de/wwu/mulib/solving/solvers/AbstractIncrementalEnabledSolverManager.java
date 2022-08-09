@@ -379,14 +379,25 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         int length = (Integer) labelSprimitive(sarray.getLength());
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
-        ArrayConstraint[] arrayConstraints =
-                getArrayConstraints().stream()
-                        .filter(ac -> ac.getArrayId() == sarray.getId())
-                        .toArray(ArrayConstraint[]::new);
-        for (ArrayConstraint ac : arrayConstraints) {
-            Integer labeledIndex = (Integer) labelSprimitive(ac.getIndex());
-            Object labeledValue = getLabel(ac.getValue());
-            result[labeledIndex] = labeledValue;
+        if (sarray.onlyConcreteIndicesUsed()) {
+            // In this case the constraints did not need to be manifested and we can use the cache
+            for (Sint index : sarray.getCachedIndices()) {
+                Integer labeledIndex = (Integer) labelSprimitive(index);
+                Object labeledValue = getLabel(sarray.getFromCacheForIndex(index));
+                result[labeledIndex] = labeledValue;
+            }
+        } else {
+            // In this case, the constraints were propagated to the constraint solver and accurately describe the
+            // state changes of the array
+            ArrayConstraint[] arrayConstraints =
+                    getArrayConstraints().stream()
+                            .filter(ac -> ac.getArrayId() == sarray.getId())
+                            .toArray(ArrayConstraint[]::new);
+            for (ArrayConstraint ac : arrayConstraints) {
+                Integer labeledIndex = (Integer) labelSprimitive(ac.getIndex());
+                Object labeledValue = getLabel(ac.getValue());
+                result[labeledIndex] = labeledValue;
+            }
         }
         return result;
     }
