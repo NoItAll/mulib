@@ -114,9 +114,10 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     @Override
     protected final void addArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
         BoolExpr selectConstraint = newArraySelectConstraint(arrayRepresentation, index, value);
-        solver.add(selectConstraint);
+        addSolverConstraintRepresentation(selectConstraint);
     }
 
+    @Override
     protected BoolExpr newArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
         return adapter.transformSelectConstraint(arrayRepresentation, index, value);
     }

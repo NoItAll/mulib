@@ -167,7 +167,7 @@ public class MulibConfig {
             this.ALLOW_EXCEPTIONS = true;
             this.TREE_INDENTATION = "    ";
             this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
-            this.GLOBAL_SOLVER_TYPE = Solvers.Z3;
+            this.GLOBAL_SOLVER_TYPE = Solvers.Z3_INCREMENTAL;
             this.FIXED_POSSIBLE_CP_BUDGET = 0;
             this.FIXED_ACTUAL_CP_BUDGET =   0;
             this.INCR_ACTUAL_CP_BUDGET =    0;

@@ -4,7 +4,7 @@ import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.transform_and_execute.examples.PrimitiveEncodingCapacityAssignmentProblem;
+import de.wwu.mulib.transform_and_execute.examples.CapacityAssignmentProblem;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort0;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort1;
 import org.junit.jupiter.api.Test;
@@ -81,7 +81,7 @@ public class FreeArraysExec {
                     List<Solution> result = TestUtility.getUpToNSolutions(
                             3,
                             "assign",
-                            PrimitiveEncodingCapacityAssignmentProblem.class,
+                            CapacityAssignmentProblem.class,
                             mb,
                             new Class[] { int[].class, int[].class },
                             new Object[] { new int[] { 5, 3, 2 }, new int[] { 1, 2, 4, 3 } }
@@ -103,7 +103,60 @@ public class FreeArraysExec {
                     assertEquals(1, returnValue[3]);
                     return result;
                 },
-                "PrimitiveEncodingCapacityAssignmentProblem.assign"
+                "CapacityAssignmentProblem.assign"
+        );
+    }
+
+    @Test
+    public void testArrayArrayEncodingCapacityAssignment() {
+        TestUtility.getAllSolutions(
+                (mb) -> {
+                    List<Solution> result = TestUtility.getUpToNSolutions(
+                            3,
+                            "assign",
+                            CapacityAssignmentProblem.class,
+                            mb,
+                            new Class[] { int[].class, int[][].class },
+                            new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 2, 4, 3 }, { 5, 2, 3 } } }
+                    );
+                    assertEquals(1, result.size());
+                    Solution singleSolution = result.get(0);
+                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    assertEquals(2, returnValue.length);
+                    Object[] innerReturnValue = (Object[]) returnValue[0];
+                    assertEquals(4, innerReturnValue.length);
+                    assertEquals(0, innerReturnValue[0]);
+                    assertEquals(2, innerReturnValue[1]);
+                    assertEquals(0, innerReturnValue[2]);
+                    assertEquals(1, innerReturnValue[3]);
+                    innerReturnValue = (Object[]) returnValue[1];
+                    assertEquals(3, innerReturnValue.length);
+                    assertEquals(0, innerReturnValue[0]);
+                    assertEquals(2, innerReturnValue[1]);
+                    assertEquals(1, innerReturnValue[2]);
+                    return result;
+                },
+                "CapacityAssignmentProblem.assign"
+        );
+    }
+
+    @Test
+    public void testArrayArrayEncodingCapacityAssignmentWithPreProduction() {
+        TestUtility.getAllSolutions(
+                (mb) -> {
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    List<Solution> result = TestUtility.getUpToNSolutions(
+                            1,
+                            "assignWithPreproduction",
+                            CapacityAssignmentProblem.class,
+                            mb,
+                            new Class[] { int[].class, int[][].class },
+                            new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
+                    );
+                    assertTrue(result.size() == 1, "Result size is: " + result.size() + ", with config: " + mb.build());
+                    return result;
+                },
+                "CapacityAssignmentProblem.assignWithPreproduction"
         );
     }
 }

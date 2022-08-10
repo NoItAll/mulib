@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.choice_points;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
@@ -14,7 +15,10 @@ import java.util.Optional;
 
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
-    SymbolicChoicePointFactory(MulibConfig config) {}
+    private final MulibConfig config;
+    SymbolicChoicePointFactory(MulibConfig config) {
+        this.config = config;
+    }
 
     public static SymbolicChoicePointFactory getInstance(MulibConfig config) {
         return new SymbolicChoicePointFactory(config);
@@ -168,6 +172,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         // We encounter a new ChoiceOption. We check if a next ChoiceOption is present and which option is chosen.
         Optional<Boolean> possibleResult = checkIfStillOnKnownPath(se);
         if (possibleResult.isPresent()) {
+            assert !config.CONCOLIC || (!se.nextIsOnKnownPath() || (ConcolicConstraintContainer.getConcSboolFromConcolic(b).isTrue() == possibleResult.get())) : config;
             return possibleResult.get();
         }
 

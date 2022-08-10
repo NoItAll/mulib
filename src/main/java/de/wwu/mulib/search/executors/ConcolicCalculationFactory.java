@@ -5,7 +5,6 @@ import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -881,12 +880,17 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         if (index instanceof ConcSnumber) {
             return index;
         }
-        Sint concIndex = (Sint) ConcolicNumericContainer.getConcNumericFromConcolic(index);
-        Sint symSint = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
-        if (!se.eqChoice(concIndex, symSint)) { // Adds constraint and allows another evaluation
-            throw new MulibIllegalStateException("Constraint system is inconsistent");
+        Sint concsIndex = null;
+        int currentIntIndex = 0;
+        while (true) {
+            Sint currentIndex = se.concSint(currentIntIndex);
+            if (se.eqChoice(index, currentIndex)) {
+                concsIndex = currentIndex;
+                break;
+            }
+            currentIntIndex++;
         }
-        return concIndex;
+        return concsIndex;
     }
 
     private SubstitutedVar _selectWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index) {

@@ -8,7 +8,7 @@ import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;
 import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
 
 public enum Solvers {
-    Z3,
+    Z3_INCREMENTAL,
     Z3_GLOBAL_LEARNING,
     JACOP,
     JSMT_Z3,
@@ -22,7 +22,7 @@ public enum Solvers {
     public static SolverManager getSolverManager(MulibConfig config) {
 
         switch (config.GLOBAL_SOLVER_TYPE) {
-            case Z3:
+            case Z3_INCREMENTAL:
                 return new Z3IncrementalSolverManager(config);
             case Z3_GLOBAL_LEARNING:
                 return new Z3GlobalLearningSolverManager(config);

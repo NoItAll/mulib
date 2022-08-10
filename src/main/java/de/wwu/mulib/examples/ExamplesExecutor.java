@@ -38,16 +38,16 @@ public class ExamplesExecutor {
                             .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING); // Improved implementation compared to the SAC benchmark!
                     break;
                 case "DFS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3)
+                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                             .setGLOBAL_SEARCH_STRATEGY(DFS);
                     break;
                 case "PDFS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3)
+                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                             .setGLOBAL_SEARCH_STRATEGY(DFS)
                             .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS, DFS);
                     break;
                 case "PDSAS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3)
+                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                             .setGLOBAL_SEARCH_STRATEGY(DSAS)
                             .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
                             // Direct access makes sense for request of DSAS

@@ -188,6 +188,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
             }
             addArraySelectConstraint(arrayRepresentation, ac.getIndex(), ac.getValue());
+            _resetSatisfiabilityWasCalculatedAndModel();
         } else {
             assert ac.getType() == ArrayConstraint.Type.STORE;
             if (arrayRepresentation == null) {
@@ -272,6 +273,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                     Constraint disjunctionConstraint = getNeq(sv, label);
                     disjunctionConstraints.add(disjunctionConstraint);
                 }
+            }
+            if (disjunctionConstraints.isEmpty()) {
+                // Nothing to negate
+                break;
             }
 
             Constraint newConstraint = Or.newInstance(disjunctionConstraints);
@@ -383,7 +388,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 Integer labeledIndex = (Integer) labelSprimitive(index);
-                Object labeledValue = getLabel(sarray.getFromCacheForIndex(index));
+                SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
+                Object labeledValue = getLabel(cachedValue);
                 result[labeledIndex] = labeledValue;
             }
         } else {

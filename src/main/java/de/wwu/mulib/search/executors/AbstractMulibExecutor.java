@@ -178,7 +178,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                             symbolicExecution.getCurrentChoiceOption().setBudgetExceeded(be.getExceededBudget());
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                 } catch (MulibException e) {
-                    e.printStackTrace();
                     Mulib.log.log(Level.WARNING, config.toString());
                     throw e;
                 } catch (Exception | AssertionError e) {
@@ -187,6 +186,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
                         return Optional.of(solution);
                     } else {
+                        Mulib.log.log(Level.WARNING, config.toString());
                         throw new MulibRuntimeException("Exception was thrown but not expected", e);
                     }
                 } catch (Throwable t) {
@@ -332,15 +332,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
 
         int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
+        Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
         if (choiceOption.getChoice().getChoiceOptions().size() == 2
-                && choiceOption.getChoice().getOption(otherNumber).isUnsatisfiable()
-                && choiceOption.getParent().isEvaluated()) {
+                && other.isUnsatisfiable()
+                && choiceOption.getParent().isEvaluated()
+                // We want to avoid that
+                && other.getArrayConstraints().isEmpty()) {
+            assert solverManager.isSatisfiable();
             // If the first choice option is not satisfiable, the choice is binary, and the parent
             // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation
             // of the first choice.
             // Array constraints do not yet need to be regarded since they are only added while exploring a specific
             // choice option
-            Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
             assert other != choiceOption;
             Constraint c0 = other.getOptionConstraint();
             Constraint c1 = choiceOption.getOptionConstraint();
@@ -350,7 +353,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 choiceOption.setOptionConstraint(Sbool.ConcSbool.TRUE);
                 _addAfterBacktrackingPoint(choiceOption);
                 heuristicSatEvals++;
-                assert solverManager.isSatisfiable();
+                assert solverManager.isSatisfiable() : config;
                 return true;
             }
         }

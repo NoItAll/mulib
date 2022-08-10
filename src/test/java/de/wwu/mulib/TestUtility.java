@@ -33,7 +33,7 @@ public final class TestUtility {
     private static List<MulibConfig.MulibConfigBuilder> quickCheck() {
         return List.of(
                 MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
+                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
                         .setCONCOLIC(false)
@@ -51,7 +51,7 @@ public final class TestUtility {
     private static List<MulibConfig.MulibConfigBuilder> quickParallelExecutorsCheck() {
         return List.of(
                 MulibConfig.builder()
-                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3)
+                        .setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                         .setGLOBAL_SEARCH_STRATEGY(DFS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(IDDFS, BFS, DSAS)
                         .setINCR_ACTUAL_CP_BUDGET(6)

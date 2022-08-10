@@ -13,7 +13,7 @@ public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
     protected final ArrayDeque<BoolExpr> expressions;
     protected final ArrayDeque<BoolExpr> boolImpliers;
     protected final Map<BoolExpr, BoolExpr> impliedBy;
-    private static long boolImplyId = 0;
+    private long boolImplyId = 0;
 
     public Z3GlobalLearningSolverManager(MulibConfig config) {
         super(config);
@@ -27,8 +27,8 @@ public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
         // We add the solver's constraint representation after incrementing the level. If the level is still
         // equal to the number of expressions, a constraint has been added without pushing
         if (expressions.size() == getLevel()) {
-            // Add the modified constraint instead
-            boolExpr = transformConstraint(_getConstraints().peek());
+            // Add the modified constraint instead: boolExpr will be conjoined by the constraint before
+            boolExpr = adapter.ctx.mkAnd(boolExpr, expressions.peek());
             expressions.pop();
             boolImpliers.pop();
         }
@@ -40,6 +40,7 @@ public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
             impliedBy.put(boolExpr, implies);
         }
         boolImpliers.push(implies);
+        assert expressions.size() == getLevel();
     }
 
     @Override
