@@ -90,24 +90,35 @@ public class IncrementalSolverState<AR> {
         return level;
     }
 
+    @SuppressWarnings("rawtypes")
     public static IncrementalSolverState newInstance(MulibConfig config) {
         return new IncrementalSolverState(config);
     }
 
     private void popArrayConstraintForLevel(int level) {
         assert levelToArrayWithNewRepresentation.keySet().stream().noneMatch(k -> k > level);
-        if (arrayConstraints.size() > level) {
-            arrayConstraints.get(level).clear();
+        if (arrayConstraints.size() > level - 1) {
+            arrayConstraints.get(level - 1).clear();
         }
         // Check if popped level contains array constraints
-        List<Long> arrayConstraintsOfDepth = levelToArrayWithNewRepresentation.get(level);
-        levelToArrayWithNewRepresentation.remove(level);
+        List<Long> arrayConstraintsOfDepth = levelToArrayWithNewRepresentation.remove(level);
+
         if (arrayConstraintsOfDepth != null) {
             // Check if we have to adapt the most recent representation of the free array. This is the case,
             // if there has been an array constraint
             for (Long acId : arrayConstraintsOfDepth) {
                 arrayIdToMostRecentRepresentation.get(acId).pop();
             }
+            // For each array that is constrainted, there still has to be one valid representation
+            assert getArrayConstraints().stream().allMatch(ac -> {
+                AR rep = arrayIdToMostRecentRepresentation.get(ac.getArrayId()).peek();
+                if (rep == null) {
+                    return false;
+                }
+                return levelToArrayWithNewRepresentation.values().stream().anyMatch(repList -> repList.contains(ac.getArrayId()));
+            });
+            // There is no active representation with a higher level
+            assert levelToArrayWithNewRepresentation.keySet().stream().noneMatch(l -> l >= level);
         }
     }
 }
