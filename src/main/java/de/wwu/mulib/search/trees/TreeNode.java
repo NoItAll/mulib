@@ -10,7 +10,7 @@ public abstract class TreeNode {
             parent.setChild(this);
             this.depth = parent.getDepth() + 1;
         } else {
-            this.depth = 0;
+            this.depth = 1;
         }
     }
 }

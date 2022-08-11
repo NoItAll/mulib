@@ -15,11 +15,10 @@ public class IncrementalSolverState<AR> {
     private int level = 0;
 
     // To account for mutability, free arrays are stored via a stack (arraydeque) here
-    private final Map<Long, ArrayDeque<AR>> arrayIdToMostRecentRepresentation = new HashMap<>();
     // We need to know at which level an array has gained a new representation, so that we know when to add/remove
     // a array from the Map<Long, ArrayDeque<AR>> above
-    private final Map<Integer, List<Long>> levelToArrayWithNewRepresentation = new HashMap<>();
-    // Stores all array constraints so that they can be replayed if needed // TODO more efficient way?
+    private final Map<Long, ArrayRepresentation> arrayIdToMostRecentRepresentation = new HashMap<>();
+    // We also want to preserve the order in which the constraints are added!
     private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
 
     private IncrementalSolverState(MulibConfig config) {}
@@ -38,40 +37,31 @@ public class IncrementalSolverState<AR> {
 
     public void popConstraint() {
         // Check whether we need to update represented arrays
-        popArrayConstraintForLevel(level);
+        popArrayConstraintForLevel();
         constraints.poll();
         level--;
     }
 
-    public AR getCurrentArrayRepresentation(long id) {
-        ArrayDeque<AR> arReps = arrayIdToMostRecentRepresentation.get(id);
-        if (arReps == null) {
-            return null;
-        } else {
-            return arReps.peek();
-        }
+    public AR getCurrentArrayRepresentation(long arrayId) {
+        return _getArrayRepresentation(arrayId).getNewestRepresentation();
     }
 
     public void addArrayConstraint(ArrayConstraint ac) {
+        assert ac.getLevel() == level;
+        ArrayRepresentation ar = _getArrayRepresentation(ac.getArrayId());
+        assert !ar.isEmpty();
+        ar.addArrayConstraint(ac);
         while (arrayConstraints.size() <= ac.getLevel()) {
             arrayConstraints.add(new ArrayList<>());
         }
-        arrayConstraints.get(ac.getLevel()).add(ac);
+        arrayConstraints.get(level).add(ac);
     }
 
     // Adds an ArrayConstraint to regard mutable arrays as a special case.
     public void addRepresentationInitializingArrayConstraint(ArrayConstraint constraint, AR newRepresentation) {
-        // Add the array constraint at the respective depth
-        List<Long> c = levelToArrayWithNewRepresentation.computeIfAbsent(level, k -> new ArrayList<>());
-        c.add(constraint.getArrayId());
         // Initialize/add new array representation
-        ArrayDeque<AR> arArrayDeque = arrayIdToMostRecentRepresentation.get(constraint.getArrayId());
-        assert arArrayDeque == null || arArrayDeque.isEmpty() || constraint.getType() == ArrayConstraint.Type.STORE;
-        if (arArrayDeque == null) {
-            arArrayDeque = new ArrayDeque<>();
-            arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), arArrayDeque);
-        }
-        arArrayDeque.push((AR) newRepresentation);
+        ArrayRepresentation ar = _getArrayRepresentation(constraint.getArrayId());
+        ar.addNewRepresentation(newRepresentation);
     }
 
     public ArrayDeque<Constraint> getConstraints() {
@@ -95,30 +85,105 @@ public class IncrementalSolverState<AR> {
         return new IncrementalSolverState(config);
     }
 
-    private void popArrayConstraintForLevel(int level) {
-        assert levelToArrayWithNewRepresentation.keySet().stream().noneMatch(k -> k > level);
-        if (arrayConstraints.size() > level - 1) {
-            arrayConstraints.get(level - 1).clear();
-        }
+    private void popArrayConstraintForLevel() {
         // Check if popped level contains array constraints
-        List<Long> arrayConstraintsOfDepth = levelToArrayWithNewRepresentation.remove(level);
-
-        if (arrayConstraintsOfDepth != null) {
-            // Check if we have to adapt the most recent representation of the free array. This is the case,
-            // if there has been an array constraint
-            for (Long acId : arrayConstraintsOfDepth) {
-                arrayIdToMostRecentRepresentation.get(acId).pop();
-            }
-            // For each array that is constrainted, there still has to be one valid representation
-            assert getArrayConstraints().stream().allMatch(ac -> {
-                AR rep = arrayIdToMostRecentRepresentation.get(ac.getArrayId()).peek();
-                if (rep == null) {
-                    return false;
-                }
-                return levelToArrayWithNewRepresentation.values().stream().anyMatch(repList -> repList.contains(ac.getArrayId()));
-            });
-            // There is no active representation with a higher level
-            assert levelToArrayWithNewRepresentation.keySet().stream().noneMatch(l -> l >= level);
+        for (ArrayRepresentation ar : arrayIdToMostRecentRepresentation.values()) {
+            ar.popRepresentationsOfLevel();
+        }
+        if (arrayConstraints.size() > level) {
+            arrayConstraints.get(level).clear();
         }
     }
+
+    private ArrayRepresentation _getArrayRepresentation(long arrayId) {
+        ArrayRepresentation ar = arrayIdToMostRecentRepresentation.computeIfAbsent(arrayId, ArrayRepresentation::new);
+        return ar;
+    }
+
+    private class ArrayRepresentation {
+        // Array that is represented
+        final long arrayId;
+        // Information for each level, including array constraints and the representation per level
+        final ArrayDeque<ArrayRepresentationForLevel> arrayRepresentationsForLevels;
+        ArrayRepresentation(long arrayId) {
+            this.arrayId = arrayId;
+            this.arrayRepresentationsForLevels = new ArrayDeque<>();
+        }
+
+        boolean isEmpty() {
+            return arrayRepresentationsForLevels.isEmpty();
+        }
+
+        AR getNewestRepresentation() {
+            ArrayRepresentationForLevel resultWrapper = arrayRepresentationsForLevels.peek();
+            if (resultWrapper == null) {
+                return null;
+            }
+            return resultWrapper.getNewestRepresentation();
+        }
+
+        void addNewRepresentation(AR newRepresentation) {
+            assert arrayRepresentationsForLevels.isEmpty() || arrayRepresentationsForLevels.peek().depth <= level;
+            ArrayRepresentationForLevel ar = arrayRepresentationsForLevels.peek();
+            if (ar == null || ar.depth < level) {
+                arrayRepresentationsForLevels.push(new ArrayRepresentationForLevel(newRepresentation, level));
+            } else {
+                ar.addRepresentation(newRepresentation);
+            }
+        }
+
+        void addArrayConstraint(ArrayConstraint ac) {
+            ArrayRepresentationForLevel lastArl = arrayRepresentationsForLevels.peek();
+            assert lastArl != null;
+            if (lastArl.depth < ac.getLevel()) {
+                arrayRepresentationsForLevels.push(new ArrayRepresentationForLevel(lastArl.getNewestRepresentation(), ac.getLevel()));
+            } else {
+                assert lastArl.depth == ac.getLevel();
+                arrayRepresentationsForLevels.peek().addArrayConstraint(ac);
+            }
+        }
+
+        void popRepresentationsOfLevel() {
+            ArrayRepresentationForLevel arfl = arrayRepresentationsForLevels.peek();
+            assert arfl == null || arfl.depth <= level;
+            if (arfl != null && arfl.depth == level) {
+                arrayRepresentationsForLevels.pop();
+            }
+            assert arrayRepresentationsForLevels.isEmpty() || arrayRepresentationsForLevels.peek().depth < level;
+        }
+
+        List<ArrayConstraint> getArrayConstraints() {
+            List<ArrayConstraint> result = new ArrayList<>();
+            for (ArrayRepresentationForLevel arl : arrayRepresentationsForLevels) {
+                result.addAll(arl.arrayConstraintsOfLevel);
+            }
+            return result;
+        }
+    }
+
+    private class ArrayRepresentationForLevel {
+        final int depth;
+        final List<ArrayConstraint> arrayConstraintsOfLevel;
+        final ArrayDeque<AR> arrayRepresentationsOfLevel;
+        ArrayRepresentationForLevel(AR arrayRepresentation, int depth) {
+            this.arrayConstraintsOfLevel = new ArrayList<>();
+            this.arrayRepresentationsOfLevel = new ArrayDeque<>();
+            this.arrayRepresentationsOfLevel.add(arrayRepresentation);
+            this.depth = depth;
+        }
+
+        void addArrayConstraint(ArrayConstraint ac) {
+            assert ac.getLevel() == depth;
+            arrayConstraintsOfLevel.add(ac);
+        }
+
+        void addRepresentation(AR newArrayRepresentation) {
+            this.arrayRepresentationsOfLevel.push(newArrayRepresentation);
+        }
+
+        AR getNewestRepresentation() {
+            return this.arrayRepresentationsOfLevel.peek();
+        }
+    }
+
 }

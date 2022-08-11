@@ -161,6 +161,7 @@ public class ArrayChecks {
     public void checkConcreteIllegalAccessWithOOB() {
         TestUtility.getAllSolutions((mb) -> {
             mb.setTHROW_EXCEPTION_ON_OOB(true);
+            mb.setALLOW_EXCEPTIONS(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -207,6 +208,7 @@ public class ArrayChecks {
     public void checkConcreteIllegalAccess() {
         TestUtility.getAllSolutions((mb) -> {
             mb.setTHROW_EXCEPTION_ON_OOB(false);
+            mb.setALLOW_EXCEPTIONS(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -367,6 +369,7 @@ public class ArrayChecks {
             );
             assertEquals(0, result.size());
 
+            mb.setALLOW_EXCEPTIONS(true);
             mb.setTHROW_EXCEPTION_ON_OOB(true);
             result = TestUtility.executeMulib(
                     "checkSymSelect0",
@@ -513,6 +516,7 @@ public class ArrayChecks {
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
 
             mb.setTHROW_EXCEPTION_ON_OOB(true);
+            mb.setALLOW_EXCEPTIONS(true);
             result = TestUtility.executeMulib(
                     "checkSymStore0",
                     ArrayChecks.class,
@@ -621,6 +625,7 @@ public class ArrayChecks {
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
 
             mb.setTHROW_EXCEPTION_ON_OOB(true);
+            mb.setALLOW_EXCEPTIONS(true);
             result = TestUtility.executeMulib(
                     "checkMultipleArrays0",
                     ArrayChecks.class,

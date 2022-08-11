@@ -112,7 +112,7 @@ public class FreeArraysExec {
         TestUtility.getAllSolutions(
                 (mb) -> {
                     List<Solution> result = TestUtility.getUpToNSolutions(
-                            3,
+                            1,
                             "assign",
                             CapacityAssignmentProblem.class,
                             mb,
@@ -153,7 +153,27 @@ public class FreeArraysExec {
                             new Class[] { int[].class, int[][].class },
                             new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
                     );
-                    assertTrue(result.size() == 1, "Result size is: " + result.size() + ", with config: " + mb.build());
+                    assertEquals(1, result.size(), "Result size is: " + result.size() + ", with config: " + mb.build());
+                    return result;
+                },
+                "CapacityAssignmentProblem.assignWithPreproduction"
+        );
+    }
+
+    @Test
+    public void testArrayArrayEncodingCapacityAssignmentWithPreProductionMultipleSolutions() {
+        TestUtility.getAllSolutions(
+                (mb) -> {
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    List<Solution> result = TestUtility.getUpToNSolutions(
+                            200,
+                            "assignWithPreproduction",
+                            CapacityAssignmentProblem.class,
+                            mb,
+                            new Class[] { int[].class, int[][].class },
+                            new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
+                    );
+                    assertEquals(3, result.size());
                     return result;
                 },
                 "CapacityAssignmentProblem.assignWithPreproduction"

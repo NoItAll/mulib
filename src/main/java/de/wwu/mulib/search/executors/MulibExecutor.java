@@ -25,6 +25,8 @@ public interface MulibExecutor {
 
     SearchStrategy getSearchStrategy();
 
+    void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions);
+
     Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options);
 
     Object label(Object var);

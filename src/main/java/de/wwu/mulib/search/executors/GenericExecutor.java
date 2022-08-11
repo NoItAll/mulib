@@ -112,7 +112,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     return Optional.empty();
                 }
             }
-            assert currentChoiceOption.getDepth() == (solverManager.getLevel() - 1); // SolverManager has level starting at 1 after pushing initial TRUE
+            assert currentChoiceOption.getDepth() == solverManager.getLevel();
             return Optional.of(new SymbolicExecution(
                     this,
                     choicePointFactory,

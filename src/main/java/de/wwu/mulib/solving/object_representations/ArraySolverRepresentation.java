@@ -13,39 +13,50 @@ import java.util.List;
 
 public class ArraySolverRepresentation {
     private final long arrayId;
+    private final int level;
     private final Deque<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
     private final ArraySolverRepresentation beforeStore;
 
-    public ArraySolverRepresentation(long arrayId) {
+    public ArraySolverRepresentation(long arrayId, int level) {
+        this.level = level;
         this.arrayId = arrayId;
         this.selects = new ArrayDeque<>();
         this.store = null;
         this.beforeStore = null;
     }
 
-    private ArraySolverRepresentation(ArraySolverRepresentation beforeStore) {
-        this.arrayId = beforeStore.arrayId;
-        this.selects = new ArrayDeque<>(beforeStore.selects);
-        this.store = beforeStore.store;
+
+    // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
+    public ArraySolverRepresentation(ArraySolverRepresentation toCopy, int level) {
+        this.level = level;
+        this.arrayId = toCopy.arrayId;
+        this.selects = new ArrayDeque<>(toCopy.selects);
+        this.store = toCopy.store;
         this.beforeStore =
-                beforeStore.beforeStore == null
+                toCopy.beforeStore == null
                         ?
                         null
                         :
-                        new ArraySolverRepresentation(beforeStore.beforeStore);
+                        new ArraySolverRepresentation(toCopy.beforeStore, level);
     }
 
     private ArraySolverRepresentation(
             ArraySolverRepresentation beforeStore,
-            ArrayAccessSolverRepresentation store) {
+            ArrayAccessSolverRepresentation store,
+            int level) {
         assert store != null && beforeStore != null;
+        this.level = level;
         this.arrayId = beforeStore.arrayId;
         this.selects = new ArrayDeque<>();
         this.store = store;
         // We do not directly reference the old object to keep it unmodified by the selects of other
         // alternative choice options
-        this.beforeStore = new ArraySolverRepresentation(beforeStore);
+        this.beforeStore = new ArraySolverRepresentation(beforeStore, level);
+    }
+
+    public int getLevel() {
+        return level;
     }
 
     public Constraint select(Sint index, SubstitutedVar value) {
@@ -63,6 +74,7 @@ public class ArraySolverRepresentation {
             constraintForStoreOperation = Sbool.ConcSbool.FALSE;
             resultForSelectOperations = Sbool.ConcSbool.TRUE;
         }
+
         // If it is not clear that the value must stem from the store operation, we check all previous selected values
         for (ArrayAccessSolverRepresentation s : selects) {
             Constraint indexEqualsToSelectIndex = Eq.newInstance(s.index, index);
@@ -72,6 +84,9 @@ public class ArraySolverRepresentation {
                 if (!doEqual) {
                     // We can simply skip this index
                     continue;
+                } else {
+                    resultForSelectOperations = elementsEqualConstraint(s.value, value);
+                    break;
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
@@ -87,10 +102,11 @@ public class ArraySolverRepresentation {
         return result;
     }
 
-    public ArraySolverRepresentation store(Sint index, SubstitutedVar value) {
+    public ArraySolverRepresentation store(Sint index, SubstitutedVar value, int level) {
         return new ArraySolverRepresentation(
                 this,
-                new ArrayAccessSolverRepresentation(index, value)
+                new ArrayAccessSolverRepresentation(index, value),
+                level
         );
     }
 

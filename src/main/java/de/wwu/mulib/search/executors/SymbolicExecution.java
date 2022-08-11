@@ -164,7 +164,7 @@ public final class SymbolicExecution {
     }
 
     public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
-        mulibExecutor.getExecutorManager().notifyNewChoice(depth, choiceOptions);
+        mulibExecutor.notifyNewChoice(depth, choiceOptions);
     }
 
     public ExecutionBudgetManager getExecutionBudgetManager() {

@@ -164,7 +164,7 @@ public class MulibConfig {
             this.LABEL_RESULT_VALUE = true;
             this.ENLIST_LEAVES = false;
             this.CONCOLIC = false;
-            this.ALLOW_EXCEPTIONS = true;
+            this.ALLOW_EXCEPTIONS = false;
             this.TREE_INDENTATION = "    ";
             this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
             this.GLOBAL_SOLVER_TYPE = Solvers.Z3_INCREMENTAL;

@@ -94,9 +94,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public final void addNewConstraint(Constraint c) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
-        solverManager.addConstraint(c);
         currentChoiceOption.setOptionConstraint(
                 And.newInstance(currentChoiceOption.getOptionConstraint(), c));
+        solverManager.addConstraint(c);
     }
 
     @Override
@@ -137,6 +137,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         Object result = label(var);
         // TODO add constraint
         return result;
+    }
+
+    @Override
+    public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
+        mulibExecutorManager.notifyNewChoice(depth, choiceOptions);
     }
 
     @Override
@@ -275,7 +280,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     protected void backtrackOnce() {
-        if (currentChoiceOption.getDepth() > 0) {
+        if (currentChoiceOption.getDepth() > 1) {
             solverManager.backtrackOnce();
             solverBacktrack++;
             currentChoiceOption = currentChoiceOption.getParent();
@@ -302,9 +307,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
     }
 
-    protected void adjustSolverManagerToNewChoiceOption(Choice.ChoiceOption optionToBeEvaluated) {
+    protected void adjustSolverManagerToNewChoiceOption(final Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
-        Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
+        final Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
         int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
         solverManager.backtrack(depthDifference);
         solverBacktrack += depthDifference;

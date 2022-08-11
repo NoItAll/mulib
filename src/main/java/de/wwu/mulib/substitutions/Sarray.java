@@ -1,5 +1,6 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -77,6 +78,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = s.len;
     }
 
+    public void initializeId(SymbolicExecution se) {
+        if (this.id != -1) {
+            throw new MulibRuntimeException("Must not set already set id");
+        }
+        this.id = se.getNextNumberInitializedSarray();
+    }
+
     @Override
     public String toString() {
         return "Sarray{id=" + id + ", elements=" + cachedElements + "}";
@@ -114,7 +122,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof SymNumericExpressionSprimitive) {
-                this.id = se.getNextNumberInitializedSarray();
+                initializeId(se);
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
                 return !cachedElements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once

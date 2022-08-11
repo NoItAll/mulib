@@ -149,13 +149,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // It was also extended by an own alternative abstraction layer
     @Override
     public final void addArrayConstraint(ArrayConstraint ac) {
-        incrementalSolverState.addArrayConstraint(ac);
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             _freeArrayCompatibilityLayerArrayConstraintTreatement(ac);
         } else {
             // Solver specific treatment
             _solverSpecificArrayConstraintTreatment(ac);
         }
+        incrementalSolverState.addArrayConstraint(ac);
         _resetSatisfiabilityWasCalculatedAndModel();
     }
 
@@ -164,7 +164,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         if (ac.getType() == ArrayConstraint.Type.SELECT) {
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), getLevel());
+                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            } else if (arrayRepresentation.getLevel() != getLevel()) {
+                arrayRepresentation = new ArraySolverRepresentation(arrayRepresentation, getLevel());
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
             }
             Constraint arraySelectConstraint = arrayRepresentation.select(ac.getIndex(), ac.getValue());
@@ -173,9 +176,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             // Is store
             assert ac.getType() == ArrayConstraint.Type.STORE;
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), getLevel());
             }
-            arrayRepresentation = arrayRepresentation.store(ac.getIndex(), ac.getValue());
+            arrayRepresentation = arrayRepresentation.store(ac.getIndex(), ac.getValue(), getLevel());
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
     }
@@ -260,20 +263,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         }
         List<Solution> solutions = new ArrayList<>();
         solutions.add(initialSolution);
-        int backtrackAfterwards = 0;
+        // Decrement to account for initialSolution
         int currentN = N.decrementAndGet();
+        int backtrackAfterwards = 0;
         while (currentN > 0) {
             Labels l = latestSolution.labels;
 
-            SubstitutedVar[] namedVars = l.getNamedVars();
-            List<Constraint> disjunctionConstraints = new ArrayList<>();
-            for (SubstitutedVar sv : namedVars) {
-                if (sv instanceof Sprimitive) {
-                    Object label = l.getLabelForNamedSubstitutedVar(sv);
-                    Constraint disjunctionConstraint = getNeq(sv, label);
-                    disjunctionConstraints.add(disjunctionConstraint);
-                }
-            }
+            List<Constraint> disjunctionConstraints = getNeqConstraints(l);
             if (disjunctionConstraints.isEmpty()) {
                 // Nothing to negate
                 break;
@@ -304,6 +300,26 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         }
         backtrack(backtrackAfterwards);
         return solutions;
+    }
+
+    private List<Constraint> getNeqConstraints(Labels givenLabels) {
+        SubstitutedVar[] namedVars = givenLabels.getNamedVars();
+        List<Constraint> disjunctionConstraints = new ArrayList<>();
+        for (SubstitutedVar sv : namedVars) {
+            if (sv instanceof Conc) {
+                // It does not help to negate concrete values
+                continue;
+            }
+            Constraint disjunctionConstraint;
+            if (sv instanceof Sprimitive || sv instanceof Sarray) {
+                Object label = givenLabels.getLabelForNamedSubstitutedVar(sv);
+                disjunctionConstraint = getNeq(sv, label);
+                disjunctionConstraints.add(disjunctionConstraint);
+            } else {
+                throw new NotYetImplementedException(); // TODO implement, also in getNeq
+            }
+        }
+        return disjunctionConstraints;
     }
 
     @Override
@@ -395,10 +411,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
-            ArrayConstraint[] arrayConstraints =
-                    getArrayConstraints().stream()
-                            .filter(ac -> ac.getArrayId() == sarray.getId())
-                            .toArray(ArrayConstraint[]::new);
+            ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);
             for (ArrayConstraint ac : arrayConstraints) {
                 Integer labeledIndex = (Integer) labelSprimitive(ac.getIndex());
                 Object labeledValue = getLabel(ac.getValue());
@@ -406,6 +419,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             }
         }
         return result;
+    }
+
+    private ArrayConstraint[] getArrayConstraintsForSarray(Sarray sarray) {
+        return getArrayConstraints().stream()
+                .filter(ac -> ac.getArrayId() == sarray.getId())
+                .toArray(ArrayConstraint[]::new);
     }
 
     protected Object labelPartnerClassObject(PartnerClass object) {
@@ -493,12 +512,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         return classToZeroArgsConstructor.get(toGenerateFor);
     }
 
-    protected static Constraint getNeq(SubstitutedVar sv, Object value) {
+    protected Constraint getNeq(SubstitutedVar sv, Object value) {
         if (sv instanceof Conc) {
             return Sbool.ConcSbool.FALSE;
         }
         if (sv instanceof Sbool) {
-            Sbool bv = (Sbool) sv;
+            Sbool bv = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) sv);
             Sbool bvv = Sbool.concSbool((boolean) value);
             return Xor.newInstance(bv, bvv);
         }
@@ -519,9 +538,35 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             } else {
                 throw new NotYetImplementedException(sv.getClass().toString());
             }
-            return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
+            return Not.newInstance(Eq.newInstance(ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv), wrappedPreviousValue));
+        } if (sv instanceof Sarray) {
+            Constraint result = Sbool.ConcSbool.FALSE;
+            Sarray sarray = (Sarray) sv;
+            Constraint disjunctionConstraint;
+            if (sarray.onlyConcreteIndicesUsed()) {
+                Set<Sint> indices = sarray.getCachedIndices();
+                for (Sint index : indices) {
+                    SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
+                    Object label = getLabel(cachedValue);
+                    disjunctionConstraint = getNeq(cachedValue, label);
+                    result = Or.newInstance(result, disjunctionConstraint);
+                }
+            } else {
+                ArrayConstraint[] acs = getArrayConstraintsForSarray((Sarray) sv);
+                for (ArrayConstraint ac : acs) {
+                    SubstitutedVar val = ac.getValue();
+                    Object label = getLabel(val);
+                    Sint index = ac.getIndex();
+                    Object indexLabel = getLabel(index);
+                    disjunctionConstraint = getNeq(val, label);
+                    result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel));
+                }
+            }
+            return result;
+        } else if (sv instanceof PartnerClass) {
+            return Sbool.ConcSbool.FALSE; // TODO Not yet capable of doing this
         } else {
-            throw new NotYetImplementedException();
+            throw new NotYetImplementedException(sv.getClass().toString());
         }
     }
 

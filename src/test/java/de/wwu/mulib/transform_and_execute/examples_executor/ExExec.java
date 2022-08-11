@@ -166,6 +166,7 @@ public class ExExec {
     public void testExSymExeLongBytecodes_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeLongBytecodes_false.class,
@@ -187,6 +188,7 @@ public class ExExec {
     public void testExSymExeResearch_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeResearch_false.class,
@@ -207,6 +209,7 @@ public class ExExec {
     public void testExSymExeF2L_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeF2L_false.class,
@@ -226,6 +229,7 @@ public class ExExec {
     public void testExSymExeLCMP_falseExec0() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec0",
                             ExSymExeLCMP_false.class,
@@ -245,6 +249,7 @@ public class ExExec {
     public void testExSymExeLCMP_falseExec1() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec1",
                             ExSymExeLCMP_false.class,
@@ -378,6 +383,7 @@ public class ExExec {
     public void testBooleanIntChecksExec6() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec6",
                             BooleanIntChecks.class,
@@ -398,6 +404,7 @@ public class ExExec {
     public void testBooleanIntChecksExec7() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec7",
                             BooleanIntChecks.class,
@@ -418,6 +425,7 @@ public class ExExec {
     public void testWBSProp1Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp1.class,
@@ -453,6 +461,7 @@ public class ExExec {
     public void testWBSProp3Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp3.class,
@@ -471,6 +480,7 @@ public class ExExec {
     public void testWBSProp4Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp4.class,
@@ -489,6 +499,7 @@ public class ExExec {
     public void testInfiniteLoopExec0() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec0",
                             InfiniteLoop.class,
@@ -506,6 +517,7 @@ public class ExExec {
     public void testInfiniteLoopExec1() {
         TestUtility.getAllSolutions(
                 mb -> {
+                    mb.setALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec1",
                             InfiniteLoop.class,
