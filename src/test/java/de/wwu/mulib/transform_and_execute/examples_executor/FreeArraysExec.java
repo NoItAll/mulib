@@ -1,5 +1,7 @@
 package de.wwu.mulib.transform_and_execute.examples_executor;
 
+import de.wwu.mulib.Mulib;
+import de.wwu.mulib.MulibContext;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
@@ -174,6 +176,31 @@ public class FreeArraysExec {
                             new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
                     );
                     assertEquals(3, result.size());
+
+
+                    MulibContext mc = Mulib.getMulibContext(
+                            CapacityAssignmentProblem.class,
+                            "assignWithPreproduction",
+                            mb,
+                            int[].class,
+                            int[][].class
+                    );
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } });
+                    assertTrue(result.isEmpty());
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 1, 5, 2, 3 } });
+                    assertTrue(result.isEmpty());
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 5, 2, 4 } });
+                    assertTrue(result.isEmpty());
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 5, 2, 3 }, {} });
+                    assertEquals(1, result.size());
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 3, 3, 2 }, { 3, 3, 3 } });
+                    assertTrue(result.isEmpty());
+
                     return result;
                 },
                 "CapacityAssignmentProblem.assignWithPreproduction"
