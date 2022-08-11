@@ -9,17 +9,11 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class SatPrimes01TransfExec {
 
-    @Test
-    public void testSatPrimes01_0() {
-        TestUtility.getAllSolutions(
-                        this::_testSatPrimes01_0,
-                        "testSatPrimes01_0"
-        );
-    }
 
     @Test
     public void testSatPrimes01_1() {
@@ -27,18 +21,6 @@ public class SatPrimes01TransfExec {
                         this::_testSatPrimes01_1,
                         "testSatPrimes01_1"
         );
-    }
-
-    private List<PathSolution> _testSatPrimes01_0(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = TestUtility.executeMulib(
-                "exec0",
-                SatPrimes01Transf.class,
-                mb,
-                true
-        );
-        assertFalse(result.isEmpty());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        return result;
     }
 
     private List<PathSolution> _testSatPrimes01_1(MulibConfig.MulibConfigBuilder mb) {
