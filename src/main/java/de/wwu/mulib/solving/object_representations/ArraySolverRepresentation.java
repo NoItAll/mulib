@@ -52,7 +52,7 @@ public class ArraySolverRepresentation {
         this.store = store;
         // We do not directly reference the old object to keep it unmodified by the selects of other
         // alternative choice options
-        this.beforeStore = new ArraySolverRepresentation(beforeStore, level);
+        this.beforeStore = beforeStore;
     }
 
     public int getLevel() {
