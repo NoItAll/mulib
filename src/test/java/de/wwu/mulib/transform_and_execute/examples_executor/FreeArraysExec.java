@@ -200,6 +200,9 @@ public class FreeArraysExec {
                     result =
                             mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 3, 3, 2 }, { 3, 3, 3 } });
                     assertTrue(result.isEmpty());
+                    result =
+                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 4 }, { 5, 3, 2 } });
+                    assertEquals(6, result.size());
 
                     return result;
                 },

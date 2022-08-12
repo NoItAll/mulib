@@ -44,7 +44,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // Label cache
     private final Map<Object, Object> searchSpaceRepresentationToLabelObject = new IdentityHashMap<>();
 
-    @SuppressWarnings("unchecked")
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
         this.incrementalSolverState = IncrementalSolverState.newInstance(config);
