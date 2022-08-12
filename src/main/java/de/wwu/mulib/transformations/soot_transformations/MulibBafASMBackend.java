@@ -22,7 +22,7 @@ public class MulibBafASMBackend extends BafASMBackend {
      */
     public MulibBafASMBackend(SootClass sc) {
         // Bug if 0 is used
-        super(sc, Options.java_version_1_8 /* 0 for automatic detection of Java version */);
+        super(sc, Options.java_version_11 /* 0 for automatic detection of Java version */);
     }
 
     @Override
