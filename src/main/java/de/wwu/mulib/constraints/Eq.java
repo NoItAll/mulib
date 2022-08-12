@@ -14,6 +14,8 @@ public class Eq extends AbstractTwoSidedNumericConstraint {
     public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
             return Sbool.concSbool(NumberUtil.eq((ConcSnumber) lhs, (ConcSnumber) rhs));
+        } else if (lhs == rhs) {
+            return Sbool.ConcSbool.TRUE;
         } else {
             return new Eq(lhs, rhs);
         }

@@ -332,34 +332,38 @@ public class SymbolicCalculationFactory implements CalculationFactory {
 
     @Override
     public Sbool eq(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
-        if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSbool(((ConcSnumber) lhs).intVal() == ((ConcSnumber) rhs).intVal());
+        Constraint eqConstraint = eq(lhs, rhs);
+        if (eqConstraint instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eq(lhs, rhs));
+        return vf.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
     public Sbool eq(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
-        if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSbool(((Slong.ConcSlong) lhs).longVal() == ((Slong.ConcSlong) rhs).longVal());
+        Constraint eqConstraint = eq(lhs, rhs);
+        if (eqConstraint instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eq(lhs, rhs));
+        return vf.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
     public Sbool eq(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
-        if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() == ((Sdouble.ConcSdouble) rhs).doubleVal());
+        Constraint eqConstraint = eq(lhs, rhs);
+        if (eqConstraint instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eq(lhs, rhs));
+        return vf.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
     public Sbool eq(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
-        if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() == ((Sfloat.ConcSfloat) rhs).doubleVal());
+        Constraint eqConstraint = eq(lhs, rhs);
+        if (eqConstraint instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eq(lhs, rhs));
+        return vf.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override

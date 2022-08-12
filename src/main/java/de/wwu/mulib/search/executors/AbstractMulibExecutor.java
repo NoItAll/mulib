@@ -195,7 +195,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         throw new MulibRuntimeException("Exception was thrown but not expected", e);
                     }
                 } catch (Throwable t) {
-                    t.printStackTrace();
                     Mulib.log.log(Level.WARNING, config.toString());
                     throw new MulibRuntimeException(t);
                 }
