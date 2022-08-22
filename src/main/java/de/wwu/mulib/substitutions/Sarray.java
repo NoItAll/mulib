@@ -19,11 +19,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
-
     private final boolean defaultIsSymbolic;
-
     private boolean onlyConcreteIndicesUsed;
-
     private Sbool isNull;
 
     /** New instance constructor */

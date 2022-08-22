@@ -6,7 +6,7 @@ import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-@SuppressWarnings("rawtypes")
+@SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractCalculationFactory implements CalculationFactory {
     protected final boolean throwExceptionOnOOB;
     protected final boolean useEagerIndexesForFreeArrayPrimitiveElements;
@@ -92,7 +92,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     // Inspired by https://github.com/SymbolicPathFinder/jpf-symbc/blob/046eb3c3029583a8326714c69fbdef7c56c2690b/src/main/gov/nasa/jpf/symbc/bytecode/symarrays/AALOAD.java
     // Eagerly decide on which index to choose
-    protected final SubstitutedVar _selectWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
+    private SubstitutedVar _selectWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
         SubstitutedVar result = sarray.getFromCacheForIndex(index);
         if (result != null) {
             return result;
@@ -115,7 +115,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return result;
     }
 
-    protected final SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
+    private SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
         Sint concsIndex = decideOnConcreteIndex(se, index);
@@ -128,7 +128,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (index instanceof ConcSnumber) {
             return index;
         }
-        Sint concsIndex = null;
+        Sint concsIndex;
         int currentIntIndex = 0;
         while (true) {
             Sint currentIndex = se.concSint(currentIntIndex);
