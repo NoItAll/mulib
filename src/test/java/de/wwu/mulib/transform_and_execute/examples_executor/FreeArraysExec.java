@@ -1,6 +1,7 @@
 package de.wwu.mulib.transform_and_execute.examples_executor;
 
 import de.wwu.mulib.Mulib;
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.MulibContext;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
@@ -165,48 +166,57 @@ public class FreeArraysExec {
     @Test
     public void testArrayArrayEncodingCapacityAssignmentWithPreProductionMultipleSolutions() {
         TestUtility.getAllSolutions(
-                (mb) -> {
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
-                    List<Solution> result = TestUtility.getUpToNSolutions(
-                            200,
-                            "assignWithPreproduction",
-                            CapacityAssignmentProblem.class,
-                            mb,
-                            new Class[] { int[].class, int[][].class },
-                            new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
-                    );
-                    assertEquals(3, result.size());
-
-
-                    MulibContext mc = Mulib.getMulibContext(
-                            CapacityAssignmentProblem.class,
-                            "assignWithPreproduction",
-                            mb,
-                            int[].class,
-                            int[][].class
-                    );
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } });
-                    assertTrue(result.isEmpty());
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 1, 5, 2, 3 } });
-                    assertTrue(result.isEmpty());
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 5, 2, 4 } });
-                    assertTrue(result.isEmpty());
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 5, 2, 3 }, {} });
-                    assertEquals(1, result.size());
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 3, 3, 2 }, { 3, 3, 3 } });
-                    assertTrue(result.isEmpty());
-                    result =
-                            mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 4 }, { 5, 3, 2 } });
-                    assertEquals(6, result.size());
-
-                    return result;
-                },
+                (mb) -> withPreproduction(true, mb),
                 "CapacityAssignmentProblem.assignWithPreproduction"
         );
+    }
+
+    @Test
+    public void testArrayArrayEncodingCapacityAssignmentWithPreProductionMultipleSolutionsAndNonEagerIndices() {
+        TestUtility.getAllSolutions(
+                (mb) -> withPreproduction(false, mb),
+                "CapacityAssignmentProblem.assignWithPreproduction"
+        );
+    }
+
+    private static List<Solution> withPreproduction(boolean eagerArrayIndices, MulibConfig.MulibConfigBuilder mb) {
+        mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(eagerArrayIndices);
+        List<Solution> result = TestUtility.getUpToNSolutions(
+                200,
+                "assignWithPreproduction",
+                CapacityAssignmentProblem.class,
+                mb,
+                new Class[] { int[].class, int[][].class },
+                new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
+        );
+        assertEquals(3, result.size());
+
+        MulibContext mc = Mulib.getMulibContext(
+                CapacityAssignmentProblem.class,
+                "assignWithPreproduction",
+                mb,
+                int[].class,
+                int[][].class
+        );
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } });
+        assertTrue(result.isEmpty());
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 1, 5, 2, 3 } });
+        assertTrue(result.isEmpty());
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1, 1 }, { 5, 2, 4 } });
+        assertTrue(result.isEmpty());
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 5, 2, 3 }, {} });
+        assertEquals(1, result.size());
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 3, 3, 2 }, { 3, 3, 3 } });
+        assertTrue(result.isEmpty());
+        result =
+                mc.getUpToNSolutions(200, new int[] { 5, 3, 2 }, new int[][] { { 4 }, { 5, 3, 2 } });
+        assertEquals(6, result.size());
+
+        return result;
     }
 }
