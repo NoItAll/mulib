@@ -157,11 +157,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     private boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
             Constraint b) {
-        ExecutionBudgetManager ebm = se.getExecutionBudgetManager();
         // Case 1: No actual choice, only concrete values
-        if (ebm.fixedPossibleChoicePointBudgetIsExceeded()) {
-            throw new ChoicePointExceededBudget(ebm.getFixedPossibleChoicePointBudget());
-        }
         if (b instanceof Sbool.ConcSbool) {
             return ((Sbool.ConcSbool) b).isTrue();
         }

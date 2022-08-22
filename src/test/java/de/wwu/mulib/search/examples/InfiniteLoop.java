@@ -8,6 +8,7 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -17,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InfiniteLoop {
 
-    @Test
+    @Test @Disabled // TODO Better budget
     public void checkConcreteInfiniteLoop() {
         TestUtility.getAllSolutions(this::_checkConcreteInfiniteLoop, "infiniteConcrete");
     }

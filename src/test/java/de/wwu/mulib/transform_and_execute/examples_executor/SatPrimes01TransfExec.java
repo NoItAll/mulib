@@ -24,7 +24,6 @@ public class SatPrimes01TransfExec {
     }
 
     private List<PathSolution> _testSatPrimes01_1(MulibConfig.MulibConfigBuilder mb) {
-        mb.setFIXED_POSSIBLE_CP_BUDGET(0); // This means infinite budget
         mb.setFIXED_ACTUAL_CP_BUDGET(0); // This means infinite budget
         List<PathSolution> result = TestUtility.executeMulib(
                 "exec1",

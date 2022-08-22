@@ -24,7 +24,6 @@ public final class TestUtility {
     private static final boolean quickParallelExecutorsCheck =      false;
     private static final boolean quickCheck =                       true;
 
-    public static final long TEST_FIXED_POSSIBLE_CP_BUDGET = 1000;
     public static final long TEST_FIXED_ACTUAL_CP_BUDGET = 500;
     public static final String TEST_BUILD_PATH = "build/classes/java/test/";
 
@@ -39,7 +38,6 @@ public final class TestUtility {
                         .setCONCOLIC(false)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
@@ -56,7 +54,6 @@ public final class TestUtility {
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(IDDFS, BFS, DSAS)
                         .setINCR_ACTUAL_CP_BUDGET(6)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setENLIST_LEAVES(true)
                         .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
@@ -67,7 +64,6 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(3)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
@@ -75,7 +71,6 @@ public final class TestUtility {
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setCONCOLIC(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -88,7 +83,6 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DFS)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setTREAT_BOOLEANS_AS_INTS(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
@@ -97,7 +91,6 @@ public final class TestUtility {
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING)
                         .assumeMulibDefaultValueRanges()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(IDDFS)
@@ -106,7 +99,6 @@ public final class TestUtility {
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
@@ -116,7 +108,6 @@ public final class TestUtility {
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(false)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setCONCOLIC(true)
                         .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
@@ -126,16 +117,14 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setINCR_ACTUAL_CP_BUDGET(13)
                         .setTREAT_BOOLEANS_AS_INTS(true)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(BFS, BFS)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setTREAT_BOOLEANS_AS_INTS(true)
                         .setCONCOLIC(true)
-                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, BFS, DSAS, IDDFS)
                         .assumeMulibDefaultValueRanges()
@@ -143,7 +132,6 @@ public final class TestUtility {
                         .setINCR_ACTUAL_CP_BUDGET(8)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
         );
     }
 
@@ -151,13 +139,11 @@ public final class TestUtility {
         return List.of(
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(DFS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(BFS)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
@@ -166,21 +152,18 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setINCR_ACTUAL_CP_BUDGET(3)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
-                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
-                        .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(2)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -189,20 +172,17 @@ public final class TestUtility {
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
-                        .setCONCOLIC(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setCONCOLIC(true),
                 MulibConfig.builder()
                         .setINCR_ACTUAL_CP_BUDGET(16)
                         .setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
                         .setENLIST_LEAVES(true)
-                        .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET),
+                        .setHIGH_LEVEL_FREE_ARRAY_THEORY(true),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(DFS)
                         .setCONCOLIC(true)
-                        .setFIXED_POSSIBLE_CP_BUDGET(TEST_FIXED_POSSIBLE_CP_BUDGET)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .assumeMulibDefaultValueRanges()
         );
