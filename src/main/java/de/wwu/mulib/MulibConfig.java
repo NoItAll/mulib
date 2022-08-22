@@ -64,7 +64,6 @@ public class MulibConfig {
     public final Map<String, Object> SOLVER_ARGS;
 
     /* Budget */
-    public final Optional<Long> FIXED_POSSIBLE_CP_BUDGET;
     public final Optional<Long> FIXED_ACTUAL_CP_BUDGET;
     public final Optional<Long> INCR_ACTUAL_CP_BUDGET;
 
@@ -72,6 +71,13 @@ public class MulibConfig {
     public final Optional<Long> MAX_FAILS;
     public final Optional<Long> MAX_PATH_SOLUTIONS;
     public final Optional<Long> MAX_EXCEEDED_BUDGETS;
+
+    /* Aliasing and Initialization */
+    //// TODO Implement
+    public final boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+    public final boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+    public final boolean ALIASING_FOR_FREE_ARRAYS;
+    public final boolean ALIASING_FOR_FREE_OBJECS;
 
     /* Transformation */
     public final List<String> TRANSF_IGNORE_FROM_PACKAGES;
@@ -103,6 +109,10 @@ public class MulibConfig {
     }
 
     public final static class MulibConfigBuilder {
+        private boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        private boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+        private boolean ALIASING_FOR_FREE_ARRAYS;
+        private boolean ALIASING_FOR_FREE_OBJECS;
         private String TREE_INDENTATION;
         private boolean LABEL_RESULT_VALUE;
         private boolean ENLIST_LEAVES;
@@ -124,7 +134,6 @@ public class MulibConfig {
         private long ACTIVATE_PARALLEL_FOR;
         private Solvers GLOBAL_SOLVER_TYPE;
         private boolean GLOBAL_AVOID_SAT_CHECKS;
-        private long FIXED_POSSIBLE_CP_BUDGET;
         private long FIXED_ACTUAL_CP_BUDGET;
         private long INCR_ACTUAL_CP_BUDGET;
         private long SECONDS_PER_INVOCATION;
@@ -160,6 +169,10 @@ public class MulibConfig {
 
         private MulibConfigBuilder() {
             // Defaults
+            this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
+            this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
+            this.ALIASING_FOR_FREE_ARRAYS = false;
+            this.ALIASING_FOR_FREE_OBJECS = false;
             this.CONCRETIZE_IF_NEEDED = true;
             this.LABEL_RESULT_VALUE = true;
             this.ENLIST_LEAVES = false;
@@ -168,7 +181,6 @@ public class MulibConfig {
             this.TREE_INDENTATION = "    ";
             this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
             this.GLOBAL_SOLVER_TYPE = Solvers.Z3_INCREMENTAL;
-            this.FIXED_POSSIBLE_CP_BUDGET = 0;
             this.FIXED_ACTUAL_CP_BUDGET =   0;
             this.INCR_ACTUAL_CP_BUDGET =    0;
             this.SECONDS_PER_INVOCATION =   0;
@@ -281,11 +293,6 @@ public class MulibConfig {
 
         public MulibConfigBuilder setGLOBAL_SOLVER_TYPE(Solvers GLOBAL_SOLVER_TYPE) {
             this.GLOBAL_SOLVER_TYPE = GLOBAL_SOLVER_TYPE;
-            return this;
-        }
-
-        public MulibConfigBuilder setFIXED_POSSIBLE_CP_BUDGET(long FIXED_POSSIBLE_CP_BUDGET) {
-            this.FIXED_POSSIBLE_CP_BUDGET = FIXED_POSSIBLE_CP_BUDGET;
             return this;
         }
 
@@ -531,6 +538,26 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setALIASING_FOR_FREE_ARRAYS(boolean ALIASING_FOR_FREE_ARRAYS) {
+            this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
+            return this;
+        }
+
+        public MulibConfigBuilder setALIASING_FOR_FREE_OBJECS(boolean ALIASING_FOR_FREE_OBJECS) {
+            this.ALIASING_FOR_FREE_OBJECS = ALIASING_FOR_FREE_OBJECS;
+            return this;
+        }
+
+        public MulibConfigBuilder setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
+            this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+            return this;
+        }
+
+        public MulibConfigBuilder setENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL) {
+            this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -568,7 +595,6 @@ public class MulibConfig {
                     PARALLEL_TIMEOUT_IN_MS,
                     GLOBAL_SOLVER_TYPE,
                     SOLVER_ARGS,
-                    FIXED_POSSIBLE_CP_BUDGET,
                     FIXED_ACTUAL_CP_BUDGET,
                     INCR_ACTUAL_CP_BUDGET,
                     SECONDS_PER_INVOCATION,
@@ -611,7 +637,11 @@ public class MulibConfig {
                     THROW_EXCEPTION_ON_OOB,
                     HIGH_LEVEL_FREE_ARRAY_THEORY,
                     CONCOLIC,
-                    ALLOW_EXCEPTIONS
+                    ALLOW_EXCEPTIONS,
+                    ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
+                    ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
+                    ALIASING_FOR_FREE_ARRAYS,
+                    ALIASING_FOR_FREE_OBJECS
             );
         }
     }
@@ -625,7 +655,6 @@ public class MulibConfig {
                         long PARALLEL_TIMEOUT_IN_MS,
                         Solvers GLOBAL_SOLVER_TYPE,
                         LinkedHashMap<String, Object> SOLVER_ARGS,
-                        long FIXED_POSSIBLE_CP_BUDGET,
                         long FIXED_ACTUAL_CP_BUDGET,
                         long INCR_ACTUAL_CP_BUDGET,
                         long SECONDS_PER_INVOCATION,
@@ -668,7 +697,11 @@ public class MulibConfig {
                         boolean THROW_EXCEPTION_ON_OOB,
                         boolean HIGH_LEVEL_FREE_ARRAY_THEORY,
                         boolean CONCOLIC,
-                        boolean ALLOW_EXCEPTIONS
+                        boolean ALLOW_EXCEPTIONS,
+                        boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
+                        boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
+                        boolean ALIASING_FOR_FREE_ARRAYS,
+                        boolean ALIASING_FOR_FREE_OBJECS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -678,7 +711,6 @@ public class MulibConfig {
         this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = List.copyOf(ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.GLOBAL_SOLVER_TYPE = GLOBAL_SOLVER_TYPE;
         this.SOLVER_ARGS = Collections.unmodifiableMap(new LinkedHashMap<>(SOLVER_ARGS));
-        this.FIXED_POSSIBLE_CP_BUDGET = 0 != FIXED_POSSIBLE_CP_BUDGET   ? Optional.of(FIXED_POSSIBLE_CP_BUDGET) : Optional.empty();
         this.FIXED_ACTUAL_CP_BUDGET =   0 != FIXED_ACTUAL_CP_BUDGET     ? Optional.of(FIXED_ACTUAL_CP_BUDGET)   : Optional.empty();
         this.INCR_ACTUAL_CP_BUDGET =    0 != INCR_ACTUAL_CP_BUDGET      ? Optional.of(INCR_ACTUAL_CP_BUDGET)    : Optional.empty();
         this.NANOSECONDS_PER_INVOCATION =   0 != SECONDS_PER_INVOCATION     ? Optional.of(SECONDS_PER_INVOCATION * 1_000_000_000) : Optional.empty();
@@ -723,6 +755,10 @@ public class MulibConfig {
         this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
         this.CONCOLIC = CONCOLIC;
         this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
+        this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+        this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
+        this.ALIASING_FOR_FREE_OBJECS = ALIASING_FOR_FREE_OBJECS;
     }
 
     @Override
@@ -736,7 +772,6 @@ public class MulibConfig {
 //                + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
                 + (ENLIST_LEAVES ? ", ENLIST_LEAVES=" + true : "")
                 + FIXED_ACTUAL_CP_BUDGET.map(v -> ", FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + FIXED_POSSIBLE_CP_BUDGET.map(v -> ", FIXED_POSSIBLE_CP_BUDGET=" + v).orElse("")
                 + INCR_ACTUAL_CP_BUDGET.map(v -> ", INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
                 + NANOSECONDS_PER_INVOCATION.map(v -> ", SECONDS_PER_INVOCATION=" + v).orElse("")
                 + MAX_FAILS.map(v -> ", MAX_FAILS=" + v).orElse("")
