@@ -4,7 +4,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -362,12 +361,14 @@ public final class SymbolicExecution {
         return result;
     }
 
-    public PartnerClass symObject(Class<?> clazz) {
-        throw new NotYetImplementedException();
+    public PartnerClass symObject(Class<? extends PartnerClass> clazz) {
+        return valueFactory.symObject(this, clazz);
     }
 
-    public PartnerClass namedSymObject(String identifier, Class<?> clazz) {
-        throw new NotYetImplementedException();
+    public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
+        PartnerClass symObject = valueFactory.symObject(this, clazz);
+        namedVariables.put(identifier, symObject);
+        return symObject;
     }
 
     public Sshort symSshort() {
