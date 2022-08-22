@@ -831,7 +831,6 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 } else {
                     throw new NotYetImplementedException();
                 }
-                initializeSymSarrayIdIfNeeded(sarray, se);
                 ArrayConstraint storeConstraint =
                         new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
@@ -839,12 +838,6 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         }
         sarray.setInCacheForIndex(index, value);
         return value;
-    }
-
-    private static void initializeSymSarrayIdIfNeeded(Sarray sarray, SymbolicExecution se) {
-        if (sarray.getId() == null) {
-            sarray.initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
-        }
     }
 
     @Override
@@ -938,11 +931,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
-            initializeSymSarrayIdIfNeeded(sarray, se);
-            if (se.nextIsOnKnownPath()) {
-                return;
-            }
+        if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
@@ -958,8 +947,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         // We will now add a constraint indicating to the solver that at position i a value can be found that previously
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
-        if (!se.nextIsOnKnownPath()) {
-            initializeSymSarrayIdIfNeeded(sarray, se);
+        if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
             if (result instanceof Sbool.SymSbool) {
                 result = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) result);
             } else if (result instanceof SymNumericExpressionSprimitive) {

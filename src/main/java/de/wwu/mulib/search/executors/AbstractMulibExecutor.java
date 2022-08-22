@@ -192,7 +192,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         return Optional.of(solution);
                     } else {
                         Mulib.log.log(Level.WARNING, config.toString());
-                        throw new MulibRuntimeException("Exception was thrown but not expected", e);
+                        throw new MulibRuntimeException("Exception was thrown but not expected, config: " + config, e);
                     }
                 } catch (Throwable t) {
                     Mulib.log.log(Level.WARNING, config.toString());
