@@ -2057,16 +2057,43 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal());
         } else {
             // Two int numbers are compared
-            // Wrap constants if necessary
-            if (!args.isTainted(lhsCondition)) {
-                WrapPair wp = wrap(args, lhsConditionExprBox);
-                lhsCondition = wp.newValue;
-                firstStatement = wp.newFirstStmt;
+            // Wrap constants if necessary or replace by zero-constant
+            // -1 ==> There is no constant zero in the comparison
+            // 1 ==> lhs is constant 0
+            // 2 ==> rhs is constant 0
+            byte zeroConstantType;
+            if (lhsCondition instanceof IntConstant || rhsCondition instanceof IntConstant) {
+                if (lhsCondition instanceof IntConstant) {
+                    assert !(rhsCondition instanceof IntConstant);
+                    zeroConstantType = (byte) (((IntConstant) lhsCondition).value == 0 ? 1 : -1);
+                } else {
+                    zeroConstantType = (byte) (((IntConstant) rhsCondition).value == 0 ? 2 : -1);
+                }
+            } else {
+                zeroConstantType = -1;
             }
-            if (!args.isTainted(rhsCondition)) {
-                WrapPair wp = wrap(args, rhsConditionExprBox);
-                rhsCondition = wp.newValue;
-                firstStatement = firstStatement == null ? wp.newFirstStmt : firstStatement;
+            if (!args.isTainted(lhsCondition)) {
+                assert zeroConstantType != 2;
+                if (zeroConstantType == 1) {
+                    lhsCondition = args.spawnStackLocal(IntType.v());
+                    firstStatement = Jimple.v().newAssignStmt(lhsCondition, Jimple.v().newStaticFieldRef(v.SF_SINT_NEUTRAL.makeRef()));
+                    args.addUnit(firstStatement);
+                } else {
+                    WrapPair wp = wrap(args, lhsConditionExprBox);
+                    lhsCondition = wp.newValue;
+                    firstStatement = wp.newFirstStmt;
+                }
+            } else if (!args.isTainted(rhsCondition)) {
+                assert zeroConstantType != 1;
+                if (zeroConstantType == 2) {
+                    rhsCondition = args.spawnStackLocal(IntType.v());
+                    firstStatement = Jimple.v().newAssignStmt(rhsCondition, Jimple.v().newStaticFieldRef(v.SF_SINT_NEUTRAL.makeRef()));
+                    args.addUnit(firstStatement);
+                } else {
+                    WrapPair wp = wrap(args, rhsConditionExprBox);
+                    rhsCondition = wp.newValue;
+                    firstStatement = wp.newFirstStmt;
+                }
             }
             if (conditionExpr instanceof NeExpr) {
                 used = v.SM_SINT_NOT_EQ_CHOICE.makeRef();
