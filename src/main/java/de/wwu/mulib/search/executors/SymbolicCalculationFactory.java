@@ -3,7 +3,6 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.*;
-import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
@@ -12,16 +11,10 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.util.Set;
 
 @SuppressWarnings( { "rawtypes", "unchecked" })
-public class SymbolicCalculationFactory implements CalculationFactory {
-
-    private final boolean throwExceptionOnOOB;
-    private final boolean useEagerIndexesForFreeArrayPrimitiveElements;
-    private final boolean useEagerIndexesForFreeArrayObjectElements;
+public class SymbolicCalculationFactory extends AbstractCalculationFactory {
 
     SymbolicCalculationFactory(MulibConfig config) {
-        this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
-        this.useEagerIndexesForFreeArrayPrimitiveElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
-        this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+        super(config);
     }
 
     public static SymbolicCalculationFactory getInstance(MulibConfig config) {
@@ -509,24 +502,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public Sprimitive select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
-        if (useEagerIndexesForFreeArrayPrimitiveElements) {
-            return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
-        } else {
-            return (Sprimitive) _selectWithSymbolicIndexes(se, sarray, index);
-        }
-    }
-
-    @Override
-    public Sprimitive store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, Sprimitive value) {
-        if (useEagerIndexesForFreeArrayPrimitiveElements) {
-            return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
-        } else {
-            return (Sprimitive) _storeWithSymbolicIndexes(se, sarray, index, value);
-        }
-    }
-
-    private SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
+    protected SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
         SubstitutedVar result = sarray.getFromCacheForIndex(index);
         if (result != null) {
             // We don't have to check for the validity of the cached index: we remove all indexes if store was used and
@@ -549,7 +525,8 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         return result;
     }
 
-    private SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
+    @Override
+    protected SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
@@ -565,95 +542,6 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             }
         }
 
-        sarray.setInCacheForIndex(index, value);
-        return value;
-    }
-
-    @Override
-    public Sarray<?> select(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index) {
-        if (useEagerIndexesForFreeArrayObjectElements) {
-            return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
-        } else {
-            return (Sarray<?>) _selectWithSymbolicIndexes(se, sarraySarray, index);
-        }
-    }
-
-    @Override
-    public Sarray<?> store(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
-        if (useEagerIndexesForFreeArrayObjectElements) {
-            return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
-        } else {
-            return (Sarray<?>) _storeWithSymbolicIndexes(se, sarraySarray, index, value);
-        }
-    }
-
-    @Override
-    public PartnerClass select(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
-        if (useEagerIndexesForFreeArrayObjectElements) {
-            return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
-        } else {
-            return (PartnerClass) _selectWithSymbolicIndexes(se, partnerClassSarray, index);
-        }
-    }
-
-    @Override
-    public PartnerClass store(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
-        if (useEagerIndexesForFreeArrayObjectElements) {
-            return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
-        } else {
-            return (PartnerClass) _storeWithSymbolicIndexes(se, partnerClassSarray, index, value);
-        }
-    }
-
-    private static Sint decideOnConcreteIndex(SymbolicExecution se, Sint index) {
-        if (index instanceof ConcSnumber) {
-            return index;
-        }
-        Sint concsIndex = null;
-        int currentIntIndex = 0;
-        while (true) {
-            Sint currentIndex = se.concSint(currentIntIndex);
-            if (se.eqChoice(index, currentIndex)) {
-                concsIndex = currentIndex;
-                break;
-            }
-            currentIntIndex++;
-        }
-        return concsIndex;
-    }
-
-    // Inspired by https://github.com/SymbolicPathFinder/jpf-symbc/blob/046eb3c3029583a8326714c69fbdef7c56c2690b/src/main/gov/nasa/jpf/symbc/bytecode/symarrays/AALOAD.java
-    // Eagerly decide on which index to choose
-    private SubstitutedVar _selectWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.getFromCacheForIndex(index);
-        if (result != null) {
-            return result;
-        }
-        checkIndexAccess(sarray, index, se);
-        Sint concsIndex = decideOnConcreteIndex(se, index);
-
-        result = sarray.getFromCacheForIndex(concsIndex);
-        if (result != null) {
-            sarray.setInCacheForIndex(index, result);
-            return result;
-        }
-        if (!sarray.defaultIsSymbolic() && sarray.onlyConcreteIndicesUsed()) {
-            result = sarray.nonSymbolicDefaultElement(se);
-        } else {
-            // If symbolic is required, optional aliasing etc. is handled here
-            result = sarray.symbolicDefault(se);
-        }
-        sarray.setInCacheForIndex(concsIndex, result);
-        sarray.setInCacheForIndex(index, result);
-        return result;
-    }
-
-
-    private SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
-        checkIndexAccess(sarray, index, se);
-        Sarray.checkIfValueIsStorableForSarray(sarray, value);
-        Sint concsIndex = decideOnConcreteIndex(se, index);
-        sarray.setInCacheForIndex(concsIndex, value);
         sarray.setInCacheForIndex(index, value);
         return value;
     }
@@ -681,35 +569,9 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         }
     }
 
-    private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
-        if (i instanceof ConcSnumber && ((ConcSnumber) i).intVal() < 0) {
-            throw new ArrayIndexOutOfBoundsException();
-        }
-        if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
-            // If either the length or the index are symbolic, there can potentially be an
-            // ArrayIndexOutOfBoundsException.
-            Constraint indexInBound = se.and(
-                    se.lt(i, sarray.getLength()),
-                    se.lte(Sint.ConcSint.ZERO, i)
-            );
-            if (throwExceptionOnOOB) {
-                boolean inBounds = se.boolChoice(indexInBound);
-                if (!inBounds) {
-                    throw new ArrayIndexOutOfBoundsException();
-                }
-            } else if (!se.nextIsOnKnownPath()) {
-                // If we do not regard out-of-bound array index-accesses, we simply add a new constraint and proceed.
-                //  next choice option or once reaching the end of the execution. Find an approach with minimal overhead
-                //  here.
-                se.addNewConstraint(indexInBound);
-            }
-        } else {
-            ConcSnumber concLen = (ConcSnumber) sarray.getLength();
-            ConcSnumber concI = (ConcSnumber) i;
-            if (concLen.intVal() <= concI.intVal() || concI.intVal() < 0) {
-                throw new ArrayIndexOutOfBoundsException();
-            }
-        }
+    @Override
+    protected void _addIndexInBoundsConstraint(SymbolicExecution se, Sbool indexInBounds) {
+        se.addNewConstraint(indexInBounds);
     }
 
     private NumericExpression sum(NumericExpression lhs, NumericExpression rhs) {
