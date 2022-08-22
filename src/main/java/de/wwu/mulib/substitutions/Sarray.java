@@ -24,9 +24,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     private boolean onlyConcreteIndicesUsed;
 
+    private Sbool isNull;
+
     /** New instance constructor */
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
-                   boolean defaultIsSymbolic) {
+                     boolean defaultIsSymbolic,
+                     Sbool isNull) {
         assert clazz != null && len != null;
         this.id = null;
         this.onlyConcreteIndicesUsed = true;
@@ -44,6 +47,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                 throw new NotYetImplementedException("Behavior if length is not concrete and default is not symbolic is not yet implemented");
             }
         }
+        this.isNull = isNull;
     }
 
     /** Transformation constructor */
@@ -60,6 +64,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         for (int i = 0; i < arrayElements.length; i++) {
             cachedElements.put((Sint) mvt.transform(i), arrayElements[i]);
         }
+        this.isNull = Sbool.ConcSbool.FALSE;
     }
 
     /** Copy constructor for all Sarrays but SarraySarray */
@@ -76,6 +81,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.cachedElements = cachedElements;
         this.defaultIsSymbolic = s.defaultIsSymbolic;
         this.len = s.len;
+        this.isNull = s.isNull;
     }
 
     public void initializeId(Sint id) {
@@ -165,6 +171,14 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public abstract Sarray<T> copy(MulibValueCopier mvt);
 
+    public final Sbool isNull() {
+        return isNull;
+    }
+
+    public final void setIsNotNull() {
+        isNull = Sbool.ConcSbool.FALSE;
+    }
+
     @SuppressWarnings("rawtypes")
     public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
         if (!(sarray instanceof Sarray.SarraySarray)) {
@@ -209,8 +223,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SintSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sint.class, len, se, defaultIsSymbolic);
+        public SintSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sint.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -252,8 +266,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SdoubleSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sdouble.class, len, se, defaultIsSymbolic);
+        public SdoubleSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sdouble.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -295,8 +309,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SfloatSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sfloat.class, len, se, defaultIsSymbolic);
+        public SfloatSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sfloat.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -338,8 +352,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SlongSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Slong.class, len, se, defaultIsSymbolic);
+        public SlongSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Slong.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -381,8 +395,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SshortSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sshort.class, len, se, defaultIsSymbolic);
+        public SshortSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sshort.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -424,8 +438,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SbyteSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sbyte.class, len, se, defaultIsSymbolic);
+        public SbyteSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sbyte.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -467,8 +481,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         /** New instance constructor */
-        public SboolSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic) {
-            super(Sbool.class, len, se, defaultIsSymbolic);
+        public SboolSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Sbool.class, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -511,8 +525,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         /** New instance constructor */
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
-                                  boolean defaultIsSymbolic) {
-            super(clazz, len, se, defaultIsSymbolic);
+                                  boolean defaultIsSymbolic, Sbool isNull) {
+            super(clazz, len, se, defaultIsSymbolic, isNull);
         }
 
         /** Copy constructor */
@@ -539,7 +553,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public T nonSymbolicDefaultElement(SymbolicExecution se) {
-            return null;
+            return null; /// TODO NullValuePattern there
         }
 
         @Override
@@ -566,8 +580,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         /** New instance constructor */
         public SarraySarray(Sint len, SymbolicExecution se,
                             boolean defaultIsSymbolic,
-                            Class<?> elementType) {
-            super(Sarray.class, len, se, defaultIsSymbolic);
+                            Class<?> elementType,
+                            Sbool isNull) {
+            super(Sarray.class, len, se, defaultIsSymbolic, isNull);
             this.elementType = elementType;
             assert elementType.isArray();
             this.dim = determineDimFromInnerElementType(elementType);
@@ -579,7 +594,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         public SarraySarray(
                 Sint[] lengths,
                 SymbolicExecution se, Class<?> elementType) {
-            super(Sarray.class, lengths[0], se, false);
+            super(Sarray.class, lengths[0], se, false, Sbool.ConcSbool.FALSE);
             assert elementType.isArray();
             this.dim = determineDimFromInnerElementType(elementType);
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
@@ -700,7 +715,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                 assert elementType.getComponentType().isArray();
                 return se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic());
             } else {
-                return generateNonSarraySarray(se.symSint(), elementType.getComponentType(), defaultIsSymbolic(), se);
+                return generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
             }
         }
 

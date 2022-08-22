@@ -8,7 +8,6 @@ import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
 
 import java.util.function.Function;
 
@@ -26,85 +25,14 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         return new ConcolicValueFactory(config);
     }
 
-    protected void restrictLength(SymbolicExecution se, Sint len) {
-        if (len instanceof ConcSnumber) {
-            if (((ConcSnumber) len).intVal() < 0) {
-                throw new NegativeArraySizeException();
-            }
-        } else if (throwExceptionOnOOB) {
-            // Must be SymSbool since Sint.ZERO is concrete and len has been checked
-            Sbool.SymSbool outOfBounds = (Sbool.SymSbool) se.gte(Sint.ConcSint.ZERO, len);
-            if (se.boolChoice(outOfBounds)) {
-                throw new NegativeArraySizeException();
-            }
-        } else if (!se.nextIsOnKnownPath()) {
-            Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
-            Constraint actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(inBounds);
-            if (actualConstraint instanceof Sbool.SymSbool) {
-                actualConstraint = ((Sbool.SymSbool) actualConstraint).getRepresentedConstraint();
-            }
-            se.addNewConstraint(actualConstraint);
+    @Override
+    protected void _addLengthLteZeroConstraint(SymbolicExecution se, Sint len) {
+        Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
+        Constraint actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(inBounds);
+        if (actualConstraint instanceof Sbool.SymSbool) {
+            actualConstraint = ((Sbool.SymSbool) actualConstraint).getRepresentedConstraint();
         }
-    }
-
-    @Override
-    public Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SintSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SdoubleSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SfloatSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SlongSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SshortSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SbyteSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SboolSarray(len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.PartnerClassSarray(clazz, len, se, freeElements);
-    }
-
-    @Override
-    public Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean freeElements) {
-        restrictLength(se, len);
-        return new Sarray.SarraySarray(len, se, freeElements, clazz);
-    }
-
-    @Override
-    public Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz) {
-        restrictLength(se, lengths[0]);
-        return new Sarray.SarraySarray(lengths, se, clazz);
+        se.addNewConstraint(actualConstraint);
     }
 
     private static <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
