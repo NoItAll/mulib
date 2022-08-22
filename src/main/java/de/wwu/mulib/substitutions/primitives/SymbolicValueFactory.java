@@ -2,6 +2,7 @@ package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
@@ -119,6 +120,11 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz) {
         restrictLength(se, lengths[0]);
         return new Sarray.SarraySarray(lengths, se, clazz);
+    }
+
+    @Override
+    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
+        throw new NotYetImplementedException();
     }
 
     private void restrictLength(SymbolicExecution se, Sint len) {

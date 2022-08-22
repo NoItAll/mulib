@@ -3,6 +3,7 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -330,5 +331,10 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 o -> concSfloat((Float) o),
                 c -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(c)
         );
+    }
+
+    @Override
+    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
+        throw new NotYetImplementedException();
     }
 }

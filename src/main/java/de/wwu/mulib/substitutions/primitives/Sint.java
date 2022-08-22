@@ -8,18 +8,19 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static de.wwu.mulib.substitutions.primitives.Sint.ConcSint.smallConcSints;
+
 public abstract class Sint extends AbstractSnumber {
-
     Sint() {}
-
-    private static final Map<Integer, ConcSint> cache = Collections.synchronizedMap(new HashMap<>());
-
     public static Sint concSint(int i) {
+        if (i >= 0 && i < smallConcSints.length) {
+            return smallConcSints[i];
+        }
         Integer I = i;
-        ConcSint result = cache.get(I);
+        ConcSint result = ConcSint.cache.get(I);
         if (result == null) {
             result = new ConcSint(i);
-            cache.put(I, result);
+            ConcSint.cache.put(I, result);
         }
         return result;
     }
@@ -149,9 +150,24 @@ public abstract class Sint extends AbstractSnumber {
     }
 
     public static final class ConcSint extends Sint implements ConcSnumber {
-        public static final ConcSint MINUS_ONE = new ConcSint(-1);
-        public static final ConcSint ZERO = new ConcSint(0);
-        public static final ConcSint ONE = new ConcSint(1);
+        static final Map<Integer, ConcSint> cache = Collections.synchronizedMap(new HashMap<>());
+        static final ConcSint[] smallConcSints = new ConcSint[100];
+
+        static {
+            MINUS_ONE = new ConcSint(-1);
+            ConcSint zero = new ConcSint(0);
+            ConcSint one = new ConcSint(1);
+            ZERO = zero;
+            ONE = one;
+            smallConcSints[0] = zero;
+            smallConcSints[1] = one;
+            for (int i = 2; i < 100; i++) {
+                smallConcSints[i] = new ConcSint(i);
+            }
+        }
+        public static final ConcSint MINUS_ONE;
+        public static final ConcSint ZERO;
+        public static final ConcSint ONE;
         private final int value;
 
         private ConcSint(int value) {

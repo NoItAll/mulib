@@ -37,6 +37,8 @@ public interface ValueFactory {
 
     Sarray.SarraySarray sarrarSarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz);
 
+    <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf);
+
     Sint symSint(SymbolicExecution se);
 
     Sdouble symSdouble(SymbolicExecution se);
