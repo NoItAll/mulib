@@ -14,7 +14,7 @@ import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
-    private long id;
+    private Sint id;
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
@@ -28,7 +28,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                    boolean defaultIsSymbolic) {
         assert clazz != null && len != null;
-        this.id = -1;
+        this.id = null;
         this.onlyConcreteIndicesUsed = true;
         this.clazz = clazz;
         this.cachedElements = new HashMap<>();
@@ -50,7 +50,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     protected Sarray(
             T[] arrayElements,
             MulibValueTransformer mvt) {
-        this.id = -1;
+        this.id = null;
         this.clazz = (Class<T>) arrayElements.getClass().getComponentType();
         int length = arrayElements.length;
         this.len = (Sint) mvt.transform(length);
@@ -78,11 +78,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = s.len;
     }
 
-    public void initializeId(SymbolicExecution se) {
-        if (this.id != -1) {
+    public void initializeId(Sint id) {
+        if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
-        this.id = se.getNextNumberInitializedSarray();
+        this.id = id;
     }
 
     @Override
@@ -119,10 +119,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
+    public final boolean checkIfNeedsToRepresentOldEntries(Sint i) {
         if (onlyConcreteIndicesUsed) {
             if (i instanceof SymNumericExpressionSprimitive) {
-                initializeId(se);
                 onlyConcreteIndicesUsed = false;
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
                 return !cachedElements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once
@@ -159,7 +158,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         cachedElements.put(index, value);
     }
 
-    public final long getId() {
+    public final Sint getId() {
         return id;
     }
 

@@ -831,13 +831,20 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
                 } else {
                     throw new NotYetImplementedException();
                 }
+                initializeSymSarrayIdIfNeeded(sarray, se);
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(sarray.getId(), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
         sarray.setInCacheForIndex(index, value);
         return value;
+    }
+
+    private static void initializeSymSarrayIdIfNeeded(Sarray sarray, SymbolicExecution se) {
+        if (sarray.getId() == null) {
+            sarray.initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
+        }
     }
 
     @Override
@@ -931,13 +938,17 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
+            initializeSymSarrayIdIfNeeded(sarray, se);
+            if (se.nextIsOnKnownPath()) {
+                return;
+            }
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getFromCacheForIndex(i);
                 ArrayConstraint ac =
-                        new ArrayConstraint(sarray.getId(), i, val, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, val, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -948,6 +959,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
         if (!se.nextIsOnKnownPath()) {
+            initializeSymSarrayIdIfNeeded(sarray, se);
             if (result instanceof Sbool.SymSbool) {
                 result = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) result);
             } else if (result instanceof SymNumericExpressionSprimitive) {
@@ -955,7 +967,7 @@ public final class ConcolicCalculationFactory implements CalculationFactory {
             }
             Sint i = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint(sarray.getId(), i, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                    new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
             se.addNewArrayConstraint(selectConstraint);
         }
     }

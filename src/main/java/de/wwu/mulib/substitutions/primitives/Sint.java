@@ -237,7 +237,7 @@ public abstract class Sint extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "SymSint{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return "SymSint{id=" + id + "}";
         }
     }
 }

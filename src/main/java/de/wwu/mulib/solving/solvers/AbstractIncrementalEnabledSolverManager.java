@@ -427,7 +427,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     private ArrayConstraint[] getArrayConstraintsForSarray(Sarray sarray) {
         return getArrayConstraints().stream()
-                .filter(ac -> ac.getArrayId() == sarray.getId())
+                .filter(ac -> ac.getArrayId().equals(sarray.getId()))
                 .toArray(ArrayConstraint[]::new);
     }
 

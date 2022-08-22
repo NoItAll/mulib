@@ -559,6 +559,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
             // We must reset the cached elements, if a symbolic variable is present and store was used
             sarray.clearCachedElements();
             if (!se.nextIsOnKnownPath()) {
+                initializeSymSarrayIdIfNeeded(sarray, se);
                 ArrayConstraint storeConstraint =
                         new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
                 se.addNewArrayConstraint(storeConstraint);
@@ -658,8 +659,18 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         return value;
     }
 
+    private static void initializeSymSarrayIdIfNeeded(Sarray sarray, SymbolicExecution se) {
+        if (sarray.getId() == null) {
+            sarray.initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
+        }
+    }
+
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(index)) {
+            initializeSymSarrayIdIfNeeded(sarray, se);
+            if (se.nextIsOnKnownPath()) {
+                return;
+            }
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
@@ -675,6 +686,7 @@ public class SymbolicCalculationFactory implements CalculationFactory {
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
         if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
+            initializeSymSarrayIdIfNeeded(sarray, se);
             ArrayConstraint selectConstraint =
                     new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
             se.addNewArrayConstraint(selectConstraint);

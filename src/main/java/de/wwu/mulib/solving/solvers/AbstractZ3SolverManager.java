@@ -406,7 +406,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
-        public ArrayExpr newArrayExprFromValue(long arrayId, SubstitutedVar value) {
+        public ArrayExpr newArrayExprFromValue(Sint arrayId, SubstitutedVar value) {
             Sort arraySort;
             if (value instanceof Sprimitive) {
                 if (value instanceof Sbool) {

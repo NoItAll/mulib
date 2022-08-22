@@ -52,4 +52,14 @@ public final class ConcolicNumericContainer implements NumericExpression {
     public String toString() {
         return "ConcolicNumericContainer{conc=" + conc + ",sym=" + sym + "}";
     }
+
+    @Override
+    public int hashCode() {
+        return sym.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ConcolicNumericContainer && ((ConcolicNumericContainer) o).getSym() == sym;
+    }
 }

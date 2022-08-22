@@ -120,7 +120,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                     calculationFactory,
                     optionToBeEvaluated,
                     prototypicalExecutionBudgetManager,
-                    mulibValueTransformer.getNextSarrayId(),
+                    mulibValueTransformer.getNextSymSarrayId(),
                     config
             ));
         } catch (Throwable t) {

@@ -38,7 +38,7 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
-    private long nextSarrayId;
+    private int nextSarrayId;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -47,7 +47,7 @@ public final class SymbolicExecution {
             CalculationFactory calculationFactory,
             Choice.ChoiceOption navigateTo,
             ExecutionBudgetManager executionBudgetManager,
-            long nextSarrayId,
+            int nextSarrayId,
             MulibConfig config) {
         this.nextSarrayId = nextSarrayId;
         this.mulibExecutor = mulibExecutor;
@@ -98,7 +98,7 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
-    public long getNextNumberInitializedSarray() { return nextSarrayId++; }
+    public int getNextNumberInitializedSymSarray() { return nextSarrayId++; }
 
     private void set() {
         se.set(this);

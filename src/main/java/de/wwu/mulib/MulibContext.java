@@ -80,7 +80,7 @@ public final class MulibContext {
         }
 
         // Find the next sarray-id if any of the arguments are sarrays
-        mulibValueTransformer.setNextSarrayId(args);
+        mulibValueTransformer.setNextSymSarrayId(args);
 
         Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {

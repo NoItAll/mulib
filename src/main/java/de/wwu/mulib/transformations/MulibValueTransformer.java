@@ -30,25 +30,25 @@ public final class MulibValueTransformer {
     // If the method at hand did not need to be transformed, we do not have to label or transform into the library-/
     // Partner-classes. This is useful for testing and for manually writing such classes.
     private final boolean transformationRequired;
-    private long nextSarrayId = 0;
+    private int nextSymSarrayId = 0;
     public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer) {
         this.mulibTransformer = mulibTransformer;
         this.classesToTransformation = config.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
-    public void setNextSarrayId(Object[] findHighestSarrayIdIn) {
-        long currentHighestId = -1;
+    public void setNextSymSarrayId(Object[] findHighestSarrayIdIn) {
+        int currentHighestId = -1;
         for (Object o : findHighestSarrayIdIn) {
-            if (o instanceof Sarray && currentHighestId < ((Sarray<?>) o).getId()) {
-                currentHighestId = ((Sarray<?>) o).getId();
+            if (o instanceof Sarray && ((Sarray<?>) o).getId() instanceof ConcSnumber && currentHighestId < ((ConcSnumber) ((Sarray<?>) o).getId()).intVal()) {
+                currentHighestId = ((ConcSnumber) ((Sarray<?>) o).getId()).intVal();
             }
         }
-        this.nextSarrayId = currentHighestId + 1;
+        this.nextSymSarrayId = currentHighestId + 1;
     }
 
-    public long getNextSarrayId() {
-        return nextSarrayId;
+    public int getNextSymSarrayId() {
+        return nextSymSarrayId;
     }
 
     public void registerTransformedObject(Object original, Object transformed) {

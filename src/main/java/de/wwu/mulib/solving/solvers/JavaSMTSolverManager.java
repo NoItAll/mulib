@@ -470,7 +470,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
-        private ArrayFormula newArrayExprFromValue(long arrayId, SubstitutedVar value) {
+        private ArrayFormula newArrayExprFromValue(Sint arrayId, SubstitutedVar value) {
             FormulaType arraySort;
             if (value instanceof Sprimitive) {
                 if (value instanceof Sbool) {

@@ -44,4 +44,14 @@ public class ConcolicConstraintContainer implements Constraint {
     public String toString() {
         return "ConcolicConstraintContainer{conc=" + conc + ",sym=" + sym + "}";
     }
+
+    @Override
+    public int hashCode() {
+        return sym.hashCode();
+    }
+
+    @Override
+    public boolean equals(Object o) {
+        return o instanceof ConcolicConstraintContainer && ((ConcolicConstraintContainer) o).getSym() == sym;
+    }
 }

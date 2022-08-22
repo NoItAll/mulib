@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;
 
@@ -16,8 +17,8 @@ public class IncrementalSolverState<AR> {
 
     // To account for mutability, free arrays are stored via a stack (arraydeque) here
     // We need to know at which level an array has gained a new representation, so that we know when to add/remove
-    // a array from the Map<Long, ArrayDeque<AR>> above
-    private final Map<Long, ArrayRepresentation> arrayIdToMostRecentRepresentation = new HashMap<>();
+    // a array from the Map<Sint, ArrayDeque<AR>> above
+    private final Map<Sint, ArrayRepresentation> arrayIdToMostRecentRepresentation = new HashMap<>();
     // We also want to preserve the order in which the constraints are added!
     private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
 
@@ -42,7 +43,7 @@ public class IncrementalSolverState<AR> {
         level--;
     }
 
-    public AR getCurrentArrayRepresentation(long arrayId) {
+    public AR getCurrentArrayRepresentation(Sint arrayId) {
         return _getArrayRepresentation(arrayId).getNewestRepresentation();
     }
 
@@ -95,17 +96,17 @@ public class IncrementalSolverState<AR> {
         }
     }
 
-    private ArrayRepresentation _getArrayRepresentation(long arrayId) {
+    private ArrayRepresentation _getArrayRepresentation(Sint arrayId) {
         ArrayRepresentation ar = arrayIdToMostRecentRepresentation.computeIfAbsent(arrayId, ArrayRepresentation::new);
         return ar;
     }
 
     private class ArrayRepresentation {
         // Array that is represented
-        final long arrayId;
+        final Sint arrayId;
         // Information for each level, including array constraints and the representation per level
         final ArrayDeque<ArrayRepresentationForLevel> arrayRepresentationsForLevels;
-        ArrayRepresentation(long arrayId) {
+        ArrayRepresentation(Sint arrayId) {
             this.arrayId = arrayId;
             this.arrayRepresentationsForLevels = new ArrayDeque<>();
         }

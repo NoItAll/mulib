@@ -7,7 +7,7 @@ public final class ArrayConstraint {
 
     public enum Type { SELECT, STORE }
 
-    private final long arrayId;
+    private final Sint arrayId;
     private final Sint index;
     // Either the inserted, or the value that is selected. Potentially, this selected value is a proxy value, i.e., a
     // different symbolic value that is set to equal another symbolic value.
@@ -15,7 +15,8 @@ public final class ArrayConstraint {
     private final Type type;
     private final int level;
 
-    public ArrayConstraint(long arrayId, Sint index, SubstitutedVar value, Type type, int level) {
+    public ArrayConstraint(Sint arrayId, Sint index, SubstitutedVar value, Type type, int level) {
+        assert arrayId != null;
         this.arrayId = arrayId;
         this.index = index;
         this.value = value;
@@ -23,7 +24,7 @@ public final class ArrayConstraint {
         this.level = level;
     }
 
-    public long getArrayId() {
+    public Sint getArrayId() {
         return arrayId;
     }
 

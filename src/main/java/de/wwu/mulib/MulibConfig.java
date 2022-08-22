@@ -733,7 +733,7 @@ public class MulibConfig {
                 + ", GLOBAL_SOLVER_TYPE=" + GLOBAL_SOLVER_TYPE
                 + (!SOLVER_ARGS.isEmpty() ? ", SOLVER_ARGS=" + SOLVER_ARGS : "")
                 + ", CONCOLIC=" + CONCOLIC
-                + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
+//                + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
                 + (ENLIST_LEAVES ? ", ENLIST_LEAVES=" + true : "")
                 + FIXED_ACTUAL_CP_BUDGET.map(v -> ", FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
                 + FIXED_POSSIBLE_CP_BUDGET.map(v -> ", FIXED_POSSIBLE_CP_BUDGET=" + v).orElse("")

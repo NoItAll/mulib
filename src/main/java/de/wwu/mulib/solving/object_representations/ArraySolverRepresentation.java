@@ -12,13 +12,13 @@ import java.util.Deque;
 import java.util.List;
 
 public class ArraySolverRepresentation {
-    private final long arrayId;
+    private final Sint arrayId;
     private final int level;
     private final Deque<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
     private final ArraySolverRepresentation beforeStore;
 
-    public ArraySolverRepresentation(long arrayId, int level) {
+    public ArraySolverRepresentation(Sint arrayId, int level) {
         this.level = level;
         this.arrayId = arrayId;
         this.selects = new ArrayDeque<>();
@@ -137,11 +137,11 @@ public class ArraySolverRepresentation {
     @Override
     public boolean equals(Object o) {
         return o instanceof ArraySolverRepresentation
-                && ((ArraySolverRepresentation) o).arrayId == this.arrayId;
+                && ((ArraySolverRepresentation) o).arrayId.equals(this.arrayId);
     }
 
     @Override
     public int hashCode() {
-        return (int) arrayId;
+        return arrayId.hashCode();
     }
 }
