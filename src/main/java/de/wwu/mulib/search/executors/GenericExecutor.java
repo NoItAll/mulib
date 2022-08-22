@@ -1,13 +1,10 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
-import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
-import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.LinkedHashMap;
@@ -18,10 +15,7 @@ import java.util.function.Function;
 public final class GenericExecutor extends AbstractMulibExecutor {
     private final Function<ChoiceOptionDeque, Optional<Choice.ChoiceOption>> choiceOptionDequeRetriever;
     private final boolean continueExecution;
-    private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private long dsasMissed;
-    private final MulibValueTransformer mulibValueTransformer;
-    private final MulibConfig config;
 
     public GenericExecutor(
             Choice.ChoiceOption rootChoiceOption,
@@ -29,7 +23,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
             SearchStrategy searchStrategy) {
-        super(mulibExecutorManager, config, rootChoiceOption, searchStrategy);
+        super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy);
         if (searchStrategy == SearchStrategy.DFS) {
             this.continueExecution = true;
             this.choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;
@@ -45,9 +39,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         } else {
             throw new NotYetImplementedException();
         }
-        this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
-        this.mulibValueTransformer = mulibValueTransformer;
-        this.config = config;
     }
 
     @Override
@@ -83,50 +74,8 @@ public final class GenericExecutor extends AbstractMulibExecutor {
     }
 
     @Override
-    protected Optional<SymbolicExecution> createExecution(
-            ChoiceOptionDeque deque,
-            ChoicePointFactory choicePointFactory,
-            ValueFactory valueFactory,
-            CalculationFactory calculationFactory) {
-        Choice.ChoiceOption optionToBeEvaluated;
-        try {
-            if (currentChoiceOption.reevaluationNeeded()) {
-                optionToBeEvaluated = currentChoiceOption;
-                // Relabeling case for concolic execution
-                assert isConcolic;
-                if (!solverManager.isSatisfiable()) {
-                    optionToBeEvaluated.setUnsatisfiable();
-                    return Optional.empty();
-                } else {
-                    optionToBeEvaluated.setSatisfiable();
-                }
-            } else {
-                Optional<Choice.ChoiceOption> optionalChoiceOption = this.choiceOptionDequeRetriever.apply(deque);
-                if (optionalChoiceOption.isEmpty()) {
-                    return Optional.empty();
-                }
-                optionToBeEvaluated = optionalChoiceOption.get();
-                assert !optionToBeEvaluated.isUnsatisfiable();
-                adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-                if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
-                    return Optional.empty();
-                }
-            }
-            assert currentChoiceOption.getDepth() == solverManager.getLevel();
-            return Optional.of(new SymbolicExecution(
-                    this,
-                    choicePointFactory,
-                    valueFactory,
-                    calculationFactory,
-                    optionToBeEvaluated,
-                    prototypicalExecutionBudgetManager,
-                    mulibValueTransformer.getNextSymSarrayId(),
-                    config
-            ));
-        } catch (Throwable t) {
-            t.printStackTrace();
-            throw new MulibRuntimeException(t);
-        }
+    protected Optional<Choice.ChoiceOption> selectNextChoiceOption(ChoiceOptionDeque deque) {
+        return choiceOptionDequeRetriever.apply(deque);
     }
 
     private static Optional<Choice.ChoiceOption> dfsRetriever(ChoiceOptionDeque choiceOptionDeque) {

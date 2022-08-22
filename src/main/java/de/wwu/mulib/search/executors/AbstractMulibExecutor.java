@@ -8,6 +8,7 @@ import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.ExceededBudget;
+import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
@@ -19,6 +20,7 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayDeque;
 import java.util.LinkedHashMap;
@@ -48,10 +50,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected final SearchStrategy searchStrategy;
     private final boolean labelResultValue;
     protected final boolean isConcolic;
+    private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
+    private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
+            MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
             Choice.ChoiceOption rootChoiceOption,
             SearchStrategy searchStrategy) {
@@ -63,6 +68,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.labelResultValue = config.LABEL_RESULT_VALUE;
         this.isConcolic = config.CONCOLIC;
         this.config = config;
+        this.mulibValueTransformer = mulibValueTransformer;
+        this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
     }
 
     @Override
@@ -148,7 +155,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public Optional<PathSolution> getPathSolution() {
         while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
-                    createExecution(getDeque(), getChoicePointFactory(), getValueFactory(), getCalculationFactory());
+                    createExecution();
             if (possibleSymbolicExecution.isPresent()) {
                 solverManager.setupForNewExecution();
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
@@ -203,6 +210,50 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
+    private Optional<SymbolicExecution> createExecution() {
+        Choice.ChoiceOption optionToBeEvaluated;
+        try {
+            if (currentChoiceOption.reevaluationNeeded()) {
+                optionToBeEvaluated = currentChoiceOption;
+                // Relabeling case for concolic execution
+                assert isConcolic;
+                if (!solverManager.isSatisfiable()) {
+                    optionToBeEvaluated.setUnsatisfiable();
+                    return Optional.empty();
+                } else {
+                    optionToBeEvaluated.setSatisfiable();
+                }
+            } else {
+                Optional<Choice.ChoiceOption> optionalChoiceOption = selectNextChoiceOption(getDeque());
+                if (optionalChoiceOption.isEmpty()) {
+                    return Optional.empty();
+                }
+                optionToBeEvaluated = optionalChoiceOption.get();
+                assert !optionToBeEvaluated.isUnsatisfiable();
+                adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
+                if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
+                    return Optional.empty();
+                }
+            }
+            assert currentChoiceOption.getDepth() == solverManager.getLevel();
+            return Optional.of(new SymbolicExecution(
+                    this,
+                    getChoicePointFactory(),
+                    getValueFactory(),
+                    getCalculationFactory(),
+                    optionToBeEvaluated,
+                    prototypicalExecutionBudgetManager,
+                    mulibValueTransformer.getNextSymSarrayId(),
+                    config
+            ));
+        } catch (Throwable t) {
+            t.printStackTrace();
+            throw new MulibRuntimeException(t);
+        }
+    }
+
+    protected abstract Optional<Choice.ChoiceOption> selectNextChoiceOption(ChoiceOptionDeque deque);
+
     @Override
     public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
@@ -215,12 +266,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public final boolean isSatisfiable() {
         return solverManager.isSatisfiable();
     }
-
-    protected abstract Optional<SymbolicExecution> createExecution(
-            ChoiceOptionDeque deque,
-            ChoicePointFactory choicePointFactory,
-            ValueFactory valueFactory,
-            CalculationFactory calculationFactory);
 
     private PathSolution getSolution(
             Object solutionValue,
