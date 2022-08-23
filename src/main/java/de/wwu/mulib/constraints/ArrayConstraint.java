@@ -13,15 +13,13 @@ public final class ArrayConstraint {
     // different symbolic value that is set to equal another symbolic value.
     private final SubstitutedVar value;
     private final Type type;
-    private final int level;
 
-    public ArrayConstraint(Sint arrayId, Sint index, SubstitutedVar value, Type type, int level) {
+    public ArrayConstraint(Sint arrayId, Sint index, SubstitutedVar value, Type type) {
         assert arrayId != null;
         this.arrayId = arrayId;
         this.index = index;
         this.value = value;
         this.type = type;
-        this.level = level;
     }
 
     public Sint getArrayId() {
@@ -38,10 +36,6 @@ public final class ArrayConstraint {
 
     public Type getType() {
         return type;
-    }
-
-    public int getLevel() {
-        return level;
     }
 
     @Override

@@ -810,7 +810,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                     throw new NotYetImplementedException();
                 }
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE);
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
@@ -830,7 +830,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getFromCacheForIndex(i);
                 ArrayConstraint ac =
-                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, val, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, val, ArrayConstraint.Type.SELECT);
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -848,7 +848,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             }
             Sint i = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, result, ArrayConstraint.Type.SELECT, se.getCurrentChoiceOption().getDepth());
+                    new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, result, ArrayConstraint.Type.SELECT);
             se.addNewArrayConstraint(selectConstraint);
         }
     }

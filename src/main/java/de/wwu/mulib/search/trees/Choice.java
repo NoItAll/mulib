@@ -128,10 +128,6 @@ public final class Choice extends TreeNode {
             if (arrayConstraints == Collections.EMPTY_LIST) {
                 arrayConstraints = new ArrayList<>();
             }
-            if (getDepth() != arrayConstraint.getLevel()) {
-                throw new IllegalTreeModificationException("The ArrayConstraint must be defined on the same depth like the" +
-                        " choice option");
-            }
             arrayConstraints.add(arrayConstraint);
         }
 
