@@ -13,13 +13,15 @@ import java.util.List;
 
 public class ArraySolverRepresentation {
     private final Sint arrayId;
+    private final Sint length;
     private final int level;
     private final Deque<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
     private final ArraySolverRepresentation beforeStore;
 
-    public ArraySolverRepresentation(Sint arrayId, int level) {
+    public ArraySolverRepresentation(Sint arrayId, Sint length, int level) {
         this.level = level;
+        this.length = length;
         this.arrayId = arrayId;
         this.selects = new ArrayDeque<>();
         this.store = null;
@@ -30,6 +32,7 @@ public class ArraySolverRepresentation {
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
     public ArraySolverRepresentation(ArraySolverRepresentation toCopy, int level) {
         this.level = level;
+        this.length = toCopy.length;
         this.arrayId = toCopy.arrayId;
         this.selects = new ArrayDeque<>(toCopy.selects);
         this.store = toCopy.store;
@@ -48,6 +51,7 @@ public class ArraySolverRepresentation {
         assert store != null && beforeStore != null;
         this.level = level;
         this.arrayId = beforeStore.arrayId;
+        this.length = beforeStore.length;
         this.selects = new ArrayDeque<>();
         this.store = store;
         // We do not directly reference the old object to keep it unmodified by the selects of other

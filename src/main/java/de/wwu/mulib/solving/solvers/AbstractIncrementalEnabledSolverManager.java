@@ -165,7 +165,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         if (ac.getType() == ArrayConstraint.Type.SELECT) {
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), getLevel());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), getLevel());
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
             } else if (arrayRepresentation.getLevel() != getLevel()) {
                 arrayRepresentation = new ArraySolverRepresentation(arrayRepresentation, getLevel());
@@ -177,7 +177,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             // Is store
             assert ac.getType() == ArrayConstraint.Type.STORE;
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), getLevel());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), getLevel());
             } else if (arrayRepresentation.getLevel() != getLevel()) {
                 arrayRepresentation = new ArraySolverRepresentation(arrayRepresentation, getLevel());
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);

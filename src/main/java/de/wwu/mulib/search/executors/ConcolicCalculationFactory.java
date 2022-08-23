@@ -810,7 +810,13 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                     throw new NotYetImplementedException();
                 }
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), (Sint) tryGetSymFromConcolic(index), inner, ArrayConstraint.Type.STORE);
+                        new ArrayConstraint(
+                                (Sint) tryGetSymFromConcolic(sarray.getId()),
+                                (Sint) tryGetSymFromConcolic(index),
+                                (Sint) tryGetSymFromConcolic(index),
+                                inner,
+                                ArrayConstraint.Type.STORE
+                        );
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
@@ -830,7 +836,13 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getFromCacheForIndex(i);
                 ArrayConstraint ac =
-                        new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, val, ArrayConstraint.Type.SELECT);
+                        new ArrayConstraint(
+                                (Sint) tryGetSymFromConcolic(sarray.getId()),
+                                (Sint) tryGetSymFromConcolic(sarray.getLength()),
+                                i,
+                                val,
+                                ArrayConstraint.Type.SELECT
+                        );
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -846,9 +858,14 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             } else if (result instanceof SymNumericExpressionSprimitive) {
                 result = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
             }
-            Sint i = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index);
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint((Sint) tryGetSymFromConcolic(sarray.getId()), i, result, ArrayConstraint.Type.SELECT);
+                    new ArrayConstraint(
+                            (Sint) tryGetSymFromConcolic(sarray.getId()),
+                            (Sint) tryGetSymFromConcolic(sarray.getLength()),
+                            (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index),
+                            result,
+                            ArrayConstraint.Type.SELECT
+                    );
             se.addNewArrayConstraint(selectConstraint);
         }
     }

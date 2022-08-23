@@ -108,7 +108,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     /**
      * Returns the type of the elements stored in the Sarray. In the case of Sarray.SarraySarray, the type of
-     * Sarray is returned.
+     * element-Sarrays is returned.
      * @return The class that represents the type of elements stored in the Sarray
      * @see SarraySarray#getElementType()
      */

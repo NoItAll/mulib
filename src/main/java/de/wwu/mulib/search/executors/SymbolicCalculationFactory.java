@@ -537,7 +537,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             sarray.clearCachedElements();
             if (!se.nextIsOnKnownPath()) {
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(sarray.getId(), index, value, ArrayConstraint.Type.STORE);
+                        new ArrayConstraint(sarray.getId(), sarray.getLength(), index, value, ArrayConstraint.Type.STORE);
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
@@ -552,7 +552,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 ArrayConstraint ac =
-                        new ArrayConstraint(sarray.getId(), i, sarray.getFromCacheForIndex(i), ArrayConstraint.Type.SELECT);
+                        new ArrayConstraint(sarray.getId(), sarray.getLength(), i, sarray.getFromCacheForIndex(i), ArrayConstraint.Type.SELECT);
                 se.addNewArrayConstraint(ac);
             }
         }
@@ -564,7 +564,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         // is the case if symbolic indices have been used.
         if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint(sarray.getId(), index, result, ArrayConstraint.Type.SELECT);
+                    new ArrayConstraint(sarray.getId(), sarray.getLength(), index, result, ArrayConstraint.Type.SELECT);
             se.addNewArrayConstraint(selectConstraint);
         }
     }

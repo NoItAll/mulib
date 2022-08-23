@@ -497,6 +497,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             }
         }
 
+        @SuppressWarnings({"rawtypes", "unchecked"})
         public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, SubstitutedVar value) {
             Formula f = transformSubstitutedVar(value);
             Formula i = transformSintegerNumber(index);

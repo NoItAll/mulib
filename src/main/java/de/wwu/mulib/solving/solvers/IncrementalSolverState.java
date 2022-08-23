@@ -44,12 +44,12 @@ public class IncrementalSolverState<AR> {
     }
 
     public AR getCurrentArrayRepresentation(Sint arrayId) {
-        return _getArrayRepresentation(arrayId).getNewestRepresentation();
+        ArrayRepresentation ar = _getArrayRepresentation(arrayId);
+        return ar == null ? null : ar.getNewestRepresentation();
     }
 
     public void addArrayConstraint(ArrayConstraint ac) {
-        ArrayRepresentation ar = _getArrayRepresentation(ac.getArrayId());
-        assert !ar.isEmpty();
+        assert _getArrayRepresentation(ac.getArrayId()) != null;
         while (arrayConstraints.size() <= level) {
             arrayConstraints.add(new ArrayList<>());
         }
@@ -60,6 +60,10 @@ public class IncrementalSolverState<AR> {
     public void addRepresentationInitializingArrayConstraint(ArrayConstraint constraint, AR newRepresentation) {
         // Initialize/add new array representation
         ArrayRepresentation ar = _getArrayRepresentation(constraint.getArrayId());
+        if (ar == null) {
+            ar = new ArrayRepresentation(constraint.getArrayId(), constraint.getArrayLength());
+            arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);
+        }
         ar.addNewRepresentation(newRepresentation);
     }
 
@@ -95,16 +99,17 @@ public class IncrementalSolverState<AR> {
     }
 
     private ArrayRepresentation _getArrayRepresentation(Sint arrayId) {
-        ArrayRepresentation ar = arrayIdToMostRecentRepresentation.computeIfAbsent(arrayId, ArrayRepresentation::new);
-        return ar;
+        return arrayIdToMostRecentRepresentation.get(arrayId);
     }
 
     private class ArrayRepresentation {
         // Array that is represented
         final Sint arrayId;
+        final Sint length;
         // Information for each level, including array constraints and the representation per level
         final ArrayDeque<ArrayRepresentationForLevel> arrayRepresentationsForLevels;
-        ArrayRepresentation(Sint arrayId) {
+        ArrayRepresentation(Sint arrayId, Sint length) {
+            this.length = length;
             this.arrayId = arrayId;
             this.arrayRepresentationsForLevels = new ArrayDeque<>();
         }
