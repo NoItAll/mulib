@@ -50,21 +50,21 @@ public final class Choice extends TreeNode {
 
     public final class ChoiceOption {
         // No information on current state
-        public static final byte UNKNOWN = 0;
+        private static final byte UNKNOWN = 0;
         // Can be validly evaluated
-        public static final byte SATISFIABLE = 1;
+        private static final byte SATISFIABLE = 1;
         // To be evaluated, the option must have been satisfiable
-        public static final byte EVALUATED = 2;
+        private static final byte EVALUATED = 2;
         // Symbolic state connected with tree is not satisfiable
-        public static final byte UNSATISFIABLE = 3;
+        private static final byte UNSATISFIABLE = 3;
         // Further evaluation would exceed budget
-        public static final byte BUDGET_EXCEEDED = 4;
+        private static final byte BUDGET_EXCEEDED = 4;
         // The further evaluation of the respective subtree will not be performed
-        public static final byte CUT_OFF = 5; // TODO not yet implemented functionality
+        private static final byte CUT_OFF = 5; // TODO not yet implemented functionality
         // If Mulib.failed() has been used.
-        public static final byte EXPLICITLY_FAILED = 6;
+        private static final byte EXPLICITLY_FAILED = 6;
         // For concolic execution: if the labeling is not valid anymore, we need to reevaluate
-        public static final byte REEVALUATION_NEEDED = 7;
+        private static final byte REEVALUATION_NEEDED = 7;
 
         private byte state;
         public final int choiceOptionNumber;
