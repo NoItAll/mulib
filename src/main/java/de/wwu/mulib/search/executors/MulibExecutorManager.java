@@ -64,6 +64,7 @@ public abstract class MulibExecutorManager {
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {
+        globalExecutionManagerBudgetManager.resetTimeBudget();
         Optional<PathSolution> result = _getPathSolution();
         printStatistics();
         return result;
@@ -71,7 +72,6 @@ public abstract class MulibExecutorManager {
 
     private Optional<PathSolution> _getPathSolution() {
         int currentNumberPathSolutions = observedTree.getPathSolutionsList().size();
-        globalExecutionManagerBudgetManager.resetTimeBudget();
         while (!checkForShutdown()) {
             Optional<PathSolution> possiblePathSolution = mainExecutor.getPathSolution();
             checkForFailure();
