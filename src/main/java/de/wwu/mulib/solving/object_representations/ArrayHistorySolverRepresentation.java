@@ -24,7 +24,7 @@ public class ArrayHistorySolverRepresentation {
 
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
-    public ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
+    protected ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
         this.selects = new ArrayDeque<>(toCopy.selects);
         this.store = toCopy.store;
         this.beforeStore =
@@ -35,7 +35,7 @@ public class ArrayHistorySolverRepresentation {
                         new ArrayHistorySolverRepresentation(toCopy.beforeStore);
     }
 
-    private ArrayHistorySolverRepresentation(
+    protected ArrayHistorySolverRepresentation(
             ArrayHistorySolverRepresentation beforeStore,
             ArrayAccessSolverRepresentation store) {
         assert store != null && beforeStore != null;

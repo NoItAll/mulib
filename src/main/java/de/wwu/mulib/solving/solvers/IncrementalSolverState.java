@@ -18,11 +18,31 @@ public class IncrementalSolverState<AR> {
     // To account for mutability, free arrays are stored via a stack (arraydeque) here
     // We need to know at which level an array has gained a new representation, so that we know when to add/remove
     // a array from the Map<Sint, ArrayDeque<AR>> above
-    private final Map<Sint, ArrayRepresentation> arrayIdToMostRecentRepresentation = new HashMap<>();
     // We also want to preserve the order in which the constraints are added!
     private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
 
-    private IncrementalSolverState(MulibConfig config) {}
+    private final SymbolicArrayStates<AR> symbolicArrayStates;
+
+    private IncrementalSolverState(MulibConfig config) {
+        this.symbolicArrayStates = new SymbolicArrayStates<>(config);
+    }
+
+    public static class SymbolicArrayStates<AR> {
+        public final boolean enableInitializeFreeArraysWithNull;
+        public final boolean aliasingForFreeArrays;
+        public final boolean useEagerIndexesForFreeArrayObjectElements;
+        private final Map<Sint, ArrayRepresentation<AR>> arrayIdToMostRecentRepresentation = new HashMap<>();
+
+        private SymbolicArrayStates(MulibConfig config) {
+            this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+            this.aliasingForFreeArrays = config.ALIASING_FOR_FREE_ARRAYS;
+            this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+        }
+
+        public ArrayRepresentation<AR> getArrayRepresentationForId(Sint arrayId) {
+            return arrayIdToMostRecentRepresentation.get(arrayId);
+        }
+    }
 
     public void addConstraint(Constraint c) {
         // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
@@ -44,7 +64,7 @@ public class IncrementalSolverState<AR> {
     }
 
     public AR getCurrentArrayRepresentation(Sint arrayId) {
-        ArrayRepresentation ar = _getArrayRepresentation(arrayId);
+        ArrayRepresentation<AR> ar = _getArrayRepresentation(arrayId);
         return ar == null ? null : ar.getNewestRepresentation();
     }
 
@@ -59,12 +79,12 @@ public class IncrementalSolverState<AR> {
     // Adds an ArrayConstraint to regard mutable arrays as a special case.
     public void addRepresentationInitializingArrayConstraint(ArrayConstraint constraint, AR newRepresentation) {
         // Initialize/add new array representation
-        ArrayRepresentation ar = _getArrayRepresentation(constraint.getArrayId());
+        ArrayRepresentation<AR> ar = _getArrayRepresentation(constraint.getArrayId());
         if (ar == null) {
-            ar = new ArrayRepresentation(constraint.getArrayId(), constraint.getArrayLength());
-            arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);
+            ar = new ArrayRepresentation<>(constraint.getArrayId(), constraint.getArrayLength());
+            symbolicArrayStates.arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);
         }
-        ar.addNewRepresentation(newRepresentation);
+        ar.addNewRepresentation(newRepresentation, level);
     }
 
     public ArrayDeque<Constraint> getConstraints() {
@@ -90,54 +110,49 @@ public class IncrementalSolverState<AR> {
 
     private void popArrayConstraintForLevel() {
         // Check if popped level contains array constraints
-        for (ArrayRepresentation ar : arrayIdToMostRecentRepresentation.values()) {
-            ar.popRepresentationsOfLevel();
+        for (ArrayRepresentation<AR> ar : symbolicArrayStates.arrayIdToMostRecentRepresentation.values()) {
+            ar.popRepresentationsOfLevel(level);
         }
         if (arrayConstraints.size() > level) {
             arrayConstraints.get(level).clear();
         }
     }
 
-    private ArrayRepresentation _getArrayRepresentation(Sint arrayId) {
-        return arrayIdToMostRecentRepresentation.get(arrayId);
+    private ArrayRepresentation<AR> _getArrayRepresentation(Sint arrayId) {
+        return symbolicArrayStates.arrayIdToMostRecentRepresentation.get(arrayId);
     }
 
-    private class ArrayRepresentation {
+    private static class ArrayRepresentation<AR> {
         // Array that is represented
         final Sint arrayId;
         final Sint length;
         // Information for each level, including array constraints and the representation per level
-        final ArrayDeque<ArrayRepresentationForLevel> arrayRepresentationsForLevels;
+        final ArrayDeque<ArrayRepresentationForLevel<AR>> arrayRepresentationsForLevels;
         ArrayRepresentation(Sint arrayId, Sint length) {
             this.length = length;
             this.arrayId = arrayId;
             this.arrayRepresentationsForLevels = new ArrayDeque<>();
         }
-
-        boolean isEmpty() {
-            return arrayRepresentationsForLevels.isEmpty();
-        }
-
         AR getNewestRepresentation() {
-            ArrayRepresentationForLevel resultWrapper = arrayRepresentationsForLevels.peek();
+            ArrayRepresentationForLevel<AR> resultWrapper = arrayRepresentationsForLevels.peek();
             if (resultWrapper == null) {
                 return null;
             }
             return resultWrapper.getNewestRepresentation();
         }
 
-        void addNewRepresentation(AR newRepresentation) {
+        void addNewRepresentation(AR newRepresentation, int level) {
             assert arrayRepresentationsForLevels.isEmpty() || arrayRepresentationsForLevels.peek().depth <= level;
-            ArrayRepresentationForLevel ar = arrayRepresentationsForLevels.peek();
+            ArrayRepresentationForLevel<AR> ar = arrayRepresentationsForLevels.peek();
             if (ar == null || ar.depth < level) {
-                arrayRepresentationsForLevels.push(new ArrayRepresentationForLevel(newRepresentation, level));
+                arrayRepresentationsForLevels.push(new ArrayRepresentationForLevel<>(newRepresentation, level));
             } else {
                 ar.addRepresentation(newRepresentation);
             }
         }
 
-        void popRepresentationsOfLevel() {
-            ArrayRepresentationForLevel arfl = arrayRepresentationsForLevels.peek();
+        void popRepresentationsOfLevel(int level) {
+            ArrayRepresentationForLevel<AR> arfl = arrayRepresentationsForLevels.peek();
             assert arfl == null || arfl.depth <= level;
             if (arfl != null && arfl.depth == level) {
                 arrayRepresentationsForLevels.pop();
@@ -146,7 +161,7 @@ public class IncrementalSolverState<AR> {
         }
     }
 
-    private class ArrayRepresentationForLevel {
+    private static class ArrayRepresentationForLevel<AR> {
         final int depth;
         final ArrayDeque<AR> arrayRepresentationsOfLevel;
         ArrayRepresentationForLevel(AR arrayRepresentation, int depth) {
