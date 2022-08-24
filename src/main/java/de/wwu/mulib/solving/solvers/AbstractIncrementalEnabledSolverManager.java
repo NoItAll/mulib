@@ -100,7 +100,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     private boolean _checkWithNewFreeArrayCompatibilityLayerArraySelectConstraint(ArrayConstraint ac) {
         ArraySolverRepresentation asr = (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         // Copy is needed as otherwise ArraySolverRepresentation is mutated by means of select
-        ArraySolverRepresentation copy = new ArraySolverRepresentation(asr, asr.getLevel());
+        ArraySolverRepresentation copy = asr.copyForNewLevel(getLevel());
         Constraint selectConstraint = copy.select(ac.getIndex(), ac.getValue());
         boolean result = checkWithNewConstraint(selectConstraint);
         _resetSatisfiabilityWasCalculatedAndModel();
@@ -165,10 +165,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
         if (ac.getType() == ArrayConstraint.Type.SELECT) {
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), getLevel());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), null, getLevel());
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
             } else if (arrayRepresentation.getLevel() != getLevel()) {
-                arrayRepresentation = new ArraySolverRepresentation(arrayRepresentation, getLevel());
+                arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
                 incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
             }
             Constraint arraySelectConstraint = arrayRepresentation.select(ac.getIndex(), ac.getValue());
@@ -177,13 +177,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             // Is store
             assert ac.getType() == ArrayConstraint.Type.STORE;
             if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), getLevel());
+                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), null, getLevel());
             } else if (arrayRepresentation.getLevel() != getLevel()) {
-                arrayRepresentation = new ArraySolverRepresentation(arrayRepresentation, getLevel());
-                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+                arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
             }
-            arrayRepresentation = arrayRepresentation.store(ac.getIndex(), ac.getValue(), getLevel());
             incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            arrayRepresentation.store(ac.getIndex(), ac.getValue());
         }
     }
 
