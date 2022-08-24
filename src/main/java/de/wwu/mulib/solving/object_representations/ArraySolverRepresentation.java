@@ -53,7 +53,7 @@ public class ArraySolverRepresentation {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ArraySolverRepresentation && ((ArraySolverRepresentation) o).arrayId == arrayId;
+        return o instanceof ArraySolverRepresentation && ((ArraySolverRepresentation) o).arrayId.equals(arrayId);
     }
 
     @Override
