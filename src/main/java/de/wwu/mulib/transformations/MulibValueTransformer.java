@@ -206,7 +206,7 @@ public final class MulibValueTransformer {
             Object array, Class<?> possiblyTransformed) {
         int length = Array.getLength(array);
         Object values = Array.newInstance(possiblyTransformed, length);
-        // Now we can call transformValue(...)
+        // Now we can call transform(...) or recursively call this same function to deal with nested arrays
         for (int i = 0; i < length; i++) {
             Object value = Array.get(array, i);
             Object transformedValue;

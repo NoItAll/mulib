@@ -41,8 +41,6 @@ public interface MulibExecutor {
 
     void addNewArrayConstraint(ArrayConstraint ac);
 
-    boolean checkWithNewArrayConstraint(ArrayConstraint ac);
-
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 
     boolean isSatisfiable();

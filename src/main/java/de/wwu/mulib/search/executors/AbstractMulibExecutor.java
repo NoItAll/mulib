@@ -123,12 +123,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         currentChoiceOption.addArrayConstraint(ac);
     }
 
-
-    @Override
-    public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
-        return solverManager.checkWithNewArrayConstraint(ac);
-    }
-
     @Override
     public final Object label(Object var) {
         return solverManager.getLabel(var);

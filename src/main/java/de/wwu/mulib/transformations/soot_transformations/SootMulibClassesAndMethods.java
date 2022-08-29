@@ -547,7 +547,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_CONCSBYTE = SC_SE.getMethod("concSbyte", List.of(TYPE_BYTE), TYPE_SBYTE);
         SM_SE_CONCSBOOL = SC_SE.getMethod("concSbool", List.of(TYPE_BOOL), TYPE_SBOOL);
         SM_SE_GET = SC_SE.getMethod("get", Collections.emptyList(), TYPE_SE);
-        SM_SE_INSTANCEOF = SC_SE.getMethod("evalInstanceof", List.of(TYPE_PARTNERCLASS, TYPE_CLASS), TYPE_SBOOL);
+        SM_SE_INSTANCEOF = SC_SE.getMethod("evalInstanceof", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_SBOOL);
         SM_SE_CAST_TO = SC_SE.getMethod("castTo", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_OBJECT);
         SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_OBJECT), TYPE_OBJECT);
 

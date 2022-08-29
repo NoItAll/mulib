@@ -183,10 +183,6 @@ public final class SymbolicExecution {
         mulibExecutor.addNewArrayConstraint(ac);
     }
 
-    public boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
-        return mulibExecutor.checkWithNewArrayConstraint(ac);
-    }
-
     /* FREE ARRAY OPERATIONS */
 
     public Sint select(Sarray.SintSarray sarray, Sint index) {
@@ -485,7 +481,7 @@ public final class SymbolicExecution {
      */
 
     public static Object concretize(Object var, SymbolicExecution se) {
-        return se.concretize((SubstitutedVar) var);
+        return se.concretize(var);
     }
 
     public static Sint concSint(int i, SymbolicExecution se) {
@@ -897,7 +893,7 @@ public final class SymbolicExecution {
         return calculationFactory.i2s(this, valueFactory, i);
     }
 
-    public Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c) {
+    public Sbool evalInstanceof(Object partnerClass, Class<?> c) {
         /// TODO To CalculationFactory
         if (partnerClass == null) {
             return Sbool.ConcSbool.FALSE;
@@ -911,6 +907,11 @@ public final class SymbolicExecution {
             throw new ClassCastException();
         }
         return castTo.cast(sarrayOrPartnerClassObject);
+    }
+
+    public boolean evalIsNull(Object sarrayOrPartnerClassObject) {
+        /// TODO To CalculationFactory
+        return sarrayOrPartnerClassObject == null;
     }
 
     /* BOOLEAN OPERATIONS */
@@ -1129,4 +1130,3 @@ public final class SymbolicExecution {
         return choicePointFactory.negatedBoolChoice(this, b);
     }
 }
-

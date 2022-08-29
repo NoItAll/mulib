@@ -20,8 +20,6 @@ public final class Choice extends TreeNode {
         this(parent, constraintsPerOption.toArray(new Constraint[0]));
     }
 
-    // If there are only two constraints which are opposites, i.e. c and Not(c), the first constraint should be
-    // c, the second constraint should be Not(c).
     public Choice(ChoiceOption parent, Constraint... constraintPerOption) {
         super(parent);
         if (constraintPerOption.length < 1) {
@@ -227,7 +225,7 @@ public final class Choice extends TreeNode {
         private void _checkIllegalStateModificationElseSet(byte newState) {
             if (state != UNKNOWN
                     && !(state == SATISFIABLE && newState == REEVALUATION_NEEDED)
-                    && !(state == REEVALUATION_NEEDED && (newState == EVALUATED || newState == SATISFIABLE))
+                    && !(state == REEVALUATION_NEEDED && (newState == EVALUATED /* This is done automatically for FAIL */ || newState == SATISFIABLE))
                     && !(state == SATISFIABLE && newState == EVALUATED)) {
                 throw new IllegalTreeModificationException("New state '" + stateToString(newState) + "' cannot be set. " +
                         "State is already set to '" + stateToString() + "'.");
