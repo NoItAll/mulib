@@ -18,8 +18,6 @@ public interface SolverManager {
 
     void addArrayConstraints(List<ArrayConstraint> acs);
 
-    boolean checkWithNewArrayConstraint(ArrayConstraint ac);
-
     boolean checkWithNewConstraint(Constraint c);
 
     boolean isSatisfiable();

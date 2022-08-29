@@ -1,70 +1,72 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
-public class ArraySolverRepresentation {
-    protected ArrayHistorySolverRepresentation currentRepresentation;
-    protected final Sint arrayId;
-    protected final Sint length;
-    protected final Sbool isNull;
-    protected final int level;
+import java.util.Set;
 
-    public ArraySolverRepresentation(Sint arrayId, Sint length, Sbool isNull, int level) {
-        this(arrayId, length, isNull, level, new ArrayHistorySolverRepresentation());
+public interface ArraySolverRepresentation {
+
+    static ArraySolverRepresentation newInstance(
+            ArrayInitializationConstraint ac,
+            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            int level) {
+        ArraySolverRepresentation result;
+        if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
+            result = new PrimitiveValuedArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), ac.getIsNull(), level);
+        } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
+            ArraySolverRepresentation asr = symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
+            result = new AliasingArraySolverRepresentation(
+                    ac.getArrayId(),
+                    ac.getArrayLength(),
+                    ac.getIsNull(),
+                    level,
+                    ac.getReservedId(),
+                    // The Sint-values here are the IDs of the aliased arrays
+                    (Set<Sint>) asr.getPotentialValues(),
+                    symbolicArrayStates
+            );
+        } else {
+            assert ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY;
+            result = new AliasingArraySolverRepresentation(
+                    ac.getArrayId(),
+                    ac.getArrayLength(),
+                    ac.getIsNull(),
+                    level,
+                    ac.getReservedId(),
+                    ac.getPotentialIds(),
+                    symbolicArrayStates
+            );
+        }
+        return result;
     }
 
-    protected ArraySolverRepresentation(
-            Sint arrayId,
-            Sint length,
-            Sbool isNull,
-            int level,
-            ArrayHistorySolverRepresentation ahsr) {
-        this.arrayId = arrayId;
-        this.length = length;
-        this.isNull = isNull;
-        this.level = level;
-        this.currentRepresentation = ahsr;
+    default Constraint select(Sint index, Sprimitive selectedValue) {
+        return select(Sbool.ConcSbool.TRUE, index, selectedValue);
     }
 
-    public Constraint select(Sint index, SubstitutedVar selectedValue) {
-        return currentRepresentation.select(index, selectedValue);
+    Constraint select(Constraint guard, Sint index, Sprimitive selectedValue);
+
+    default void store(Sint index, Sprimitive storedValue) {
+        store(Sbool.ConcSbool.TRUE, index, storedValue);
     }
 
-    public void store(Sint index, SubstitutedVar storedValue) {
-        ArrayHistorySolverRepresentation ahsr = currentRepresentation.store(index, storedValue);
-        this.currentRepresentation = ahsr;
-    }
+    void store(Constraint guard, Sint index, Sprimitive storedValue);
 
-    public ArraySolverRepresentation copyForNewLevel(int level) {
-        return new ArraySolverRepresentation(arrayId, length, isNull, level, currentRepresentation.copy());
-    }
+    ArraySolverRepresentation copyForNewLevel(int level);
 
-    public Sint getArrayId() {
-        return arrayId;
-    }
+    Sint getArrayId();
 
-    public Sint getLength() {
-        return length;
-    }
+    Sint getLength();
 
-    public Sbool getIsNull() {
-        return isNull;
-    }
+    Sbool getIsNull();
 
-    public int getLevel() {
-        return level;
-    }
+    int getLevel();
 
-    @Override
-    public boolean equals(Object o) {
-        return o instanceof ArraySolverRepresentation && ((ArraySolverRepresentation) o).arrayId.equals(arrayId);
-    }
+    Set<? extends Sprimitive> getPotentialValues();
 
-    @Override
-    public int hashCode() {
-        return arrayId.hashCode();
-    }
 }

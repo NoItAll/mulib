@@ -6,11 +6,16 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Snumber;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
-import java.util.List;
+import java.util.HashSet;
+import java.util.Set;
 
+/**
+ * Contains the select for an array. A store yields a nested structure of ArrayHistorySolverRepresentations
+ */
 public class ArrayHistorySolverRepresentation {
     private final Deque<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
@@ -50,7 +55,11 @@ public class ArrayHistorySolverRepresentation {
         return new ArrayHistorySolverRepresentation(this);
     }
 
-    public Constraint select(Sint index, SubstitutedVar value) {
+    public Constraint select(Constraint guard, Sint index, Sprimitive value) {
+        if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
+            // We do not need to add anything to the history of array accesses, as this access is not valid
+            return Sbool.ConcSbool.FALSE;
+        }
         Constraint constraintForStoreOperation;
         Constraint indexEqualsToStoreIndex;
         Constraint resultForSelectOperations;
@@ -59,7 +68,7 @@ public class ArrayHistorySolverRepresentation {
             assert beforeStore != null;
             indexEqualsToStoreIndex = Eq.newInstance(store.index, index);
             constraintForStoreOperation = elementsEqualConstraint(store.value, value);
-            resultForSelectOperations = beforeStore.select(index, value);
+            resultForSelectOperations = beforeStore.select(guard, index, value);
         } else {
             indexEqualsToStoreIndex = Sbool.ConcSbool.FALSE;
             constraintForStoreOperation = Sbool.ConcSbool.FALSE;
@@ -81,23 +90,46 @@ public class ArrayHistorySolverRepresentation {
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
-            resultForSelectOperations = And.newInstance(List.of(implies(indexEqualsToSelectIndex, valuesEqual), resultForSelectOperations));
+            resultForSelectOperations = And.newInstance(
+                    implies(
+                            s.guard,
+                            implies(indexEqualsToSelectIndex, valuesEqual)
+                    ),
+                    resultForSelectOperations
+            );
         }
 
         Constraint result =
                 And.newInstance(
+                        guard,
                         implies(indexEqualsToStoreIndex, constraintForStoreOperation),
                         implies(Not.newInstance(indexEqualsToStoreIndex), resultForSelectOperations)
                 );
-        selects.push(new ArrayAccessSolverRepresentation(index, value));
+        selects.push(new ArrayAccessSolverRepresentation(guard, index, value));
         return result;
     }
 
-    public ArrayHistorySolverRepresentation store(Sint index, SubstitutedVar value) {
+    public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
+        if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
+            return this;
+        }
         return new ArrayHistorySolverRepresentation(
                 this,
-                new ArrayAccessSolverRepresentation(index, value)
+                new ArrayAccessSolverRepresentation(guard, index, value)
         );
+    }
+
+    public Set<Sprimitive> getPotentialValues() {
+        Set<Sprimitive> result = new HashSet<>();
+        if (beforeStore != null) {
+            assert store != null;
+            result.addAll(beforeStore.getPotentialValues());
+            result.add(store.value);
+        }
+        for (ArrayAccessSolverRepresentation aasr : this.selects) {
+            result.add(aasr.value);
+        }
+        return result;
     }
 
     private static Constraint elementsEqualConstraint(SubstitutedVar s0, SubstitutedVar s1) {
@@ -115,9 +147,14 @@ public class ArrayHistorySolverRepresentation {
     }
 
     private static class ArrayAccessSolverRepresentation {
+        // The guard will typically be if the arrayId belonging to this ArrayHistorySolverRepresentation
+        // is equal to some other symbolic ID
+        private final Constraint guard;
         private final Sint index;
-        private final SubstitutedVar value;
-        ArrayAccessSolverRepresentation(Sint index, SubstitutedVar value) {
+        private final Sprimitive value;
+        ArrayAccessSolverRepresentation(Constraint guard, Sint index, Sprimitive value) {
+            assert guard != null && index != null && value != null;//// TODO maybe value should be allowed to be null once the array-id-issue is fixed: this would allow us to represent null-arrays directly.
+            this.guard = guard;
             this.index = index;
             this.value = value;
         }

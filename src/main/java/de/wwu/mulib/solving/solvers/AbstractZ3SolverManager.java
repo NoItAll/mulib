@@ -96,13 +96,13 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     @Override
-    protected final ArrayExpr createCompletelyNewArrayRepresentation(ArrayConstraint ac) {
-        return adapter.newArrayExprFromValue(ac.getArrayId(), ac.getValue());
+    protected final ArrayExpr createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac) {
+        return adapter.newArrayExprFromType(ac.getArrayId(), ac.getValueType());
     }
 
     @Override
-    protected final ArrayExpr createNewArrayRepresentationForStore(ArrayConstraint ac, ArrayExpr oldRepresentation) {
-        assert ac.getType() == ArrayConstraint.Type.STORE;
+    protected final ArrayExpr createNewArrayRepresentationForStore(ArrayAccessConstraint ac, ArrayExpr oldRepresentation) {
+        assert ac.getType() == ArrayAccessConstraint.Type.STORE;
         // We do not need to add anything to the constraint store. This constraint will "be made true" via array-nesting.
         return adapter.newArrayExprFromStore(
                 oldRepresentation,
@@ -406,14 +406,14 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
-        public ArrayExpr newArrayExprFromValue(Sint arrayId, SubstitutedVar value) {
+        public ArrayExpr newArrayExprFromType(Sint arrayId, Class<?> type) {
             Sort arraySort;
-            if (value instanceof Sprimitive) {
-                if (value instanceof Sbool) {
+            if (Sprimitive.class.isAssignableFrom(type)) {
+                if (Sbool.class.isAssignableFrom(type)) {
                     arraySort = ctx.mkBoolSort();
-                } else if (value instanceof Sint || value instanceof Slong) {
+                } else if (Sint.class.isAssignableFrom(type) || Slong.class.isAssignableFrom(type)) {
                     arraySort = ctx.mkIntSort();
-                } else if (value instanceof Sfpnumber) {
+                } else if (Sfpnumber.class.isAssignableFrom(type)) {
                     arraySort = ctx.mkRealSort();
                 } else {
                     throw new NotYetImplementedException();

@@ -95,13 +95,13 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     @Override
-    protected ArrayFormula createCompletelyNewArrayRepresentation(ArrayConstraint ac) {
-        return adapter.newArrayExprFromValue(ac.getArrayId(), ac.getValue());
+    protected ArrayFormula createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac) {
+        return adapter.newArrayExprFromType(ac.getArrayId(), ac.getValueType());
     }
 
     @Override
-    protected ArrayFormula createNewArrayRepresentationForStore(ArrayConstraint ac, ArrayFormula oldRepresentation) {
-        assert ac.getType() == ArrayConstraint.Type.STORE;
+    protected ArrayFormula createNewArrayRepresentationForStore(ArrayAccessConstraint ac, ArrayFormula oldRepresentation) {
+        assert ac.getType() == ArrayAccessConstraint.Type.STORE;
         // We do not need to add anything to the constraint store. This constraint will "be made true" via array-nesting.
         return adapter.newArrayExprFromStore(
                 oldRepresentation,
@@ -470,14 +470,14 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
-        private ArrayFormula newArrayExprFromValue(Sint arrayId, SubstitutedVar value) {
+        private ArrayFormula newArrayExprFromType(Sint arrayId, Class<?> type) {
             FormulaType arraySort;
-            if (value instanceof Sprimitive) {
-                if (value instanceof Sbool) {
+            if (Sprimitive.class.isAssignableFrom(type)) {
+                if (Sbool.class.isAssignableFrom(type)) {
                     arraySort = FormulaType.BooleanType;
-                } else if (value instanceof Sint || value instanceof Slong) {
+                } else if (Sint.class.isAssignableFrom(type) || Slong.class.isAssignableFrom(type)) {
                     arraySort = FormulaType.IntegerType;
-                } else if (value instanceof Sfpnumber) {
+                } else if (Sfpnumber.class.isAssignableFrom(type)) {
                     arraySort = FormulaType.RationalType;
                 } else {
                     throw new NotYetImplementedException();

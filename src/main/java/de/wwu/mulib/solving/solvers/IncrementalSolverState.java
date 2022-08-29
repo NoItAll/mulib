@@ -1,9 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;
@@ -22,8 +20,10 @@ public class IncrementalSolverState<AR> {
     private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
 
     private final SymbolicArrayStates<AR> symbolicArrayStates;
+    private final boolean concolic;
 
     private IncrementalSolverState(MulibConfig config) {
+        this.concolic = config.CONCOLIC;
         this.symbolicArrayStates = new SymbolicArrayStates<>(config);
     }
 
@@ -39,24 +39,28 @@ public class IncrementalSolverState<AR> {
             this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         }
 
-        public ArrayRepresentation<AR> getArrayRepresentationForId(Sint arrayId) {
+        public ArrayRepresentation<AR> getArraySolverRepresentationForId(Sint arrayId) {
             return arrayIdToMostRecentRepresentation.get(arrayId);
         }
     }
 
-    public void addConstraint(Constraint c) {
+    public SymbolicArrayStates<AR> getSymbolicArrayStates() {
+        return symbolicArrayStates;
+    }
+
+    protected void addConstraint(Constraint c) {
         // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
         // representation of the current constraint scope
         Constraint previousTop = constraints.pollFirst();
         constraints.push(And.newInstance(previousTop, c));
     }
 
-    public void pushConstraint(Constraint c) {
+    protected void pushConstraint(Constraint c) {
         constraints.push(c);
         level++;
     }
 
-    public void popConstraint() {
+    protected void popConstraint() {
         // Check whether we need to update represented arrays
         popArrayConstraintForLevel();
         constraints.poll();
@@ -68,7 +72,7 @@ public class IncrementalSolverState<AR> {
         return ar == null ? null : ar.getNewestRepresentation();
     }
 
-    public void addArrayConstraint(ArrayConstraint ac) {
+    public void addArrayConstraint(ArrayAccessConstraint ac) {
         assert _getArrayRepresentation(ac.getArrayId()) != null;
         while (arrayConstraints.size() <= level) {
             arrayConstraints.add(new ArrayList<>());
@@ -76,14 +80,17 @@ public class IncrementalSolverState<AR> {
         arrayConstraints.get(level).add(ac);
     }
 
-    // Adds an ArrayConstraint to regard mutable arrays as a special case.
-    public void addRepresentationInitializingArrayConstraint(ArrayConstraint constraint, AR newRepresentation) {
+    public void initializeArrayRepresentation(ArrayInitializationConstraint constraint, AR initialRepresentation) {
+        assert concolic || _getArrayRepresentation(constraint.getArrayId()) == null || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null: "Array was already initialized!";
+        ArrayRepresentation<AR> ar = new ArrayRepresentation<>(constraint.getArrayId());
+        ar.addNewRepresentation(initialRepresentation, level);
+        symbolicArrayStates.arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);
+    }
+
+    public void addNewRepresentationInitializingArrayConstraint(ArrayAccessConstraint constraint, AR newRepresentation) {
         // Initialize/add new array representation
         ArrayRepresentation<AR> ar = _getArrayRepresentation(constraint.getArrayId());
-        if (ar == null) {
-            ar = new ArrayRepresentation<>(constraint.getArrayId(), constraint.getArrayLength());
-            symbolicArrayStates.arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);
-        }
+        assert ar != null : "Array representation was not initialized via an ArrayInitializationConstraint!";
         ar.addNewRepresentation(newRepresentation, level);
     }
 
@@ -122,18 +129,16 @@ public class IncrementalSolverState<AR> {
         return symbolicArrayStates.arrayIdToMostRecentRepresentation.get(arrayId);
     }
 
-    private static class ArrayRepresentation<AR> {
+    public static class ArrayRepresentation<AR> {
         // Array that is represented
         final Sint arrayId;
-        final Sint length;
         // Information for each level, including array constraints and the representation per level
         final ArrayDeque<ArrayRepresentationForLevel<AR>> arrayRepresentationsForLevels;
-        ArrayRepresentation(Sint arrayId, Sint length) {
-            this.length = length;
+        ArrayRepresentation(Sint arrayId) {
             this.arrayId = arrayId;
             this.arrayRepresentationsForLevels = new ArrayDeque<>();
         }
-        AR getNewestRepresentation() {
+        public AR getNewestRepresentation() {
             ArrayRepresentationForLevel<AR> resultWrapper = arrayRepresentationsForLevels.peek();
             if (resultWrapper == null) {
                 return null;

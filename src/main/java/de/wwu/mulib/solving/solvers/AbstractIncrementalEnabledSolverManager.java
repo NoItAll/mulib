@@ -10,6 +10,7 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -80,38 +81,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         return _check(bool);
     }
 
-    @Override
-    public final boolean checkWithNewArrayConstraint(ArrayConstraint ac) {
-        if (ac.getType() == ArrayConstraint.Type.STORE) {
-            // It is always possible to store a new value in an array
-            return true;
-        }
-        // If we select, we must check if the selected value can legally be contained in the array
-        boolean result;
-        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
-            result = _checkWithNewFreeArrayCompatibilityLayerArraySelectConstraint(ac);
-        } else {
-            // Solver specific treatment
-            result = _checkWithNewSolverSpecificArraySelectConstraint(ac);
-        }
-        return result;
-    }
-
-    private boolean _checkWithNewFreeArrayCompatibilityLayerArraySelectConstraint(ArrayConstraint ac) {
-        ArraySolverRepresentation asr = (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
-        // Copy is needed as otherwise ArraySolverRepresentation is mutated by means of select
-        ArraySolverRepresentation copy = asr.copyForNewLevel(getLevel());
-        Constraint selectConstraint = copy.select(ac.getIndex(), ac.getValue());
-        boolean result = checkWithNewConstraint(selectConstraint);
-        _resetSatisfiabilityWasCalculatedAndModel();
-        return result;
-    }
-
-    private boolean _checkWithNewSolverSpecificArraySelectConstraint(ArrayConstraint ac) {
-        B bool = newArraySelectConstraint((AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId()), ac.getIndex(), ac.getValue());
-        return _check(bool);
-    }
-
     private boolean _check(B bool) {
         boolean result = calculateSatisfiabilityWithSolverBoolRepresentation(bool);
         _resetSatisfiabilityWasCalculatedAndModel();
@@ -150,63 +119,78 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // It was also extended by an own alternative abstraction layer
     @Override
     public final void addArrayConstraint(ArrayConstraint ac) {
-        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
-            _freeArrayCompatibilityLayerArrayConstraintTreatement(ac);
+        if (ac instanceof ArrayAccessConstraint) {
+            if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+                _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
+            } else {
+                // Solver specific treatment
+                _solverSpecificArrayConstraintTreatment((ArrayAccessConstraint) ac);
+            }
+            incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
+            _resetSatisfiabilityWasCalculatedAndModel();
         } else {
-            // Solver specific treatment
-            _solverSpecificArrayConstraintTreatment(ac);
+            assert ac instanceof ArrayInitializationConstraint;
+            if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+                ArraySolverRepresentation arraySolverRepresentation =
+                        ArraySolverRepresentation.newInstance(
+                                (ArrayInitializationConstraint) ac,
+                                incrementalSolverState.getSymbolicArrayStates(),
+                                getLevel()
+                        );
+                incrementalSolverState.initializeArrayRepresentation(
+                        (ArrayInitializationConstraint) ac,
+                        arraySolverRepresentation
+                );
+                if (arraySolverRepresentation instanceof AliasingArraySolverRepresentation) {
+                    // Restrict length, isNull, and id of aliasing array
+                    addConstraint(((AliasingArraySolverRepresentation) arraySolverRepresentation).getMetadataConstraintForPotentialIds());
+                }
+            } else {
+                incrementalSolverState.initializeArrayRepresentation(
+                        (ArrayInitializationConstraint) ac,
+                        createCompletelyNewArrayRepresentation((ArrayInitializationConstraint) ac)
+                );
+            }
         }
-        incrementalSolverState.addArrayConstraint(ac);
-        _resetSatisfiabilityWasCalculatedAndModel();
     }
 
-    private void _freeArrayCompatibilityLayerArrayConstraintTreatement(ArrayConstraint ac) {
+    private void _freeArrayCompatibilityLayerArrayConstraintTreatement(ArrayAccessConstraint ac) {
         ArraySolverRepresentation arrayRepresentation =
                 (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
-        if (ac.getType() == ArrayConstraint.Type.SELECT) {
-            if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), null, getLevel());
-                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
-            } else if (arrayRepresentation.getLevel() != getLevel()) {
-                arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
-                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
-            }
+        assert arrayRepresentation != null;
+        if (arrayRepresentation.getLevel() != getLevel()) {
+            arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
+            incrementalSolverState.addNewRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+        }
+        if (ac.getType() == ArrayAccessConstraint.Type.SELECT) {
             Constraint arraySelectConstraint = arrayRepresentation.select(ac.getIndex(), ac.getValue());
+            // Constraint is reset in addConstraint(...)
             addConstraint(arraySelectConstraint);
         } else {
             // Is store
-            assert ac.getType() == ArrayConstraint.Type.STORE;
-            if (arrayRepresentation == null) {
-                arrayRepresentation = new ArraySolverRepresentation(ac.getArrayId(), ac.getArrayLength(), null, getLevel());
-            } else if (arrayRepresentation.getLevel() != getLevel()) {
-                arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
-            }
-            incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            assert ac.getType() == ArrayAccessConstraint.Type.STORE;
             arrayRepresentation.store(ac.getIndex(), ac.getValue());
         }
     }
 
-    private void _solverSpecificArrayConstraintTreatment(ArrayConstraint ac) {
+    private void _solverSpecificArrayConstraintTreatment(ArrayAccessConstraint ac) {
         AR arrayRepresentation = (AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
-        if (ac.getType() == ArrayConstraint.Type.SELECT) {
-            if (arrayRepresentation == null) {
-                arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
-                incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
-            }
+        assert arrayRepresentation != null;
+        if (ac.getType() == ArrayAccessConstraint.Type.SELECT) {
             addArraySelectConstraint(arrayRepresentation, ac.getIndex(), ac.getValue());
             _resetSatisfiabilityWasCalculatedAndModel();
         } else {
-            assert ac.getType() == ArrayConstraint.Type.STORE;
-            if (arrayRepresentation == null) {
-                arrayRepresentation = createCompletelyNewArrayRepresentation(ac);
-            }
+            assert ac.getType() == ArrayAccessConstraint.Type.STORE;
             arrayRepresentation = createNewArrayRepresentationForStore(ac, arrayRepresentation);
-            incrementalSolverState.addRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
+            incrementalSolverState.addNewRepresentationInitializingArrayConstraint(ac, arrayRepresentation);
         }
     }
 
     @Override
     public final void addConstraint(Constraint c) {
+        if (c instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) c).isTrue()) {
+            return;
+        }
         incrementalSolverState.addConstraint(c);
         _resetSatisfiabilityWasCalculatedAndModel();
         try {
@@ -403,7 +387,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         int length = (Integer) labelSprimitive(sarray.getLength());
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
-        if (sarray.onlyConcreteIndicesUsed()) {
+        if (sarray.shouldBeRepresentedInSolver()) {
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 Integer labeledIndex = (Integer) labelSprimitive(index);
@@ -416,8 +400,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             // state changes of the array
             ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);
             for (ArrayConstraint ac : arrayConstraints) {
-                Integer labeledIndex = (Integer) labelSprimitive(ac.getIndex());
-                Object labeledValue = getLabel(ac.getValue());
+                if (ac instanceof ArrayInitializationConstraint) {
+                    continue; // TODO Perhaps initialize array with that
+                }
+                ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
+                Integer labeledIndex = (Integer) labelSprimitive(aac.getIndex());
+                Object labeledValue = getLabel(aac.getValue());
                 result[labeledIndex] = labeledValue;
             }
         }
@@ -546,7 +534,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             Constraint result = Sbool.ConcSbool.FALSE;
             Sarray sarray = (Sarray) sv;
             Constraint disjunctionConstraint;
-            if (sarray.onlyConcreteIndicesUsed()) {
+            if (sarray.shouldBeRepresentedInSolver()) {
                 Set<Sint> indices = sarray.getCachedIndices();
                 for (Sint index : indices) {
                     SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
@@ -557,9 +545,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             } else {
                 ArrayConstraint[] acs = getArrayConstraintsForSarray((Sarray) sv);
                 for (ArrayConstraint ac : acs) {
-                    SubstitutedVar val = ac.getValue();
+                    if (ac instanceof ArrayInitializationConstraint) {
+                        continue;
+                    }
+                    ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
+                    SubstitutedVar val = aac.getValue();
                     Object label = getLabel(val);
-                    Sint index = ac.getIndex();
+                    Sint index = aac.getIndex();
                     Object indexLabel = getLabel(index);
                     disjunctionConstraint = getNeq(val, label);
                     result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel));
@@ -591,9 +583,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     protected abstract boolean calculateIsSatisfiable();
 
-    protected abstract AR createCompletelyNewArrayRepresentation(ArrayConstraint ac);
+    protected abstract AR createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac);
 
-    protected abstract AR createNewArrayRepresentationForStore(ArrayConstraint ac, AR oldRepresentation);
+    protected abstract AR createNewArrayRepresentationForStore(ArrayAccessConstraint ac, AR oldRepresentation);
 
     protected abstract void addArraySelectConstraint(AR arrayRepresentation, Sint index, SubstitutedVar value);
 
