@@ -20,7 +20,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
     private final boolean defaultIsSymbolic;
-    private boolean onlyConcreteIndicesUsed;
+    private boolean shouldBeRepresentedInSolver;
     private Sbool isNull;
 
     /** New instance constructor */
@@ -29,7 +29,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                      Sbool isNull) {
         assert clazz != null && len != null;
         this.id = null;
-        this.onlyConcreteIndicesUsed = true;
+        this.shouldBeRepresentedInSolver = false;
         this.clazz = clazz;
         this.cachedElements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
@@ -56,7 +56,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         int length = arrayElements.length;
         this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
-        this.onlyConcreteIndicesUsed = true;
+        this.shouldBeRepresentedInSolver = false;
         this.cachedElements = new HashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
             cachedElements.put((Sint) mvt.transform(i), arrayElements[i]);
@@ -73,7 +73,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
-        this.onlyConcreteIndicesUsed = s.onlyConcreteIndicesUsed;
+        this.shouldBeRepresentedInSolver = s.shouldBeRepresentedInSolver;
         this.clazz = s.clazz;
         this.cachedElements = cachedElements;
         this.defaultIsSymbolic = s.defaultIsSymbolic;
@@ -81,10 +81,19 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.isNull = s.isNull;
     }
 
-    public void initializeId(Sint id) {
+    public void initializeId(SymbolicExecution se) {
+        _initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
+    }
+
+    public void initializeIdForAliasing(SymbolicExecution se) {
+        _initializeId(se.symSint());
+    }
+
+    private void _initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
+        this.shouldBeRepresentedInSolver = true;
         this.id = id;
     }
 
@@ -97,8 +106,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
     public abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
-    public final boolean onlyConcreteIndicesUsed() {
-        return onlyConcreteIndicesUsed;
+    public final boolean shouldBeRepresentedInSolver() {
+        return shouldBeRepresentedInSolver;
     }
 
     public final boolean defaultIsSymbolic() {
@@ -116,6 +125,15 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return clazz;
     }
 
+    /**
+     * Is equivalent tp Sarray.getClazz() except for SarraySarray.
+     * @return The class that stores the actual type stored in the Sarray
+     * @see SarraySarray#getElementType()
+     */
+    public Class<?> getElementType() {
+        return getClazz();
+    }
+
     public abstract T select(Sint i, SymbolicExecution se);
 
     public abstract void store(Sint i, T val, SymbolicExecution se);
@@ -123,12 +141,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
-        if (onlyConcreteIndicesUsed) {
+        if (!shouldBeRepresentedInSolver) {
             if (i instanceof SymNumericExpressionSprimitive) {
-                initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
-                onlyConcreteIndicesUsed = false;
+                initializeId(se);
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
-                return !cachedElements.isEmpty(); // We do not need to check for !se.nextIsOnKnownPath() since this can only ever be executed once
+                return true;
             }
         }
         return false;
@@ -555,7 +572,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public PartnerClassSarray<T> copy(MulibValueCopier mvt) {
-            return new PartnerClassSarray<T>(mvt, this);
+            return new PartnerClassSarray<>(mvt, this);
         }
     }
 

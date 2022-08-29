@@ -1,10 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.ConcolicConstraintContainer;
-import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -739,7 +736,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         checkIndexAccess(sarray, index, se);
 
         // Generate new value
-        if (!sarray.defaultIsSymbolic() && sarray.onlyConcreteIndicesUsed()) {
+        if (!sarray.defaultIsSymbolic() && !sarray.shouldBeRepresentedInSolver()) {
             result = sarray.nonSymbolicDefaultElement(se);
         } else {
             result = sarray.symbolicDefault(se);
@@ -777,7 +774,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     private static void evaluateRelabeling(
             Sarray<?> s,
             SymbolicExecution se) {
-        if (se.nextIsOnKnownPath() || s.onlyConcreteIndicesUsed()) {
+        if (se.nextIsOnKnownPath() || !s.shouldBeRepresentedInSolver()) {
             return;
         }
         assert s.getCachedElements().stream().allMatch(e -> e instanceof Snumber); // Also holds for Sbool
@@ -798,7 +795,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
-        if (!sarray.onlyConcreteIndicesUsed()) {
+        if (sarray.shouldBeRepresentedInSolver()) {
             sarray.clearCachedElements();
             if (!se.nextIsOnKnownPath()) {
                 SubstitutedVar inner;
@@ -810,12 +807,11 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                     throw new NotYetImplementedException();
                 }
                 ArrayConstraint storeConstraint =
-                        new ArrayConstraint(
+                        new ArrayAccessConstraint(
                                 (Sint) tryGetSymFromConcolic(sarray.getId()),
                                 (Sint) tryGetSymFromConcolic(index),
-                                (Sint) tryGetSymFromConcolic(index),
                                 inner,
-                                ArrayConstraint.Type.STORE
+                                ArrayAccessConstraint.Type.STORE
                         );
                 se.addNewArrayConstraint(storeConstraint);
             }
@@ -831,17 +827,22 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint index) {
         if (sarray.checkIfNeedsToRepresentOldEntries(index, se) && !se.nextIsOnKnownPath()) {
+            se.addNewArrayConstraint(new ArrayInitializationConstraint(
+                    (Sint) tryGetSymFromConcolic(sarray.getId()),
+                    (Sint) tryGetSymFromConcolic(sarray.getLength()),
+                    tryGetSymFromConcolic(sarray.isNull()),
+                    sarray.getElementType())
+            );
             Set<Sint> cachedIndices = sarray.getCachedIndices();
             assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
             for (Sint i : cachedIndices) {
                 SubstitutedVar val = sarray.getFromCacheForIndex(i);
                 ArrayConstraint ac =
-                        new ArrayConstraint(
+                        new ArrayAccessConstraint(
                                 (Sint) tryGetSymFromConcolic(sarray.getId()),
-                                (Sint) tryGetSymFromConcolic(sarray.getLength()),
                                 i,
                                 val,
-                                ArrayConstraint.Type.SELECT
+                                ArrayAccessConstraint.Type.SELECT
                         );
                 se.addNewArrayConstraint(ac);
             }
@@ -852,19 +853,18 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         // We will now add a constraint indicating to the solver that at position i a value can be found that previously
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
-        if (!se.nextIsOnKnownPath() && !sarray.onlyConcreteIndicesUsed()) {
+        if (!se.nextIsOnKnownPath() && sarray.shouldBeRepresentedInSolver()) {
             if (result instanceof Sbool.SymSbool) {
                 result = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) result);
             } else if (result instanceof SymNumericExpressionSprimitive) {
                 result = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
             }
             ArrayConstraint selectConstraint =
-                    new ArrayConstraint(
+                    new ArrayAccessConstraint(
                             (Sint) tryGetSymFromConcolic(sarray.getId()),
-                            (Sint) tryGetSymFromConcolic(sarray.getLength()),
                             (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index),
                             result,
-                            ArrayConstraint.Type.SELECT
+                            ArrayAccessConstraint.Type.SELECT
                     );
             se.addNewArrayConstraint(selectConstraint);
         }
