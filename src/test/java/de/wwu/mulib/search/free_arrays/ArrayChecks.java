@@ -1244,10 +1244,6 @@ public class ArrayChecks {
         Sarray.SintSarray second = se.sintSarray(se.concSint(2), false);
         second.store(se.concSint(0), se.concSint(5), se);
         second.store(se.concSint(1), se.concSint(1), se);
-//        Sarray.SintSarray second = se.sintSarray(se.concSint(3), false);
-//        second.store(se.concSint(0), se.concSint(5), se);
-//        second.store(se.concSint(1), se.concSint(1), se);
-//        second.store(se.concSint(2), se.concSint(2), se);
         workloadsWithDeadlineInPeriod.store(se.concSint(1), second, se);
 
         Sint length = workloadsWithDeadlineInPeriod.length();
