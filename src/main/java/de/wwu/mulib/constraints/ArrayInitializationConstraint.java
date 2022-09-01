@@ -132,6 +132,6 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
 
     @Override
     public String toString() {
-        return "ArrayInit{arrayId=" + arrayId + ",type=" + type + ",valueType=" + valueType + "}";
+        return "AR_INIT{arrayId=" + arrayId + ",type=" + type + ",valueType=" + valueType + "}";
     }
 }

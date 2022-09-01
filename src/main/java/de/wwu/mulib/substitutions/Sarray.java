@@ -175,7 +175,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return cachedElements.get(index);
     }
 
-    public final void setInCacheForIndex(Sint index, T value) {
+    public final void setInCacheForIndex(Sint index, T value) { //// TODO Faulty caches in case of aliasing possible
         cachedElements.put(index, value);
     }
 
@@ -725,12 +725,15 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
 
         @Override
         public Sarray symbolicDefault(SymbolicExecution se) {
+            Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
-                return se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic());
+                result = se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic());
             } else {
-                return generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
+                result = generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
             }
+            result.initializeIdForAliasing(se);
+            return result;
         }
 
         @Override

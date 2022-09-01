@@ -146,7 +146,7 @@ public class IncrementalSolverState<AR> {
             return resultWrapper.getNewestRepresentation();
         }
 
-        void addNewRepresentation(AR newRepresentation, int level) {
+        public void addNewRepresentation(AR newRepresentation, int level) {
             assert arrayRepresentationsForLevels.isEmpty() || arrayRepresentationsForLevels.peek().depth <= level;
             ArrayRepresentationForLevel<AR> ar = arrayRepresentationsForLevels.peek();
             if (ar == null || ar.depth < level) {

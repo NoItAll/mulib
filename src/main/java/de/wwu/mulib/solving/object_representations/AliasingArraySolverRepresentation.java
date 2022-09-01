@@ -33,22 +33,26 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>();
-        Constraint metadataConstraintForPotentialIds = Sbool.ConcSbool.FALSE;
+        Constraint reservedIdIsEqual = Eq.newInstance(arrayId, reservedId);
+        Constraint metadataEqualsDependingOnId = reservedIdIsEqual;
         for (Sint id : potentialIds) {
             IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar =
                     symbolicArrayStates.getArraySolverRepresentationForId(id);
             assert ar != null : "All Sarrays for aliasingPotentialIds must be not null!";
             aliasedArrays.add(ar);
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            Constraint idEqualityImplies = implies(
-                    Eq.newInstance(id, arrayId),
-                    And.newInstance(And.newInstance(isNull, asr.getIsNull()), Eq.newInstance(arrayLength, asr.getLength()))
+            Constraint idsEqual = Eq.newInstance(id, arrayId);
+            Constraint isNullsEqual = Or.newInstance(And.newInstance(isNull, asr.getIsNull()), And.newInstance(Not.newInstance(isNull), Not.newInstance(asr.getIsNull())));
+            Constraint lengthsEqual = Eq.newInstance(arrayLength, asr.getLength());
+            Constraint idEqualityImplies = And.newInstance(
+                    idsEqual,
+                    isNullsEqual,
+                    lengthsEqual
             );
-            metadataConstraintForPotentialIds = And.newInstance(metadataConstraintForPotentialIds, idEqualityImplies);
+            metadataEqualsDependingOnId = Or.newInstance(metadataEqualsDependingOnId, idEqualityImplies);
         }
-        metadataConstraintForPotentialIds = Or.newInstance(metadataConstraintForPotentialIds, Eq.newInstance(arrayId, reservedId));
         this.reservedId = reservedId;
-        this.metadataConstraintForPotentialIds = metadataConstraintForPotentialIds;
+        this.metadataConstraintForPotentialIds = metadataEqualsDependingOnId;
     }
 
     private AliasingArraySolverRepresentation(
@@ -64,6 +68,12 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
         this.reservedId = reservedId;
         this.metadataConstraintForPotentialIds = metadataConstraintForPotentialIds;
         this.aliasedArrays = aliasedArrays;
+        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
+            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            if (asr.getLevel() != level) {
+                ar.addNewRepresentation(asr.copyForNewLevel(level), level);
+            }
+        }
     }
 
     private static Constraint implies(Constraint c0, Constraint c1) {
@@ -73,19 +83,18 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     @Override
     public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
-            return Sbool.ConcSbool.FALSE;
-        }
-        Constraint joinedSelectConstraint = Sbool.ConcSbool.TRUE;
-
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            Constraint partialSelectConstraint = asr.select(Eq.newInstance(arrayId, asr.getArrayId()), index, selectedValue);
-            joinedSelectConstraint = Or.newInstance(joinedSelectConstraint, partialSelectConstraint);
+            return Sbool.ConcSbool.TRUE;
         }
         // currentRepresentation here is the representation for this.reservedId
-        Constraint ownConstraint = this.currentRepresentation.select(Eq.newInstance(arrayId, reservedId), index, selectedValue);
-        joinedSelectConstraint = Or.newInstance(joinedSelectConstraint, ownConstraint);
-        return And.newInstance(guard, joinedSelectConstraint);
+        Constraint ownConstraint = this.currentRepresentation.select(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, selectedValue);
+        Constraint joinedSelectConstraint = ownConstraint;
+        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
+            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            Constraint partialSelectConstraint = asr.select(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, selectedValue);
+            joinedSelectConstraint = And.newInstance(joinedSelectConstraint, partialSelectConstraint);
+        }
+        Constraint result = joinedSelectConstraint;
+        return result;
     }
 
     @Override
@@ -96,10 +105,10 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
 
         for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            asr.store(Eq.newInstance(arrayId, asr.getArrayId()), index, storedValue);
+            asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
         // currentRepresentation here is the representation for this.reservedId
-        this.currentRepresentation.store(Eq.newInstance(arrayId, reservedId), index, storedValue);
+       this.currentRepresentation = this.currentRepresentation.store(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, storedValue);
     }
 
     @Override

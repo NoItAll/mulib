@@ -119,18 +119,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // It was also extended by an own alternative abstraction layer
     @Override
     public final void addArrayConstraint(ArrayConstraint ac) {
-        if (ac instanceof ArrayAccessConstraint) {
-            if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            if (ac instanceof ArrayAccessConstraint) {
                 _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
             } else {
-                // Solver specific treatment
-                _solverSpecificArrayConstraintTreatment((ArrayAccessConstraint) ac);
-            }
-            incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
-            _resetSatisfiabilityWasCalculatedAndModel();
-        } else {
-            assert ac instanceof ArrayInitializationConstraint;
-            if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+                assert ac instanceof ArrayInitializationConstraint;
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
                                 (ArrayInitializationConstraint) ac,
@@ -145,7 +139,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                     // Restrict length, isNull, and id of aliasing array
                     addConstraint(((AliasingArraySolverRepresentation) arraySolverRepresentation).getMetadataConstraintForPotentialIds());
                 }
+            }
+        } else {
+            if (ac instanceof ArrayAccessConstraint) {
+                // Solver specific treatment
+                _solverSpecificArrayConstraintTreatment((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
             } else {
+                assert ac instanceof ArrayInitializationConstraint;
                 incrementalSolverState.initializeArrayRepresentation(
                         (ArrayInitializationConstraint) ac,
                         createCompletelyNewArrayRepresentation((ArrayInitializationConstraint) ac)
@@ -387,7 +388,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         int length = (Integer) labelSprimitive(sarray.getLength());
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
-        if (sarray.shouldBeRepresentedInSolver()) {
+        if (!sarray.shouldBeRepresentedInSolver()) {
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 Integer labeledIndex = (Integer) labelSprimitive(index);
@@ -398,6 +399,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
+            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.getId()).getNewestRepresentation() instanceof AliasingArraySolverRepresentation) {
+                throw new NotYetImplementedException();
+            }
             ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);
             for (ArrayConstraint ac : arrayConstraints) {
                 if (ac instanceof ArrayInitializationConstraint) {
@@ -534,7 +538,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             Constraint result = Sbool.ConcSbool.FALSE;
             Sarray sarray = (Sarray) sv;
             Constraint disjunctionConstraint;
-            if (sarray.shouldBeRepresentedInSolver()) {
+            if (!sarray.shouldBeRepresentedInSolver()) {
                 Set<Sint> indices = sarray.getCachedIndices();
                 for (Sint index : indices) {
                     SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);

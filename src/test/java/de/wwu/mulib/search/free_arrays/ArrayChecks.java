@@ -1,5 +1,6 @@
 package de.wwu.mulib.search.free_arrays;
 
+import de.wwu.mulib.Fail;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -890,4 +891,422 @@ public class ArrayChecks {
         sintSarray.store(se.concSint(1), se.concSint(1), se);
         return sintSarray;
     }
+
+
+    @Test
+    public void testArrayArraySimpleSumWithNonEagerIndices() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setCONCOLIC(false); //// TODO
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            1,
+                            "simpleSumNonEager0",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class<?>[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, solutions.size());
+                    assertEquals(9, solutions.get(0).returnValue);
+
+                    solutions = TestUtility.getUpToNSolutions(
+                            1,
+                            "simpleSumNonEager1",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class<?>[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, solutions.size());
+                    assertEquals(9, solutions.get(0).returnValue);
+
+                    solutions = TestUtility.getUpToNSolutions(
+                            1,
+                            "simpleSumNonEager2",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class<?>[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, solutions.size());
+                    assertEquals(9, solutions.get(0).returnValue);
+                    return solutions;
+                },
+                "arrayArraySimpleSumWithNonEagerIndices"
+        );
+    }
+
+    public static Sint simpleSumNonEager0() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray vals = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(1), false);
+        first.store(se.concSint(0), se.concSint(4), se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(1), false);
+        second.store(se.concSint(0), se.concSint(5), se);
+        vals.store(se.concSint(0), first, se);
+        vals.store(se.concSint(1), second, se);
+        Sint index0 = se.symSint();
+        Sint index1 = se.symSint();
+        if (!se.nextIsOnKnownPath()) {
+            se.addNewConstraint(se.not(se.eq(index0, index1)));
+        }
+        Sarray.SintSarray firstAny = (Sarray.SintSarray) vals.select(index0, se);
+        Sarray.SintSarray secondAny = (Sarray.SintSarray) vals.select(index1, se);
+
+        Sint selectFromFirstAny = firstAny.select(se.concSint(0), se);
+        Sint selectFromSecondAny = secondAny.select(se.concSint(0), se);
+        return selectFromFirstAny.add(selectFromSecondAny, se);
+    }
+
+    public static Sint simpleSumNonEager1() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray vals = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(2), false);
+        first.store(se.concSint(0), se.concSint(4), se);
+        first.store(se.concSint(1), se.concSint(4), se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(2), false);
+        second.store(se.concSint(0), se.concSint(5), se);
+        second.store(se.concSint(1), se.concSint(5), se);
+        vals.store(se.concSint(0), first, se);
+        vals.store(se.concSint(1), second, se);
+        Sint index0 = se.symSint();
+        Sint index1 = se.symSint();
+        if (!se.nextIsOnKnownPath()) {
+            se.addNewConstraint(se.not(se.eq(index0, index1)));
+        }
+        Sarray.SintSarray firstAny = (Sarray.SintSarray) vals.select(index0, se);
+        Sarray.SintSarray secondAny = (Sarray.SintSarray) vals.select(index1, se);
+
+        Sint selectFromFirstAny = firstAny.select(se.symSint(), se);
+        Sint selectFromSecondAny = secondAny.select(se.symSint(), se);
+        return selectFromFirstAny.add(selectFromSecondAny, se);
+    }
+
+    public static Sint simpleSumNonEager2() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray vals = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(2), false);
+        Sint index0 = se.symSint();
+        Sint index1 = se.symSint();
+        if (se.eqChoice(index0, index1)) {
+            throw new Fail();
+        }
+        first.store(index0, se.concSint(4), se);
+        first.store(index1, se.concSint(4), se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(2), false);
+        second.store(index0, se.concSint(5), se);
+
+        if (se.boolChoice(se.symSbool())) {
+            throw new Fail();
+        }
+
+        second.store(index1, se.concSint(5), se);
+        vals.store(se.concSint(0), first, se);
+        vals.store(se.concSint(1), second, se);
+
+        Sarray.SintSarray firstAny = (Sarray.SintSarray) vals.select(se.concSint(0), se);
+        Sarray.SintSarray secondAny = (Sarray.SintSarray) vals.select(se.concSint(1), se);
+
+        Sint index2 = se.symSint();
+        Sint index3 = se.symSint();
+        if (!se.notEqChoice(index2, index3)) {
+            throw new Fail();
+        }
+
+        Sint selectFromFirstAny = firstAny.select(index2, se);
+
+        if (se.boolChoice(se.symSbool())) {
+            throw new Fail();
+        }
+
+        Sint selectFromSecondAny = secondAny.select(index3, se);
+        return selectFromFirstAny.add(selectFromSecondAny, se);
+    }
+
+    @Test
+    public void testAssignWithPreproduction() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setCONCOLIC(false); //// TODO
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            3,
+                            "assignWithPreproduction0",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, solutions.size());
+
+                    Solution singleSolution = solutions.get(0);
+                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    assertEquals(2, returnValue.length);
+                    Object[] innerReturnValue = (Object[]) returnValue[0];
+                    assertEquals(2, innerReturnValue.length);
+                    assertEquals(0, innerReturnValue[0]);
+                    assertEquals(0, innerReturnValue[1]);
+                    innerReturnValue = (Object[]) returnValue[1];
+                    assertEquals(1, innerReturnValue.length);
+                    assertEquals(0, innerReturnValue[0]);
+                    solutions = TestUtility.getUpToNSolutions(
+                            3,
+                            "assignWithPreproduction1",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(0, solutions.size());
+                    return solutions;
+                },
+                "testAssignWithPreproduction0"
+        );
+    }
+
+    public static Sarray.SarraySarray assignWithPreproduction0() {
+        SymbolicExecution se = SymbolicExecution.get();
+
+        Sarray.SintSarray machineCapacitiesPerPeriod = se.sintSarray(se.concSint(1), false);
+        machineCapacitiesPerPeriod.store(se.concSint(0), se.concSint(5), se);
+        Sarray.SarraySarray workloadsWithDeadlineInPeriod = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(2), false);
+        first.store(se.concSint(0), se.concSint(2), se);
+        first.store(se.concSint(1), se.concSint(2), se);
+        workloadsWithDeadlineInPeriod.store(se.concSint(0), first, se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(1), false);
+        second.store(se.concSint(0), se.concSint(5), se);
+        workloadsWithDeadlineInPeriod.store(se.concSint(1), second, se);
+
+        Sint length = workloadsWithDeadlineInPeriod.length();
+        Sarray.SarraySarray overallCapacities = se.sarraySarray(length, Sint[].class, false);
+
+        int i;
+        for(i = 0; !se.concSint(i).gteChoice(length, se); ++i) {
+            Sarray.SintSarray var8 = copy(machineCapacitiesPerPeriod);
+            overallCapacities.store(se.concSint(i), var8, se);
+        }
+
+        Sarray.SarraySarray assignmentsPerPeriod = se.sarraySarray(length, Sint[].class, false);
+        i = 0;
+
+        while(!se.concSint(i).gteChoice(length, se)) {
+            machineCapacitiesPerPeriod = (Sarray.SintSarray)workloadsWithDeadlineInPeriod.select(se.concSint(i), se);
+            Sarray.SintSarray var4 = se.sintSarray(machineCapacitiesPerPeriod.length(), false);
+            assignmentsPerPeriod.store(se.concSint(i), var4, se);
+            int j = 0;
+
+            while(true) {
+                Sint lengthOrChosenMachineIndex = machineCapacitiesPerPeriod.length();
+                if (se.concSint(j).gteChoice(lengthOrChosenMachineIndex, se)) {
+                    ++i;
+                    break;
+                }
+
+                lengthOrChosenMachineIndex = se.symSint();
+                Sint chosenMachinePeriod = se.symSint();
+                Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
+                Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
+                if (chosenMachinePeriod.gtChoice(se.concSint(i), se) || !chosenCapacity.gteChoice(machineCapacitiesPerPeriod.select(se.concSint(j), se), se)) {
+                    throw new Fail();
+                }
+
+                ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se)).store(lengthOrChosenMachineIndex, chosenCapacity.sub(machineCapacitiesPerPeriod.select(se.concSint(j), se), se), se);
+                ((Sarray.SintSarray)assignmentsPerPeriod.select(se.concSint(i), se)).store(se.concSint(j), lengthOrChosenMachineIndex, se);
+                ++j;
+            }
+        }
+
+        return assignmentsPerPeriod;
+    }
+
+    public static Sarray.SarraySarray assignWithPreproduction1() {
+        SymbolicExecution se = SymbolicExecution.get();
+
+        Sarray.SintSarray machineCapacitiesPerPeriod0 = se.sintSarray(se.concSint(1), false);
+        machineCapacitiesPerPeriod0.store(se.concSint(0), se.concSint(5), se);
+        Sarray.SintSarray machineCapacitiesPerPeriod1 = se.sintSarray(se.concSint(1), false);
+        machineCapacitiesPerPeriod1.store(se.concSint(0), se.concSint(5), se);
+
+        Sarray.SarraySarray workloadsWithDeadlineInPeriod = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(0), false);
+        workloadsWithDeadlineInPeriod.store(se.concSint(0), first, se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(2), false);
+        second.store(se.concSint(0), se.concSint(3), se);
+        second.store(se.concSint(1), se.concSint(6), se);
+        workloadsWithDeadlineInPeriod.store(se.concSint(1), second, se);
+
+        Sint length = workloadsWithDeadlineInPeriod.length();
+        Sarray.SarraySarray overallCapacities = se.sarraySarray(length, Sint[].class, false);
+        overallCapacities.store(se.concSint(0), machineCapacitiesPerPeriod0, se);
+        overallCapacities.store(se.concSint(1), machineCapacitiesPerPeriod1, se);
+
+
+        Sarray.SarraySarray assignmentsPerPeriod = se.sarraySarray(length, Sint[].class, false);
+        Sarray.SintSarray workloadsOfPeriod = (Sarray.SintSarray)workloadsWithDeadlineInPeriod.select(se.concSint(0), se);
+        Sarray.SintSarray temp = se.sintSarray(workloadsOfPeriod.length(), false);
+        assignmentsPerPeriod.store(se.concSint(0), temp, se);
+        // Skip iteration for i = 0 since there are no workloads there
+        Sarray.SintSarray workloadsOfPeriod1 = (Sarray.SintSarray)workloadsWithDeadlineInPeriod.select(se.concSint(1), se);
+        Sarray.SintSarray temp1 = se.sintSarray(workloadsOfPeriod1.length(), false);
+        assignmentsPerPeriod.store(se.concSint(1), temp1, se);
+
+        Sint lengthOrChosenMachineIndex = se.symSint();
+        Sint chosenMachinePeriod = se.symSint();
+        Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
+        Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
+        if (chosenMachinePeriod.gtChoice(se.concSint(1), se) || !chosenCapacity.gteChoice(workloadsOfPeriod1.select(se.concSint(0), se), se)) {
+            throw new Fail();
+        }
+
+        Sarray.SintSarray tempSarray0 = ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se));
+        Sint difference = chosenCapacity.sub(workloadsOfPeriod1.select(se.concSint(0), se), se);
+        tempSarray0.store(lengthOrChosenMachineIndex, difference, se);
+        // Is not symbolic in any way:
+        ((Sarray.SintSarray)assignmentsPerPeriod.select(se.concSint(1), se)).store(se.concSint(0), lengthOrChosenMachineIndex, se);
+
+
+        Sint lengthOrChosenMachineIndex1 = se.symSint();
+        Sint chosenMachinePeriod1 = se.symSint();
+        Sarray.SintSarray intermediate1 = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod1, se);
+        Sint chosenCapacity1 = intermediate1.select(lengthOrChosenMachineIndex1, se);
+        if (chosenMachinePeriod1.gtChoice(se.concSint(1), se) || !chosenCapacity1.gteChoice(workloadsOfPeriod1.select(se.concSint(1), se), se)) {
+            throw new Fail();
+        }
+
+        ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod1, se)).store(lengthOrChosenMachineIndex1, chosenCapacity1.sub(workloadsOfPeriod1.select(se.concSint(1), se), se), se);
+        ((Sarray.SintSarray)assignmentsPerPeriod.select(se.concSint(1), se)).store(se.concSint(1), lengthOrChosenMachineIndex1, se);
+
+        return assignmentsPerPeriod;
+    }
+
+
+    @Test
+    public void testAssignWithPreproductionMoreComplex() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setCONCOLIC(false); //// TODO
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            20,
+                            "assignWithPreproductionMoreComplex",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(2, solutions.size());
+                    boolean seenOne = false;
+                    boolean seenZero = false;
+                    for (Solution s : solutions) {
+                        Object[] valuesOfTwoPeriods = (Object[]) s.returnValue;
+                        assertEquals(2, valuesOfTwoPeriods.length);
+                        Object[] firstPeriod = (Object[]) valuesOfTwoPeriods[0];
+                        assertEquals(1, firstPeriod[0]);
+                        assertEquals(0, firstPeriod[1]);
+                        Object[] secondPeriod = (Object[]) valuesOfTwoPeriods[1];
+                        assertEquals(0, secondPeriod[0]);
+                        if (((Integer) secondPeriod[1]) == 1) {
+                            seenOne = true;
+                        } else {
+                            assertEquals(0, secondPeriod[1]);
+                            seenZero = true;
+                        }
+                    }
+                    assertTrue(seenOne);
+                    assertTrue(seenZero);
+
+                    return solutions;
+                },
+                "testAssignWithPreproductionMoreComplex"
+        );
+    }
+
+    public static Sarray.SarraySarray assignWithPreproductionMoreComplex() {
+        SymbolicExecution se = SymbolicExecution.get();
+
+        Sarray.SintSarray machineCapacitiesPerPeriod = se.sintSarray(se.concSint(2), false);
+        machineCapacitiesPerPeriod.store(se.concSint(0), se.concSint(5), se);
+        machineCapacitiesPerPeriod.store(se.concSint(1), se.concSint(2), se);
+        Sarray.SarraySarray workloadsWithDeadlineInPeriod = se.sarraySarray(se.concSint(2), Sint[].class, false);
+        Sarray.SintSarray first = se.sintSarray(se.concSint(2), false);
+        first.store(se.concSint(0), se.concSint(2), se);
+        first.store(se.concSint(1), se.concSint(4), se);
+        workloadsWithDeadlineInPeriod.store(se.concSint(0), first, se);
+        Sarray.SintSarray second = se.sintSarray(se.concSint(2), false);
+        second.store(se.concSint(0), se.concSint(5), se);
+        second.store(se.concSint(1), se.concSint(1), se);
+//        Sarray.SintSarray second = se.sintSarray(se.concSint(3), false);
+//        second.store(se.concSint(0), se.concSint(5), se);
+//        second.store(se.concSint(1), se.concSint(1), se);
+//        second.store(se.concSint(2), se.concSint(2), se);
+        workloadsWithDeadlineInPeriod.store(se.concSint(1), second, se);
+
+        Sint length = workloadsWithDeadlineInPeriod.length();
+        Sarray.SarraySarray overallCapacities = se.sarraySarray(length, Sint[].class, false);
+
+        int i;
+        for(i = 0; !se.concSint(i).gteChoice(length, se); ++i) {
+            Sarray.SintSarray var8 = copy(machineCapacitiesPerPeriod);
+            overallCapacities.store(se.concSint(i), var8, se);
+        }
+
+        Sarray.SarraySarray assignmentsPerPeriod = se.sarraySarray(length, Sint[].class, false);
+        i = 0;
+
+        while(!se.concSint(i).gteChoice(length, se)) {
+            machineCapacitiesPerPeriod = (Sarray.SintSarray)workloadsWithDeadlineInPeriod.select(se.concSint(i), se);
+            Sarray.SintSarray var4 = se.sintSarray(machineCapacitiesPerPeriod.length(), false);
+            assignmentsPerPeriod.store(se.concSint(i), var4, se);
+            int j = 0;
+
+            while(true) {
+                Sint lengthOrChosenMachineIndex = machineCapacitiesPerPeriod.length();
+                if (se.concSint(j).gteChoice(lengthOrChosenMachineIndex, se)) {
+                    ++i;
+                    break;
+                }
+
+                lengthOrChosenMachineIndex = se.symSint();
+                Sint chosenMachinePeriod = se.symSint();
+                Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
+                Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
+                if (chosenMachinePeriod.gtChoice(se.concSint(i), se) || !chosenCapacity.gteChoice(machineCapacitiesPerPeriod.select(se.concSint(j), se), se)) {
+                    throw new Fail();
+                }
+
+                ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se)).store(lengthOrChosenMachineIndex, chosenCapacity.sub(machineCapacitiesPerPeriod.select(se.concSint(j), se), se), se);
+                ((Sarray.SintSarray)assignmentsPerPeriod.select(se.concSint(i), se)).store(se.concSint(j), lengthOrChosenMachineIndex, se);
+                ++j;
+            }
+        }
+
+        return assignmentsPerPeriod;
+    }
+
+    private static Sarray.SintSarray copy(Sarray.SintSarray var0) {
+        SymbolicExecution var4 = SymbolicExecution.get();
+        Sarray.SintSarray var1 = var4.sintSarray(var0.length(), false);
+        int var3 = 0;
+
+        while(true) {
+            Sint var2 = var1.length();
+            if (var4.concSint(var3).gteChoice(var2, var4)) {
+                return var1;
+            }
+
+            var2 = var0.select(var4.concSint(var3), var4);
+            var1.store(var4.concSint(var3), var2, var4);
+            ++var3;
+        }
+    }
+
 }

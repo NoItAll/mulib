@@ -32,12 +32,7 @@ public class ArrayHistorySolverRepresentation {
     protected ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
         this.selects = new ArrayDeque<>(toCopy.selects);
         this.store = toCopy.store;
-        this.beforeStore =
-                toCopy.beforeStore == null
-                        ?
-                        null
-                        :
-                        new ArrayHistorySolverRepresentation(toCopy.beforeStore);
+        this.beforeStore = toCopy.beforeStore;
     }
 
     protected ArrayHistorySolverRepresentation(
@@ -56,22 +51,27 @@ public class ArrayHistorySolverRepresentation {
     }
 
     public Constraint select(Constraint guard, Sint index, Sprimitive value) {
+        return _select(guard, index, value, true);
+    }
+
+    private Constraint _select(Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             // We do not need to add anything to the history of array accesses, as this access is not valid
-            return Sbool.ConcSbool.FALSE;
+            return Sbool.ConcSbool.TRUE;
         }
-        Constraint constraintForStoreOperation;
-        Constraint indexEqualsToStoreIndex;
+        Constraint indexEqualsToStoreIndexWithGuard;
+        Constraint indexEqualsToStoreImplication;
         Constraint resultForSelectOperations;
         // If we stored, we prioritize the stored index-value pair
         if (store != null) {
             assert beforeStore != null;
-            indexEqualsToStoreIndex = Eq.newInstance(store.index, index);
-            constraintForStoreOperation = elementsEqualConstraint(store.value, value);
-            resultForSelectOperations = beforeStore.select(guard, index, value);
+            indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
+            Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
+            indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
+            resultForSelectOperations = beforeStore._select(guard, index, value, false);
         } else {
-            indexEqualsToStoreIndex = Sbool.ConcSbool.FALSE;
-            constraintForStoreOperation = Sbool.ConcSbool.FALSE;
+            indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
+            indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
             resultForSelectOperations = Sbool.ConcSbool.TRUE;
         }
 
@@ -84,28 +84,26 @@ public class ArrayHistorySolverRepresentation {
                 if (!doEqual) {
                     // We can simply skip this index
                     continue;
-                } else {
+                } else if (s.guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) s.guard).isTrue()) {
                     resultForSelectOperations = elementsEqualConstraint(s.value, value);
                     break;
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
+            Constraint indexEqualsToSelectIndexImplication = implies(And.newInstance(s.guard, indexEqualsToSelectIndex), valuesEqual);
             resultForSelectOperations = And.newInstance(
-                    implies(
-                            s.guard,
-                            implies(indexEqualsToSelectIndex, valuesEqual)
-                    ),
+                    indexEqualsToSelectIndexImplication,
                     resultForSelectOperations
             );
         }
 
-        Constraint result =
-                And.newInstance(
-                        guard,
-                        implies(indexEqualsToStoreIndex, constraintForStoreOperation),
-                        implies(Not.newInstance(indexEqualsToStoreIndex), resultForSelectOperations)
-                );
-        selects.push(new ArrayAccessSolverRepresentation(guard, index, value));
+        Constraint indexDoesNotEqualToStoreImplication = implies(Not.newInstance(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
+        Constraint bothCasesImplications = And.newInstance(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
+
+        Constraint result = implies(guard, bothCasesImplications);
+        if (pushSelect) {
+            selects.push(new ArrayAccessSolverRepresentation(guard, index, value));
+        }
         return result;
     }
 
@@ -153,7 +151,7 @@ public class ArrayHistorySolverRepresentation {
         private final Sint index;
         private final Sprimitive value;
         ArrayAccessSolverRepresentation(Constraint guard, Sint index, Sprimitive value) {
-            assert guard != null && index != null && value != null;//// TODO maybe value should be allowed to be null once the array-id-issue is fixed: this would allow us to represent null-arrays directly.
+            assert guard != null && index != null && value != null;
             this.guard = guard;
             this.index = index;
             this.value = value;

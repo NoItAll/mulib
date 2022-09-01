@@ -45,15 +45,26 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
         if (o == null) {
             return false;
         }
+        if (this == o) {
+            return true;
+        }
         if (!this.getClass().equals(o.getClass())) {
+            return false;
+        }
+        if (hashCode != o.hashCode()) {
             return false;
         }
         AbstractTwoSidedConstraint oc = (AbstractTwoSidedConstraint) o;
         return this.getLhs().equals(oc.getLhs()) && this.getRhs().equals(oc.getRhs());
     }
 
+
+    private Integer hashCode = null;
     @Override
     public int hashCode() {
-        return getLhs().hashCode() + getRhs().hashCode();
+        if (hashCode == null) {
+            hashCode = getLhs().hashCode() + getRhs().hashCode();
+        }
+        return hashCode;
     }
 }
