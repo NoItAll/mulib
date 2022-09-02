@@ -53,17 +53,20 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
+    protected final CalculationFactory calculationFactory;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
+            CalculationFactory calculationFactory,
             Choice.ChoiceOption rootChoiceOption,
             SearchStrategy searchStrategy) {
         this.currentChoiceOption = rootChoiceOption; // Is mutable and will be adapted throughout search
         this.rootChoiceOfSearchTree = rootChoiceOption.getChoice();
         this.mulibExecutorManager = mulibExecutorManager;
-        this.solverManager = Solvers.getSolverManager(config);
+        this.solverManager = Solvers.getSolverManager(config, calculationFactory);
+        this.calculationFactory = calculationFactory;
         this.searchStrategy = searchStrategy;
         this.labelResultValue = config.LABEL_RESULT_VALUE;
         this.isConcolic = config.CONCOLIC;

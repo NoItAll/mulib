@@ -181,6 +181,11 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
+    public Sbool _wrappingSymSbool(Constraint constraint) {
+        return svf._wrappingSymSbool(constraint);
+    }
+
+    @Override
     public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
         return svf.cmp(se, n0, n1);
     }

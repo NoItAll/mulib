@@ -12,12 +12,14 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     protected final boolean useEagerIndexesForFreeArrayPrimitiveElements;
     protected final boolean useEagerIndexesForFreeArrayObjectElements;
     protected final boolean enableInitializeFreeArraysWithNull;
+    protected final ValueFactory valueFactory;
 
-    AbstractCalculationFactory(MulibConfig config) {
+    AbstractCalculationFactory(MulibConfig config, ValueFactory valueFactory) {
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
         this.useEagerIndexesForFreeArrayPrimitiveElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
         this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        this.valueFactory = valueFactory;
     }
 
     private void nullCheck(Sarray sarray, SymbolicExecution se) {
@@ -31,7 +33,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final Sprimitive select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index) {
+    public final Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index) {
         nullCheck(sarray, se);
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
@@ -41,7 +43,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final Sprimitive store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, Sprimitive value) {
+    public final Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value) {
         nullCheck(sarray, se);
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
@@ -51,7 +53,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final Sarray<?> select(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index) {
+    public final Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index) {
         nullCheck(sarraySarray, se);
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
@@ -61,7 +63,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final Sarray<?> store(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
+    public final Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
         nullCheck(sarraySarray, se);
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
@@ -71,7 +73,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final PartnerClass select(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
+    public final PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
         nullCheck(partnerClassSarray, se);
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
@@ -81,7 +83,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public final PartnerClass store(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
+    public final PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
         nullCheck(partnerClassSarray, se);
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);

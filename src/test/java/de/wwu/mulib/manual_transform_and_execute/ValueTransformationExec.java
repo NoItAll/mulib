@@ -32,7 +32,7 @@ public class ValueTransformationExec {
         mt.setPartnerClass(IndirectCyclicInputClasses1Manual.class, __mulib__IndirectCyclicInputClasses1Manual.class);
         mvt = new MulibValueTransformer(mc, mt);
         mvc = new MulibValueCopier(null, mc);
-        sm = new Z3IncrementalSolverManager(mc);
+        sm = new Z3IncrementalSolverManager(mc, null);
     }
 
     @Test

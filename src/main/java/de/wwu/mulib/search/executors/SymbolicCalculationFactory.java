@@ -13,208 +13,208 @@ import java.util.Set;
 @SuppressWarnings( { "rawtypes", "unchecked" })
 public class SymbolicCalculationFactory extends AbstractCalculationFactory {
 
-    SymbolicCalculationFactory(MulibConfig config) {
-        super(config);
+    SymbolicCalculationFactory(MulibConfig config, ValueFactory valueFactory) {
+        super(config, valueFactory);
     }
 
-    public static SymbolicCalculationFactory getInstance(MulibConfig config) {
-        return new SymbolicCalculationFactory(config);
+    public static SymbolicCalculationFactory getInstance(MulibConfig config, ValueFactory valueFactory) {
+        return new SymbolicCalculationFactory(config, valueFactory);
     }
 
     @Override
-    public Sint add(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sint add(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) lhs).intVal() + ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSint(((ConcSnumber) lhs).intVal() + ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSint(se, sum(lhs, rhs));
+        return valueFactory.wrappingSymSint(se, sum(lhs, rhs));
     }
 
     @Override
-    public Sint sub(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sint sub(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) lhs).intVal() - ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSint(((ConcSnumber) lhs).intVal() - ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSint(se, sub(lhs, rhs));
+        return valueFactory.wrappingSymSint(se, sub(lhs, rhs));
     }
 
     @Override
-    public Sint mul(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sint mul(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) lhs).intVal() * ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSint(((ConcSnumber) lhs).intVal() * ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSint(se, mul(lhs, rhs));
+        return valueFactory.wrappingSymSint(se, mul(lhs, rhs));
     }
 
     @Override
-    public Sint div(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sint div(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) lhs).intVal() / ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSint(((ConcSnumber) lhs).intVal() / ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSint(se, div(lhs, rhs));
+        return valueFactory.wrappingSymSint(se, div(lhs, rhs));
     }
 
     @Override
-    public Sint mod(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sint mod(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) lhs).intVal() % ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSint(((ConcSnumber) lhs).intVal() % ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSint(se, mod(lhs, rhs));
+        return valueFactory.wrappingSymSint(se, mod(lhs, rhs));
     }
 
     @Override
-    public Sint neg(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Sint neg(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSint(- ((ConcSnumber) i).intVal());
+            return valueFactory.concSint(- ((ConcSnumber) i).intVal());
         }
-        return vf.wrappingSymSint(se, neg(i));
+        return valueFactory.wrappingSymSint(se, neg(i));
     }
 
     @Override
-    public Sdouble add(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sdouble add(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() + ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() + ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, sum(lhs, rhs));
+        return valueFactory.wrappingSymSdouble(se, sum(lhs, rhs));
     }
 
     @Override
-    public Sdouble sub(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sdouble sub(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() - ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() - ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, sub(lhs, rhs));
+        return valueFactory.wrappingSymSdouble(se, sub(lhs, rhs));
     }
 
     @Override
-    public Sdouble mul(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sdouble mul(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() * ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() * ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, mul(lhs, rhs));
+        return valueFactory.wrappingSymSdouble(se, mul(lhs, rhs));
     }
 
     @Override
-    public Sdouble div(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sdouble div(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() / ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() / ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, div(lhs, rhs));
+        return valueFactory.wrappingSymSdouble(se, div(lhs, rhs));
     }
 
     @Override
-    public Sdouble mod(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sdouble mod(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() % ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() % ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, mod(lhs, rhs));
+        return valueFactory.wrappingSymSdouble(se, mod(lhs, rhs));
     }
 
     @Override
-    public Sdouble neg(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+    public Sdouble neg(SymbolicExecution se, Sdouble d) {
         if (d instanceof Sdouble.ConcSdouble) {
-            return vf.concSdouble(- ((Sdouble.ConcSdouble) d).doubleVal());
+            return valueFactory.concSdouble(- ((Sdouble.ConcSdouble) d).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, neg(d));
+        return valueFactory.wrappingSymSdouble(se, neg(d));
     }
 
     @Override
-    public Slong add(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Slong add(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSlong(((Slong.ConcSlong) lhs).longVal() + ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() + ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSlong(se, sum(lhs, rhs));
+        return valueFactory.wrappingSymSlong(se, sum(lhs, rhs));
     }
 
     @Override
-    public Slong sub(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Slong sub(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSlong(((Slong.ConcSlong) lhs).longVal() - ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() - ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSlong(se, sub(lhs, rhs));
+        return valueFactory.wrappingSymSlong(se, sub(lhs, rhs));
     }
 
     @Override
-    public Slong mul(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Slong mul(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSlong(((Slong.ConcSlong) lhs).longVal() * ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() * ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSlong(se, mul(lhs, rhs));
+        return valueFactory.wrappingSymSlong(se, mul(lhs, rhs));
     }
 
     @Override
-    public Slong div(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Slong div(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSlong(((Slong.ConcSlong) lhs).longVal() / ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() / ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSlong(se, div(lhs, rhs));
+        return valueFactory.wrappingSymSlong(se, div(lhs, rhs));
     }
 
     @Override
-    public Slong mod(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Slong mod(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSlong(((Slong.ConcSlong) lhs).longVal() % ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() % ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSlong(se, mod(lhs, rhs));
+        return valueFactory.wrappingSymSlong(se, mod(lhs, rhs));
     }
 
     @Override
-    public Slong neg(SymbolicExecution se, ValueFactory vf, Slong l) {
+    public Slong neg(SymbolicExecution se, Slong l) {
         if (l instanceof Slong.ConcSlong) {
-            return vf.concSlong(- ((Slong.ConcSlong) l).longVal());
+            return valueFactory.concSlong(- ((Slong.ConcSlong) l).longVal());
         }
-        return vf.wrappingSymSlong(se, neg(l));
+        return valueFactory.wrappingSymSlong(se, neg(l));
     }
 
     @Override
-    public Sfloat add(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sfloat add(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() + ((Sfloat.ConcSfloat) rhs).floatVal());
+            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() + ((Sfloat.ConcSfloat) rhs).floatVal());
         }
-        return vf.wrappingSymSfloat(se, sum(lhs, rhs));
+        return valueFactory.wrappingSymSfloat(se, sum(lhs, rhs));
     }
 
     @Override
-    public Sfloat sub(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sfloat sub(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() - ((Sfloat.ConcSfloat) rhs).floatVal());
+            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() - ((Sfloat.ConcSfloat) rhs).floatVal());
         }
-        return vf.wrappingSymSfloat(se, sub(lhs, rhs));
+        return valueFactory.wrappingSymSfloat(se, sub(lhs, rhs));
     }
 
     @Override
-    public Sfloat mul(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sfloat mul(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() * ((Sfloat.ConcSfloat) rhs).floatVal());
+            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() * ((Sfloat.ConcSfloat) rhs).floatVal());
         }
-        return vf.wrappingSymSfloat(se, mul(lhs, rhs));
+        return valueFactory.wrappingSymSfloat(se, mul(lhs, rhs));
     }
 
     @Override
-    public Sfloat div(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sfloat div(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() / ((Sfloat.ConcSfloat) rhs).floatVal());
+            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() / ((Sfloat.ConcSfloat) rhs).floatVal());
         }
-        return vf.wrappingSymSfloat(se, div(lhs, rhs));
+        return valueFactory.wrappingSymSfloat(se, div(lhs, rhs));
     }
 
     @Override
-    public Sfloat mod(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sfloat mod(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() % ((Sfloat.ConcSfloat) rhs).floatVal());
+            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() % ((Sfloat.ConcSfloat) rhs).floatVal());
         }
-        return vf.wrappingSymSfloat(se, mod(lhs, rhs));
+        return valueFactory.wrappingSymSfloat(se, mod(lhs, rhs));
     }
 
     @Override
-    public Sfloat neg(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+    public Sfloat neg(SymbolicExecution se, Sfloat f) {
         if (f instanceof Sfloat.ConcSfloat) {
-            return vf.concSfloat(- ((Sfloat.ConcSfloat) f).floatVal());
+            return valueFactory.concSfloat(- ((Sfloat.ConcSfloat) f).floatVal());
         }
-        return vf.wrappingSymSfloat(se, neg(f));
+        return valueFactory.wrappingSymSfloat(se, neg(f));
     }
 
     @Override
-    public Sbool and(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
+    public Sbool and(SymbolicExecution se, Sbool lhs, Sbool rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) lhs).isFalse()) {
                 return Sbool.ConcSbool.FALSE;
@@ -229,11 +229,11 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
                 return lhs;
             }
         }
-        return vf.wrappingSymSbool(se, and(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, and(lhs, rhs));
     }
 
     @Override
-    public Sbool or(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs) {
+    public Sbool or(SymbolicExecution se, Sbool lhs, Sbool rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             if (((Sbool.ConcSbool) lhs).isTrue()) {
                 return Sbool.ConcSbool.TRUE;
@@ -248,257 +248,308 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
                 return lhs;
             }
         }
-        return vf.wrappingSymSbool(se, or(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, or(lhs, rhs));
     }
 
     @Override
-    public Sbool not(SymbolicExecution se, ValueFactory vf, Sbool b) {
+    public Sbool not(SymbolicExecution se, Sbool b) {
         if (b instanceof Sbool.ConcSbool) {
-            return vf.concSbool(((Sbool.ConcSbool) b).isFalse());
+            return valueFactory.concSbool(((Sbool.ConcSbool) b).isFalse());
         }
-        return vf.wrappingSymSbool(se, not(b));
+        return valueFactory.wrappingSymSbool(se, not(b));
     }
 
     @Override
-    public Sbool lt(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sbool lt(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSbool(((ConcSnumber) lhs).intVal() < ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSbool(((ConcSnumber) lhs).intVal() < ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSbool(se, lt(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
 
     @Override
-    public Sbool lt(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Sbool lt(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSbool(((Slong.ConcSlong) lhs).longVal() < ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSbool(((Slong.ConcSlong) lhs).longVal() < ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSbool(se, lt(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
 
     @Override
-    public Sbool lt(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sbool lt(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() < ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() < ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSbool(se, lt(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
 
     @Override
-    public Sbool lt(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sbool lt(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() < ((Sfloat.ConcSfloat) rhs).doubleVal());
+            return valueFactory.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() < ((Sfloat.ConcSfloat) rhs).doubleVal());
         }
-        return vf.wrappingSymSbool(se, lt(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
 
     @Override
-    public Sbool lte(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sbool lte(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return vf.concSbool(((ConcSnumber) lhs).intVal() <= ((ConcSnumber) rhs).intVal());
+            return valueFactory.concSbool(((ConcSnumber) lhs).intVal() <= ((ConcSnumber) rhs).intVal());
         }
-        return vf.wrappingSymSbool(se, lte(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
 
     @Override
-    public Sbool lte(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Sbool lte(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return vf.concSbool(((Slong.ConcSlong) lhs).longVal() <= ((Slong.ConcSlong) rhs).longVal());
+            return valueFactory.concSbool(((Slong.ConcSlong) lhs).longVal() <= ((Slong.ConcSlong) rhs).longVal());
         }
-        return vf.wrappingSymSbool(se, lte(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
 
     @Override
-    public Sbool lte(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sbool lte(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return vf.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() <= ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return valueFactory.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() <= ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
-        return vf.wrappingSymSbool(se, lte(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
 
     @Override
-    public Sbool lte(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sbool lte(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return vf.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() <= ((Sfloat.ConcSfloat) rhs).doubleVal());
+            return valueFactory.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() <= ((Sfloat.ConcSfloat) rhs).doubleVal());
         }
-        return vf.wrappingSymSbool(se, lte(lhs, rhs));
+        return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
 
     @Override
-    public Sbool eq(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs) {
+    public Sbool eq(SymbolicExecution se, Sint lhs, Sint rhs) {
         Constraint eqConstraint = eq(lhs, rhs);
         if (eqConstraint instanceof Sbool.ConcSbool) {
             return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eqConstraint);
+        return valueFactory.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
-    public Sbool eq(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Sbool eq(SymbolicExecution se, Slong lhs, Slong rhs) {
         Constraint eqConstraint = eq(lhs, rhs);
         if (eqConstraint instanceof Sbool.ConcSbool) {
             return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eqConstraint);
+        return valueFactory.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
-    public Sbool eq(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sbool eq(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         Constraint eqConstraint = eq(lhs, rhs);
         if (eqConstraint instanceof Sbool.ConcSbool) {
             return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eqConstraint);
+        return valueFactory.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
-    public Sbool eq(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sbool eq(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         Constraint eqConstraint = eq(lhs, rhs);
         if (eqConstraint instanceof Sbool.ConcSbool) {
             return (Sbool.ConcSbool) eqConstraint;
         }
-        return vf.wrappingSymSbool(se, eqConstraint);
+        return valueFactory.wrappingSymSbool(se, eqConstraint);
     }
 
     @Override
-    public Sint cmp(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs) {
+    public Sbool _and(Constraint c0, Constraint c1) {
+        if (c0 instanceof Sbool.SymSbool) {
+            c0 = ((Sbool.SymSbool) c0).getRepresentedConstraint();
+        }
+        if (c1 instanceof Sbool.SymSbool) {
+            c1 = ((Sbool.SymSbool) c1).getRepresentedConstraint();
+        }
+        Constraint c = and(c0, c1);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sbool _or(Constraint c0, Constraint c1) {
+        if (c0 instanceof Sbool.SymSbool) {
+            c0 = ((Sbool.SymSbool) c0).getRepresentedConstraint();
+        }
+        if (c1 instanceof Sbool.SymSbool) {
+            c1 = ((Sbool.SymSbool) c1).getRepresentedConstraint();
+        }
+        Constraint c = or(c0, c1);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sbool _not(Constraint c) {
+        if (c instanceof Sbool.SymSbool) {
+            c = ((Sbool.SymSbool) c).getRepresentedConstraint();
+        }
+        c = not(c);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sbool _lt(Snumber lhs, Snumber rhs) {
+        Constraint c = lt(lhs, rhs);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sbool _lte(Snumber lhs, Snumber rhs) {
+        Constraint c = lte(lhs, rhs);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sbool _eq(Snumber lhs, Snumber rhs) {
+        Constraint c = eq(lhs, rhs);
+        return valueFactory._wrappingSymSbool(c);
+    }
+
+    @Override
+    public Sint cmp(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
             long lrhs = ((Slong.ConcSlong) rhs).longVal();
             long llhs = ((Slong.ConcSlong) lhs).longVal();
-            return vf.concSint(Long.compare(llhs, lrhs));
+            return valueFactory.concSint(Long.compare(llhs, lrhs));
         }
-        return vf.cmp(se, lhs, rhs);
+        return valueFactory.cmp(se, lhs, rhs);
     }
 
     @Override
-    public Sint cmp(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs) {
+    public Sint cmp(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
             double drhs = ((Sdouble.ConcSdouble) rhs).doubleVal();
             double dlhs = ((Sdouble.ConcSdouble) lhs).doubleVal();
-            return vf.concSint(Double.compare(dlhs, drhs));
+            return valueFactory.concSint(Double.compare(dlhs, drhs));
         }
-        return vf.cmp(se, lhs, rhs);
+        return valueFactory.cmp(se, lhs, rhs);
     }
 
     @Override
-    public Sint cmp(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs) {
+    public Sint cmp(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
             float frhs = ((Sfloat.ConcSfloat) rhs).floatVal();
             float flhs = ((Sfloat.ConcSfloat) lhs).floatVal();
-            return vf.concSint(Float.compare(flhs, frhs));
+            return valueFactory.concSint(Float.compare(flhs, frhs));
         }
-        return vf.cmp(se, lhs, rhs);
+        return valueFactory.cmp(se, lhs, rhs);
     }
 
     @Override
-    public Slong i2l(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Slong i2l(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSlong(((ConcSnumber) i).longVal());
+            return valueFactory.concSlong(((ConcSnumber) i).longVal());
         }
-        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
-    public Sfloat i2f(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Sfloat i2f(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSfloat(((ConcSnumber) i).floatVal());
+            return valueFactory.concSfloat(((ConcSnumber) i).floatVal());
         }
-        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
-    public Sdouble i2d(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Sdouble i2d(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSdouble(((ConcSnumber) i).doubleVal());
+            return valueFactory.concSdouble(((ConcSnumber) i).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
-    public Sint l2i(SymbolicExecution se, ValueFactory vf, Slong l) {
+    public Sint l2i(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) l).intVal());
+            return valueFactory.concSint(((ConcSnumber) l).intVal());
         }
-        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
-    public Sfloat l2f(SymbolicExecution se, ValueFactory vf, Slong l) {
+    public Sfloat l2f(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return vf.concSfloat(((ConcSnumber) l).floatVal());
+            return valueFactory.concSfloat(((ConcSnumber) l).floatVal());
         }
-        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
-    public Sdouble l2d(SymbolicExecution se, ValueFactory vf, Slong l) {
+    public Sdouble l2d(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return vf.concSdouble(((ConcSnumber) l).doubleVal());
+            return valueFactory.concSdouble(((ConcSnumber) l).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
 
     @Override
-    public Sint f2i(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+    public Sint f2i(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) f).intVal());
+            return valueFactory.concSint(((ConcSnumber) f).intVal());
         }
-        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
-    public Slong f2l(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+    public Slong f2l(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return vf.concSlong(((ConcSnumber) f).longVal());
+            return valueFactory.concSlong(((ConcSnumber) f).longVal());
         }
-        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
-    public Sdouble f2d(SymbolicExecution se, ValueFactory vf, Sfloat f) {
+    public Sdouble f2d(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return vf.concSdouble(((ConcSnumber) f).doubleVal());
+            return valueFactory.concSdouble(((ConcSnumber) f).doubleVal());
         }
-        return vf.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
 
     @Override
-    public Sint d2i(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+    public Sint d2i(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return vf.concSint(((ConcSnumber) d).intVal());
+            return valueFactory.concSint(((ConcSnumber) d).intVal());
         }
-        return vf.wrappingSymSint(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
-    public Slong d2l(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+    public Slong d2l(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return vf.concSlong(((ConcSnumber) d).longVal());
+            return valueFactory.concSlong(((ConcSnumber) d).longVal());
         }
-        return vf.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
-    public Sfloat d2f(SymbolicExecution se, ValueFactory vf, Sdouble d) {
+    public Sfloat d2f(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return vf.concSfloat(((ConcSnumber) d).floatVal());
+            return valueFactory.concSfloat(((ConcSnumber) d).floatVal());
         }
-        return vf.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
 
     @Override
-    public Sbyte i2b(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Sbyte i2b(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSbyte(((ConcSnumber) i).byteVal());
+            return valueFactory.concSbyte(((ConcSnumber) i).byteVal());
         }
-        return vf.wrappingSymSbyte(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSbyte(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override
-    public Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i) {
+    public Sshort i2s(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return vf.concSshort(((ConcSnumber) i).shortVal());
+            return valueFactory.concSshort(((ConcSnumber) i).shortVal());
         }
-        return vf.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
 
     @Override

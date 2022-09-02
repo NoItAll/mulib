@@ -157,5 +157,15 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         public String toString() {
             return "SymSbool{id=" + id + ( representedConstraint == this ? "}" : ",expr=" + representedConstraint.toString() + "}");
         }
+
+        @Override
+        public boolean equals(Object o) {
+            return this == o;
+        }
+
+        @Override
+        public int hashCode() {
+            return super.hashCode();
+        }
     }
 }

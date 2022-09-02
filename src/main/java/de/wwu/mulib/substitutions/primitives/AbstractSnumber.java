@@ -41,7 +41,8 @@ public abstract class AbstractSnumber implements Snumber {
                 return co.longVal() == cthis.longVal();
             }
         } else {
-            return o == this;
+            assert this instanceof SymNumericExpressionSprimitive && o instanceof SymNumericExpressionSprimitive;
+            return ((SymNumericExpressionSprimitive) o).getId().equals(((SymNumericExpressionSprimitive) this).getId());
         }
     }
 

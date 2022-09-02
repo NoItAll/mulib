@@ -50,6 +50,7 @@ public abstract class MulibExecutorManager {
                 this,
                 this.mulibValueTransformer,
                 config,
+                calculationFactory,
                 config.GLOBAL_SEARCH_STRATEGY
         ));
         this.globalExecutionManagerBudgetManager = new GlobalExecutionBudgetManager(config);

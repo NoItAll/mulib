@@ -2,6 +2,7 @@ package de.wwu.mulib.solving;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.solving.solvers.JavaSMTSolverManager;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;
@@ -19,13 +20,13 @@ public enum Solvers {
     JSMT_YICES2,
     JSMT_BOOLECTOR;
 
-    public static SolverManager getSolverManager(MulibConfig config) {
+    public static SolverManager getSolverManager(MulibConfig config, CalculationFactory cf) {
 
         switch (config.GLOBAL_SOLVER_TYPE) {
             case Z3_INCREMENTAL:
-                return new Z3IncrementalSolverManager(config);
+                return new Z3IncrementalSolverManager(config, cf);
             case Z3_GLOBAL_LEARNING:
-                return new Z3GlobalLearningSolverManager(config);
+                return new Z3GlobalLearningSolverManager(config, cf);
             case JSMT_Z3:
             case JSMT_SMTINTERPOL:
             case JSMT_PRINCESS:
@@ -33,7 +34,7 @@ public enum Solvers {
             case JSMT_MATHSAT5:
             case JSMT_YICES2:
             case JSMT_BOOLECTOR:
-                return new JavaSMTSolverManager(config);
+                return new JavaSMTSolverManager(config, cf);
             default:
                 throw new NotYetImplementedException();
         }

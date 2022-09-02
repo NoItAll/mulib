@@ -4,6 +4,7 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
+import de.wwu.mulib.search.executors.CalculationFactory;
 
 import java.util.ArrayDeque;
 import java.util.HashMap;
@@ -15,8 +16,8 @@ public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
     protected final Map<BoolExpr, BoolExpr> impliedBy;
     private long boolImplyId = 0;
 
-    public Z3GlobalLearningSolverManager(MulibConfig config) {
-        super(config);
+    public Z3GlobalLearningSolverManager(MulibConfig config, CalculationFactory cf) {
+        super(config, cf);
         this.expressions = new ArrayDeque<>();
         this.boolImpliers = new ArrayDeque<>();
         this.impliedBy = new HashMap<>();

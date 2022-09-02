@@ -186,75 +186,75 @@ public final class SymbolicExecution {
     /* FREE ARRAY OPERATIONS */
 
     public Sint select(Sarray.SintSarray sarray, Sint index) {
-        return (Sint) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sint) calculationFactory.select(this, sarray, index);
     }
 
     public Sint store(Sarray.SintSarray sarray, Sint index, Sint value) {
-        return (Sint) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sint) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sdouble select(Sarray.SdoubleSarray sarray, Sint index) {
-        return (Sdouble) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sdouble) calculationFactory.select(this, sarray, index);
     }
 
     public Sdouble store(Sarray.SdoubleSarray sarray, Sint index, Sdouble value) {
-        return (Sdouble) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sdouble) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sfloat select(Sarray.SfloatSarray sarray, Sint index) {
-        return (Sfloat) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sfloat) calculationFactory.select(this, sarray, index);
     }
 
     public Sfloat store(Sarray.SfloatSarray sarray, Sint index, Sfloat value) {
-        return (Sfloat) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sfloat) calculationFactory.store(this, sarray, index, value);
     }
 
     public Slong select(Sarray.SlongSarray sarray, Sint index) {
-        return (Slong) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Slong) calculationFactory.select(this, sarray, index);
     }
 
     public Slong store(Sarray.SlongSarray sarray, Sint index, Slong value) {
-        return (Slong) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Slong) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sbyte select(Sarray.SbyteSarray sarray, Sint index) {
-        return (Sbyte) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sbyte) calculationFactory.select(this, sarray, index);
     }
 
     public Sbyte store(Sarray.SbyteSarray sarray, Sint index, Sbyte value) {
-        return (Sbyte) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sbyte) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sshort select(Sarray.SshortSarray sarray, Sint index) {
-        return (Sshort) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sshort) calculationFactory.select(this, sarray, index);
     }
 
     public Sshort store(Sarray.SshortSarray sarray, Sint index, Sshort value) {
-        return (Sshort) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sshort) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sbool select(Sarray.SboolSarray sarray, Sint index) {
-        return (Sbool) calculationFactory.select(this, valueFactory, sarray, index);
+        return (Sbool) calculationFactory.select(this, sarray, index);
     }
 
     public Sbool store(Sarray.SboolSarray sarray, Sint index, Sbool value) {
-        return (Sbool) calculationFactory.store(this, valueFactory, sarray, index, value);
+        return (Sbool) calculationFactory.store(this, sarray, index, value);
     }
 
     public PartnerClass select(Sarray.PartnerClassSarray sarray, Sint index) {
-        return calculationFactory.select(this, valueFactory, sarray, index);
+        return calculationFactory.select(this, sarray, index);
     }
 
     public PartnerClass store(Sarray.PartnerClassSarray sarray, Sint index, PartnerClass value) {
-        return calculationFactory.store(this, valueFactory, sarray, index, value);
+        return calculationFactory.store(this, sarray, index, value);
     }
 
     public Sarray select(Sarray.SarraySarray sarray, Sint index) {
-        return calculationFactory.select(this, valueFactory, sarray, index);
+        return calculationFactory.select(this, sarray, index);
     }
 
     public Sarray store(Sarray.SarraySarray sarray, Sint index, Sarray value) {
-        return calculationFactory.store(this, valueFactory, sarray, index, value);
+        return calculationFactory.store(this, sarray, index, value);
     }
 
     /* SYMBOLIC VARIABLE CREATION */
@@ -650,247 +650,265 @@ public final class SymbolicExecution {
     /* NUMBER OPERATIONS */
 
     public Sint add(Sint lhs, Sint rhs) {
-        return calculationFactory.add(this, valueFactory, lhs, rhs);
+        return calculationFactory.add(this, lhs, rhs);
     }
 
     public Sint sub(Sint lhs, Sint rhs) {
-        return calculationFactory.sub(this, valueFactory, lhs, rhs);
+        return calculationFactory.sub(this, lhs, rhs);
     }
 
     public Sint div(Sint lhs, Sint rhs) {
-        return calculationFactory.div(this, valueFactory, lhs, rhs);
+        return calculationFactory.div(this, lhs, rhs);
     }
 
     public Sint mul(Sint lhs, Sint rhs) {
-        return calculationFactory.mul(this, valueFactory, lhs, rhs);
+        return calculationFactory.mul(this, lhs, rhs);
     }
 
     public Sint mod(Sint lhs,  Sint rhs) {
-        return calculationFactory.mod(this, valueFactory, lhs, rhs);
+        return calculationFactory.mod(this, lhs, rhs);
     }
 
     public Sint neg(Sint i) {
-        return calculationFactory.neg(this, valueFactory, i);
+        return calculationFactory.neg(this, i);
     }
 
     public Sdouble add(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.add(this, valueFactory, lhs, rhs);
+        return calculationFactory.add(this, lhs, rhs);
     }
 
     public Sdouble sub(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.sub(this, valueFactory, lhs, rhs);
+        return calculationFactory.sub(this, lhs, rhs);
     }
 
     public Sdouble div(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.div(this, valueFactory, lhs, rhs);
+        return calculationFactory.div(this, lhs, rhs);
     }
 
     public Sdouble mul(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.mul(this, valueFactory, lhs, rhs);
+        return calculationFactory.mul(this, lhs, rhs);
     }
 
     public Sdouble mod(Sdouble lhs,  Sdouble rhs) {
-        return calculationFactory.mod(this, valueFactory, lhs, rhs);
+        return calculationFactory.mod(this, lhs, rhs);
     }
 
     public Sdouble neg(Sdouble i) {
-        return calculationFactory.neg(this, valueFactory, i);
+        return calculationFactory.neg(this, i);
     }
 
     public Slong add(Slong lhs, Slong rhs) {
-        return calculationFactory.add(this, valueFactory, lhs, rhs);
+        return calculationFactory.add(this, lhs, rhs);
     }
 
     public Slong sub(Slong lhs, Slong rhs) {
-        return calculationFactory.sub(this, valueFactory, lhs, rhs);
+        return calculationFactory.sub(this, lhs, rhs);
     }
 
     public Slong div(Slong lhs, Slong rhs) {
-        return calculationFactory.div(this, valueFactory, lhs, rhs);
+        return calculationFactory.div(this, lhs, rhs);
     }
 
     public Slong mul(Slong lhs, Slong rhs) {
-        return calculationFactory.mul(this, valueFactory, lhs, rhs);
+        return calculationFactory.mul(this, lhs, rhs);
     }
 
     public Slong mod(Slong lhs,  Slong rhs) {
-        return calculationFactory.mod(this, valueFactory, lhs, rhs);
+        return calculationFactory.mod(this, lhs, rhs);
     }
 
     public Slong neg(Slong i) {
-        return calculationFactory.neg(this, valueFactory, i);
+        return calculationFactory.neg(this, i);
     }
 
     public Sfloat add(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.add(this, valueFactory, lhs, rhs);
+        return calculationFactory.add(this, lhs, rhs);
     }
 
     public Sfloat sub(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.sub(this, valueFactory, lhs, rhs);
+        return calculationFactory.sub(this, lhs, rhs);
     }
 
     public Sfloat div(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.div(this, valueFactory, lhs, rhs);
+        return calculationFactory.div(this, lhs, rhs);
     }
 
     public Sfloat mul(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.mul(this, valueFactory, lhs, rhs);
+        return calculationFactory.mul(this, lhs, rhs);
     }
 
     public Sfloat mod(Sfloat lhs,  Sfloat rhs) {
-        return calculationFactory.mod(this, valueFactory, lhs, rhs);
+        return calculationFactory.mod(this, lhs, rhs);
     }
 
     public Sfloat neg(Sfloat i) {
-        return calculationFactory.neg(this, valueFactory, i);
+        return calculationFactory.neg(this, i);
     }
 
     public Sbool gt(Sint lhs, Sint rhs) {
-        return calculationFactory.lt(this, valueFactory, rhs, lhs);
+        return calculationFactory.lt(this, rhs, lhs);
     }
 
     public Sbool gt(Slong lhs, Slong rhs) {
-        return calculationFactory.lt(this, valueFactory, rhs, lhs);
+        return calculationFactory.lt(this, rhs, lhs);
     }
 
     public Sbool gt(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.lt(this, valueFactory, rhs, lhs);
+        return calculationFactory.lt(this, rhs, lhs);
     }
 
     public Sbool gt(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.lt(this, valueFactory, rhs, lhs);
+        return calculationFactory.lt(this, rhs, lhs);
     }
 
     public Sbool lt(Sint lhs, Sint rhs) {
-        return calculationFactory.lt(this, valueFactory, lhs, rhs);
+        return calculationFactory.lt(this, lhs, rhs);
     }
 
     public Sbool lt(Slong lhs, Slong rhs) {
-        return calculationFactory.lt(this, valueFactory, lhs, rhs);
+        return calculationFactory.lt(this, lhs, rhs);
     }
 
     public Sbool lt(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.lt(this, valueFactory, lhs, rhs);
+        return calculationFactory.lt(this, lhs, rhs);
     }
 
     public Sbool lt(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.lt(this, valueFactory, lhs, rhs);
+        return calculationFactory.lt(this, lhs, rhs);
     }
 
     public Sbool gte(Sint lhs, Sint rhs) {
-        return calculationFactory.lte(this, valueFactory, rhs, lhs);
+        return calculationFactory.lte(this, rhs, lhs);
     }
 
     public Sbool gte(Slong lhs, Slong rhs) {
-        return calculationFactory.lte(this, valueFactory, rhs, lhs);
+        return calculationFactory.lte(this, rhs, lhs);
     }
 
     public Sbool gte(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.lte(this, valueFactory, rhs, lhs);
+        return calculationFactory.lte(this, rhs, lhs);
     }
 
     public Sbool gte(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.lte(this, valueFactory, rhs, lhs);
+        return calculationFactory.lte(this, rhs, lhs);
     }
 
     public Sbool lte(Sint lhs, Sint rhs) {
-        return calculationFactory.lte(this, valueFactory, lhs, rhs);
+        return calculationFactory.lte(this, lhs, rhs);
     }
 
     public Sbool lte(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.lte(this, valueFactory, lhs, rhs);
+        return calculationFactory.lte(this, lhs, rhs);
     }
 
     public Sbool lte(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.lte(this, valueFactory, lhs, rhs);
+        return calculationFactory.lte(this, lhs, rhs);
     }
 
     public Sbool lte(Slong lhs, Slong rhs) {
-        return calculationFactory.lte(this, valueFactory, lhs, rhs);
+        return calculationFactory.lte(this, lhs, rhs);
     }
 
     public Sbool eq(Sint lhs, Sint rhs) {
-        return calculationFactory.eq(this, valueFactory, lhs, rhs);
+        return calculationFactory.eq(this, lhs, rhs);
+    }
+
+    public Sbool _eq(Snumber lhs, Snumber rhs) {
+        Sbool result;
+        if (lhs instanceof Sint) {
+            assert rhs instanceof Sint;
+            result = calculationFactory.eq(this, (Sint) lhs, (Sint) rhs);
+        } else if (lhs instanceof Sdouble) {
+            assert rhs instanceof Sdouble;
+            result = calculationFactory.eq(this, (Sdouble) lhs, (Sdouble) rhs);
+        } else if (lhs instanceof Sfloat) {
+            assert rhs instanceof Sfloat;
+            result = calculationFactory.eq(this, (Sfloat) lhs, (Sfloat) rhs);
+        } else {
+            assert lhs instanceof Slong && rhs instanceof Slong;
+            result = calculationFactory.eq(this, (Slong) lhs, (Slong) rhs);
+        }
+        return result;
     }
 
     public Sbool eq(Slong lhs, Slong rhs) {
-        return calculationFactory.eq(this, valueFactory, lhs, rhs);
+        return calculationFactory.eq(this, lhs, rhs);
     }
 
     public Sbool eq(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.eq(this, valueFactory, lhs, rhs);
+        return calculationFactory.eq(this, lhs, rhs);
     }
 
     public Sbool eq(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.eq(this, valueFactory, lhs, rhs);
+        return calculationFactory.eq(this, lhs, rhs);
     }
 
     public Sint cmp(Slong lhs, Slong rhs) {
-        return calculationFactory.cmp(this, valueFactory, lhs, rhs);
+        return calculationFactory.cmp(this, lhs, rhs);
     }
 
     public Sint cmp(Sdouble lhs, Sdouble rhs) {
-        return calculationFactory.cmp(this, valueFactory, lhs, rhs);
+        return calculationFactory.cmp(this, lhs, rhs);
     }
 
     public Sint cmp(Sfloat lhs, Sfloat rhs) {
-        return calculationFactory.cmp(this, valueFactory, lhs, rhs);
+        return calculationFactory.cmp(this, lhs, rhs);
     }
 
     public Slong i2l(Sint i) {
-        return calculationFactory.i2l(this, valueFactory, i);
+        return calculationFactory.i2l(this, i);
     }
 
     public Sfloat i2f(Sint i) {
-        return calculationFactory.i2f(this, valueFactory, i);
+        return calculationFactory.i2f(this, i);
     }
 
     public Sdouble i2d(Sint i) {
-        return calculationFactory.i2d(this, valueFactory, i);
+        return calculationFactory.i2d(this, i);
     }
 
     public Sint l2i(Slong l) {
-        return calculationFactory.l2i(this, valueFactory, l);
+        return calculationFactory.l2i(this, l);
     }
 
     public Sfloat l2f(Slong l) {
-        return calculationFactory.l2f(this, valueFactory, l);
+        return calculationFactory.l2f(this, l);
     }
 
     public Sdouble l2d(Slong l) {
-        return calculationFactory.l2d(this, valueFactory, l);
+        return calculationFactory.l2d(this, l);
     }
 
     public Sint f2i(Sfloat f) {
-        return calculationFactory.f2i(this, valueFactory, f);
+        return calculationFactory.f2i(this, f);
     }
 
     public Slong f2l(Sfloat f) {
-        return calculationFactory.f2l(this, valueFactory, f);
+        return calculationFactory.f2l(this, f);
     }
 
     public Sdouble f2d(Sfloat f) {
-        return calculationFactory.f2d(this, valueFactory, f);
+        return calculationFactory.f2d(this, f);
     }
 
     public Sint d2i(Sdouble d) {
-        return calculationFactory.d2i(this, valueFactory, d);
+        return calculationFactory.d2i(this, d);
     }
 
     public Slong d2l(Sdouble d) {
-        return calculationFactory.d2l(this, valueFactory, d);
+        return calculationFactory.d2l(this, d);
     }
 
     public Sfloat d2f(Sdouble d) {
-        return calculationFactory.d2f(this, valueFactory, d);
+        return calculationFactory.d2f(this, d);
     }
 
     public Sbyte i2b(Sint i) {
-        return calculationFactory.i2b(this, valueFactory, i);
+        return calculationFactory.i2b(this, i);
     }
 
     public Sshort i2s(Sint i) {
-        return calculationFactory.i2s(this, valueFactory, i);
+        return calculationFactory.i2s(this, i);
     }
 
     public Sbool evalInstanceof(Object partnerClass, Class<?> c) {
@@ -916,16 +934,23 @@ public final class SymbolicExecution {
 
     /* BOOLEAN OPERATIONS */
 
+    public Sbool wrapConstraintInSbool(Constraint c) {
+        if (c instanceof Sbool) {
+            return (Sbool) c;
+        }
+        return valueFactory._wrappingSymSbool(c);
+    }
+
     public Sbool and(final Sbool lhs, final Sbool rhs) {
-        return calculationFactory.and(this, valueFactory, lhs, rhs);
+        return calculationFactory.and(this, lhs, rhs);
     }
 
     public Sbool or(final Sbool lhs, final Sbool rhs) {
-        return calculationFactory.or(this, valueFactory, lhs, rhs);
+        return calculationFactory.or(this, lhs, rhs);
     }
 
     public Sbool not(final Sbool b) {
-        return calculationFactory.not(this, valueFactory, b);
+        return calculationFactory.not(this, b);
     }
 
     /* CHOICEPOINTFACTORY FACADE */
@@ -1122,7 +1147,7 @@ public final class SymbolicExecution {
         return choicePointFactory.lteChoice(this, lhs, rhs);
     }
 
-    public boolean boolChoice(final Constraint b) {
+    public boolean boolChoice(final Sbool b) {
         return choicePointFactory.boolChoice(this, b);
     }
 

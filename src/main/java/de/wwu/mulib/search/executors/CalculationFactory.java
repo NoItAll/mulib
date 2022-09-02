@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -8,137 +9,149 @@ import de.wwu.mulib.substitutions.primitives.*;
 
 public interface CalculationFactory {
 
-    static CalculationFactory getInstance(MulibConfig config) {
+    static CalculationFactory getInstance(MulibConfig config, ValueFactory vf) {
         if (config.CONCOLIC) {
-            return ConcolicCalculationFactory.getInstance(config);
+            return ConcolicCalculationFactory.getInstance(config, vf);
         } else {
-            return SymbolicCalculationFactory.getInstance(config);
+            return SymbolicCalculationFactory.getInstance(config, vf);
         }
     }
 
-    Sint add(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sint add(SymbolicExecution se, Sint lhs, Sint rhs);
     
-    Sint sub(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sint sub(SymbolicExecution se, Sint lhs, Sint rhs);
     
-    Sint mul(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sint mul(SymbolicExecution se, Sint lhs, Sint rhs);
     
-    Sint div(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sint div(SymbolicExecution se, Sint lhs, Sint rhs);
 
-    Sint mod(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sint mod(SymbolicExecution se, Sint lhs, Sint rhs);
     
-    Sint neg(SymbolicExecution se, ValueFactory vf, Sint i);
+    Sint neg(SymbolicExecution se, Sint i);
 
-    Sdouble add(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sdouble add(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble sub(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sdouble sub(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble mul(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sdouble mul(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble div(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sdouble div(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble mod(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sdouble mod(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble neg(SymbolicExecution se, ValueFactory vf, Sdouble d);
+    Sdouble neg(SymbolicExecution se, Sdouble d);
 
-    Slong add(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Slong add(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Slong sub(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Slong sub(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Slong mul(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Slong mul(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Slong div(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Slong div(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Slong mod(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Slong mod(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Slong neg(SymbolicExecution se, ValueFactory vf, Slong l);
+    Slong neg(SymbolicExecution se, Slong l);
 
-    Sfloat add(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sfloat add(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sfloat sub(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sfloat sub(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sfloat mul(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sfloat mul(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sfloat div(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sfloat div(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sfloat mod(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sfloat mod(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sfloat neg(SymbolicExecution se, ValueFactory vf, Sfloat f);
+    Sfloat neg(SymbolicExecution se, Sfloat f);
 
-    Sbool and(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs);
+    Sbool and(SymbolicExecution se, Sbool lhs, Sbool rhs);
 
-    Sbool or(SymbolicExecution se, ValueFactory vf, Sbool lhs, Sbool rhs);
+    Sbool or(SymbolicExecution se, Sbool lhs, Sbool rhs);
 
-    Sbool not(SymbolicExecution se, ValueFactory vf, Sbool b);
+    Sbool not(SymbolicExecution se, Sbool b);
 
-    Sbool lt(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sbool lt(SymbolicExecution se, Sint lhs, Sint rhs);
 
-    Sbool lt(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Sbool lt(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Sbool lt(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sbool lt(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sbool lt(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sbool lt(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sbool lte(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sbool lte(SymbolicExecution se, Sint lhs, Sint rhs);
 
-    Sbool lte(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Sbool lte(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Sbool lte(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sbool lte(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sbool lte(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sbool lte(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sbool eq(SymbolicExecution se, ValueFactory vf, Sint lhs, Sint rhs);
+    Sbool eq(SymbolicExecution se, Sint lhs, Sint rhs);
 
-    Sbool eq(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Sbool eq(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Sbool eq(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sbool eq(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sbool eq(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sbool eq(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sint cmp(SymbolicExecution se, ValueFactory vf, Slong lhs, Slong rhs);
+    Sbool _and(Constraint c0, Constraint c1);
 
-    Sint cmp(SymbolicExecution se, ValueFactory vf, Sdouble lhs, Sdouble rhs);
+    Sbool _or(Constraint c0, Constraint c1);
 
-    Sint cmp(SymbolicExecution se, ValueFactory vf, Sfloat lhs, Sfloat rhs);
+    Sbool _not(Constraint c);
 
-    Slong i2l(SymbolicExecution se, ValueFactory vf, Sint i);
+    Sbool _lt(Snumber lhs, Snumber rhs);
 
-    Sfloat i2f(SymbolicExecution se, ValueFactory vf, Sint i);
+    Sbool _lte(Snumber lhs, Snumber rhs);
 
-    Sdouble i2d(SymbolicExecution se, ValueFactory vf, Sint i);
+    Sbool _eq(Snumber lhs, Snumber rhs);
 
-    Sint l2i(SymbolicExecution se, ValueFactory vf, Slong l);
+    Sint cmp(SymbolicExecution se, Slong lhs, Slong rhs);
 
-    Sfloat l2f(SymbolicExecution se, ValueFactory vf, Slong l);
+    Sint cmp(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
-    Sdouble l2d(SymbolicExecution se, ValueFactory vf, Slong l);
+    Sint cmp(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
 
-    Sint f2i(SymbolicExecution se, ValueFactory vf, Sfloat f);
+    Slong i2l(SymbolicExecution se, Sint i);
 
-    Slong f2l(SymbolicExecution se, ValueFactory vf, Sfloat f);
+    Sfloat i2f(SymbolicExecution se, Sint i);
 
-    Sdouble f2d(SymbolicExecution se, ValueFactory vf, Sfloat f);
+    Sdouble i2d(SymbolicExecution se, Sint i);
 
-    Sint d2i(SymbolicExecution se, ValueFactory vf, Sdouble d);
+    Sint l2i(SymbolicExecution se, Slong l);
 
-    Slong d2l(SymbolicExecution se, ValueFactory vf, Sdouble d);
+    Sfloat l2f(SymbolicExecution se, Slong l);
 
-    Sfloat d2f(SymbolicExecution se, ValueFactory vf, Sdouble d);
+    Sdouble l2d(SymbolicExecution se, Slong l);
 
-    Sbyte i2b(SymbolicExecution se, ValueFactory vf, Sint i);
+    Sint f2i(SymbolicExecution se, Sfloat f);
 
-    Sshort i2s(SymbolicExecution se, ValueFactory vf, Sint i);
+    Slong f2l(SymbolicExecution se, Sfloat f);
 
-    Sprimitive select(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index);
+    Sdouble f2d(SymbolicExecution se, Sfloat f);
 
-    Sprimitive store(SymbolicExecution se, ValueFactory vf, Sarray sarray, Sint index, Sprimitive value);
+    Sint d2i(SymbolicExecution se, Sdouble d);
 
-    Sarray<?> select(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index);
+    Slong d2l(SymbolicExecution se, Sdouble d);
 
-    Sarray<?> store(SymbolicExecution se, ValueFactory vf, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value);
+    Sfloat d2f(SymbolicExecution se, Sdouble d);
 
-    PartnerClass select(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index);
+    Sbyte i2b(SymbolicExecution se, Sint i);
 
-    PartnerClass store(SymbolicExecution se, ValueFactory vf, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
+    Sshort i2s(SymbolicExecution se, Sint i);
+
+    Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index);
+
+    Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value);
+
+    Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index);
+
+    Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value);
+
+    PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index);
+
+    PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
 
 
 }

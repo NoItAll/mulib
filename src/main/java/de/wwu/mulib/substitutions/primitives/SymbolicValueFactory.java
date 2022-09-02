@@ -18,7 +18,7 @@ import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SymbolicValueFactory extends AbstractValueFactory {
-    // TODO Evaluate normal synchronized-statement and performance difference
+    // TODO Evaluate normal synchronized-statement and performance difference; also: StampedLock
     private final ReadWriteLock atomicSymSintLock = new ReentrantReadWriteLock();
     private final ReadWriteLock atomicSymSdoubleLock = new ReentrantReadWriteLock();
     private final ReadWriteLock atomicSymSfloatLock = new ReentrantReadWriteLock();
@@ -68,7 +68,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
 
     @Override
     protected void _addLengthLteZeroConstraint(SymbolicExecution se, Sint len) {
-        Constraint inBounds = se.lte(Sint.ConcSint.ZERO, len);
+        Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
         se.addNewConstraint(inBounds);
     }
 
@@ -224,6 +224,18 @@ public class SymbolicValueFactory extends AbstractValueFactory {
                 constraint,
                 wrappingSymSboolLock,
                 (b) -> symSboolDomain(se, b)
+        );
+    }
+
+    @Override
+    public Sbool _wrappingSymSbool(Constraint constraint) {
+        // TODO better lookup via encapsulation of sbool?
+        return returnWrapperIfExistsElseCreate(
+                createdSymSboolWrappers,
+                e -> (Sbool.SymSbool) Sbool.newConstraintSbool(e),
+                constraint,
+                wrappingSymSboolLock,
+                (b) -> {}
         );
     }
 

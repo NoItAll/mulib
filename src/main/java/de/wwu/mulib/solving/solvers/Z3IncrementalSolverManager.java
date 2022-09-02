@@ -4,11 +4,12 @@ import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.UnknownSolutionException;
+import de.wwu.mulib.search.executors.CalculationFactory;
 
 public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
 
-    public Z3IncrementalSolverManager(MulibConfig config) {
-        super(config);
+    public Z3IncrementalSolverManager(MulibConfig config, CalculationFactory calculationFactory) {
+        super(config, calculationFactory);
     }
 
     @Override

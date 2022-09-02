@@ -1,7 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -122,7 +121,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
                 throw new NegativeArraySizeException();
             }
         } else if (throwExceptionOnOOB) {
-            Constraint outOfBounds = se.gte(Sint.ConcSint.ZERO, len);
+            Sbool outOfBounds = se.gte(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();
             }

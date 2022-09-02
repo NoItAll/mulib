@@ -7,6 +7,7 @@ import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -22,8 +23,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     protected final Solver solver;
     protected final Z3MulibAdapter adapter;
 
-    public AbstractZ3SolverManager(MulibConfig config) {
-        super(config);
+    public AbstractZ3SolverManager(MulibConfig config, CalculationFactory cf) {
+        super(config, cf);
         synchronized (syncObject) {
             Context context = new Context();
             if (config.SOLVER_ARGS.isEmpty()) {

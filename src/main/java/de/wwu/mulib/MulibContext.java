@@ -66,7 +66,7 @@ public final class MulibContext {
         long start = System.nanoTime();
         ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
         ValueFactory valueFactory = ValueFactory.getInstance(config);
-        CalculationFactory calculationFactory = CalculationFactory.getInstance(config);
+        CalculationFactory calculationFactory = CalculationFactory.getInstance(config, valueFactory);
 
         Object[] searchRegionArgs;
         MulibValueTransformer mulibValueTransformer;
