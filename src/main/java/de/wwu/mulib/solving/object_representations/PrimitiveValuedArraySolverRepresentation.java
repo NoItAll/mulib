@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -13,27 +14,27 @@ import java.util.Set;
  */
 public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation {
 
-    protected PrimitiveValuedArraySolverRepresentation(Sint arrayId, Sint length, Sbool isNull, int level) {
-        this(arrayId, length, isNull, level, new ArrayHistorySolverRepresentation());
+    protected PrimitiveValuedArraySolverRepresentation(CalculationFactory calculationFactory, Sint arrayId, Sint length, Sbool isNull, int level) {
+        this(calculationFactory, arrayId, length, isNull, level, new ArrayHistorySolverRepresentation());
     }
 
-    public PrimitiveValuedArraySolverRepresentation(Sint arrayId, Sint length, Sbool isNull, int level, ArrayHistorySolverRepresentation ahsr) {
-        super(arrayId, length, isNull, level, ahsr);
+    public PrimitiveValuedArraySolverRepresentation(CalculationFactory calculationFactory, Sint arrayId, Sint length, Sbool isNull, int level, ArrayHistorySolverRepresentation ahsr) {
+        super(calculationFactory, arrayId, length, isNull, level, ahsr);
     }
 
     @Override
     public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
-        return currentRepresentation.select(guard, index, selectedValue);
+        return currentRepresentation.select(calculationFactory, guard, index, selectedValue);
     }
 
     @Override
     public void store(Constraint guard, Sint index, Sprimitive storedValue) {
-        this.currentRepresentation = currentRepresentation.store(guard, index, storedValue);
+        this.currentRepresentation = currentRepresentation.store(calculationFactory, guard, index, storedValue);
     }
 
     @Override
     public PrimitiveValuedArraySolverRepresentation copyForNewLevel(int level) {
-        return new PrimitiveValuedArraySolverRepresentation(arrayId, length, isNull, level, currentRepresentation.copy());
+        return new PrimitiveValuedArraySolverRepresentation(calculationFactory, arrayId, length, isNull, level, currentRepresentation.copy());
     }
 
     @Override

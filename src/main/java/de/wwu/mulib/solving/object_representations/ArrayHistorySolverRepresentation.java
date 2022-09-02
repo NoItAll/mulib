@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -50,11 +51,11 @@ public class ArrayHistorySolverRepresentation {
         return new ArrayHistorySolverRepresentation(this);
     }
 
-    public Constraint select(Constraint guard, Sint index, Sprimitive value) {
-        return _select(guard, index, value, true);
+    public Constraint select(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value) {
+        return _select(calculationFactory, guard, index, value, true);
     }
 
-    private Constraint _select(Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
+    private Constraint _select(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
@@ -68,7 +69,7 @@ public class ArrayHistorySolverRepresentation {
             indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
             Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
             indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
-            resultForSelectOperations = beforeStore._select(guard, index, value, false);
+            resultForSelectOperations = beforeStore._select(calculationFactory, guard, index, value, false);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
@@ -107,7 +108,7 @@ public class ArrayHistorySolverRepresentation {
         return result;
     }
 
-    public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
+    public ArrayHistorySolverRepresentation store(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return this;
         }

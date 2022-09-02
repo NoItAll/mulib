@@ -130,6 +130,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 assert ac instanceof ArrayInitializationConstraint;
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
+                                calculationFactory,
                                 (ArrayInitializationConstraint) ac,
                                 incrementalSolverState.getSymbolicArrayStates(),
                                 getLevel()

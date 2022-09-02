@@ -1,21 +1,25 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 public abstract class AbstractArraySolverRepresentation implements ArraySolverRepresentation {
     protected ArrayHistorySolverRepresentation currentRepresentation;
+    protected final CalculationFactory calculationFactory;
     protected final Sint arrayId;
     protected final Sint length;
     protected final Sbool isNull;
     protected final int level;
 
     protected AbstractArraySolverRepresentation(
+            CalculationFactory calculationFactory,
             Sint arrayId,
             Sint length,
             Sbool isNull,
             int level,
             ArrayHistorySolverRepresentation ahsr) {
+        this.calculationFactory = calculationFactory;
         this.arrayId = arrayId;
         this.length = length;
         this.isNull = isNull;

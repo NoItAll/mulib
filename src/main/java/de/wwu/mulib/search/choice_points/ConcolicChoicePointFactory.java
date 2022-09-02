@@ -24,7 +24,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
     protected boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
-            Constraint constraint,
+            Sbool constraint,
             Choice.ChoiceOption currentChoiceOption) {
         Constraint innerConstraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         ConcolicConstraintContainer container = (ConcolicConstraintContainer) innerConstraint;

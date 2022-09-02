@@ -3,7 +3,6 @@ package de.wwu.mulib.search.choice_points;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.Choice;
@@ -150,13 +149,13 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     }
 
     @Override
-    public boolean boolChoice(final SymbolicExecution se, final Constraint b) {
+    public boolean boolChoice(final SymbolicExecution se, final Sbool b) {
         return threeCaseDistinctionTemplate(se, b);
     }
     
     private boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
-            Constraint b) {
+            Sbool b) {
         // Case 1: No actual choice, only concrete values
         if (b instanceof Sbool.ConcSbool) {
             return ((Sbool.ConcSbool) b).isTrue();
@@ -199,13 +198,13 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
     protected boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
-            Constraint constraint,
+            Sbool constraint,
             Choice.ChoiceOption currentChoiceOption) {
-        if (constraint instanceof Sbool.SymSbool) {
-            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
-        }
+//        if (constraint instanceof Sbool.SymSbool) {
+//            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
+//        }
         // Create Choice with ChoiceOptions (true false)
-        Choice newChoice = new Choice(currentChoiceOption, constraint, Not.newInstance(constraint));
+        Choice newChoice = new Choice(currentChoiceOption, constraint, se.not(constraint));
         // First, let the Executor of the current SymbolicExecution decide which choice is to be.
         // This also adds the constraint to the SolverManager's stack
         Optional<Choice.ChoiceOption> possibleNextChoiceOption =

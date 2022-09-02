@@ -1,7 +1,6 @@
 package de.wwu.mulib.search.choice_points;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -63,7 +62,7 @@ public interface ChoicePointFactory {
 
     boolean lteChoice(SymbolicExecution se, final Slong lhs, final Slong rhs);
 
-    boolean boolChoice(SymbolicExecution se, final Constraint c);
+    boolean boolChoice(SymbolicExecution se, final Sbool c);
 
     boolean negatedBoolChoice(SymbolicExecution se, final Sbool b);
 }

@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -22,6 +23,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     private final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
 
     public AliasingArraySolverRepresentation(
+            CalculationFactory calculationFactory,
             final Sint arrayId,
             final Sint arrayLength,
             final Sbool isNull,
@@ -29,7 +31,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             final Sint reservedId,
             final Set<Sint> potentialIds,
             final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates) {
-        super(arrayId, arrayLength, isNull, level, new ArrayHistorySolverRepresentation());
+        super(calculationFactory, arrayId, arrayLength, isNull, level, new ArrayHistorySolverRepresentation());
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>();
@@ -56,6 +58,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     }
 
     private AliasingArraySolverRepresentation(
+            CalculationFactory calculationFactory,
             Sint arrayId,
             Sint reservedId,
             Sint arrayLength,
@@ -64,7 +67,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             Constraint metadataConstraintForPotentialIds,
             Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays,
             ArrayHistorySolverRepresentation arrayHistorySolverRepresentation) {
-        super(arrayId, arrayLength, isNull, level, arrayHistorySolverRepresentation);
+        super(calculationFactory, arrayId, arrayLength, isNull, level, arrayHistorySolverRepresentation);
         this.reservedId = reservedId;
         this.metadataConstraintForPotentialIds = metadataConstraintForPotentialIds;
         this.aliasedArrays = aliasedArrays;
@@ -86,7 +89,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             return Sbool.ConcSbool.TRUE;
         }
         // currentRepresentation here is the representation for this.reservedId
-        Constraint ownConstraint = this.currentRepresentation.select(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, selectedValue);
+        Constraint ownConstraint = this.currentRepresentation.select(calculationFactory, And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, selectedValue);
         Constraint joinedSelectConstraint = ownConstraint;
         for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
@@ -108,12 +111,13 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
         // currentRepresentation here is the representation for this.reservedId
-       this.currentRepresentation = this.currentRepresentation.store(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, storedValue);
+       this.currentRepresentation = this.currentRepresentation.store(calculationFactory, And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, storedValue);
     }
 
     @Override
     public AliasingArraySolverRepresentation copyForNewLevel(int level) {
         return new AliasingArraySolverRepresentation(
+                calculationFactory,
                 arrayId,
                 reservedId,
                 length,
