@@ -50,7 +50,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config, CalculationFactory cf) {
         this.config = config;
         this.calculationFactory = cf;
-        this.incrementalSolverState = IncrementalSolverState.newInstance(config);
+        this.incrementalSolverState = IncrementalSolverState.newInstance(config, cf);
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         this.classesToLabelFunction = config.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
     }

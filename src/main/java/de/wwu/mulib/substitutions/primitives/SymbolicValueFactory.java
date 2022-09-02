@@ -229,6 +229,9 @@ public class SymbolicValueFactory extends AbstractValueFactory {
 
     @Override
     public Sbool _wrappingSymSbool(Constraint constraint) {
+        if (constraint instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) constraint;
+        }
         // TODO better lookup via encapsulation of sbool?
         return returnWrapperIfExistsElseCreate(
                 createdSymSboolWrappers,

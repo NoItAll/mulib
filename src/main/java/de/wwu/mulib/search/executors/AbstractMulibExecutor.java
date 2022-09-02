@@ -105,7 +105,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public final void addNewConstraint(Constraint c) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
         currentChoiceOption.setOptionConstraint(
-                And.newInstance(currentChoiceOption.getOptionConstraint(), c));
+                calculationFactory._and(currentChoiceOption.getOptionConstraint(), c));
         solverManager.addConstraint(c);
     }
 
