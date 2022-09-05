@@ -80,7 +80,7 @@ public class IncrementalSolverState<AR> {
     }
 
     public void initializeArrayRepresentation(ArrayInitializationConstraint constraint, AR initialRepresentation) {
-        assert concolic || _getArrayRepresentation(constraint.getArrayId()) == null || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null: "Array was already initialized!";
+        assert _getArrayRepresentation(constraint.getArrayId()) == null || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null : "Array was already initialized!";
         ArrayRepresentation<AR> ar = new ArrayRepresentation<>(constraint.getArrayId());
         ar.addNewRepresentation(initialRepresentation, level);
         symbolicArrayStates.arrayIdToMostRecentRepresentation.put(constraint.getArrayId(), ar);

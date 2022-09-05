@@ -1,5 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
+import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
@@ -42,6 +43,9 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
             Function<ConcolicNumericContainer, S> resultWrapper) {
         // Symbolic value
         SA sym = symCreator.apply(se);
+        if (!se.isSatisfiable()) {
+            throw new Fail();
+        }
         // Concrete value
         ConcSnumber conc = concSnumberCreator.apply(se.label(sym));
         // TODO Performance optimization: If nextIsOnKnownPath() is false, we can return the neutral element (e.g. 0 and
@@ -87,6 +91,9 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sbool.SymSbool symSbool(SymbolicExecution se) {
         // Symbolic value
         Sbool.SymSbool sym = svf.symSbool(se);
+        if (!se.isSatisfiable()) {
+            throw new Fail();
+        }
         // Concrete value
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both

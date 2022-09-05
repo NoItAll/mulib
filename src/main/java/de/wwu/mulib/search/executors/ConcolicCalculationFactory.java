@@ -6,7 +6,6 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
@@ -778,7 +777,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     private static void evaluateRelabeling(
             Sarray<?> s,
             SymbolicExecution se) {
-        if (se.nextIsOnKnownPath() || !s.shouldBeRepresentedInSolver()) {
+        if (se.nextIsOnKnownPath() || !s.shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
             return;
         }
         assert s.getCachedElements().stream().allMatch(e -> e instanceof Snumber || e instanceof Sarray) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
@@ -789,7 +788,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         }
         Constraint currentAssignment = And.newInstance(currentConcolicMapping);
         if (!se.checkWithNewConstraint(currentAssignment)) {
-            markForReevaluationAndBacktrack(se);
+            markForReevaluation(se);
         }
     }
 
@@ -824,9 +823,10 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         return value;
     }
 
-    private static void markForReevaluationAndBacktrack(SymbolicExecution se) {
-        se.getCurrentChoiceOption().setReevaluationNeeded();
-        throw new Backtrack();
+    private static void markForReevaluation(SymbolicExecution se) {
+        if (!se.getCurrentChoiceOption().reevaluationNeeded()) {
+            se.getCurrentChoiceOption().setReevaluationNeeded();
+        }
     }
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
@@ -960,7 +960,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         se.addNewConstraint(actualConstraint);
         Sbool.ConcSbool isLabeledIndexInBounds = ConcolicConstraintContainer.getConcSboolFromConcolic(indexInBounds);
         if (isLabeledIndexInBounds.isFalse()) {
-            markForReevaluationAndBacktrack(se);
+            markForReevaluation(se);
         }
     }
 
