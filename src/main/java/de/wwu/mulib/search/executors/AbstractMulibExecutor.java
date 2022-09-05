@@ -18,6 +18,7 @@ import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.primitives.Snumber;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -163,7 +164,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     }
                     PathSolution solution;
                     try {
-                        solution = getSolution(solutionValue, symbolicExecution, false);
+                        solution = getPathSolution(solutionValue, symbolicExecution, false);
                     } catch (Throwable t) {
                         t.printStackTrace();
                         throw new MulibRuntimeException(t);
@@ -188,7 +189,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     throw e;
                 } catch (Exception | AssertionError e) {
                     if (config.ALLOW_EXCEPTIONS) {
-                        PathSolution solution = getSolution(e, symbolicExecution, true);
+                        PathSolution solution = getPathSolution(e, symbolicExecution, true);
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
                         return Optional.of(solution);
                     } else {
@@ -261,7 +262,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return solverManager.isSatisfiable();
     }
 
-    private PathSolution getSolution(
+    private PathSolution getPathSolution(
             Object solutionValue,
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
@@ -278,6 +279,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (solutionValue != null && solutionValue.getClass().isArray()) {
                 solutionValue = solverManager.getLabel(solutionValue);
             } else if (solutionValue instanceof SubstitutedVar) {
+                if (solutionValue instanceof Sbool) {
+                    solutionValue = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) solutionValue);
+                } if (solutionValue instanceof Snumber) {
+                    solutionValue = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) solutionValue);
+                }
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }
         } else {

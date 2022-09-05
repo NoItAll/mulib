@@ -180,6 +180,7 @@ public class FreeArraysExec {
     }
 
     private static List<Solution> withPreproduction(boolean eagerArrayIndices, MulibConfig.MulibConfigBuilder mb) {
+        mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
         mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(eagerArrayIndices);
         List<Solution> result;
         result = TestUtility.getUpToNSolutions(

@@ -152,7 +152,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         return threeCaseDistinctionTemplate(se, b);
     }
     
-    private boolean threeCaseDistinctionTemplate(
+    protected boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
             Constraint b) {
         // Case 1: No actual choice, only concrete values

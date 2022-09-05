@@ -3,6 +3,7 @@ package de.wwu.mulib.search.free_arrays;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.TestUtility;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
@@ -898,7 +899,6 @@ public class ArrayChecks {
         TestUtility.getAllSolutions(
                 mb -> {
                     mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setCONCOLIC(false); //// TODO
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             1,
                             "simpleSumNonEager0",
@@ -952,7 +952,7 @@ public class ArrayChecks {
         Sint index0 = se.symSint();
         Sint index1 = se.symSint();
         if (!se.nextIsOnKnownPath()) {
-            se.addNewConstraint(se.not(se.eq(index0, index1)));
+            se.addNewConstraint(ConcolicConstraintContainer.tryGetSymFromConcolic(se.not(se.eq(index0, index1))));
         }
         Sarray.SintSarray firstAny = (Sarray.SintSarray) vals.select(index0, se);
         Sarray.SintSarray secondAny = (Sarray.SintSarray) vals.select(index1, se);
@@ -976,7 +976,7 @@ public class ArrayChecks {
         Sint index0 = se.symSint();
         Sint index1 = se.symSint();
         if (!se.nextIsOnKnownPath()) {
-            se.addNewConstraint(se.not(se.eq(index0, index1)));
+            se.addNewConstraint(ConcolicConstraintContainer.tryGetSymFromConcolic(se.not(se.eq(index0, index1))));
         }
         Sarray.SintSarray firstAny = (Sarray.SintSarray) vals.select(index0, se);
         Sarray.SintSarray secondAny = (Sarray.SintSarray) vals.select(index1, se);
@@ -1032,7 +1032,6 @@ public class ArrayChecks {
         TestUtility.getAllSolutions(
                 mb -> {
                     mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setCONCOLIC(false); //// TODO
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             3,
                             "assignWithPreproduction0",
@@ -1193,7 +1192,6 @@ public class ArrayChecks {
         TestUtility.getAllSolutions(
                 mb -> {
                     mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setCONCOLIC(false); //// TODO
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             20,
                             "assignWithPreproductionMoreComplex",

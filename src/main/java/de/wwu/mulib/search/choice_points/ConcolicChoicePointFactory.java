@@ -6,7 +6,7 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.Choice;
-import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Collections;
 import java.util.List;
@@ -22,9 +22,143 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
         return new ConcolicChoicePointFactory(config);
     }
 
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        // Here, we use se.lt instead of Lt.newInstance directly. This is because in concolic execution
+        // we use the CalculationFactory to unwrap the concolic containers
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(rhs, lhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(rhs, lhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sint lhs, Sint rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(rhs, lhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(rhs, lhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(rhs, lhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(rhs, lhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(lhs, rhs));
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lt(rhs, lhs));
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.eq(lhs, rhs));
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.not(se.eq(lhs, rhs)));
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(rhs, lhs));
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, Slong lhs, Slong rhs) {
+        return threeCaseDistinctionTemplate(se, se.lte(lhs, rhs));
+    }
+
+    @Override
+    public boolean negatedBoolChoice(SymbolicExecution se, Sbool b) {
+        return threeCaseDistinctionTemplate(se, se.not(b));
+    }
+
+    @Override
+    public boolean boolChoice(final SymbolicExecution se, final Sbool b) {
+        return threeCaseDistinctionTemplate(se, b);
+    }
+    
+    @Override
     protected boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
-            Sbool constraint,
+            Constraint constraint,
             Choice.ChoiceOption currentChoiceOption) {
         Constraint innerConstraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         ConcolicConstraintContainer container = (ConcolicConstraintContainer) innerConstraint;

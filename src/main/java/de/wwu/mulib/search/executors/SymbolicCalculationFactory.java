@@ -583,8 +583,9 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
             for (Sarray entry : ss.getCachedElements()) {
                 if (!entry.isRepresentedInSolver()) {
+                    assert !entry.shouldBeRepresentedInSolver();
                     entry.initializeId(se);
-                    representArrayIfNeeded(se, entry, sarray.getId());
+                    representArrayIfNeeded(se, entry, ss.getId());
                 }
             }
         }
