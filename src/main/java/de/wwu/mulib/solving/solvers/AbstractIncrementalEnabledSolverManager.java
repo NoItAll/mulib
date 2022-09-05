@@ -125,6 +125,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
+                // The addition of the initial elements is taken cae of in the instance of ArraySolverRepresentation
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
                                 (ArrayInitializationConstraint) ac,
@@ -151,6 +152,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                         (ArrayInitializationConstraint) ac,
                         createCompletelyNewArrayRepresentation((ArrayInitializationConstraint) ac)
                 );
+                // Initialize the initial content of the sarray
+                for (ArrayAccessConstraint aac : ((ArrayInitializationConstraint) ac).getInitialSelectConstraints()) {
+                    _solverSpecificArrayConstraintTreatment(aac);
+                }
             }
         }
     }

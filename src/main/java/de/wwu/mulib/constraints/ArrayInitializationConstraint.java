@@ -1,8 +1,10 @@
 package de.wwu.mulib.constraints;
 
+import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
+import java.util.Arrays;
 import java.util.Set;
 
 public final class ArrayInitializationConstraint implements ArrayConstraint {
@@ -16,10 +18,12 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
     private final Sint reservedId;
     // If is not null: Contains all those array-ids which arrayId can equal to
     private final Set<Sint> potentialIds;
+    private final ArrayAccessConstraint[] initialSelectConstraints;
     private final Sint containingSarraySarrayId;
     private final Sint arrayLength;
     private final Sbool isNull;
     private final Class<?> valueType;
+    private final boolean isCompletelyInitialized;
 
     private ArrayInitializationConstraint(
             Sint arrayId,
@@ -28,8 +32,13 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Set<Sint> potentialIds,
             Sint reservedId,
             Sint containingSarraySarrayId,
-            Class<?> valueType) {
+            Class<?> valueType,
+            ArrayAccessConstraint[] initialSelectConstraints) {
         assert potentialIds == null || containingSarraySarrayId == null;
+        assert initialSelectConstraints != null;
+        assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getType() == ArrayAccessConstraint.Type.SELECT);
+        assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getArrayId() == arrayId);
+        this.initialSelectConstraints = initialSelectConstraints;
         if (potentialIds == null && containingSarraySarrayId == null) {
             this.type = Type.SIMPLE_SARRAY;
         } else if (potentialIds == null) {
@@ -44,6 +53,11 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         this.arrayLength = arrayLength;
         this.isNull = isNull;
         this.valueType = valueType;
+        if (arrayLength instanceof ConcSnumber) {
+            isCompletelyInitialized = ((ConcSnumber) arrayLength).intVal() == initialSelectConstraints.length;
+        } else {
+            isCompletelyInitialized = false;
+        }
     }
 
     /**
@@ -52,13 +66,15 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param arrayLength The length of the array that is represented
      * @param isNull The Sbool representing the possibility to be null of the array
      * @param valueType The element types of the array
+     * @param initialSelectConstraints The content of the array upon initialization
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
             Sint arrayLength,
             Sbool isNull,
-            Class<?> valueType) {
-        this(arrayId, arrayLength, isNull, null, null, null, valueType);
+            Class<?> valueType,
+            ArrayAccessConstraint[] initialSelectConstraints) {
+        this(arrayId, arrayLength, isNull, null, null, null, valueType, initialSelectConstraints);
     }
 
     /**
@@ -69,6 +85,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param reservedId The id reserved for forming a potentially new array
      * @param containingSarraySarrayId The id of the array of arrays that is to be represented
      * @param valueType The element types of the array
+     * @param initialSelectConstraints The content of the array upon initialization
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -76,8 +93,9 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sbool isNull,
             Sint reservedId,
             Sint containingSarraySarrayId,
-            Class<?> valueType) {
-        this(arrayId, arrayLength, isNull, null, reservedId, containingSarraySarrayId, valueType);
+            Class<?> valueType,
+            ArrayAccessConstraint[] initialSelectConstraints) {
+        this(arrayId, arrayLength, isNull, null, reservedId, containingSarraySarrayId, valueType, initialSelectConstraints);
     }
 
     /**
@@ -87,14 +105,16 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param isNull The Sbool representing the possibility to be null of the array
      * @param potentialIds The ids this array might be representing
      * @param valueType The element types of the array
+     * @param initialSelectConstraints The content of the array upon initialization
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
             Sint arrayLength,
             Sbool isNull,
             Set<Sint> potentialIds,
-            Class<?> valueType) {
-        this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType);
+            Class<?> valueType,
+            ArrayAccessConstraint[] initialSelectConstraints) {
+        this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType, initialSelectConstraints);
     }
 
     @Override
@@ -126,12 +146,21 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         return containingSarraySarrayId;
     }
 
+    public ArrayAccessConstraint[] getInitialSelectConstraints() {
+        return initialSelectConstraints;
+    }
+
     public Class<?> getValueType() {
         return valueType;
     }
 
+    public boolean isCompletelyInitialized() {
+        return isCompletelyInitialized;
+    }
+
     @Override
     public String toString() {
-        return "AR_INIT{arrayId=" + arrayId + ",type=" + type + ",valueType=" + valueType + "}";
+        return "AR_INIT{arrayId=" + arrayId + ",type=" + type
+                + ",valueType=" + valueType + ",completelyInitialized=" + isCompletelyInitialized + "}";
     }
 }

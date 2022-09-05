@@ -14,13 +14,16 @@ import java.util.Set;
 
 @SuppressWarnings("unchecked")
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
+    private static final byte NOT_YET_REPRESENTED_IN_SOLVER = 0;
+    private static final byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
+    private static final byte IS_REPRESENTED_IN_SOLVER = 2;
     private Sint id;
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
     private final boolean defaultIsSymbolic;
-    private boolean shouldBeRepresentedInSolver;
+    private byte representationState;
     private Sbool isNull;
 
     /** New instance constructor */
@@ -29,7 +32,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                      Sbool isNull) {
         assert clazz != null && len != null;
         this.id = null;
-        this.shouldBeRepresentedInSolver = false;
+        this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
         this.clazz = clazz;
         this.cachedElements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
@@ -56,7 +59,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         int length = arrayElements.length;
         this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
-        this.shouldBeRepresentedInSolver = false;
+        this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
         this.cachedElements = new HashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
             cachedElements.put((Sint) mvt.transform(i), arrayElements[i]);
@@ -73,7 +76,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
-        this.shouldBeRepresentedInSolver = s.shouldBeRepresentedInSolver;
+        this.representationState = s.representationState;
         this.clazz = s.clazz;
         this.cachedElements = cachedElements;
         this.defaultIsSymbolic = s.defaultIsSymbolic;
@@ -93,7 +96,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
-        this.shouldBeRepresentedInSolver = true;
+        this.representationState = SHOULD_BE_REPRESENTED_IN_SOLVER;
         this.id = id;
     }
 
@@ -107,7 +110,15 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     public abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
     public final boolean shouldBeRepresentedInSolver() {
-        return shouldBeRepresentedInSolver;
+        return representationState == SHOULD_BE_REPRESENTED_IN_SOLVER || representationState == IS_REPRESENTED_IN_SOLVER;
+    }
+
+    public final boolean isRepresentedInSolver() {
+        return representationState == IS_REPRESENTED_IN_SOLVER;
+    }
+
+    public final void setAsRepresentedInSolver() {
+        representationState = IS_REPRESENTED_IN_SOLVER;
     }
 
     public final boolean defaultIsSymbolic() {
@@ -141,7 +152,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
     // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
-        if (!shouldBeRepresentedInSolver) {
+        if (!shouldBeRepresentedInSolver()) {
             if (i instanceof SymNumericExpressionSprimitive) {
                 initializeId(se);
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.

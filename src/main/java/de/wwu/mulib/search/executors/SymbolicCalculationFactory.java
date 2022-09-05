@@ -548,63 +548,81 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
 
     private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
         if (sarray.checkIfNeedsToRepresentOldEntries(newIndex, se)) {
-            representArrayIfNeeded(se, sarray);
+            representArrayIfNeeded(se, sarray, null);
         }
     }
 
-    private static void representArrayIfNeeded( //// TODO Do not represent doubly if already in constraint solver and then represented once more
-            SymbolicExecution se,
-            Sarray sarray,
-            // null if sarray does not belong to a SarraySarray that is to be represented:
-            Sint idOfContainingSarraySarray) {
-        ArrayConstraint arrayInitializationConstraint;
-        if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
-            if (!se.nextIsOnKnownPath()) {
-                arrayInitializationConstraint = new ArrayInitializationConstraint(
-                        sarray.getId(),
-                        sarray.getLength(),
-                        sarray.isNull(),
-                        sarray.getElementType()
-                );
-                se.addNewArrayConstraint(arrayInitializationConstraint);
-            }
-        } else {
-            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
-            if (!se.nextIsOnKnownPath()) {
-                arrayInitializationConstraint = new ArrayInitializationConstraint(
-                        sarray.getId(),
-                        sarray.getLength(),
-                        sarray.isNull(),
-                        nextNumberInitializedSymSarray,
-                        idOfContainingSarraySarray,
-                        sarray.getElementType()
-                );
-                se.addNewArrayConstraint(arrayInitializationConstraint);
-            }
-        }
+    private static ArrayAccessConstraint[] collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(Sarray sarray, SymbolicExecution se) {
+        Set<Sint> cachedIndices = sarray.getCachedIndices();
+        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
         if (sarray instanceof Sarray.SarraySarray) {
             Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
             for (Sarray entry : ss.getCachedElements()) {
-                entry.initializeId(se);
-                representArrayIfNeeded(se, entry, sarray.getId());
+                if (!entry.isRepresentedInSolver()) {
+                    entry.initializeId(se);
+                    representArrayIfNeeded(se, entry, sarray.getId());
+                }
             }
         }
 
-        Set<Sint> cachedIndices = sarray.getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
+        ArrayAccessConstraint[] initialConstraints = new ArrayAccessConstraint[cachedIndices.size()];
         if (!se.nextIsOnKnownPath()) {
+            int constraintNumber = 0;
             for (Sint i : cachedIndices) {
                 SubstitutedVar value = sarray.getFromCacheForIndex(i);
-                ArrayConstraint ac = new ArrayAccessConstraint(sarray.getId(), i, value, ArrayAccessConstraint.Type.SELECT);
-                se.addNewArrayConstraint(ac);
+                ArrayAccessConstraint ac = new ArrayAccessConstraint(sarray.getId(), i, value, ArrayAccessConstraint.Type.SELECT);
+                initialConstraints[constraintNumber] = ac;
+                constraintNumber++;
             }
 //            sarray.clearCachedElements(); //// TODO aliasing...
         }
+        return initialConstraints;
     }
 
-    private static void representArrayIfNeeded(SymbolicExecution se, Sarray sarray) {
-        representArrayIfNeeded(se, sarray, null);
+    private static void representArrayIfNeeded(
+            SymbolicExecution se,
+            Sarray sarray,
+            // null if sarray does not belong to a SarraySarray that is to be represented:
+            Sint idOfContainingSarraySarray) {
+
+        ArrayConstraint arrayInitializationConstraint;
+        // Represent array in constraint solver, if needed
+        if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
+            // In this case the Sarray was not spawned from a select from a SarraySarray
+            if (!sarray.isRepresentedInSolver()) {
+                if (!se.nextIsOnKnownPath()) {
+                    arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            sarray.getId(),
+                            sarray.getLength(),
+                            sarray.isNull(),
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se)
+                    );
+                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                }
+                sarray.setAsRepresentedInSolver();
+            }
+        } else {
+            // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
+            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
+            if (!sarray.isRepresentedInSolver()) {
+                if (!se.nextIsOnKnownPath()) {
+                    arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            sarray.getId(),
+                            sarray.getLength(),
+                            sarray.isNull(),
+                            // Id reserved for this Sarray, if needed
+                            nextNumberInitializedSymSarray,
+                            idOfContainingSarraySarray,
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se)
+                    );
+                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                }
+                sarray.setAsRepresentedInSolver();
+            }
+        }
     }
 
     private static void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
