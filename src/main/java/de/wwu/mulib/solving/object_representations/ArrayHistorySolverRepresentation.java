@@ -3,10 +3,7 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.substitutions.primitives.Snumber;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayDeque;
 import java.util.Deque;
@@ -126,6 +123,23 @@ public class ArrayHistorySolverRepresentation {
         }
         for (ArrayAccessSolverRepresentation aasr : this.selects) {
             result.add(aasr.value);
+        }
+        return result;
+    }
+
+    public Set<Sprimitive> getInitialConcreteAndStoredValues() {
+        Set<Sprimitive> result = new HashSet<>();
+        ArrayHistorySolverRepresentation current = this;
+        while (current.store != null) {
+            result.add(store.value);
+            assert current.beforeStore != null;
+            current = beforeStore;
+        }
+        for (ArrayAccessSolverRepresentation aasr : current.selects) {
+            // Get the selects from the first representation which are not symbolic
+            if (aasr.index instanceof ConcSnumber && Sbool.ConcSbool.TRUE.equals(aasr.guard)) {
+                result.add(aasr.value);
+            }
         }
         return result;
     }

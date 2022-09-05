@@ -54,7 +54,9 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         this.isNull = isNull;
         this.valueType = valueType;
         if (arrayLength instanceof ConcSnumber) {
-            isCompletelyInitialized = ((ConcSnumber) arrayLength).intVal() == initialSelectConstraints.length;
+            int length = ((ConcSnumber) arrayLength).intVal();
+            assert length >= initialSelectConstraints.length;
+            isCompletelyInitialized = length == initialSelectConstraints.length;
         } else {
             isCompletelyInitialized = false;
         }

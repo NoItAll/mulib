@@ -9,18 +9,21 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     protected final Sint length;
     protected final Sbool isNull;
     protected final int level;
+    protected final boolean isCompletelyInitialized;
 
     protected AbstractArraySolverRepresentation(
             Sint arrayId,
             Sint length,
             Sbool isNull,
             int level,
-            ArrayHistorySolverRepresentation ahsr) {
+            ArrayHistorySolverRepresentation ahsr,
+            boolean isCompletelyInitialized) {
         this.arrayId = arrayId;
         this.length = length;
         this.isNull = isNull;
         this.level = level;
         this.currentRepresentation = ahsr;
+        this.isCompletelyInitialized = isCompletelyInitialized;
     }
 
     public Sint getArrayId() {
@@ -47,5 +50,10 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     @Override
     public int hashCode() {
         return arrayId.hashCode();
+    }
+
+    @Override
+    public boolean isCompletelyInitialized() {
+        return isCompletelyInitialized;
     }
 }

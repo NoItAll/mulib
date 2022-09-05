@@ -556,16 +556,6 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
-        if (sarray instanceof Sarray.SarraySarray) {
-            Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
-            for (Sarray entry : ss.getCachedElements()) {
-                if (!entry.isRepresentedInSolver()) {
-                    entry.initializeId(se);
-                    representArrayIfNeeded(se, entry, sarray.getId());
-                }
-            }
-        }
-
         ArrayAccessConstraint[] initialConstraints = new ArrayAccessConstraint[cachedIndices.size()];
         if (!se.nextIsOnKnownPath()) {
             int constraintNumber = 0;
@@ -585,6 +575,19 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             Sarray sarray,
             // null if sarray does not belong to a SarraySarray that is to be represented:
             Sint idOfContainingSarraySarray) {
+
+        Set<Sint> cachedIndices = sarray.getCachedIndices();
+        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
+
+        if (sarray instanceof Sarray.SarraySarray) {
+            Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
+            for (Sarray entry : ss.getCachedElements()) {
+                if (!entry.isRepresentedInSolver()) {
+                    entry.initializeId(se);
+                    representArrayIfNeeded(se, entry, sarray.getId());
+                }
+            }
+        }
 
         ArrayConstraint arrayInitializationConstraint;
         // Represent array in constraint solver, if needed

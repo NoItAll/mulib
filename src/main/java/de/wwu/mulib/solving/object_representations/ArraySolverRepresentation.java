@@ -18,19 +18,24 @@ public interface ArraySolverRepresentation {
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
             result = new PrimitiveValuedArraySolverRepresentation(
-                    ac.getArrayId(),
-                    ac.getArrayLength(),
-                    ac.getIsNull(),
+                    ac,
                     level
             );
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
             ArraySolverRepresentation asr =
                     symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
+
+            Set<Sint> aliasedArrays;
+            if (asr.isCompletelyInitialized()) {
+                aliasedArrays = (Set<Sint>) asr.getInitialConcreteAndStoredValues();
+            } else {
+                aliasedArrays = (Set<Sint>) asr.getPotentialValues();
+            }
             result = new AliasingArraySolverRepresentation(
                     ac,
                     level,
                     // The Sint-values here are the IDs of the aliased arrays
-                    (Set<Sint>) asr.getPotentialValues(),
+                    aliasedArrays,
                     symbolicArrayStates
             );
         } else {
@@ -68,5 +73,9 @@ public interface ArraySolverRepresentation {
     int getLevel();
 
     Set<? extends Sprimitive> getPotentialValues();
+
+    Set<? extends Sprimitive> getInitialConcreteAndStoredValues();
+
+    boolean isCompletelyInitialized();
 
 }

@@ -1,5 +1,7 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.constraints.ArrayAccessConstraint;
+import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -13,12 +15,28 @@ import java.util.Set;
  */
 public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation {
 
-    protected PrimitiveValuedArraySolverRepresentation(Sint arrayId, Sint length, Sbool isNull, int level) {
-        this(arrayId, length, isNull, level, new ArrayHistorySolverRepresentation());
+    public PrimitiveValuedArraySolverRepresentation(ArrayInitializationConstraint aic, int level) {
+        this(
+                aic.getArrayId(),
+                aic.getArrayLength(),
+                aic.getIsNull(),
+                level,
+                new ArrayHistorySolverRepresentation(),
+                aic.isCompletelyInitialized()
+        );
+        for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
+            select(aac.getIndex(), aac.getValue());
+        }
     }
 
-    public PrimitiveValuedArraySolverRepresentation(Sint arrayId, Sint length, Sbool isNull, int level, ArrayHistorySolverRepresentation ahsr) {
-        super(arrayId, length, isNull, level, ahsr);
+    private PrimitiveValuedArraySolverRepresentation(
+            Sint arrayId,
+            Sint length,
+            Sbool isNull,
+            int level,
+            ArrayHistorySolverRepresentation ahsr,
+            boolean isCompletelyInitialized) {
+        super(arrayId, length, isNull, level, ahsr, isCompletelyInitialized);
     }
 
     @Override
@@ -33,12 +51,24 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
 
     @Override
     public PrimitiveValuedArraySolverRepresentation copyForNewLevel(int level) {
-        return new PrimitiveValuedArraySolverRepresentation(arrayId, length, isNull, level, currentRepresentation.copy());
+        return new PrimitiveValuedArraySolverRepresentation(
+                arrayId,
+                length,
+                isNull,
+                level,
+                currentRepresentation.copy(),
+                isCompletelyInitialized
+        );
     }
 
     @Override
     public Set<? extends Sprimitive> getPotentialValues() {
-        return currentRepresentation.getPotentialValues();
+        return currentRepresentation.getPotentialValues(); // TODO better name; if is fully initialized, potential values are initialconcreteandstoredvalues
+    }
+
+    @Override
+    public Set<? extends Sprimitive> getInitialConcreteAndStoredValues() {
+        return currentRepresentation.getInitialConcreteAndStoredValues();
     }
 
 }
