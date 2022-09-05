@@ -11,21 +11,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.locks.ReadWriteLock;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SymbolicValueFactory extends AbstractValueFactory {
-    // TODO Evaluate normal synchronized-statement and performance difference; also: StampedLock
-    private final ReadWriteLock atomicSymSintLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSdoubleLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSfloatLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSboolLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSlongLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSbyteLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock atomicSymSshortLock = new ReentrantReadWriteLock();
+    // TODO Evaluate normal synchronized-statement and performance difference; also: Object
+    private final Object atomicSymSintLock = new Object();
+    private final Object atomicSymSdoubleLock = new Object();
+    private final Object atomicSymSfloatLock = new Object();
+    private final Object atomicSymSboolLock = new Object();
+    private final Object atomicSymSlongLock = new Object();
+    private final Object atomicSymSbyteLock = new Object();
+    private final Object atomicSymSshortLock = new Object();
 
     private final List<Sint.SymSint> createdAtomicSymSints = new ArrayList<>();
     private final List<Sdouble.SymSdouble> createdAtomicSymSdoubles = new ArrayList<>();
@@ -35,13 +33,13 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Sshort.SymSshort> createdAtomicSymSshorts = new ArrayList<>();
     private final List<Sbyte.SymSbyte> createdAtomicSymSbytes = new ArrayList<>();
 
-    private final ReadWriteLock wrappingSymSintLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSdoubleLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSfloatLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSboolLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSshortLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSlongLock = new ReentrantReadWriteLock();
-    private final ReadWriteLock wrappingSymSbyteLock = new ReentrantReadWriteLock();
+    private final Object wrappingSymSintLock = new Object();
+    private final Object wrappingSymSdoubleLock = new Object();
+    private final Object wrappingSymSfloatLock = new Object();
+    private final Object wrappingSymSboolLock = new Object();
+    private final Object wrappingSymSshortLock = new Object();
+    private final Object wrappingSymSlongLock = new Object();
+    private final Object wrappingSymSbyteLock = new Object();
 
     private final Map<NumericExpression, Sint.SymSint> createdSymSintWrappers = new HashMap<>();
     private final Map<NumericExpression, Sdouble.SymSdouble> createdSymSdoubleWrappers = new HashMap<>();
@@ -328,24 +326,15 @@ public class SymbolicValueFactory extends AbstractValueFactory {
             List<T> created,
             Supplier<T> creationFunction,
             int currentNumber,
-            ReadWriteLock lock,
+            Object lock,
             Consumer<T> optionalRestriction) {
-        lock.readLock().lock();
         T result;
-        if (created.size() > currentNumber) {
-            result = created.get(currentNumber);
-            lock.readLock().unlock();
-        } else {
-            lock.readLock().unlock();
-            lock.writeLock().lock();
-            // Re-check time between acquisition
+        synchronized (lock) {
             if (created.size() > currentNumber) {
                 result = created.get(currentNumber);
-                lock.writeLock().unlock();
             } else {
                 result = creationFunction.get();
                 created.add(result);
-                lock.writeLock().unlock();
             }
         }
         optionalRestriction.accept(result);
@@ -356,21 +345,14 @@ public class SymbolicValueFactory extends AbstractValueFactory {
             Map<K, T> created,
             Function<K, T> creationFunction,
             K toWrap,
-            ReadWriteLock lock,
+            Object lock,
             Consumer<T> optionalRestriction) {
-        lock.readLock().lock();
-        T result = (T) created.get(toWrap);
-        lock.readLock().unlock();
-        if (result == null) {
-            lock.writeLock().lock();
+        T result;
+        synchronized (lock) {
             result = (T) created.get(toWrap);
-            // Re-check time between acquisition
-            if (result != null) {
-                lock.writeLock().unlock();
-            } else {
+            if (result == null) {
                 result = creationFunction.apply(toWrap);
                 created.put(toWrap, result);
-                lock.writeLock().unlock();
             }
         }
         optionalRestriction.accept(result);
