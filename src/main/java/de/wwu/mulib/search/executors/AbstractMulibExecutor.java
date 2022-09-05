@@ -151,7 +151,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution();
             if (possibleSymbolicExecution.isPresent()) {
-                solverManager.setupForNewExecution();
+                solverManager.resetLabels();
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 this.currentSymbolicExecution = symbolicExecution;
                 assert solverManager.isSatisfiable() : config.toString();

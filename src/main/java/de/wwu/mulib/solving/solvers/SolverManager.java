@@ -28,7 +28,7 @@ public interface SolverManager {
 
     void backtrackAll();
 
-    void setupForNewExecution();
+    void resetLabels();
 
     void registerLabelPair(Object searchRegionRepresentation, Object labeled);
 

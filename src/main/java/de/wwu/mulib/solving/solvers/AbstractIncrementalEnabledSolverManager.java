@@ -58,7 +58,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public void setupForNewExecution() {
+    public void resetLabels() {
         searchSpaceRepresentationToLabelObject.clear();
     }
 
@@ -272,6 +272,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             backtrackAfterwards++;
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
+                resetLabels();
                 Labels newLabels = LabelUtility.getLabels(
                         this,
                         l.getIdToNamedVar()
