@@ -1,6 +1,5 @@
 package de.wwu.mulib.solving.object_representations;
 
-import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -21,12 +20,9 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 aic.getArrayLength(),
                 aic.getIsNull(),
                 level,
-                new ArrayHistorySolverRepresentation(),
+                new ArrayHistorySolverRepresentation(aic.getInitialSelectConstraints()),
                 aic.isCompletelyInitialized()
         );
-        for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
-            select(aac.getIndex(), aac.getValue());
-        }
     }
 
     private PrimitiveValuedArraySolverRepresentation(
@@ -41,7 +37,7 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
 
     @Override
     public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
-        return currentRepresentation.select(guard, index, selectedValue);
+        return currentRepresentation.select(guard, index, selectedValue, isCompletelyInitialized);
     }
 
     @Override

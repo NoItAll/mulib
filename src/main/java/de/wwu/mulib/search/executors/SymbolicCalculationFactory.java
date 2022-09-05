@@ -575,7 +575,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             Sarray sarray,
             // null if sarray does not belong to a SarraySarray that is to be represented:
             Sint idOfContainingSarraySarray) {
-
+        assert sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 

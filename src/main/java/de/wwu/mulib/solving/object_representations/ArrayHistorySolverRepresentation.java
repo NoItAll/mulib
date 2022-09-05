@@ -18,8 +18,15 @@ public class ArrayHistorySolverRepresentation {
     private final ArrayAccessSolverRepresentation store;
     private final ArrayHistorySolverRepresentation beforeStore;
 
-    public ArrayHistorySolverRepresentation() {
+    public ArrayHistorySolverRepresentation(ArrayAccessConstraint[] initialSelects) {
         this.selects = new ArrayDeque<>();
+        for (ArrayAccessConstraint ac : initialSelects) {
+            selects.push(new ArrayAccessSolverRepresentation(
+                    Sbool.ConcSbool.TRUE,
+                    ac.getIndex(),
+                    ac.getValue()
+            ));
+        }
         this.store = null;
         this.beforeStore = null;
     }
@@ -47,8 +54,8 @@ public class ArrayHistorySolverRepresentation {
         return new ArrayHistorySolverRepresentation(this);
     }
 
-    public Constraint select(Constraint guard, Sint index, Sprimitive value) {
-        return _select(guard, index, value, true);
+    public Constraint select(Constraint guard, Sint index, Sprimitive value, boolean arrayIsCompletelyInitialized) {
+        return _select(guard, index, value, !arrayIsCompletelyInitialized);
     }
 
     private Constraint _select(Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {

@@ -31,7 +31,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 aic.getArrayLength(),
                 aic.getIsNull(),
                 level,
-                new ArrayHistorySolverRepresentation(),
+                new ArrayHistorySolverRepresentation(aic.getInitialSelectConstraints()),
                 aic.isCompletelyInitialized()
         );
         this.reservedId = aic.getReservedId();
@@ -64,9 +64,6 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             metadataEqualsDependingOnId = Or.newInstance(metadataEqualsDependingOnId, idEqualityImplies);
         }
         this.metadataConstraintForPotentialIds = metadataEqualsDependingOnId;
-        for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
-            select(aac.getIndex(), aac.getValue());
-        }
     }
 
     private AliasingArraySolverRepresentation(
@@ -102,7 +99,13 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
         } else {
             // currentRepresentation here is the representation for this.reservedId
             @SuppressWarnings("redundant")
-            Constraint ownConstraint = this.currentRepresentation.select(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, selectedValue);
+            Constraint ownConstraint =
+                    this.currentRepresentation.select(
+                            And.newInstance(guard, Eq.newInstance(arrayId, reservedId)),
+                            index,
+                            selectedValue,
+                            false
+                    );
             joinedSelectConstraint = ownConstraint;
         }
         for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
