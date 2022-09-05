@@ -1,9 +1,7 @@
 package de.wwu.mulib.solving.object_representations;
 
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Eq;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -52,11 +50,11 @@ public class ArrayHistorySolverRepresentation {
         return new ArrayHistorySolverRepresentation(this);
     }
 
-    public Constraint select(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value) {
-        return _select(calculationFactory, guard, index, value, true);
+    public Constraint select(Constraint guard, Sint index, Sprimitive value) {
+        return _select(guard, index, value, true);
     }
 
-    private Constraint _select(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
+    private Constraint _select(Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
@@ -67,10 +65,10 @@ public class ArrayHistorySolverRepresentation {
         // If we stored, we prioritize the stored index-value pair
         if (store != null) {
             assert beforeStore != null;
-            indexEqualsToStoreIndexWithGuard = calculationFactory._and(store.guard, Eq.newInstance(store.index, index));
-            Constraint constraintForStoreOperation = elementsEqualConstraint(calculationFactory, store.value, value);
-            indexEqualsToStoreImplication = implies(calculationFactory, indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
-            resultForSelectOperations = beforeStore._select(calculationFactory, guard, index, value, false);
+            indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
+            Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
+            indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
+            resultForSelectOperations = beforeStore._select(guard, index, value, false);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
@@ -87,29 +85,29 @@ public class ArrayHistorySolverRepresentation {
                     // We can simply skip this index
                     continue;
                 } else if (s.guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) s.guard).isTrue()) {
-                    resultForSelectOperations = elementsEqualConstraint(calculationFactory, s.value, value);
+                    resultForSelectOperations = elementsEqualConstraint(s.value, value);
                     break;
                 }
             }
-            Constraint valuesEqual = elementsEqualConstraint(calculationFactory, s.value, value);
-            Constraint indexEqualsToSelectIndexImplication = implies(calculationFactory, calculationFactory._and(s.guard, indexEqualsToSelectIndex), valuesEqual);
-            resultForSelectOperations = calculationFactory._and(
+            Constraint valuesEqual = elementsEqualConstraint(s.value, value);
+            Constraint indexEqualsToSelectIndexImplication = implies(And.newInstance(s.guard, indexEqualsToSelectIndex), valuesEqual);
+            resultForSelectOperations = And.newInstance(
                     indexEqualsToSelectIndexImplication,
                     resultForSelectOperations
             );
         }
 
-        Constraint indexDoesNotEqualToStoreImplication = implies(calculationFactory, calculationFactory._not(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
-        Constraint bothCasesImplications = calculationFactory._and(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
+        Constraint indexDoesNotEqualToStoreImplication = implies(Not.newInstance(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
+        Constraint bothCasesImplications = And.newInstance(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
 
-        Constraint result = implies(calculationFactory, guard, bothCasesImplications);
+        Constraint result = implies(guard, bothCasesImplications);
         if (pushSelect) {
             selects.push(new ArrayAccessSolverRepresentation(guard, index, value));
         }
         return result;
     }
 
-    public ArrayHistorySolverRepresentation store(CalculationFactory calculationFactory, Constraint guard, Sint index, Sprimitive value) {
+    public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return this;
         }
@@ -132,18 +130,21 @@ public class ArrayHistorySolverRepresentation {
         return result;
     }
 
-    private static Constraint elementsEqualConstraint(CalculationFactory calculationFactory, SubstitutedVar s0, SubstitutedVar s1) {
+    private static Constraint elementsEqualConstraint(SubstitutedVar s0, SubstitutedVar s1) {
         if (s0 instanceof Sbool && s1 instanceof Sbool) {
-            return calculationFactory._or(calculationFactory._and((Sbool) s0, (Sbool) s1), calculationFactory._and(calculationFactory._not((Sbool) s0), calculationFactory._not((Sbool) s1)));
+            return Or.newInstance(
+                    And.newInstance((Sbool) s0, (Sbool) s1),
+                    And.newInstance(Not.newInstance((Sbool) s0), Not.newInstance((Sbool) s1))
+            );
         } else if (s0 instanceof Snumber) {
-            return calculationFactory._eq((Snumber) s0, (Snumber) s1);
+            return Eq.newInstance((Snumber) s0, (Snumber) s1);
         } else {
             throw new NotYetImplementedException();
         }
     }
 
-    private static Constraint implies(CalculationFactory calculationFactory, Constraint c0, Constraint c1) {
-        return calculationFactory._or(calculationFactory._not(c0), c1);
+    private static Constraint implies(Constraint c0, Constraint c1) {
+        return Or.newInstance(Not.newInstance(c0), c1);
     }
 
     private static class ArrayAccessSolverRepresentation {

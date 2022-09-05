@@ -67,8 +67,6 @@ public interface ValueFactory {
 
     Sbool wrappingSymSbool(SymbolicExecution se, Constraint constraint);
 
-    Sbool _wrappingSymSbool(Constraint constraint);
-
     Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1);
 
     Sint.ConcSint concSint(int i);

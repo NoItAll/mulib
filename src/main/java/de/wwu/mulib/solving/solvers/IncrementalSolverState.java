@@ -1,11 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ArrayAccessConstraint;
-import de.wwu.mulib.constraints.ArrayConstraint;
-import de.wwu.mulib.constraints.ArrayInitializationConstraint;
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.search.executors.CalculationFactory;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;
@@ -25,9 +21,7 @@ public class IncrementalSolverState<AR> {
 
     private final SymbolicArrayStates<AR> symbolicArrayStates;
     private final boolean concolic;
-    private final CalculationFactory calculationFactory;
-    private IncrementalSolverState(MulibConfig config, CalculationFactory calculationFactory) {
-        this.calculationFactory = calculationFactory;
+    private IncrementalSolverState(MulibConfig config) {
         this.concolic = config.CONCOLIC;
         this.symbolicArrayStates = new SymbolicArrayStates<>(config);
     }
@@ -57,7 +51,7 @@ public class IncrementalSolverState<AR> {
         // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
         // representation of the current constraint scope
         Constraint previousTop = constraints.pollFirst();
-        constraints.push(calculationFactory._and(previousTop, c));
+        constraints.push(And.newInstance(previousTop, c));
     }
 
     protected void pushConstraint(Constraint c) {
@@ -116,8 +110,8 @@ public class IncrementalSolverState<AR> {
     }
 
     @SuppressWarnings("rawtypes")
-    public static IncrementalSolverState newInstance(MulibConfig config, CalculationFactory calculationFactory) {
-        return new IncrementalSolverState(config, calculationFactory);
+    public static IncrementalSolverState newInstance(MulibConfig config) {
+        return new IncrementalSolverState(config);
     }
 
     private void popArrayConstraintForLevel() {

@@ -5,7 +5,6 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
-import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -30,8 +29,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     private final ProverEnvironment solver;
     private final JavaSMTMulibAdapter adapter;
 
-    public JavaSMTSolverManager(MulibConfig mulibConfig, CalculationFactory cf) {
-        super(mulibConfig, cf);
+    public JavaSMTSolverManager(MulibConfig mulibConfig) {
+        super(mulibConfig);
         synchronized (syncObject) {
             Configuration config = Configuration.defaultConfiguration();
             ShutdownManager shutdown = ShutdownManager.create();

@@ -84,7 +84,6 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                                 this,
                                 mulibValueTransformer,
                                 config,
-                                calculationFactory,
                                 searchStrategy
                         );
                         finalNextExecutor.addNewConstraintAfterBacktrackingPoint(

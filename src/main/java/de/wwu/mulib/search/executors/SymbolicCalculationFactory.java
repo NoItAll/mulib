@@ -360,57 +360,6 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
-    public Sbool _and(Constraint c0, Constraint c1) {
-        if (c0 instanceof Sbool.SymSbool) {
-            c0 = ((Sbool.SymSbool) c0).getRepresentedConstraint();
-        }
-        if (c1 instanceof Sbool.SymSbool) {
-            c1 = ((Sbool.SymSbool) c1).getRepresentedConstraint();
-        }
-        Constraint c = and(c0, c1);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
-    public Sbool _or(Constraint c0, Constraint c1) {
-        if (c0 instanceof Sbool.SymSbool) {
-            c0 = ((Sbool.SymSbool) c0).getRepresentedConstraint();
-        }
-        if (c1 instanceof Sbool.SymSbool) {
-            c1 = ((Sbool.SymSbool) c1).getRepresentedConstraint();
-        }
-        Constraint c = or(c0, c1);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
-    public Sbool _not(Constraint c) {
-        if (c instanceof Sbool.SymSbool) {
-            c = ((Sbool.SymSbool) c).getRepresentedConstraint();
-        }
-        c = not(c);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
-    public Sbool _lt(Snumber lhs, Snumber rhs) {
-        Constraint c = lt(lhs, rhs);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
-    public Sbool _lte(Snumber lhs, Snumber rhs) {
-        Constraint c = lte(lhs, rhs);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
-    public Sbool _eq(Snumber lhs, Snumber rhs) {
-        Constraint c = eq(lhs, rhs);
-        return valueFactory._wrappingSymSbool(c);
-    }
-
-    @Override
     public Sint cmp(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
             long lrhs = ((Slong.ConcSlong) rhs).longVal();

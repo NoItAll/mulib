@@ -813,24 +813,6 @@ public final class SymbolicExecution {
         return calculationFactory.eq(this, lhs, rhs);
     }
 
-    public Sbool _eq(Snumber lhs, Snumber rhs) {
-        Sbool result;
-        if (lhs instanceof Sint) {
-            assert rhs instanceof Sint;
-            result = calculationFactory.eq(this, (Sint) lhs, (Sint) rhs);
-        } else if (lhs instanceof Sdouble) {
-            assert rhs instanceof Sdouble;
-            result = calculationFactory.eq(this, (Sdouble) lhs, (Sdouble) rhs);
-        } else if (lhs instanceof Sfloat) {
-            assert rhs instanceof Sfloat;
-            result = calculationFactory.eq(this, (Sfloat) lhs, (Sfloat) rhs);
-        } else {
-            assert lhs instanceof Slong && rhs instanceof Slong;
-            result = calculationFactory.eq(this, (Slong) lhs, (Slong) rhs);
-        }
-        return result;
-    }
-
     public Sbool eq(Slong lhs, Slong rhs) {
         return calculationFactory.eq(this, lhs, rhs);
     }
@@ -933,13 +915,6 @@ public final class SymbolicExecution {
     }
 
     /* BOOLEAN OPERATIONS */
-
-    public Sbool wrapConstraintInSbool(Constraint c) {
-        if (c instanceof Sbool) {
-            return (Sbool) c;
-        }
-        return valueFactory._wrappingSymSbool(c);
-    }
 
     public Sbool and(final Sbool lhs, final Sbool rhs) {
         return calculationFactory.and(this, lhs, rhs);

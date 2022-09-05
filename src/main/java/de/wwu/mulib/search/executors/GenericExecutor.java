@@ -22,9 +22,8 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
-            CalculationFactory calculationFactory,
             SearchStrategy searchStrategy) {
-        super(mulibExecutorManager, mulibValueTransformer, config, calculationFactory, rootChoiceOption, searchStrategy);
+        super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy);
         if (searchStrategy == SearchStrategy.DFS) {
             this.continueExecution = true;
             this.choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;

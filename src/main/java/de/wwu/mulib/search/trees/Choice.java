@@ -7,7 +7,6 @@ import de.wwu.mulib.exceptions.IllegalTreeModificationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -17,11 +16,11 @@ import java.util.List;
 public final class Choice extends TreeNode {
     private final List<ChoiceOption> options;
 
-    public Choice(ChoiceOption parent, Collection<Sbool> constraintsPerOption) {
-        this(parent, constraintsPerOption.toArray(new Sbool[0]));
+    public Choice(ChoiceOption parent, Collection<Constraint> constraintsPerOption) {
+        this(parent, constraintsPerOption.toArray(new Constraint[0]));
     }
 
-    public Choice(ChoiceOption parent, Sbool... constraintPerOption) {
+    public Choice(ChoiceOption parent, Constraint... constraintPerOption) {
         super(parent);
         if (constraintPerOption.length < 1) {
             throw new IllegalTreeModificationException("There must be at least one choice option for a choice.");
@@ -68,7 +67,7 @@ public final class Choice extends TreeNode {
         private byte state;
         public final int choiceOptionNumber;
         // This constraint must be fulfilled to further evaluate the ChoiceOption
-        private Sbool optionConstraint;
+        private Constraint optionConstraint;
         // Separate ArrayConstraints. These are added after the fact.
         @SuppressWarnings("unchecked")
         private List<ArrayConstraint> arrayConstraints = Collections.EMPTY_LIST;
@@ -76,7 +75,7 @@ public final class Choice extends TreeNode {
         // The possible child of this ChoiceOption is set after evaluating the option.
         private TreeNode child = null;
 
-        private ChoiceOption(int choiceOptionNumber, Sbool optionConstraint) {
+        private ChoiceOption(int choiceOptionNumber, Constraint optionConstraint) {
             this.choiceOptionNumber = choiceOptionNumber;
             this.optionConstraint = optionConstraint;
         }
@@ -111,7 +110,7 @@ public final class Choice extends TreeNode {
             return child != null || isEvaluated();
         }
 
-        public void setOptionConstraint(Sbool optionConstraint) {
+        public void setOptionConstraint(Constraint optionConstraint) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
                         " evaluated cannot be changed");

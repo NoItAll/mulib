@@ -53,20 +53,17 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
-    protected final CalculationFactory calculationFactory;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
-            CalculationFactory calculationFactory,
             Choice.ChoiceOption rootChoiceOption,
             SearchStrategy searchStrategy) {
         this.currentChoiceOption = rootChoiceOption; // Is mutable and will be adapted throughout search
         this.rootChoiceOfSearchTree = rootChoiceOption.getChoice();
         this.mulibExecutorManager = mulibExecutorManager;
-        this.solverManager = Solvers.getSolverManager(config, calculationFactory);
-        this.calculationFactory = calculationFactory;
+        this.solverManager = Solvers.getSolverManager(config);
         this.searchStrategy = searchStrategy;
         this.labelResultValue = config.LABEL_RESULT_VALUE;
         this.isConcolic = config.CONCOLIC;
@@ -105,7 +102,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public final void addNewConstraint(Constraint c) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
         currentChoiceOption.setOptionConstraint(
-                calculationFactory._and(currentChoiceOption.getOptionConstraint(), c));
+                And.newInstance(currentChoiceOption.getOptionConstraint(), c));
         solverManager.addConstraint(c);
     }
 

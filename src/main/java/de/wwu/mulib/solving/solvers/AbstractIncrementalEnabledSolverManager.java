@@ -7,7 +7,6 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
@@ -41,16 +40,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     private boolean satisfiabilityWasCalculated;
     protected final boolean transformationRequired;
     protected final MulibConfig config;
-    protected final CalculationFactory calculationFactory;
 
     private final Map<Class<?>, BiFunction<SolverManager, Object, Object>> classesToLabelFunction;
     // Label cache
     private final Map<Object, Object> searchSpaceRepresentationToLabelObject = new IdentityHashMap<>();
 
-    protected AbstractIncrementalEnabledSolverManager(MulibConfig config, CalculationFactory cf) {
+    protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
-        this.calculationFactory = cf;
-        this.incrementalSolverState = IncrementalSolverState.newInstance(config, cf);
+        this.incrementalSolverState = IncrementalSolverState.newInstance(config);
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         this.classesToLabelFunction = config.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
     }
@@ -130,7 +127,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 assert ac instanceof ArrayInitializationConstraint;
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
-                                calculationFactory,
                                 (ArrayInitializationConstraint) ac,
                                 incrementalSolverState.getSymbolicArrayStates(),
                                 getLevel()

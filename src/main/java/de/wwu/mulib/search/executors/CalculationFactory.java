@@ -1,7 +1,6 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -94,18 +93,6 @@ public interface CalculationFactory {
     Sbool eq(SymbolicExecution se, Sdouble lhs, Sdouble rhs);
 
     Sbool eq(SymbolicExecution se, Sfloat lhs, Sfloat rhs);
-
-    Sbool _and(Constraint c0, Constraint c1);
-
-    Sbool _or(Constraint c0, Constraint c1);
-
-    Sbool _not(Constraint c);
-
-    Sbool _lt(Snumber lhs, Snumber rhs);
-
-    Sbool _lte(Snumber lhs, Snumber rhs);
-
-    Sbool _eq(Snumber lhs, Snumber rhs);
 
     Sint cmp(SymbolicExecution se, Slong lhs, Slong rhs);
 

@@ -586,36 +586,6 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     }
 
     @Override
-    public Sbool _and(Constraint c0, Constraint c1) { //// TODO
-        throw new NotYetImplementedException();
-    }
-
-    @Override
-    public Sbool _or(Constraint c0, Constraint c1) {
-        throw new NotYetImplementedException();
-    }
-
-    @Override
-    public Sbool _not(Constraint c) {
-        throw new NotYetImplementedException();
-    }
-
-    @Override
-    public Sbool _lt(Snumber lhs, Snumber rhs) {
-        throw new NotYetImplementedException();
-    }
-
-    @Override
-    public Sbool _lte(Snumber lhs, Snumber rhs) {
-        throw new NotYetImplementedException();
-    }
-
-    @Override
-    public Sbool _eq(Snumber lhs, Snumber rhs) {
-        throw new NotYetImplementedException();
-    }
-
-    @Override
     public Sint cmp(SymbolicExecution se, Slong lhs, Slong rhs) {
         Sint sym = scf.cmp(se,(Slong) tryGetSymFromConcolic(lhs), (Slong) tryGetSymFromConcolic(rhs));
         if (sym instanceof ConcSnumber) {

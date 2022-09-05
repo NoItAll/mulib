@@ -228,21 +228,6 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    public Sbool _wrappingSymSbool(Constraint constraint) {
-        if (constraint instanceof Sbool.ConcSbool) {
-            return (Sbool.ConcSbool) constraint;
-        }
-        // TODO better lookup via encapsulation of sbool?
-        return returnWrapperIfExistsElseCreate(
-                createdSymSboolWrappers,
-                e -> (Sbool.SymSbool) Sbool.newConstraintSbool(e),
-                constraint,
-                wrappingSymSboolLock,
-                (b) -> {}
-        );
-    }
-
-    @Override
     public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,

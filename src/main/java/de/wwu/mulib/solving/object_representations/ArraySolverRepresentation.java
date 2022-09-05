@@ -2,7 +2,6 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.search.executors.CalculationFactory;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -13,23 +12,21 @@ import java.util.Set;
 public interface ArraySolverRepresentation {
 
     static ArraySolverRepresentation newInstance(
-            CalculationFactory calculationFactory,
             ArrayInitializationConstraint ac,
             IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
             int level) {
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
             result = new PrimitiveValuedArraySolverRepresentation(
-                    calculationFactory,
                     ac.getArrayId(),
                     ac.getArrayLength(),
                     ac.getIsNull(),
                     level
             );
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
-            ArraySolverRepresentation asr = symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
+            ArraySolverRepresentation asr =
+                    symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
             result = new AliasingArraySolverRepresentation(
-                    calculationFactory,
                     ac.getArrayId(),
                     ac.getArrayLength(),
                     ac.getIsNull(),
@@ -42,7 +39,6 @@ public interface ArraySolverRepresentation {
         } else {
             assert ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY;
             result = new AliasingArraySolverRepresentation(
-                    calculationFactory,
                     ac.getArrayId(),
                     ac.getArrayLength(),
                     ac.getIsNull(),
