@@ -11,19 +11,19 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
 public class SymbolicValueFactory extends AbstractValueFactory {
-    // TODO Evaluate normal synchronized-statement and performance difference; also: Object
-    private final Object atomicSymSintLock = new Object();
-    private final Object atomicSymSdoubleLock = new Object();
-    private final Object atomicSymSfloatLock = new Object();
-    private final Object atomicSymSboolLock = new Object();
-    private final Object atomicSymSlongLock = new Object();
-    private final Object atomicSymSbyteLock = new Object();
-    private final Object atomicSymSshortLock = new Object();
+    private final StampedLock atomicSymSintLock = new StampedLock();
+    private final StampedLock atomicSymSdoubleLock = new StampedLock();
+    private final StampedLock atomicSymSfloatLock = new StampedLock();
+    private final StampedLock atomicSymSboolLock = new StampedLock();
+    private final StampedLock atomicSymSlongLock = new StampedLock();
+    private final StampedLock atomicSymSbyteLock = new StampedLock();
+    private final StampedLock atomicSymSshortLock = new StampedLock();
 
     private final List<Sint.SymSint> createdAtomicSymSints = new ArrayList<>();
     private final List<Sdouble.SymSdouble> createdAtomicSymSdoubles = new ArrayList<>();
@@ -33,13 +33,13 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Sshort.SymSshort> createdAtomicSymSshorts = new ArrayList<>();
     private final List<Sbyte.SymSbyte> createdAtomicSymSbytes = new ArrayList<>();
 
-    private final Object wrappingSymSintLock = new Object();
-    private final Object wrappingSymSdoubleLock = new Object();
-    private final Object wrappingSymSfloatLock = new Object();
-    private final Object wrappingSymSboolLock = new Object();
-    private final Object wrappingSymSshortLock = new Object();
-    private final Object wrappingSymSlongLock = new Object();
-    private final Object wrappingSymSbyteLock = new Object();
+    private final StampedLock wrappingSymSintLock = new StampedLock();
+    private final StampedLock wrappingSymSdoubleLock = new StampedLock();
+    private final StampedLock wrappingSymSfloatLock = new StampedLock();
+    private final StampedLock wrappingSymSboolLock = new StampedLock();
+    private final StampedLock wrappingSymSshortLock = new StampedLock();
+    private final StampedLock wrappingSymSlongLock = new StampedLock();
+    private final StampedLock wrappingSymSbyteLock = new StampedLock();
 
     private final Map<NumericExpression, Sint.SymSint> createdSymSintWrappers = new HashMap<>();
     private final Map<NumericExpression, Sdouble.SymSdouble> createdSymSdoubleWrappers = new HashMap<>();
@@ -326,15 +326,24 @@ public class SymbolicValueFactory extends AbstractValueFactory {
             List<T> created,
             Supplier<T> creationFunction,
             int currentNumber,
-            Object lock,
+            StampedLock lock,
             Consumer<T> optionalRestriction) {
+        long stamp = lock.readLock();
         T result;
-        synchronized (lock) {
+        if (created.size() > currentNumber) {
+            result = created.get(currentNumber);
+            lock.unlockRead(stamp);
+        } else {
+            lock.unlockRead(stamp);
+            stamp = lock.writeLock();
+            // Re-check time between acquisition
             if (created.size() > currentNumber) {
                 result = created.get(currentNumber);
+                lock.unlockWrite(stamp);
             } else {
                 result = creationFunction.get();
                 created.add(result);
+                lock.unlockWrite(stamp);
             }
         }
         optionalRestriction.accept(result);
@@ -345,14 +354,21 @@ public class SymbolicValueFactory extends AbstractValueFactory {
             Map<K, T> created,
             Function<K, T> creationFunction,
             K toWrap,
-            Object lock,
+            StampedLock lock,
             Consumer<T> optionalRestriction) {
-        T result;
-        synchronized (lock) {
+        long stamp = lock.readLock();
+        T result = (T) created.get(toWrap);
+        lock.unlockRead(stamp);
+        if (result == null) {
+            stamp = lock.writeLock();
             result = (T) created.get(toWrap);
-            if (result == null) {
+            // Re-check time between acquisition
+            if (result != null) {
+                lock.unlockWrite(stamp);
+            } else {
                 result = creationFunction.apply(toWrap);
                 created.put(toWrap, result);
+                lock.unlockWrite(stamp);
             }
         }
         optionalRestriction.accept(result);
