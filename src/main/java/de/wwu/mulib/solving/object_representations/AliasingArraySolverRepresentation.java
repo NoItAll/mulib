@@ -22,14 +22,12 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     private final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
 
     public AliasingArraySolverRepresentation(
-            final Sint arrayId,
-            final Sint arrayLength,
-            final Sbool isNull,
+            final ArrayInitializationConstraint aic,
             final int level,
-            final Sint reservedId,
             final Set<Sint> potentialIds,
             final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates) {
-        super(arrayId, arrayLength, isNull, level, new ArrayHistorySolverRepresentation());
+        super(aic.getArrayId(), aic.getArrayLength(), aic.getIsNull(), level, new ArrayHistorySolverRepresentation());
+        this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>();
@@ -44,7 +42,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             Constraint idsEqual = Eq.newInstance(id, arrayId);
             Constraint isNullsEqual = Or.newInstance(And.newInstance(isNull, asr.getIsNull()), And.newInstance(Not.newInstance(isNull), Not.newInstance(asr.getIsNull())));
-            Constraint lengthsEqual = Eq.newInstance(arrayLength, asr.getLength());
+            Constraint lengthsEqual = Eq.newInstance(length, asr.getLength());
             Constraint idEqualityImplies = And.newInstance(
                     idsEqual,
                     isNullsEqual,
@@ -52,7 +50,6 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             );
             metadataEqualsDependingOnId = Or.newInstance(metadataEqualsDependingOnId, idEqualityImplies);
         }
-        this.reservedId = reservedId;
         this.metadataConstraintForPotentialIds = metadataEqualsDependingOnId;
     }
 

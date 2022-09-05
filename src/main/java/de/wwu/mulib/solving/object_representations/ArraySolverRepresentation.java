@@ -27,11 +27,8 @@ public interface ArraySolverRepresentation {
             ArraySolverRepresentation asr =
                     symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
             result = new AliasingArraySolverRepresentation(
-                    ac.getArrayId(),
-                    ac.getArrayLength(),
-                    ac.getIsNull(),
+                    ac,
                     level,
-                    ac.getReservedId(),
                     // The Sint-values here are the IDs of the aliased arrays
                     (Set<Sint>) asr.getPotentialValues(),
                     symbolicArrayStates
@@ -39,11 +36,8 @@ public interface ArraySolverRepresentation {
         } else {
             assert ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY;
             result = new AliasingArraySolverRepresentation(
-                    ac.getArrayId(),
-                    ac.getArrayLength(),
-                    ac.getIsNull(),
+                    ac,
                     level,
-                    ac.getReservedId(),
                     ac.getPotentialIds(),
                     symbolicArrayStates
             );
