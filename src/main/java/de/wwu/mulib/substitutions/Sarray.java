@@ -1,5 +1,6 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -7,10 +8,9 @@ import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
+import java.util.stream.IntStream;
 
 @SuppressWarnings("unchecked")
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
@@ -21,10 +21,480 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
-    protected final Map<Sint, T> cachedElements;
+    protected SarrayElementCache<T> cachedElements;
     private final boolean defaultIsSymbolic;
     private byte representationState;
     private Sbool isNull;
+
+    /**
+     * Interface for ways of representing the cache of an array.
+     * The cache of an array consists of the Sint->SubstitutedValue key-value pairs
+     * for which we definitely know that they are contained in the array. The cache is used
+     * to ensure that we only create array-based constraints if necessary. Particularly, for the
+     * case where no symbolic indices are used for the array, no constraint should be added.
+     * @param <U> The type of SubstitutedVar stored in the Sarray.
+     */
+    private interface SarrayElementCache<U extends SubstitutedVar> {
+        /**
+         * Gets the value associated with the index
+         * @param index The index
+         * @return The value, i.e. v = a[index]
+         */
+        U get(Sint index);
+
+        /**
+         * Puts the value at the position of the index. This method is used when we select from an array with an
+         * index that is not yet contained in the cache within the search.
+         * region.
+         * @param index The index
+         * @param val The value
+         */
+        void put(Sint index, U val);
+
+        /**
+         * Stores a value at the position of the index. This method is used, when we store a value in the array
+         * within the search region. This is important to differentiate from selecting, since storing might
+         * need to reset the cache of aliased Sarrays.
+         * @param index The index
+         * @param val The value
+         * @see AliasingSarrayElementCache
+         */
+        void store(Sint index, U val);
+
+        /**
+         * Clears the cache. This will be executed once a value is stored while the Sarray needs to be represented
+         * in the constraint solver. We cannot be sure anymore that another value has not been overwritten.
+         * TODO: Special case clearSymbolic if a concrete index is used to store
+         */
+        void clear();
+
+        /**
+         * @return The set of indices in the cache
+         */
+        Set<Sint> keySet();
+
+        /**
+         * @return The set of values in the cache
+         */
+        Collection<U> values();
+
+        /**
+         * Not all caches might be able to store symbolic indices (currently for experimenting with the performance).
+         * @return A SarrayElementCache capable of storing a symbolic index or this. If the current SarrayElementCache
+         * already is capable, returns this.
+         */
+        SarrayElementCache<U> transitionToSymbolicIndexEnabled();
+
+        /**
+         * It can be necessary to copy an Sarray element-wise and then initialize a new array with the copied elements.
+         * This method creates a new SarrayElement of the same type as 'this' with the new elements.
+         * @param elements The elements with which to populate the new SarrayElementCache
+         * @return The new SarrayElementCache
+         */
+        SarrayElementCache<U> newInstance(Map<Sint, U> elements);
+
+        /**
+         * @return true if this SarrayElementCache can store symbolic indices, else false.
+         */
+        boolean canStoreSymbolicIndices();
+
+        /**
+         * @return true if this SarrayElementCache specifically tracks the possible sarrays that might be contained.
+         */
+        boolean tracksPossibleSarrayValues();
+
+        /**
+         * @return true if this SarrayElementCache has a Set of potential candidates useable for caching.
+         */
+        boolean isAliasing();
+
+        /**
+         * @return The number of cached key-value-pairs
+         */
+        int getNumberCachedItems();
+    }
+
+    /**
+     * Uses a Map to store the Sint->SubstitutedVar pairs. Thus is also able to store symbolic indices.
+     * @param <U> The type of SubstitutedVar used.
+     */
+    private static class MapSarrayElementCache<U extends SubstitutedVar> implements SarrayElementCache<U> {
+        private final Map<Sint, U> elements;
+
+        MapSarrayElementCache() {
+            elements = new HashMap<>();
+        }
+
+        MapSarrayElementCache(Map<Sint, U> elements) {
+            this.elements = elements;
+        }
+
+        MapSarrayElementCache(U[] values) {
+            elements = new HashMap<>(values.length);
+            int i = 0;
+            for (U u : values) {
+                elements.put(Sint.concSint(i), u);
+                i++;
+            }
+        }
+
+        MapSarrayElementCache(SarrayElementCache<U> sec) {
+            if (sec instanceof MapSarrayElementCache) {
+                this.elements = new HashMap<>(((MapSarrayElementCache<U>) sec).elements);
+            } else {
+                this.elements = new HashMap<>();
+                Iterable<Sint> indices = sec.keySet();
+                for (Sint i : indices) {
+                    elements.put(i, sec.get(i));
+                }
+            }
+        }
+
+        @Override
+        public U get(Sint index) {
+            return elements.get(index);
+        }
+
+        @Override
+        public void put(Sint index, U val) {
+            elements.put(index, val);
+        }
+
+        @Override
+        public void store(Sint index, U val) {
+            elements.put(index, val);
+        }
+
+        @Override
+        public void clear() {
+            elements.clear();
+        }
+
+        @Override
+        public Set<Sint> keySet() {
+            return Collections.unmodifiableSet(elements.keySet());
+        }
+
+        @Override
+        public Collection<U> values() {
+            return Collections.unmodifiableCollection(elements.values());
+        }
+
+        @Override
+        public SarrayElementCache<U> transitionToSymbolicIndexEnabled() {
+            return this;
+        }
+
+        @Override
+        public SarrayElementCache<U> newInstance(Map<Sint, U> elements) {
+            return new MapSarrayElementCache<>(elements);
+        }
+
+        @Override
+        public boolean canStoreSymbolicIndices() {
+            return true;
+        }
+
+        @Override
+        public boolean tracksPossibleSarrayValues() {
+            return false;
+        }
+
+        @Override
+        public boolean isAliasing() {
+            return false;
+        }
+
+        @Override
+        public int getNumberCachedItems() {
+            return elements.size();
+        }
+    }
+
+    /**
+     * Uses an array to store the Sint->SubstitutedVar pairs. Thus is not able to store symbolic indices.
+     * @param <U> The type of SubstitutedVar used.
+     */
+    private static class ArraySarrayElementCache<U extends SubstitutedVar> implements SarrayElementCache<U> {
+        private final U[] values;
+        ArraySarrayElementCache(U[] values) {
+//            assert Arrays.stream(values).allMatch(Objects::nonNull); // TODO
+            this.values = (U[]) new SubstitutedVar[values.length];
+            System.arraycopy(values, 0, this.values, 0, values.length);
+        }
+
+        ArraySarrayElementCache(Map<Sint, U> elements) {
+            this.values = (U[]) new SubstitutedVar[elements.size()];
+            for (Map.Entry<Sint, U> entry : elements.entrySet()) {
+                assert entry.getKey() instanceof ConcSnumber;
+                values[((ConcSnumber) entry.getKey()).intVal()] = entry.getValue();
+            }
+            assert Arrays.stream(values).allMatch(Objects::nonNull);
+        }
+
+        @Override
+        public U get(Sint index) {
+            if (index instanceof SymNumericExpressionSprimitive) {
+                return null;
+            }
+            return values[((ConcSnumber) index).intVal()];
+        }
+
+        @Override
+        public void put(Sint index, U val) {
+            assert index instanceof ConcSnumber;
+            values[((ConcSnumber) index).intVal()] = val;
+        }
+
+        @Override
+        public void store(Sint index, U val) {
+            put(index, val);
+        }
+
+        @Override
+        public void clear() {
+            throw new MulibIllegalStateException("This should not happen. When it becomes necessary to clear the " +
+                    "cache of an array, the array should already be represented in the constraint solver. Thus, a " +
+                    "cache which supports symbolic indices should be used.");
+        }
+
+        @Override
+        public Set<Sint> keySet() {
+            return IntStream.range(0, values.length).mapToObj(Sint::concSint).collect(Collectors.toSet());
+        }
+
+        @Override
+        public Collection<U> values() {
+            return List.of(values);
+        }
+
+        @Override
+        public SarrayElementCache<U> transitionToSymbolicIndexEnabled() {
+            return new MapSarrayElementCache<>(values);
+        }
+
+        @Override
+        public SarrayElementCache<U> newInstance(Map<Sint, U> elements) {
+            return new ArraySarrayElementCache<>(elements);
+        }
+
+        @Override
+        public boolean canStoreSymbolicIndices() {
+            return false;
+        }
+
+        @Override
+        public boolean tracksPossibleSarrayValues() {
+            return false;
+        }
+
+        @Override
+        public boolean isAliasing() {
+            return false;
+        }
+
+        @Override
+        public int getNumberCachedItems() {
+            return values.length;
+        }
+    }
+
+    private static class AliasingSarrayElementCache<U extends SubstitutedVar> implements SarrayElementCache<U> {
+        private final SarrayElementCache<U> delegateTo;
+        private final Set<Sarray<U>> potentiallyAliasedSarrayElementCaches;
+
+        AliasingSarrayElementCache(Sarray cacheIsFor, SarrayElementCache<U> delegateTo, Set<Sarray<U>> sarrays) {
+            this.delegateTo = delegateTo;
+            this.potentiallyAliasedSarrayElementCaches = sarrays;
+            if (cacheIsFor != null) {
+                for (Sarray s : sarrays) {
+                    assert s.cachedElements.isAliasing();
+                    ((AliasingSarrayElementCache) s.cachedElements).potentiallyAliasedSarrayElementCaches.add(cacheIsFor);
+                }
+            }
+        }
+
+        @Override
+        public U get(Sint index) {
+            return delegateTo.get(index);
+        }
+
+        @Override
+        public void put(Sint index, U val) {
+            delegateTo.put(index, val);
+        }
+
+        @Override
+        public void store(Sint index, U val) {
+            for (Sarray<U> s : potentiallyAliasedSarrayElementCaches) {
+                // Delete the cache so that we do not have to worry about having stale caches
+                s.clearCachedElements();
+            }
+            delegateTo.store(index, val);
+        }
+
+        @Override
+        public void clear() {
+            delegateTo.clear();
+        }
+
+        @Override
+        public Set<Sint> keySet() {
+            return delegateTo.keySet();
+        }
+
+        @Override
+        public Collection<U> values() {
+            return delegateTo.values();
+        }
+
+        @Override
+        public SarrayElementCache<U> transitionToSymbolicIndexEnabled() {
+            if (canStoreSymbolicIndices()) {
+                return this;
+            } else {
+                return new AliasingSarrayElementCache<>(
+                        null,
+                        delegateTo.transitionToSymbolicIndexEnabled(),
+                        potentiallyAliasedSarrayElementCaches
+                );
+            }
+        }
+
+        @Override
+        public SarrayElementCache<U> newInstance(Map<Sint, U> elements) {
+            return new AliasingSarrayElementCache<>(
+                    null,
+                    this.delegateTo.newInstance(elements),
+                    new HashSet<>(potentiallyAliasedSarrayElementCaches)
+            );
+        }
+
+        @Override
+        public boolean canStoreSymbolicIndices() {
+            return delegateTo.canStoreSymbolicIndices();
+        }
+
+        @Override
+        public boolean tracksPossibleSarrayValues() {
+            return delegateTo.tracksPossibleSarrayValues();
+        }
+
+        @Override
+        public boolean isAliasing() {
+            return true;
+        }
+
+        @Override
+        public int getNumberCachedItems() {
+            return delegateTo.getNumberCachedItems();
+        }
+    }
+
+    private static class SarraySarrayTrackingElementCache implements SarrayElementCache<Sarray> {
+        private final SarrayElementCache<Sarray> delegateTo;
+        private final Set<Sarray> potentiallyContainedElements;
+        private final boolean isCompletelyInitialized;
+
+        SarraySarrayTrackingElementCache(SarrayElementCache<Sarray> delegateTo, boolean isCompletelyInitialized) {
+            this.delegateTo = delegateTo;
+            Collection<Sarray> values = delegateTo.values();
+            for (Sarray s : values) {
+                s.cachedElements = new AliasingSarrayElementCache<>(s, s.cachedElements, new HashSet<>());
+            }
+            this.potentiallyContainedElements = new HashSet<>(values);
+            this.isCompletelyInitialized = isCompletelyInitialized;
+        }
+
+        SarraySarrayTrackingElementCache(
+                SarrayElementCache<Sarray> delegateTo,
+                Set<Sarray> potentiallyContainedElements,
+                boolean isCompletelyInitialized) {
+            this.delegateTo = delegateTo;
+            this.potentiallyContainedElements = potentiallyContainedElements;
+            this.isCompletelyInitialized = isCompletelyInitialized;
+        }
+
+        @Override
+        public Sarray<?> get(Sint index) {
+            return delegateTo.get(index);
+        }
+
+        @Override
+        public void put(Sint index, Sarray val) {
+            delegateTo.put(index, val);
+            if (!isCompletelyInitialized) {
+                potentiallyContainedElements.add(val);
+            }
+        }
+
+        @Override
+        public void store(Sint index, Sarray val) {
+            delegateTo.store(index, val);
+            potentiallyContainedElements.add(val);
+        }
+
+        @Override
+        public void clear() {
+            delegateTo.clear();
+        }
+
+        @Override
+        public Set<Sint> keySet() {
+            return delegateTo.keySet();
+        }
+
+        @Override
+        public Collection<Sarray> values() {
+            return delegateTo.values();
+        }
+
+        @Override
+        public SarrayElementCache<Sarray> transitionToSymbolicIndexEnabled() {
+            if (!delegateTo.canStoreSymbolicIndices()) {
+                return new SarraySarrayTrackingElementCache(
+                        new MapSarrayElementCache<>(
+                                ((ArraySarrayElementCache<Sarray>) delegateTo).values),
+                        isCompletelyInitialized
+                );
+            } else {
+                return this;
+            }
+        }
+
+        @Override
+        public SarrayElementCache<Sarray> newInstance(Map<Sint, Sarray> elements) {
+            return new SarraySarrayTrackingElementCache(
+                    delegateTo.newInstance(elements),
+                    potentiallyContainedElements,
+                    isCompletelyInitialized
+            );
+        }
+
+        @Override
+        public boolean canStoreSymbolicIndices() {
+            return delegateTo.canStoreSymbolicIndices();
+        }
+
+        @Override
+        public boolean tracksPossibleSarrayValues() {
+            return true;
+        }
+
+        @Override
+        public boolean isAliasing() {
+            return delegateTo.isAliasing();
+        }
+
+        @Override
+        public int getNumberCachedItems() {
+            return delegateTo.getNumberCachedItems();
+        }
+
+        public Set<Sarray> getPotentiallyContainedElements() {
+            return potentiallyContainedElements;
+        }
+    }
 
     /** New instance constructor */
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
@@ -34,18 +504,22 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.id = null;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
         this.clazz = clazz;
-        this.cachedElements = new HashMap<>();
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.len = len;
         if (!defaultIsSymbolic) {
             if (len instanceof ConcSnumber) {
                 int length = ((ConcSnumber) len).intVal();
+                T[] values = (T[]) new SubstitutedVar[length];
                 for (int i = 0; i < length; i++) {
-                    cachedElements.put(se.concSint(i), nonSymbolicDefaultElement(se));
+                    values[i] = nonSymbolicDefaultElement(se);
                 }
+                this.cachedElements = new ArraySarrayElementCache<T>(values);
             } else {
-                throw new NotYetImplementedException("Behavior if length is not concrete and default is not symbolic is not yet implemented");
+                throw new NotYetImplementedException("Behavior if length is not concrete and default is not symbolic " +
+                        "is not yet implemented");
             }
+        } else {
+            this.cachedElements = new MapSarrayElementCache<>();
         }
         this.isNull = isNull;
     }
@@ -60,20 +534,17 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.len = (Sint) mvt.transform(length);
         this.defaultIsSymbolic = false;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
-        this.cachedElements = new HashMap<>();
-        for (int i = 0; i < arrayElements.length; i++) {
-            cachedElements.put((Sint) mvt.transform(i), arrayElements[i]);
-        }
+        this.cachedElements = new ArraySarrayElementCache<T>(arrayElements);
         this.isNull = Sbool.ConcSbool.FALSE;
     }
 
     /** Copy constructor for all Sarrays but SarraySarray */
     protected Sarray(MulibValueCopier mvt, Sarray<T> s) {
-        this(mvt, s, new HashMap<>(s.cachedElements));
+        this(mvt, s, new MapSarrayElementCache<>(s.cachedElements));
     }
 
     /** Copy constructor for SarraySarrays */
-    private Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
+    private Sarray(MulibValueCopier mvt, Sarray<T> s, SarrayElementCache<T> cachedElements) {
         mvt.registerCopy(s, this);
         this.id = s.getId();
         this.representationState = s.representationState;
@@ -84,11 +555,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         this.isNull = s.isNull;
     }
 
-    public void initializeId(SymbolicExecution se) {
+    final void initializeId(SymbolicExecution se) {
         _initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
     }
 
-    public void initializeIdForAliasing(SymbolicExecution se) {
+    private void initializeIdForAliasing(SymbolicExecution se) {
         _initializeId(se.symSint());
     }
 
@@ -154,7 +625,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (!shouldBeRepresentedInSolver()) {
             if (i instanceof SymNumericExpressionSprimitive) {
-                initializeId(se);
+                prepareToRepresentOldEntries(se);
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
                 return true;
             }
@@ -162,11 +633,16 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return false;
     }
 
+    public void prepareToRepresentOldEntries(SymbolicExecution se) {
+        initializeId(se);
+        this.cachedElements = cachedElements.transitionToSymbolicIndexEnabled();
+    }
+
     public final Set<Sint> getCachedIndices() {
         return cachedElements.keySet();
     }
 
-    public final Collection<T> getCachedElements() {
+    public final Iterable<T> getCachedElements() {
         return cachedElements.values();
     }
 
@@ -186,8 +662,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return cachedElements.get(index);
     }
 
-    public final void setInCacheForIndex(Sint index, T value) { //// TODO Faulty caches in case of aliasing possible
+    public final void setInCacheForIndexForSelect(Sint index, T value) {
         cachedElements.put(index, value);
+    }
+
+    public final void setInCacheForIndexForStore(Sint index, T value) {
+        cachedElements.store(index, value);
     }
 
     public final Sint getId() {
@@ -648,12 +1128,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             this.elementType = s.elementType;
         }
 
-        private static Map<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, Map<Sint, Sarray> elements) {
-            Map<Sint, Sarray> result = new HashMap<>();
-            for (Map.Entry<Sint, Sarray> entry : elements.entrySet()) {
-                result.put(entry.getKey(), entry.getValue().copy(mvt));
+        private static SarrayElementCache<Sarray> copyArrayElements(MulibValueCopier mvt, SarrayElementCache<Sarray> elementCache) {
+            Map<Sint, Sarray> elements = new HashMap<>();
+            for (Sint i : elementCache.keySet()) {
+                elements.put(i, elementCache.get(i).copy(mvt));
             }
-            return result;
+            return elementCache.newInstance(elements);
         }
 
         private static int determineDimFromInnerElementType(Class<?> innerElementType) {
@@ -665,6 +1145,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
             return i;
         }
 
+        @Override
         public Class<?> getElementType() {
             return elementType;
         }
@@ -744,6 +1225,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
                 result = generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
             }
             result.initializeIdForAliasing(se);
+            assert cachedElements.tracksPossibleSarrayValues();
+            result.cachedElements = new AliasingSarrayElementCache(
+                    result,
+                    result.cachedElements,
+                    ((SarraySarrayTrackingElementCache) cachedElements).getPotentiallyContainedElements()
+            );
             return result;
         }
 
@@ -755,6 +1242,18 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         @Override
         public SarraySarray copy(MulibValueCopier mvt) {
             return new SarraySarray(mvt, this);
+        }
+
+        @Override
+        public void prepareToRepresentOldEntries(SymbolicExecution se) {
+            initializeId(se);
+            Sint length = length();
+            assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
+            this.cachedElements =
+                    new SarraySarrayTrackingElementCache(
+                            cachedElements.transitionToSymbolicIndexEnabled(),
+                            length instanceof ConcSnumber && ((ConcSnumber) length).intVal() == cachedElements.getNumberCachedItems()
+                    );
         }
     }
 }

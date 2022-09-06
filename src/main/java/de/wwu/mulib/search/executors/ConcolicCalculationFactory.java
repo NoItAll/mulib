@@ -14,6 +14,7 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.stream.StreamSupport;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.tryGetSymFromConcolic;
@@ -741,7 +742,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             result = sarray.symbolicDefault(se);
         }
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setInCacheForIndex(index, result);
+        sarray.setInCacheForIndexForSelect(index, result);
         evaluateRelabeling(sarray, se); // TODO Possibly prune the amount of constraints via the given index?
         return result;
     }
@@ -780,8 +781,8 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         if (se.nextIsOnKnownPath() || !s.shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
             return;
         }
-        assert s.getCachedElements().stream().allMatch(e -> e instanceof Snumber || e instanceof Sarray) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
-        List<SubstitutedVar> symbolicValues = new ArrayList<>(s.getCachedElements());
+        assert StreamSupport.stream(s.getCachedElements().spliterator(), false).allMatch(e -> e instanceof Snumber || e instanceof Sarray) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
+        Iterable<SubstitutedVar> symbolicValues = (Iterable<SubstitutedVar>) s.getCachedElements();
         List<Constraint> currentConcolicMapping = new ArrayList<>();
         for (SubstitutedVar e : symbolicValues) {
             currentConcolicMapping.add(tryGetSymFromConcolic((Sbool) getEqOfConcolic(e, se)));
@@ -819,7 +820,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                 se.addNewArrayConstraint(storeConstraint);
             }
         }
-        sarray.setInCacheForIndex(index, value);
+        sarray.setInCacheForIndexForStore(index, value);
         return value;
     }
 
@@ -845,7 +846,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             for (Sarray entry : ss.getCachedElements()) {
                 if (!entry.isRepresentedInSolver()) {
                     assert !entry.shouldBeRepresentedInSolver();
-                    entry.initializeId(se);
+                    entry.prepareToRepresentOldEntries(se);
                     representArrayIfNeeded(se, entry, (Sint) tryGetSymFromConcolic(ss.getId()));
                 }
             }
@@ -916,7 +917,6 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                 initialConstraints[constraintNumber] = ac;
                 constraintNumber++;
             }
-//            sarray.clearCachedElements(); //// TODO aliasing...
         }
         return initialConstraints;
     }

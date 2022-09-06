@@ -99,11 +99,14 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (result != null) {
             return result;
         }
+        if (index instanceof SymNumericExpressionSprimitive && !sarray.shouldBeRepresentedInSolver()) {
+            sarray.prepareToRepresentOldEntries(se);
+        }
         checkIndexAccess(sarray, index, se);
         Sint concsIndex = decideOnConcreteIndex(se, index);
         result = sarray.getFromCacheForIndex(concsIndex);
         if (result != null) {
-            sarray.setInCacheForIndex(index, result);
+            sarray.setInCacheForIndexForSelect(index, result);
             return result;
         }
         if (!sarray.defaultIsSymbolic() && !sarray.shouldBeRepresentedInSolver()) {
@@ -112,17 +115,24 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // If symbolic is required, optional aliasing etc. is handled here
             result = sarray.symbolicDefault(se);
         }
-        sarray.setInCacheForIndex(concsIndex, result);
-        sarray.setInCacheForIndex(index, result);
+        sarray.setInCacheForIndexForSelect(concsIndex, result);
+        sarray.setInCacheForIndexForSelect(index, result);
         return result;
     }
 
     private SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
+        if (index instanceof SymNumericExpressionSprimitive && !sarray.shouldBeRepresentedInSolver()) {
+            sarray.prepareToRepresentOldEntries(se);
+        }
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
         Sint concsIndex = decideOnConcreteIndex(se, index);
-        sarray.setInCacheForIndex(concsIndex, value);
-        sarray.setInCacheForIndex(index, value);
+        // We can simply use setInCacheForIndexForSelect since for this approach. There won't be any representation of
+        // this array in the constraint solver, hence, aliasing is not an issue. This is the case since we forbid the use
+        // of eager indexes for arrays with primitive elements if this is not also enabled for arrays with object element
+        // types
+        sarray.setInCacheForIndexForSelect(concsIndex, value);
+        sarray.setInCacheForIndexForSelect(index, value);
         return value;
     }
 

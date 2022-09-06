@@ -520,7 +520,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             result = sarray.symbolicDefault(se);
         }
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setInCacheForIndex(index, result);
+        sarray.setInCacheForIndexForSelect(index, result);
 
         return result;
     }
@@ -542,7 +542,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             }
         }
 
-        sarray.setInCacheForIndex(index, value);
+        sarray.setInCacheForIndexForStore(index, value);
         return value;
     }
 
@@ -565,7 +565,6 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
                 initialConstraints[constraintNumber] = ac;
                 constraintNumber++;
             }
-//            sarray.clearCachedElements(); //// TODO aliasing...
         }
         return initialConstraints;
     }
@@ -584,7 +583,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             for (Sarray entry : ss.getCachedElements()) {
                 if (!entry.isRepresentedInSolver()) {
                     assert !entry.shouldBeRepresentedInSolver();
-                    entry.initializeId(se);
+                    entry.prepareToRepresentOldEntries(se);
                     representArrayIfNeeded(se, entry, ss.getId());
                 }
             }
