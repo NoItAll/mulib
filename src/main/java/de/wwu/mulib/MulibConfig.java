@@ -584,6 +584,12 @@ public class MulibConfig {
                 throw new MisconfigurationException("When choosing IDDFS, an incremental budget must be specified.");
             }
 
+            if (USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS && !USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+                throw new MisconfigurationException("Since our way of representing free arrays of arrays or free arrays of objects " +
+                        "is based on the assumption that we represent the contained arrays in the constraint solver, we cannot " +
+                        "use eager indices for primitive elements but not for object elements.");
+            }
+
             return new MulibConfig(
                     LABEL_RESULT_VALUE,
                     GLOBAL_AVOID_SAT_CHECKS,
