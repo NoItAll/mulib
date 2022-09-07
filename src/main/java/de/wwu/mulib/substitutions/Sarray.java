@@ -12,7 +12,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
-@SuppressWarnings("unchecked")
+@SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
     private static final byte NOT_YET_REPRESENTED_IN_SOLVER = 0;
     private static final byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
