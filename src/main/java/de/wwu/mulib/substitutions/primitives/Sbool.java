@@ -15,7 +15,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     }
 
     public static Sbool newInputSymbolicSbool() {
-        return new SymSbool();
+        return new SymSboolLeaf();
     }
 
     public static Sbool newConstraintSbool(Constraint c) {
@@ -78,11 +78,6 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
 
         @Override
-        public boolean equals(Object o) {
-            return o instanceof ConcSbool && ((ConcSbool) o).isTrue() == isTrue();
-        }
-
-        @Override
         public int hashCode() {
             return intVal();
         }
@@ -124,18 +119,13 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     }
 
     public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         protected final Constraint representedConstraint;
 
         private SymSbool() {
-            id = "SymSbool" + nextId.incrementAndGet();
-            representedConstraint = this;
+            this.representedConstraint = this;
         }
 
         private SymSbool(Constraint representedConstraint) {
-            id = "SymSbool" + nextId.incrementAndGet();
             this.representedConstraint = representedConstraint;
         }
 
@@ -149,23 +139,53 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
 
         @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedConstraint.equals(((SymSbool) o).representedConstraint);
+        }
+
+        @Override
+        public int hashCode() {
+            return representedConstraint.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSbool{" + representedConstraint.toString() + "}";
+        }
+    }
+
+    public static class SymSboolLeaf extends SymSbool implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSboolLeaf() {
+            id = "Sbool" + nextId.incrementAndGet();
+        }
+
+        @Override
         public String getId() {
             return id;
         }
 
         @Override
         public String toString() {
-            return "SymSbool{id=" + id + ( representedConstraint == this ? "}" : ",expr=" + representedConstraint.toString() + "}");
+            return id;
         }
 
         @Override
         public boolean equals(Object o) {
-            return this == o;
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
         }
 
         @Override
         public int hashCode() {
-            return super.hashCode();
+            return id.hashCode();
         }
     }
 }

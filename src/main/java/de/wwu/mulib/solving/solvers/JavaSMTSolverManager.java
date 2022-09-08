@@ -268,7 +268,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> n instanceof Slong.ConcSlong,
                         () -> n instanceof Slong.SymSlong,
                         () -> integerFormulaManager.makeNumber(((Slong.ConcSlong) n).longVal()),
-                        () -> integerFormulaManager.makeVariable(((SymSprimitive) n).getId())
+                        () -> integerFormulaManager.makeVariable(((Slong.SymSlongLeaf) n).getId())
                 );
             } else {
                 throw new NotYetImplementedException();
@@ -388,7 +388,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 return makeConc.get();
             } else if (isSym.get()) {
                 SymNumericExpressionSprimitive _i = (SymNumericExpressionSprimitive) n;
-                if (_i.getRepresentedExpression() == _i) {
+                if (_i instanceof SymSprimitiveLeaf) {
                     return makeSym.get();
                 } else {
                     return transformNumeral(_i.getRepresentedExpression());
@@ -409,7 +409,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> f instanceof Sdouble.ConcSdouble,
                         () -> f instanceof Sdouble.SymSdouble,
                         () -> rationalFormulaManager.makeNumber(((Sdouble.ConcSdouble) f).doubleVal()),
-                        () -> rationalFormulaManager.makeVariable(((SymSprimitive) f).getId())
+                        () -> rationalFormulaManager.makeVariable(((Sdouble.SymSdoubleLeaf) f).getId())
                 );
             } else if (f instanceof Sfloat) {
                 result = _transformSnumber(
@@ -417,7 +417,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         () -> f instanceof Sfloat.ConcSfloat,
                         () -> f instanceof Sfloat.SymSfloat,
                         () -> rationalFormulaManager.makeNumber(((Sfloat.ConcSfloat) f).floatVal()),
-                        () -> rationalFormulaManager.makeVariable(((SymSprimitive) f).getId())
+                        () -> rationalFormulaManager.makeVariable(((Sfloat.SymSfloatLeaf) f).getId())
                 );
             }
             numericExpressionStore.put(f, result);
@@ -434,9 +434,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 if (!treatSboolsAsInts) {
                     throw new MulibRuntimeException("Must not occur");
                 }
-                makeSym =  () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId() + "_int");
+                makeSym =  () -> integerFormulaManager.makeVariable(((SymSprimitiveLeaf) i).getId() + "_int");
             } else {
-                makeSym = () -> integerFormulaManager.makeVariable(((SymSprimitive) i).getId());
+                makeSym = () -> integerFormulaManager.makeVariable(((SymSprimitiveLeaf) i).getId());
             }
             result = _transformSnumber(
                     i,
@@ -458,8 +458,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 result = booleanFormulaManager.makeBoolean(((Sbool.ConcSbool) b).isTrue());
             } else if (b instanceof Sbool.SymSbool) {
                 Constraint representedConstraint = ((Sbool.SymSbool) b).getRepresentedConstraint();
-                if (representedConstraint == b) {
-                    result = booleanFormulaManager.makeVariable(((SymSprimitive) b).getId());
+                if (representedConstraint instanceof Sbool.SymSboolLeaf) {
+                    result = booleanFormulaManager.makeVariable(((Sbool.SymSboolLeaf) b).getId());
                 } else {
                     result = transformConstraint(representedConstraint);
                 }

@@ -14,13 +14,12 @@ public abstract class Sfloat extends Sfpnumber {
     }
 
     public static Sfloat newInputSymbolicSfloat() {
-        return new SymSfloat();
+        return new SymSfloatLeaf();
     }
 
     public static Sfloat newExpressionSymbolicSfloat(NumericExpression representedExpression) {
         return new SymSfloat(representedExpression);
     }
-
 
     public final Sfloat add(Sfloat rhs, SymbolicExecution se) {
         return se.add(this, rhs);
@@ -177,24 +176,46 @@ public abstract class Sfloat extends Sfpnumber {
     }
 
     public static class SymSfloat extends Sfloat implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         private final NumericExpression representedExpression;
 
         private SymSfloat() {
             this.representedExpression = this;
-            id = "SymSfloat" + nextId.incrementAndGet();
         }
 
         private SymSfloat(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymSfloat" + nextId.incrementAndGet();
         }
 
         @Override
         public final NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSfloat{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSfloatLeaf extends SymSfloat implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSfloatLeaf() {
+            id = "Sfloat" + nextId.incrementAndGet();
         }
 
         @Override
@@ -204,7 +225,20 @@ public abstract class Sfloat extends Sfpnumber {
 
         @Override
         public String toString() {
-            return "SymSfloat{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

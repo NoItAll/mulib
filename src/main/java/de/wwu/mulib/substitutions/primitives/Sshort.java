@@ -13,7 +13,7 @@ public abstract class Sshort extends Sint {
     }
 
     public static Sshort newInputSymbolicSshort() {
-        return new Sshort.SymSshort();
+        return new Sshort.SymSshortLeaf();
     }
 
     public static Sshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
@@ -63,27 +63,54 @@ public abstract class Sshort extends Sint {
         public String toString() {
             return "ConcSshort{value=" + value + "}";
         }
+
+        @Override
+        public int hashCode() {
+            return value;
+        }
     }
 
     public static class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         private final NumericExpression representedExpression;
 
         private SymSshort() {
             this.representedExpression = this;
-            id = "SymSshort" + nextId.incrementAndGet();
         }
 
         private SymSshort(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymShort" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSshort{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSshortLeaf extends SymSshort implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSshortLeaf() {
+            id = "Sshort" + nextId.incrementAndGet();
         }
 
         @Override
@@ -93,7 +120,20 @@ public abstract class Sshort extends Sint {
 
         @Override
         public String toString() {
-            return "SymSshort{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

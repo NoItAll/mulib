@@ -14,7 +14,7 @@ public abstract class Slong extends AbstractSnumber {
     }
 
     public static Slong newInputSymbolicSlong() {
-        return new SymSlong();
+        return new SymSlongLeaf();
     }
 
     public static Slong newExpressionSymbolicSlong(NumericExpression representedExpression) {
@@ -177,27 +177,54 @@ public abstract class Slong extends AbstractSnumber {
         public String toString() {
             return "ConcSlong{value=" + value + "}";
         }
+
+        @Override
+        public int hashCode() {
+            return (int) value;
+        }
     }
 
     public static class SymSlong extends Slong implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         private final NumericExpression representedExpression;
 
         private SymSlong() {
             this.representedExpression = this;
-            id = "SymSlong" + nextId.incrementAndGet();
         }
 
         private SymSlong(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymSlong" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSlong{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSlongLeaf extends SymSlong implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSlongLeaf() {
+            id = "Slong" + nextId.incrementAndGet();
         }
 
         @Override
@@ -207,7 +234,20 @@ public abstract class Slong extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "SymSlong{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

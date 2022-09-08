@@ -13,7 +13,7 @@ public abstract class Sbyte extends Sint {
     }
 
     public static Sbyte newInputSymbolicSbyte() {
-        return new Sbyte.SymSbyte();
+        return new Sbyte.SymSbyteLeaf();
     }
 
     public static Sbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
@@ -62,27 +62,54 @@ public abstract class Sbyte extends Sint {
         public String toString() {
             return "ConcSbyte{value=" + value + "}";
         }
+
+        @Override
+        public int hashCode() {
+            return value;
+        }
     }
 
     public static class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         private final NumericExpression representedExpression;
 
         private SymSbyte() {
             this.representedExpression = this;
-            id = "SymSbyte" + nextId.incrementAndGet();
         }
 
         private SymSbyte(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymSbyte" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSbyte{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSbyteLeaf extends SymSbyte implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSbyteLeaf() {
+            id = "Sbyte" + nextId.incrementAndGet();
         }
 
         @Override
@@ -92,7 +119,20 @@ public abstract class Sbyte extends Sint {
 
         @Override
         public String toString() {
-            return "SymSbyte{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

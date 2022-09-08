@@ -26,7 +26,7 @@ public abstract class Sint extends AbstractSnumber {
     }
 
     public static Sint newInputSymbolicSint() {
-        return new SymSint();
+        return new SymSintLeaf();
     }
 
     public static Sint newExpressionSymbolicSint(NumericExpression representedExpression) {
@@ -208,26 +208,54 @@ public abstract class Sint extends AbstractSnumber {
         public String toString() {
             return "ConcSint{value=" + value + "}";
         }
+
+        @Override
+        public int hashCode() {
+            return value;
+        }
     }
 
     public static class SymSint extends Sint implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
         private final NumericExpression representedExpression;
 
         private SymSint() {
             this.representedExpression = this;
-            id = "SymSint" + nextId.incrementAndGet();
         }
 
         private SymSint(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymSint" + nextId.incrementAndGet();
         }
 
         @Override
         public NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSint{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSintLeaf extends SymSint implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSintLeaf() {
+            id = "Sint" + nextId.incrementAndGet();
         }
 
         @Override
@@ -237,7 +265,20 @@ public abstract class Sint extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "SymSint{id=" + id + "}";
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

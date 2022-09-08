@@ -14,7 +14,7 @@ public abstract class Sdouble extends Sfpnumber {
     }
 
     public static Sdouble newInputSymbolicSdouble() {
-        return new SymSdouble();
+        return new SymSdoubleLeaf();
     }
 
     public static Sdouble newExpressionSymbolicSdouble(NumericExpression representedExpression) {
@@ -176,24 +176,46 @@ public abstract class Sdouble extends Sfpnumber {
     }
 
     public static class SymSdouble extends Sdouble implements SymNumericExpressionSprimitive {
-        protected static AtomicLong nextId = new AtomicLong(0);
-        private final String id;
-
         private final NumericExpression representedExpression;
 
         private SymSdouble() {
             this.representedExpression = this;
-            id = "SymSdouble" + nextId.incrementAndGet();
         }
 
         private SymSdouble(NumericExpression representedExpression) {
             this.representedExpression = representedExpression;
-            id = "SymSdouble" + nextId.incrementAndGet();
         }
 
         @Override
         public final NumericExpression getRepresentedExpression() {
             return representedExpression;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+        }
+
+        @Override
+        public int hashCode() {
+            return representedExpression.hashCode();
+        }
+
+        @Override
+        public String toString() {
+            return "SymSdouble{" + representedExpression.toString() + "}";
+        }
+    }
+
+    public static class SymSdoubleLeaf extends SymSdouble implements SymSprimitiveLeaf {
+        protected static final AtomicLong nextId = new AtomicLong(0);
+        private final String id;
+
+        private SymSdoubleLeaf() {
+            id = "Sdouble" + nextId.incrementAndGet();
         }
 
         @Override
@@ -203,7 +225,20 @@ public abstract class Sdouble extends Sfpnumber {
 
         @Override
         public String toString() {
-            return "SymSdouble{id=" + id + ( representedExpression == this ? "}" : ",expr=" + representedExpression.toString() + "}");
+            return id;
+        }
+
+        @Override
+        public boolean equals(Object o) {
+            if (o.getClass() != getClass()) {
+                return false;
+            }
+            return id.equals(((SymSprimitiveLeaf) o).getId());
+        }
+
+        @Override
+        public int hashCode() {
+            return id.hashCode();
         }
     }
 }

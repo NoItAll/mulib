@@ -8,9 +8,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
 import java.util.function.Consumer;
 import java.util.function.Function;
@@ -32,22 +30,6 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Slong.SymSlong> createdAtomicSymSlongs = new ArrayList<>();
     private final List<Sshort.SymSshort> createdAtomicSymSshorts = new ArrayList<>();
     private final List<Sbyte.SymSbyte> createdAtomicSymSbytes = new ArrayList<>();
-
-    private final StampedLock wrappingSymSintLock = new StampedLock();
-    private final StampedLock wrappingSymSdoubleLock = new StampedLock();
-    private final StampedLock wrappingSymSfloatLock = new StampedLock();
-    private final StampedLock wrappingSymSboolLock = new StampedLock();
-    private final StampedLock wrappingSymSshortLock = new StampedLock();
-    private final StampedLock wrappingSymSlongLock = new StampedLock();
-    private final StampedLock wrappingSymSbyteLock = new StampedLock();
-
-    private final Map<NumericExpression, Sint.SymSint> createdSymSintWrappers = new HashMap<>();
-    private final Map<NumericExpression, Sdouble.SymSdouble> createdSymSdoubleWrappers = new HashMap<>();
-    private final Map<NumericExpression, Sfloat.SymSfloat> createdSymSfloatWrappers = new HashMap<>();
-    private final Map<NumericExpression, Slong.SymSlong> createdSymSlongWrappers = new HashMap<>();
-    private final Map<NumericExpression, Sshort.SymSshort> createdSymSshortWrappers = new HashMap<>();
-    private final Map<NumericExpression, Sbyte.SymSbyte> createdSymSbyteWrappers = new HashMap<>();
-    private final Map<Constraint, Sbool.SymSbool> createdSymSboolWrappers = new HashMap<>();
 
     private final MulibConfig config;
     SymbolicValueFactory(MulibConfig config) {
@@ -151,10 +133,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSintWrappers,
                 e -> (Sint.SymSint) Sint.newExpressionSymbolicSint(e),
                 numericExpression,
-                wrappingSymSintLock,
                 optionalSintRestriction(se, config)
         );
     }
@@ -162,10 +142,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSdoubleWrappers,
                 e -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(e),
                 numericExpression,
-                wrappingSymSdoubleLock,
                 optionalSdoubleRestriction(se, config)
         );
     }
@@ -173,10 +151,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSfloatWrappers,
                 e -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(e),
                 numericExpression,
-                wrappingSymSfloatLock,
                 optionalSfloatRestriction(se, config)
         );
     }
@@ -184,10 +160,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSlongWrappers,
                 e -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(e),
                 numericExpression,
-                wrappingSymSlongLock,
                 optionalSlongRestriction(se, config)
         );
     }
@@ -195,10 +169,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSshortWrappers,
                 e -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(e),
                 numericExpression,
-                wrappingSymSshortLock,
                 optionalSshortRestriction(se, config)
         );
     }
@@ -206,10 +178,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSbyteWrappers,
                 e -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(e),
                 numericExpression,
-                wrappingSymSbyteLock,
                 optionalSbyteRestriction(se, config)
         );
     }
@@ -217,10 +187,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
         return returnWrapperIfExistsElseCreate(
-                createdSymSboolWrappers,
                 e -> (Sbool.SymSbool) Sbool.newConstraintSbool(e),
                 constraint,
-                wrappingSymSboolLock,
                 (b) -> symSboolDomain(se, b)
         );
     }
@@ -351,26 +319,10 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     private static <K, T extends Snumber> T returnWrapperIfExistsElseCreate(
-            Map<K, T> created,
             Function<K, T> creationFunction,
             K toWrap,
-            StampedLock lock,
             Consumer<T> optionalRestriction) {
-        long stamp = lock.readLock();
-        T result = (T) created.get(toWrap);
-        lock.unlockRead(stamp);
-        if (result == null) {
-            stamp = lock.writeLock();
-            result = (T) created.get(toWrap);
-            // Re-check time between acquisition
-            if (result != null) {
-                lock.unlockWrite(stamp);
-            } else {
-                result = creationFunction.apply(toWrap);
-                created.put(toWrap, result);
-                lock.unlockWrite(stamp);
-            }
-        }
+        T result = creationFunction.apply(toWrap);
         optionalRestriction.accept(result);
         return result;
     }

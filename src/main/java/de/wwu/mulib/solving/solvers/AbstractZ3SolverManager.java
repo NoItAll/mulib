@@ -317,7 +317,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> n instanceof Slong.ConcSlong,
                         () -> n instanceof Slong.SymSlong,
                         () -> ctx.mkInt(((Slong.ConcSlong) n).longVal()),
-                        () -> ctx.mkIntConst(((SymSprimitive) n).getId())
+                        () -> ctx.mkIntConst(((Slong.SymSlongLeaf) n).getId())
                 );
             } else {
                 throw new NotYetImplementedException();
@@ -336,7 +336,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 return makeConc.get();
             } else if (isSym.get()) {
                 SymNumericExpressionSprimitive _i = (SymNumericExpressionSprimitive) n;
-                if (_i.getRepresentedExpression() == _i) {
+                if (_i instanceof SymSprimitiveLeaf) {
                     return makeSym.get();
                 } else {
                     return transformNumericExpr(_i.getRepresentedExpression());
@@ -352,9 +352,9 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 if (!treatSboolsAsInts) {
                     throw new MulibRuntimeException("Must not occur");
                 }
-                makeSym = () -> ctx.mkIntConst(((SymSprimitive) i).getId() + "_int");
+                makeSym = () -> ctx.mkIntConst(((SymSprimitiveLeaf) i).getId() + "_int");
             } else {
-                makeSym = () -> ctx.mkIntConst(((SymSprimitive) i).getId());
+                makeSym = () -> ctx.mkIntConst(((SymSprimitiveLeaf) i).getId());
             }
             return _transformSnumber(
                     i,
@@ -373,7 +373,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> f instanceof Sdouble.ConcSdouble,
                         () -> f instanceof Sdouble.SymSdouble,
                         () -> ctx.mkReal(String.valueOf(((Sdouble.ConcSdouble) f).doubleVal())),
-                        () -> ctx.mkRealConst(((SymSprimitive) f).getId())
+                        () -> ctx.mkRealConst(((Sdouble.SymSdoubleLeaf) f).getId())
                 );
             } else if (f instanceof Sfloat) {
                 return _transformSnumber(
@@ -381,7 +381,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         () -> f instanceof Sfloat.ConcSfloat,
                         () -> f instanceof Sfloat.SymSfloat,
                         () -> ctx.mkReal(String.valueOf(((Sfloat.ConcSfloat) f).doubleVal())),
-                        () -> ctx.mkRealConst(((SymSprimitive) f).getId())
+                        () -> ctx.mkRealConst(((Sfloat.SymSfloatLeaf) f).getId())
                 );
             }
             throw new NotYetImplementedException();
@@ -396,8 +396,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 result = ctx.mkBool(((Sbool.ConcSbool) b).isTrue());
             } else {
                 Constraint representedConstraint = ((Sbool.SymSbool) b).getRepresentedConstraint();
-                if (representedConstraint == b) { // Only represents itself
-                    result = ctx.mkBoolConst(((SymSprimitive) b).getId());
+                if (representedConstraint instanceof Sbool.SymSboolLeaf) { // Only represents itself
+                    result = ctx.mkBoolConst(((Sbool.SymSboolLeaf) b).getId());
                 } else {
                     result = transformConstraint(representedConstraint);
                 }

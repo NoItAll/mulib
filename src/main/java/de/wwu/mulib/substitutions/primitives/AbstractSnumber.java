@@ -1,5 +1,7 @@
 package de.wwu.mulib.substitutions.primitives;
 
+import de.wwu.mulib.exceptions.NotYetImplementedException;
+
 public abstract class AbstractSnumber implements Snumber {
 
     protected AbstractSnumber() {}
@@ -9,41 +11,34 @@ public abstract class AbstractSnumber implements Snumber {
         return true;
     }
 
+    /**
+     * Implementation for ConcSnumbers
+     * @param o
+     * @return
+     */
     @Override
     public boolean equals(Object o) {
-        if (o == null) {
+        assert this instanceof ConcSnumber;
+        if (!(o instanceof ConcSnumber)) {
             return false;
         }
-        if (o.getClass() != this.getClass()) {
+        ConcSnumber oc = (ConcSnumber) o;
+        ConcSnumber thisc = (ConcSnumber) this;
+        boolean isFp = isFp();
+        boolean oIsFp = oc.isFp();
+        if (isFp != oIsFp) {
             return false;
         }
-
-        boolean thisIsConcSnumber = this instanceof ConcSnumber;
-        boolean oIsConcSnumber = o instanceof ConcSnumber;
-
-        if (thisIsConcSnumber != oIsConcSnumber) {
-            return false;
+        if (isFp) {
+            return oc.doubleVal() == thisc.doubleVal();
         }
-
-        if (thisIsConcSnumber) {
-            ConcSnumber co = (ConcSnumber) o;
-            ConcSnumber cthis = ((ConcSnumber) this);
-            boolean oIsFp = co.isFp();
-            boolean thisIsFp = this.isFp();
-
-            if (oIsFp != thisIsFp) {
-                return false;
-            }
-
-            if (oIsFp) {
-                return co.doubleVal() == cthis.doubleVal();
-            } else {
-                return co.longVal() == cthis.longVal();
-            }
-        } else {
-            assert this instanceof SymNumericExpressionSprimitive && o instanceof SymNumericExpressionSprimitive;
-            return ((SymNumericExpressionSprimitive) o).getId().equals(((SymNumericExpressionSprimitive) this).getId());
+        if (o instanceof Sint) {
+            return oc.intVal() == thisc.intVal();
         }
+        if (o instanceof Slong) {
+            return oc.longVal() == thisc.longVal();
+        }
+        throw new NotYetImplementedException(this + ", " + oc);
     }
 
     @Override
