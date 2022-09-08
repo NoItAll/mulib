@@ -30,7 +30,7 @@ public final class SymbolicExecution {
     private Choice.ChoiceOption currentChoiceOption;
     private final ExecutionBudgetManager executionBudgetManager;
     private final MulibValueCopier mulibValueCopier;
-    private final Map<String, SubstitutedVar> namedVariables = new LinkedHashMap<>();
+    private Map<String, SubstitutedVar> _namedVariables = new LinkedHashMap<>();
     private int nextNumberInitializedAtomicSymSints = 0;
     private int nextNumberInitializedAtomicSymSdoubles = 0;
     private int nextNumberInitializedAtomicSymSfloats = 0;
@@ -62,6 +62,13 @@ public final class SymbolicExecution {
         set();
     }
 
+    private Map<String, SubstitutedVar> _getNamedVariables() {
+        if (_namedVariables == null) {
+            _namedVariables = new LinkedHashMap<>();
+        }
+        return _namedVariables;
+    }
+    
     public ValueFactory getValueFactory() {
         return valueFactory;
     }
@@ -139,15 +146,16 @@ public final class SymbolicExecution {
     }
 
     public Map<String, SubstitutedVar> getNamedVariables() {
-        return Collections.unmodifiableMap(namedVariables);
+        return Collections.unmodifiableMap(_getNamedVariables());
     }
 
     public void addNamedVariable(String key, SubstitutedVar value) {
-        if (namedVariables.containsKey(key)) {
+        Map<String, SubstitutedVar> namedVars = _getNamedVariables();
+        if (namedVars.containsKey(key)) {
             throw new MulibRuntimeException("Must not overwrite named variable.");
         }
 
-        namedVariables.put(key, value);
+        namedVars.put(key, value);
     }
 
     public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {
@@ -261,99 +269,99 @@ public final class SymbolicExecution {
 
     public Sint namedSymSint(String identifier) {
         Sint result = symSint();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sshort namedSymSshort(String identifier) {
         Sshort result = symSshort();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sbyte namedSymSbyte(String identifier) {
         Sbyte result = symSbyte();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Slong namedSymSlong(String identifier) {
         Slong result = symSlong();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sdouble namedSymSdouble(String identifier) {
         Sdouble result = symSdouble();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sfloat namedSymSfloat(String identifier) {
         Sfloat result = symSfloat();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sbool namedSymSbool(String identifier) {
         Sbool result = symSbool();
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SintSarray result = valueFactory.sintSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SdoubleSarray namedSdoubleSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SdoubleSarray result = valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SfloatSarray namedSfloatSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SfloatSarray result = valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SlongSarray namedSlongSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SlongSarray result = valueFactory.slongSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SshortSarray namedSshortSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SshortSarray result = valueFactory.sshortSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SbyteSarray namedSbyteSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SbyteSarray result = valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SboolSarray result = valueFactory.sboolSarray(this, len, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.PartnerClassSarray namedPartnerClassSarray(
             String identifier, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
         Sarray.PartnerClassSarray result = valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SarraySarray namedSarraySarray(
             String identifier, Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
         Sarray.SarraySarray result = valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
-        namedVariables.put(identifier, result);
+        _getNamedVariables().put(identifier, result);
         return result;
     }
 
@@ -363,7 +371,7 @@ public final class SymbolicExecution {
 
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
         PartnerClass symObject = valueFactory.symObject(this, clazz);
-        namedVariables.put(identifier, symObject);
+        _getNamedVariables().put(identifier, symObject);
         return symObject;
     }
 

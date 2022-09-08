@@ -125,7 +125,6 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
 
     @Override
     public synchronized boolean request(Choice.ChoiceOption toRemove) {
-        ensureInitializedDepth(toRemove.getDepth());
         ChoiceOptionLevelContainer container = choiceOptions.get(toRemove.getDepth());
         if (container.remove(toRemove)) {
             size--;
