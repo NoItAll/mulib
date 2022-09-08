@@ -16,7 +16,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.aliasingForFreeArrays = config.ALIASING_FOR_FREE_ARRAYS;
-        this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECS;
+        this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECTS;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
     }
 

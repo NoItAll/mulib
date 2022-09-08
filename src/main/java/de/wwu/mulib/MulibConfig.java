@@ -77,7 +77,7 @@ public class MulibConfig {
     public final boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
     public final boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
     public final boolean ALIASING_FOR_FREE_ARRAYS;
-    public final boolean ALIASING_FOR_FREE_OBJECS;
+    public final boolean ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
     public final List<String> TRANSF_IGNORE_FROM_PACKAGES;
@@ -707,7 +707,7 @@ public class MulibConfig {
                         boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
                         boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                         boolean ALIASING_FOR_FREE_ARRAYS,
-                        boolean ALIASING_FOR_FREE_OBJECS
+                        boolean ALIASING_FOR_FREE_OBJECTS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -764,7 +764,7 @@ public class MulibConfig {
         this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
-        this.ALIASING_FOR_FREE_OBJECS = ALIASING_FOR_FREE_OBJECS;
+        this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
     }
 
     @Override
