@@ -339,6 +339,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 if (_i instanceof SymSprimitiveLeaf) {
                     return makeSym.get();
                 } else {
+                    assert _i.getRepresentedExpression() != _i;
                     return transformNumericExpr(_i.getRepresentedExpression());
                 }
             } else {
