@@ -100,7 +100,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             return result;
         }
         if (index instanceof SymNumericExpressionSprimitive && !sarray.shouldBeRepresentedInSolver()) {
-            sarray.prepareToRepresentOldEntries(se);
+            sarray.prepareToRepresentSymbolically(se);
         }
         checkIndexAccess(sarray, index, se);
         Sint concsIndex = decideOnConcreteIndex(se, index);
@@ -122,7 +122,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     private SubstitutedVar _storeWithEagerIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
         if (index instanceof SymNumericExpressionSprimitive && !sarray.shouldBeRepresentedInSolver()) {
-            sarray.prepareToRepresentOldEntries(se);
+            sarray.prepareToRepresentSymbolically(se);
         }
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);

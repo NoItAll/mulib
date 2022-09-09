@@ -3,7 +3,7 @@ package de.wwu.mulib.substitutions;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.transformations.MulibValueCopier;
 
-public interface PartnerClass extends SubstitutedVar {
+public interface PartnerClass extends IdentityHavingSubstitutedVar {
 
     Object label(Object originalContainer, SolverManager solverManager);
 

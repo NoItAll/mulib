@@ -13,7 +13,7 @@ import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar {
+public abstract class Sarray<T extends SubstitutedVar> implements IdentityHavingSubstitutedVar {
     private static final byte NOT_YET_REPRESENTED_IN_SOLVER = 0;
     private static final byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
     private static final byte IS_REPRESENTED_IN_SOLVER = 2;
@@ -625,7 +625,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
     public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
         if (!shouldBeRepresentedInSolver()) {
             if (i instanceof SymNumericExpressionSprimitive) {
-                prepareToRepresentOldEntries(se);
+                prepareToRepresentSymbolically(se);
                 // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
                 return true;
             }
@@ -633,7 +633,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         return false;
     }
 
-    public void prepareToRepresentOldEntries(SymbolicExecution se) {
+    @Override
+    public void prepareToRepresentSymbolically(SymbolicExecution se) {
         initializeId(se);
         this.cachedElements = cachedElements.transitionToSymbolicIndexEnabled();
     }
@@ -1245,7 +1246,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements SubstitutedVar
         }
 
         @Override
-        public void prepareToRepresentOldEntries(SymbolicExecution se) {
+        public void prepareToRepresentSymbolically(SymbolicExecution se) {
             initializeId(se);
             Sint length = length();
             assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);

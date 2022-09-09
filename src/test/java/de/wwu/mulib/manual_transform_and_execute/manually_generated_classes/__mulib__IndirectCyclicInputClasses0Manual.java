@@ -76,4 +76,14 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
         __mulib__IndirectCyclicInputClasses0Manual cycle = new __mulib__IndirectCyclicInputClasses0Manual();
         return calc0(cycle);
     }
+
+    @Override
+    public Sint getId() {
+        return null;
+    }
+
+    @Override
+    public void prepareToRepresentSymbolically(SymbolicExecution se) {
+
+    }
 }

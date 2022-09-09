@@ -3,6 +3,7 @@ package de.wwu.mulib.manual_transform_and_execute.manually_generated_classes;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -42,5 +43,15 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
 
     public __mulib__IndirectCyclicInputClasses1Manual(__mulib__IndirectCyclicInputClasses0Manual c0) {
         this.c = c0;
+    }
+
+    @Override
+    public Sint getId() {
+        return null;
+    }
+
+    @Override
+    public void prepareToRepresentSymbolically(SymbolicExecution se) {
+
     }
 }
