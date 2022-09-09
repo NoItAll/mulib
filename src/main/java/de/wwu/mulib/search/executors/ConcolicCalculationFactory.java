@@ -800,7 +800,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
         if (sarray.shouldBeRepresentedInSolver()) {
-            sarray.clearCachedElements();
+            sarray.clearCache();
             if (!se.nextIsOnKnownPath()) {
                 SubstitutedVar inner;
                 if (value instanceof Sbool) {

@@ -534,7 +534,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (sarray.shouldBeRepresentedInSolver()) {
             // We must reset the cached elements, if a symbolic variable is present and store was used
-            sarray.clearCachedElements();
+            sarray.clearCache();
             if (!se.nextIsOnKnownPath()) {
                 ArrayConstraint storeConstraint =
                         new ArrayAccessConstraint(sarray.getId(), index, value, ArrayAccessConstraint.Type.STORE);
