@@ -12,12 +12,15 @@ public abstract class AbstractValueFactory implements ValueFactory {
     protected final boolean aliasingForFreeObjects;
     protected final boolean throwExceptionOnOOB;
 
+    protected final MulibConfig config;
+
     public AbstractValueFactory(MulibConfig config) {
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.aliasingForFreeArrays = config.ALIASING_FOR_FREE_ARRAYS;
         this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECTS;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
+        this.config = config;
     }
 
     @Override

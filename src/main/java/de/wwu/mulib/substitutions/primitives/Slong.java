@@ -13,11 +13,11 @@ public abstract class Slong extends AbstractSnumber {
         return new ConcSlong(l);
     }
 
-    public static Slong newInputSymbolicSlong() {
+    public static Slong.SymSlong newInputSymbolicSlong() {
         return new SymSlongLeaf();
     }
 
-    public static Slong newExpressionSymbolicSlong(NumericExpression representedExpression) {
+    public static Slong.SymSlong newExpressionSymbolicSlong(NumericExpression representedExpression) {
         return new SymSlong(representedExpression);
     }
 

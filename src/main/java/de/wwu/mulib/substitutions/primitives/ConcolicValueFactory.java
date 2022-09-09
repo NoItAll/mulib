@@ -63,7 +63,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 o -> concSint((Integer) o),
                 // Wrapped in new SymSint; we do not reuse these outer wrappers, thus, we do not call
                 // svf.wrappingXYZ(...).
-                c -> (Sint.SymSint) Sint.newExpressionSymbolicSint(c)
+                Sint::newExpressionSymbolicSint
         );
     }
 
@@ -73,7 +73,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 svf::symSdouble,
                 o -> concSdouble((Double) o),
-                c -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(c)
+                Sdouble::newExpressionSymbolicSdouble
         );
     }
 
@@ -83,7 +83,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 svf::symSfloat,
                 o -> concSfloat((Float) o),
-                c -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(c)
+                Sfloat::newExpressionSymbolicSfloat
         );
     }
 
@@ -98,7 +98,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both
         ConcolicConstraintContainer container = new ConcolicConstraintContainer(sym, conc);
-        return (Sbool.SymSbool) Sbool.newConstraintSbool(container);
+        return Sbool.newConstraintSbool(container);
     }
 
     @Override
@@ -107,7 +107,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 svf::symSlong,
                 o -> concSlong((Long) o),
-                c -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(c)
+                Slong::newExpressionSymbolicSlong
         );
     }
 
@@ -117,7 +117,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 svf::symSshort,
                 o -> concSshort((Short) o),
-                c -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(c)
+                Sshort::newExpressionSymbolicSshort
         );
     }
 
@@ -127,7 +127,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 svf::symSbyte,
                 o -> concSbyte((Byte) o),
-                c -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(c)
+                Sbyte::newExpressionSymbolicSbyte
         );
     }
 
@@ -184,7 +184,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         assert !(constraint instanceof ConcolicConstraintContainer)
                 && !((constraint instanceof Sbool.SymSbool)
                     && ((Sbool.SymSbool) constraint).getRepresentedExpression() instanceof ConcolicConstraintContainer);
-            return svf.wrappingSymSbool(se, constraint);
+        return svf.wrappingSymSbool(se, constraint);
     }
 
     @Override
@@ -199,7 +199,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         Sbool.ConcSbool conc = concSbool((Boolean) se.label(sym));
         // Container for both
         ConcolicConstraintContainer container = new ConcolicConstraintContainer(sym, conc);
-        return (Sbool.SymSbool) Sbool.newConstraintSbool(container);
+        return Sbool.newConstraintSbool(container);
     }
 
     @Override
@@ -209,7 +209,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSshort((Short) o),
-                c -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(c)
+                Sshort::newExpressionSymbolicSshort
         );
     }
 
@@ -220,7 +220,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSbyte((Byte) o),
-                c -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(c)
+                Sbyte::newExpressionSymbolicSbyte
         );
     }
 
@@ -231,7 +231,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSint((Integer) o),
-                c -> (Sint.SymSint) Sint.newExpressionSymbolicSint(c)
+                Sint::newExpressionSymbolicSint
         );
     }
 
@@ -242,7 +242,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSlong((Long) o),
-                c -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(c)
+                Slong::newExpressionSymbolicSlong
         );
     }
 
@@ -253,7 +253,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSdouble((Double) o),
-                c -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(c)
+                Sdouble::newExpressionSymbolicSdouble
         );
     }
 
@@ -264,7 +264,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 se,
                 (s) -> sym,
                 o -> concSfloat((Float) o),
-                c -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(c)
+                Sfloat::newExpressionSymbolicSfloat
         );
     }
 

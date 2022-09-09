@@ -12,11 +12,11 @@ public abstract class Sshort extends Sint {
         return new Sshort.ConcSshort(s);
     }
 
-    public static Sshort newInputSymbolicSshort() {
+    public static Sshort.SymSshort newInputSymbolicSshort() {
         return new Sshort.SymSshortLeaf();
     }
 
-    public static Sshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
+    public static Sshort.SymSshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
         return new Sshort.SymSshort(representedExpression);
     }
     

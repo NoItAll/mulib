@@ -25,11 +25,11 @@ public abstract class Sint extends AbstractSnumber {
         return result;
     }
 
-    public static Sint newInputSymbolicSint() {
+    public static Sint.SymSint newInputSymbolicSint() {
         return new SymSintLeaf();
     }
 
-    public static Sint newExpressionSymbolicSint(NumericExpression representedExpression) {
+    public static Sint.SymSint newExpressionSymbolicSint(NumericExpression representedExpression) {
         return new SymSint(representedExpression);
     }
 

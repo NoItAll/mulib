@@ -13,11 +13,11 @@ public abstract class Sfloat extends Sfpnumber {
         return new ConcSfloat(d);
     }
 
-    public static Sfloat newInputSymbolicSfloat() {
+    public static Sfloat.SymSfloat newInputSymbolicSfloat() {
         return new SymSfloatLeaf();
     }
 
-    public static Sfloat newExpressionSymbolicSfloat(NumericExpression representedExpression) {
+    public static Sfloat.SymSfloat newExpressionSymbolicSfloat(NumericExpression representedExpression) {
         return new SymSfloat(representedExpression);
     }
 

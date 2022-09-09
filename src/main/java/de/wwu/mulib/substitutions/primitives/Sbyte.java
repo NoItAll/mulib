@@ -12,11 +12,11 @@ public abstract class Sbyte extends Sint {
         return new Sbyte.ConcSbyte(b);
     }
 
-    public static Sbyte newInputSymbolicSbyte() {
+    public static Sbyte.SymSbyte newInputSymbolicSbyte() {
         return new Sbyte.SymSbyteLeaf();
     }
 
-    public static Sbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
+    public static Sbyte.SymSbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
         return new Sbyte.SymSbyte(representedExpression);
     }
 

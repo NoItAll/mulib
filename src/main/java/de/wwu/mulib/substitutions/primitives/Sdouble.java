@@ -13,11 +13,11 @@ public abstract class Sdouble extends Sfpnumber {
         return new ConcSdouble(d);
     }
 
-    public static Sdouble newInputSymbolicSdouble() {
+    public static Sdouble.SymSdouble newInputSymbolicSdouble() {
         return new SymSdoubleLeaf();
     }
 
-    public static Sdouble newExpressionSymbolicSdouble(NumericExpression representedExpression) {
+    public static Sdouble.SymSdouble newExpressionSymbolicSdouble(NumericExpression representedExpression) {
         return new SymSdouble(representedExpression);
     }
 

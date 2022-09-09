@@ -14,14 +14,12 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         return b ? ConcSbool.TRUE : ConcSbool.FALSE;
     }
 
-    public static Sbool newInputSymbolicSbool() {
+    public static Sbool.SymSbool newInputSymbolicSbool() {
         return new SymSboolLeaf();
     }
 
-    public static Sbool newConstraintSbool(Constraint c) {
-        if (c instanceof ConcSbool || c instanceof SymSbool) {
-            return (Sbool) c;
-        }
+    public static Sbool.SymSbool newConstraintSbool(Constraint c) {
+        assert !(c instanceof SymSbool || c instanceof ConcSbool);
         return new SymSbool(c);
     }
 

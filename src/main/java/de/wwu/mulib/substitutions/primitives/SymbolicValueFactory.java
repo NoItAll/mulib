@@ -8,9 +8,10 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.locks.StampedLock;
-import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -56,7 +57,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sint.SymSint symSint(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
-                () -> (Sint.SymSint) Sint.newInputSymbolicSint(),
+                Sint::newInputSymbolicSint,
                 se.getNextNumberInitializedAtomicSymSints(),
                 atomicSymSintLock,
                 optionalSintRestriction(se, config)
@@ -67,7 +68,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sdouble.SymSdouble symSdouble(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSdoubles,
-                () -> (Sdouble.SymSdouble) Sdouble.newInputSymbolicSdouble(),
+                Sdouble::newInputSymbolicSdouble,
                 se.getNextNumberInitializedAtomicSymSdoubles(),
                 atomicSymSdoubleLock,
                 optionalSdoubleRestriction(se, config)
@@ -78,7 +79,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sfloat.SymSfloat symSfloat(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSfloats,
-                () -> (Sfloat.SymSfloat) Sfloat.newInputSymbolicSfloat(),
+                Sfloat::newInputSymbolicSfloat,
                 se.getNextNumberInitializedAtomicSymSfloats(),
                 atomicSymSfloatLock,
                 optionalSfloatRestriction(se, config)
@@ -89,7 +90,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sbool.SymSbool symSbool(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSbools,
-                () -> (Sbool.SymSbool) Sbool.newInputSymbolicSbool(),
+                Sbool::newInputSymbolicSbool,
                 se.getNextNumberInitializedAtomicSymSbools(),
                 atomicSymSboolLock,
                 (b) -> symSboolDomain(se, b)
@@ -100,7 +101,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Slong.SymSlong symSlong(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSlongs,
-                () -> (Slong.SymSlong) Slong.newInputSymbolicSlong(),
+                Slong::newInputSymbolicSlong,
                 se.getNextNumberInitializedAtomicSymSlongs(),
                 atomicSymSlongLock,
                 optionalSlongRestriction(se, config)
@@ -109,21 +110,20 @@ public class SymbolicValueFactory extends AbstractValueFactory {
 
     @Override
     public Sshort.SymSshort symSshort(SymbolicExecution se) {
-        Sshort.SymSshort result = returnIfExistsElseCreate(
+        return returnIfExistsElseCreate(
                 createdAtomicSymSshorts,
-                () -> (Sshort.SymSshort) Sshort.newInputSymbolicSshort(),
+                Sshort::newInputSymbolicSshort,
                 se.getNextNumberInitializedAtomicSymSshorts(),
                 atomicSymSshortLock,
                 optionalSshortRestriction(se, config)
         );
-        return result;
     }
 
     @Override
     public Sbyte.SymSbyte symSbyte(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSbytes,
-                () -> (Sbyte.SymSbyte) Sbyte.newInputSymbolicSbyte(),
+                Sbyte::newInputSymbolicSbyte,
                 se.getNextNumberInitializedAtomicSymSbytes(),
                 atomicSymSbyteLock,
                 optionalSbyteRestriction(se, config)
@@ -133,7 +133,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sint.SymSint) Sint.newExpressionSymbolicSint(e),
+                Sint::newExpressionSymbolicSint,
                 numericExpression,
                 optionalSintRestriction(se, config)
         );
@@ -142,7 +142,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sdouble.SymSdouble) Sdouble.newExpressionSymbolicSdouble(e),
+                Sdouble::newExpressionSymbolicSdouble,
                 numericExpression,
                 optionalSdoubleRestriction(se, config)
         );
@@ -151,7 +151,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sfloat.SymSfloat) Sfloat.newExpressionSymbolicSfloat(e),
+                Sfloat::newExpressionSymbolicSfloat,
                 numericExpression,
                 optionalSfloatRestriction(se, config)
         );
@@ -160,7 +160,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Slong.SymSlong) Slong.newExpressionSymbolicSlong(e),
+                Slong::newExpressionSymbolicSlong,
                 numericExpression,
                 optionalSlongRestriction(se, config)
         );
@@ -169,7 +169,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sshort.SymSshort) Sshort.newExpressionSymbolicSshort(e),
+                Sshort::newExpressionSymbolicSshort,
                 numericExpression,
                 optionalSshortRestriction(se, config)
         );
@@ -178,7 +178,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sbyte.SymSbyte) Sbyte.newExpressionSymbolicSbyte(e),
+                Sbyte::newExpressionSymbolicSbyte,
                 numericExpression,
                 optionalSbyteRestriction(se, config)
         );
@@ -187,7 +187,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     @Override
     public Sbool.SymSbool wrappingSymSbool(SymbolicExecution se, Constraint constraint) {
         return returnWrapperIfExistsElseCreate(
-                e -> (Sbool.SymSbool) Sbool.newConstraintSbool(e),
+                Sbool::newConstraintSbool,
                 constraint,
                 (b) -> symSboolDomain(se, b)
         );
@@ -197,7 +197,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
-                () -> (Sint.SymSint) Sint.newInputSymbolicSint(),
+                Sint::newInputSymbolicSint,
                 se.getNextNumberInitializedAtomicSymSints(),
                 atomicSymSintLock,
                 (newSymSint) -> cmpDomain(se, n0, n1, newSymSint)
@@ -221,14 +221,49 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return toRestrict;
     }
 
+
+    // TODO The following is needed for temporarily fixing concolic-execution + treat_sbools_as_sints
+    //  It will become of interest in general if we want to implement a non-direct-substitution variant for creating constraints
+    //  The issue is that the current concolic execution-related factories make use of some SymbolicExecution-methods
+    //  that trigger the trail. For instance it might happen that se.and is called while being protected via !se.nextIsOnKnownPath().
+    //  This will lead to confusion since the trail is being changed
+    private final StampedLock zeroOrOneDelegateLock = new StampedLock();
+    private final Map<Sbool.SymSbool, Sbool.SymSbool> createdZeroOrOneDelegates = new HashMap<>();
     private Sbool.SymSbool symSboolDomain(SymbolicExecution se, final Sbool.SymSbool b) {
-        if (config.TREAT_BOOLEANS_AS_INTS && !se.nextIsOnKnownPath()) {
-            assert !se.getCurrentChoiceOption().isEvaluated();
-            Constraint eitherZeroOrOne = Or.newInstance(
-                    And.newInstance(b, Eq.newInstance(b, Sint.ConcSint.ONE)),
-                    And.newInstance(Not.newInstance(b), Eq.newInstance(b, Sint.ConcSint.ZERO))
-            );
-            se.addNewConstraint(eitherZeroOrOne);
+        if (config.TREAT_BOOLEANS_AS_INTS) {
+            Sbool.SymSbool leaf;
+            if (b instanceof Sbool.SymSboolLeaf) {
+                leaf = b;
+            } else {
+                long stamp = zeroOrOneDelegateLock.readLock();
+                leaf = createdZeroOrOneDelegates.get(b);
+                zeroOrOneDelegateLock.unlockRead(stamp);
+                if (leaf == null) {
+                    leaf = Sbool.newInputSymbolicSbool();
+                    stamp = zeroOrOneDelegateLock.writeLock();
+                    createdZeroOrOneDelegates.put(b, leaf);
+                    zeroOrOneDelegateLock.unlockWrite(stamp);
+                } else {
+                    int i = 0;
+                }
+            }
+            if (!se.nextIsOnKnownPath()) {
+                assert !se.getCurrentChoiceOption().isEvaluated();
+                Constraint eitherZeroOrOne;
+                if (leaf == b) {
+                    eitherZeroOrOne = Or.newInstance(
+                            And.newInstance(b, Eq.newInstance(b, Sint.ConcSint.ONE)),
+                            And.newInstance(Not.newInstance(b), Eq.newInstance(b, Sint.ConcSint.ZERO))
+                    );
+                } else {
+                    eitherZeroOrOne = Or.newInstance(
+                            And.newInstance(b, leaf, Eq.newInstance(leaf, Sint.ConcSint.ONE)),
+                            And.newInstance(Not.newInstance(b), Not.newInstance(leaf), Eq.newInstance(leaf, Sint.ConcSint.ZERO))
+                    );
+                }
+                se.addNewConstraint(eitherZeroOrOne);
+            }
+            return leaf;
         }
         return b;
     }
@@ -248,46 +283,46 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return i;
     }
 
-    private static Consumer<Sint.SymSint> optionalSintRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Sint.SymSint, Sint.SymSint> optionalSintRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSINT_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSINT_LB.get(), config.SYMSINT_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
-    private static Consumer<Sdouble.SymSdouble> optionalSdoubleRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Sdouble.SymSdouble, Sdouble.SymSdouble> optionalSdoubleRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSDOUBLE_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSDOUBLE_LB.get(), config.SYMSDOUBLE_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
-    private static Consumer<Sfloat.SymSfloat> optionalSfloatRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Sfloat.SymSfloat, Sfloat.SymSfloat> optionalSfloatRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSFLOAT_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSFLOAT_LB.get(), config.SYMSFLOAT_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
-    private static Consumer<Slong.SymSlong> optionalSlongRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Slong.SymSlong, Slong.SymSlong> optionalSlongRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSLONG_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSLONG_LB.get(), config.SYMSLONG_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
-    private static Consumer<Sshort.SymSshort> optionalSshortRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Sshort.SymSshort, Sshort.SymSshort> optionalSshortRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSSHORT_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSSHORT_LB.get(), config.SYMSSHORT_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
-    private static Consumer<Sbyte.SymSbyte> optionalSbyteRestriction(SymbolicExecution se, MulibConfig config) {
+    private static Function<Sbyte.SymSbyte, Sbyte.SymSbyte> optionalSbyteRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSBYTE_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSBYTE_LB.get(), config.SYMSBYTE_UB.get())
                 :
-                r -> {};
+                r -> r;
     }
 
     private static <T extends Snumber> T returnIfExistsElseCreate(
@@ -295,7 +330,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
             Supplier<T> creationFunction,
             int currentNumber,
             StampedLock lock,
-            Consumer<T> optionalRestriction) {
+            Function<T, T> optionalRestriction) {
         long stamp = lock.readLock();
         T result;
         if (created.size() > currentNumber) {
@@ -314,16 +349,14 @@ public class SymbolicValueFactory extends AbstractValueFactory {
                 lock.unlockWrite(stamp);
             }
         }
-        optionalRestriction.accept(result);
-        return result;
+        return optionalRestriction.apply(result);
     }
 
     private static <K, T extends Snumber> T returnWrapperIfExistsElseCreate(
             Function<K, T> creationFunction,
             K toWrap,
-            Consumer<T> optionalRestriction) {
+            Function<T, T> optionalRestriction) {
         T result = creationFunction.apply(toWrap);
-        optionalRestriction.accept(result);
-        return result;
+        return optionalRestriction.apply(result);
     }
 }
