@@ -112,6 +112,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
          * @return The number of cached key-value-pairs
          */
         int getNumberCachedItems();
+
+        void addToPotentiallyAliasedSarrays(Sarray<U> sarray);
     }
 
     /**
@@ -162,6 +164,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         public void store(Sint index, U val) {
+            if (index instanceof SymNumericExpressionSprimitive) {
+                elements.clear();
+            }
             elements.put(index, val);
         }
 
@@ -209,6 +214,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public int getNumberCachedItems() {
             return elements.size();
         }
+
+        @Override
+        public void addToPotentiallyAliasedSarrays(Sarray<U> sarray) {
+            throw new MulibRuntimeException("Should have been transformed beforehand");
+        }
     }
 
     /**
@@ -248,6 +258,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         public void store(Sint index, U val) {
+            assert !(index instanceof SymNumericExpressionSprimitive);
             put(index, val);
         }
 
@@ -297,19 +308,24 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public int getNumberCachedItems() {
             return values.length;
         }
+
+        @Override
+        public void addToPotentiallyAliasedSarrays(Sarray<U> sarray) {
+            throw new MulibRuntimeException("Should have been transformed beforehand");
+        }
     }
 
     private static class AliasingSarrayElementCache<U extends SubstitutedVar> implements SarrayElementCache<U> {
         private final SarrayElementCache<U> delegateTo;
-        private final Set<Sarray<U>> potentiallyAliasedSarrayElementCaches;
+        private final Set<Sarray<U>> potentiallyAliasedSarrays;
 
         AliasingSarrayElementCache(Sarray cacheIsFor, SarrayElementCache<U> delegateTo, Set<Sarray<U>> sarrays) {
             this.delegateTo = delegateTo;
-            this.potentiallyAliasedSarrayElementCaches = sarrays;
+            this.potentiallyAliasedSarrays = sarrays;
             if (cacheIsFor != null) {
                 for (Sarray s : sarrays) {
                     assert s.cachedElements.isAliasing();
-                    ((AliasingSarrayElementCache) s.cachedElements).potentiallyAliasedSarrayElementCaches.add(cacheIsFor);
+                    s.cachedElements.addToPotentiallyAliasedSarrays(cacheIsFor);
                 }
             }
         }
@@ -326,7 +342,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         public void store(Sint index, U val) {
-            for (Sarray<U> s : potentiallyAliasedSarrayElementCaches) {
+            for (Sarray<U> s : potentiallyAliasedSarrays) {
                 // Delete the cache so that we do not have to worry about having stale caches
                 s.clearCachedElements();
             }
@@ -356,7 +372,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 return new AliasingSarrayElementCache<>(
                         null,
                         delegateTo.transitionToSymbolicIndexEnabled(),
-                        potentiallyAliasedSarrayElementCaches
+                        potentiallyAliasedSarrays
                 );
             }
         }
@@ -366,7 +382,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             return new AliasingSarrayElementCache<>(
                     null,
                     this.delegateTo.newInstance(elements),
-                    new HashSet<>(potentiallyAliasedSarrayElementCaches)
+                    new HashSet<>(potentiallyAliasedSarrays)
             );
         }
 
@@ -389,6 +405,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public int getNumberCachedItems() {
             return delegateTo.getNumberCachedItems();
         }
+
+        @Override
+        public void addToPotentiallyAliasedSarrays(Sarray<U> sarray) {
+            potentiallyAliasedSarrays.add(sarray);
+        }
     }
 
     private static class SarraySarrayTrackingElementCache implements SarrayElementCache<Sarray> {
@@ -400,6 +421,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             this.delegateTo = delegateTo;
             Collection<Sarray> values = delegateTo.values();
             for (Sarray s : values) {
+                if (s == null) {
+                    continue;
+                }
                 s.cachedElements = new AliasingSarrayElementCache<>(s, s.cachedElements, new HashSet<>());
             }
             this.potentiallyContainedElements = new HashSet<>(values);
@@ -491,6 +515,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             return delegateTo.getNumberCachedItems();
         }
 
+        @Override
+        public void addToPotentiallyAliasedSarrays(Sarray<Sarray> sarray) {
+            delegateTo.addToPotentiallyAliasedSarrays(sarray);
+        }
+
         public Set<Sarray> getPotentiallyContainedElements() {
             return potentiallyContainedElements;
         }
@@ -563,7 +592,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         _initializeId(se.symSint());
     }
 
-    private void _initializeId(Sint id) {
+    void _initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
@@ -1070,7 +1099,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
     @SuppressWarnings("rawtypes")
     public static class SarraySarray extends Sarray<Sarray> {
-
         private final int dim;
         // The type of element stored in the array, but represented as a real array, e.g.: Sint[], Sdouble[][], etc.
         // Sarray.clazz would represent them all as Sarray.
