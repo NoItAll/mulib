@@ -36,7 +36,8 @@ public interface ArraySolverRepresentation {
                     level,
                     // The Sint-values here are the IDs of the aliased arrays
                     aliasedArrays,
-                    symbolicArrayStates
+                    symbolicArrayStates,
+                    asr.isCompletelyInitialized()
             );
         } else {
             assert ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY;
@@ -44,7 +45,8 @@ public interface ArraySolverRepresentation {
                     ac,
                     level,
                     ac.getPotentialIds(),
-                    symbolicArrayStates
+                    symbolicArrayStates,
+                    false
             );
         }
         return result;

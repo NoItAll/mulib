@@ -20,12 +20,15 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     private final Sint reservedId;
     private final Constraint metadataConstraintForPotentialIds;
     private final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
+    // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
+    private final boolean containingSarrayIsCompletelyInitialized;
 
     public AliasingArraySolverRepresentation(
             final ArrayInitializationConstraint aic,
             final int level,
             final Set<Sint> potentialIds,
-            final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates) {
+            final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            boolean containingSarrayIsCompletelyInitialized) {
         super(
                 aic.getArrayId(),
                 aic.getArrayLength(),
@@ -34,12 +37,13 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 new ArrayHistorySolverRepresentation(aic.getInitialSelectConstraints()),
                 aic.isCompletelyInitialized()
         );
+        this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
         this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>();
         Constraint metadataEqualsDependingOnId;
-        if (aic.isCompletelyInitialized()) {
+        if (containingSarrayIsCompletelyInitialized) {
             // If it is completely initialized, we do not need to use a reserved id
             metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
         } else {
@@ -75,7 +79,8 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             int level,
             Constraint metadataConstraintForPotentialIds,
             Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays,
-            ArrayHistorySolverRepresentation arrayHistorySolverRepresentation) {
+            ArrayHistorySolverRepresentation arrayHistorySolverRepresentation,
+            boolean containingSarrayIsCompletelyInitialized) {
         super(arrayId, arrayLength, isNull, level, arrayHistorySolverRepresentation, isCompletelyInitialized);
         this.reservedId = reservedId;
         this.metadataConstraintForPotentialIds = metadataConstraintForPotentialIds;
@@ -86,6 +91,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 ar.addNewRepresentation(asr.copyForNewLevel(level), level);
             }
         }
+        this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
     }
 
     @Override
@@ -94,7 +100,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             return Sbool.ConcSbool.TRUE;
         }
         Constraint joinedSelectConstraint;
-        if (isCompletelyInitialized) {
+        if (containingSarrayIsCompletelyInitialized) {
             joinedSelectConstraint = Sbool.ConcSbool.TRUE;
         } else {
             // currentRepresentation here is the representation for this.reservedId
@@ -104,7 +110,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                             And.newInstance(guard, Eq.newInstance(arrayId, reservedId)),
                             index,
                             selectedValue,
-                            false
+                            isCompletelyInitialized
                     );
             joinedSelectConstraint = ownConstraint;
         }
@@ -126,7 +132,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
-        if (!isCompletelyInitialized) {
+        if (!containingSarrayIsCompletelyInitialized) {
             // currentRepresentation here is the representation for this.reservedId
             this.currentRepresentation = this.currentRepresentation.store(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, storedValue);
         }
@@ -143,14 +149,15 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 level,
                 metadataConstraintForPotentialIds,
                 aliasedArrays,
-                currentRepresentation.copy()
+                currentRepresentation.copy(),
+                containingSarrayIsCompletelyInitialized
         );
     }
 
     @Override
     public Set<? extends Sprimitive> getPotentialValues() {
         Set<Sprimitive> result;
-        if (!isCompletelyInitialized) {
+        if (!containingSarrayIsCompletelyInitialized) {
             result = currentRepresentation.getPotentialValues();
         } else {
             result = new HashSet<>();
@@ -167,7 +174,7 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
     @Override
     public Set<? extends Sprimitive> getInitialConcreteAndStoredValues() {
         Set<Sprimitive> result;
-        if (!isCompletelyInitialized) {
+        if (!containingSarrayIsCompletelyInitialized) {
             result = currentRepresentation.getInitialConcreteAndStoredValues();
         } else {
             result = new HashSet<>();
