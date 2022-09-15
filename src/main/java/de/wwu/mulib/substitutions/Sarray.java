@@ -103,16 +103,16 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         this.isNull = s.isNull;
     }
 
-    final void initializeId(SymbolicExecution se) {
+    protected final void initializeId(SymbolicExecution se) {
         _initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
     }
 
-    private void initializeForAliasing(SymbolicExecution se) {
+    private void initializeForAliasingAndBlockCache(SymbolicExecution se) {
         _initializeId(se.symSint());
         blockCache();
     }
 
-    void _initializeId(Sint id) {
+    protected final void _initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
@@ -121,19 +121,19 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         this.id = id;
     }
 
-    public boolean canCurrentlyContainUnsetNonSymbolicDefault() {
+    public final boolean canCurrentlyContainUnsetNonSymbolicDefault() {
         return (this.representationState & CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT) == 0;
     }
 
-    public void setCannotCurrentlyContainUnsetNonSymbolicDefault() {
+    public final void setCannotCurrentlyContainUnsetNonSymbolicDefault() {
         representationState |= CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT;
     }
 
-    public void setCanCurrentlyContainUnsetNonSymbolicDefault() {
+    public final void setCanCurrentlyContainUnsetNonSymbolicDefault() {
         representationState = (byte) (representationState & ~CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT);
     }
 
-    private void setDefaultIsSymbolic() {
+    protected final void setDefaultIsSymbolic() {
         this.representationState |= DEFAULT_IS_SYMBOLIC;
     }
 
@@ -142,7 +142,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return (representationState & IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED) != 0;
     }
 
-    public void setIsKnownToHaveEveryIndexInitialized() {
+    public final void setIsKnownToHaveEveryIndexInitialized() {
         representationState |= IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED;
     }
 
@@ -398,12 +398,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sint symbolicDefault(SymbolicExecution se) {
+        protected Sint symbolicDefault(SymbolicExecution se) {
             return se.symSint();
         }
 
         @Override
-        public Sint nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sint nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sint.ConcSint.ZERO;
         }
 
@@ -441,12 +441,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sdouble symbolicDefault(SymbolicExecution se) {
+        protected Sdouble symbolicDefault(SymbolicExecution se) {
             return se.symSdouble();
         }
 
         @Override
-        public Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sdouble.ConcSdouble.ZERO;
         }
 
@@ -484,12 +484,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sfloat symbolicDefault(SymbolicExecution se) {
+        protected Sfloat symbolicDefault(SymbolicExecution se) {
             return se.symSfloat();
         }
 
         @Override
-        public Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sfloat.ConcSfloat.ZERO;
         }
 
@@ -527,12 +527,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Slong symbolicDefault(SymbolicExecution se) {
+        protected Slong symbolicDefault(SymbolicExecution se) {
             return se.symSlong();
         }
 
         @Override
-        public Slong nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Slong nonSymbolicDefaultElement(SymbolicExecution se) {
             return Slong.ConcSlong.ZERO;
         }
 
@@ -570,12 +570,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sshort symbolicDefault(SymbolicExecution se) {
+        protected Sshort symbolicDefault(SymbolicExecution se) {
             return se.symSshort();
         }
 
         @Override
-        public Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sshort.ConcSshort.ZERO;
         }
 
@@ -613,12 +613,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sbyte symbolicDefault(SymbolicExecution se) {
+        protected Sbyte symbolicDefault(SymbolicExecution se) {
             return se.symSbyte();
         }
 
         @Override
-        public Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbyte.ConcSbyte.ZERO;
         }
 
@@ -656,12 +656,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sbool symbolicDefault(SymbolicExecution se) {
+        protected Sbool symbolicDefault(SymbolicExecution se) {
             return se.symSbool();
         }
 
         @Override
-        public Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
             return Sbool.ConcSbool.FALSE;
         }
 
@@ -712,13 +712,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public T symbolicDefault(SymbolicExecution se) {
+        protected T symbolicDefault(SymbolicExecution se) {
             throw new NotYetImplementedException(); /// TODO
         }
 
         @Override
-        public T nonSymbolicDefaultElement(SymbolicExecution se) {
-            return null; /// TODO NullValuePattern there
+        protected T nonSymbolicDefaultElement(SymbolicExecution se) {
+            return null;
         }
 
         @Override
@@ -768,7 +768,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 Sint[] lengths,
                 SymbolicExecution se, Class<?> elementType) {
             super(Sarray.class, lengths[0], se, false, Sbool.ConcSbool.FALSE);
-            setCanCurrentlyContainUnsetNonSymbolicDefault();
             assert elementType.isArray();
             this.dim = determineDimFromInnerElementType(elementType);
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
@@ -788,7 +787,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 i = i.add(Sint.ConcSint.ONE, se);
                 lengths = nextLengths;
             }
-            //// TODO Set representation state in terms of null and also SarraySarray case!
+            setCannotCurrentlyContainUnsetNonSymbolicDefault();
         }
 
         /** Copy constructor */
@@ -887,7 +886,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public Sarray symbolicDefault(SymbolicExecution se) {
+        protected Sarray symbolicDefault(SymbolicExecution se) {
             Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
@@ -896,13 +895,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
             }
             //// TODO set isNotNull() for result of this...and perhaps also of results of results?
-
-            result.initializeForAliasing(se);
+            result.initializeForAliasingAndBlockCache(se);
             return result;
         }
 
         @Override
-        public Sarray nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sarray nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
 
