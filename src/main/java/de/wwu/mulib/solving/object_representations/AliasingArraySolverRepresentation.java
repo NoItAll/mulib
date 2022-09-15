@@ -35,7 +35,8 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 aic.getIsNull(),
                 level,
                 new ArrayHistorySolverRepresentation(aic.getInitialSelectConstraints()),
-                aic.isCompletelyInitialized()
+                aic.isCompletelyInitialized(),
+                aic.getValueType()
         );
         this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
         this.reservedId = aic.getReservedId();
@@ -80,8 +81,9 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
             Constraint metadataConstraintForPotentialIds,
             Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays,
             ArrayHistorySolverRepresentation arrayHistorySolverRepresentation,
-            boolean containingSarrayIsCompletelyInitialized) {
-        super(arrayId, arrayLength, isNull, level, arrayHistorySolverRepresentation, isCompletelyInitialized);
+            boolean containingSarrayIsCompletelyInitialized,
+            Class<?> valueType) {
+        super(arrayId, arrayLength, isNull, level, arrayHistorySolverRepresentation, isCompletelyInitialized, valueType);
         this.reservedId = reservedId;
         this.metadataConstraintForPotentialIds = metadataConstraintForPotentialIds;
         this.aliasedArrays = aliasedArrays;
@@ -150,7 +152,8 @@ public class AliasingArraySolverRepresentation extends AbstractArraySolverRepres
                 metadataConstraintForPotentialIds,
                 aliasedArrays,
                 currentRepresentation.copy(),
-                containingSarrayIsCompletelyInitialized
+                containingSarrayIsCompletelyInitialized,
+                valueType
         );
     }
 

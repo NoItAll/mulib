@@ -21,7 +21,8 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 aic.getIsNull(),
                 level,
                 new ArrayHistorySolverRepresentation(aic.getInitialSelectConstraints()),
-                aic.isCompletelyInitialized()
+                aic.isCompletelyInitialized(),
+                aic.getValueType()
         );
     }
 
@@ -31,8 +32,9 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
             Sbool isNull,
             int level,
             ArrayHistorySolverRepresentation ahsr,
-            boolean isCompletelyInitialized) {
-        super(arrayId, length, isNull, level, ahsr, isCompletelyInitialized);
+            boolean isCompletelyInitialized,
+            Class<?> valueType) {
+        super(arrayId, length, isNull, level, ahsr, isCompletelyInitialized, valueType);
     }
 
     @Override
@@ -53,7 +55,8 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 isNull,
                 level,
                 currentRepresentation.copy(),
-                isCompletelyInitialized
+                isCompletelyInitialized,
+                valueType
         );
     }
 

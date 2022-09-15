@@ -52,15 +52,11 @@ public interface ArraySolverRepresentation {
         return result;
     }
 
-    default Constraint select(Sint index, Sprimitive selectedValue) {
-        return select(Sbool.ConcSbool.TRUE, index, selectedValue);
-    }
+    Constraint select(Sint index, Sprimitive selectedValue);
 
     Constraint select(Constraint guard, Sint index, Sprimitive selectedValue);
 
-    default void store(Sint index, Sprimitive storedValue) {
-        store(Sbool.ConcSbool.TRUE, index, storedValue);
-    }
+    void store(Sint index, Sprimitive storedValue);
 
     void store(Constraint guard, Sint index, Sprimitive storedValue);
 
