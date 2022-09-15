@@ -105,12 +105,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             sarray.setInCacheForIndexForSelect(index, result);
             return result;
         }
-        if (!sarray.defaultIsSymbolic() && !sarray.shouldBeRepresentedInSolver()) {
-            result = sarray.nonSymbolicDefaultElement(se);
-        } else {
-            // If symbolic is required, optional aliasing etc. is handled here
-            result = sarray.symbolicDefault(se);
-        }
+        result = sarray.getNewValueForSelect(se);
         sarray.setInCacheForIndexForSelect(concsIndex, result);
         sarray.setInCacheForIndexForSelect(index, result);
         return result;

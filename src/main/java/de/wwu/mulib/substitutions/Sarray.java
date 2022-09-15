@@ -189,9 +189,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return "Sarray{id=" + id + ", elements=" + cachedElements + "}";
     }
 
-    public abstract T symbolicDefault(SymbolicExecution se);
+    protected abstract T symbolicDefault(SymbolicExecution se);
 
-    public abstract T nonSymbolicDefaultElement(SymbolicExecution se);
+    protected abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
     public final boolean shouldBeRepresentedInSolver() {
         return (representationState & SHOULD_BE_REPRESENTED_IN_SOLVER) != 0;
@@ -358,6 +358,17 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 }
             }
         }
+    }
+
+    public T getNewValueForSelect(SymbolicExecution se) {
+        T result;
+        if (!defaultIsSymbolic() && !shouldBeRepresentedInSolver()) {
+            result = nonSymbolicDefaultElement(se);
+        } else {
+            // If symbolic is required, optional aliasing etc. is handled here
+            result = symbolicDefault(se);
+        }
+        return result;
     }
 
     public static class SintSarray extends Sarray<Sint> {
@@ -885,7 +896,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
             }
             //// TODO set isNotNull() for result of this...and perhaps also of results of results?
-//            result.setIsNotNull();
+
             result.initializeForAliasing(se);
             return result;
         }

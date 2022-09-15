@@ -735,12 +735,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
 
-        // Generate new value
-        if (!sarray.defaultIsSymbolic() && !sarray.shouldBeRepresentedInSolver()) {
-            result = sarray.nonSymbolicDefaultElement(se);
-        } else {
-            result = sarray.symbolicDefault(se);
-        }
+        result = sarray.getNewValueForSelect(se);
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setInCacheForIndexForSelect(index, result);
         evaluateRelabeling(sarray, se); // TODO Possibly prune the amount of constraints via the given index?

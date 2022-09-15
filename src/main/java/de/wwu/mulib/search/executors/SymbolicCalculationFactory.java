@@ -513,12 +513,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         representArrayViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
 
-        // Generate new value
-        if (!sarray.defaultIsSymbolic() && !sarray.shouldBeRepresentedInSolver()) {
-            result = sarray.nonSymbolicDefaultElement(se);
-        } else {
-            result = sarray.symbolicDefault(se);
-        }
+        result = sarray.getNewValueForSelect(se);
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setInCacheForIndexForSelect(index, result);
 
@@ -534,6 +529,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (sarray.shouldBeRepresentedInSolver()) {
             // We must reset the cached elements, if a symbolic variable is present and store was used
+            // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
             if (!se.nextIsOnKnownPath()) {
                 ArrayConstraint storeConstraint =
