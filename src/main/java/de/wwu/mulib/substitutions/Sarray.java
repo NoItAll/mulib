@@ -188,7 +188,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
     @Override
     public String toString() {
-        return "Sarray" + id + "{repState=" + representationState + ",elements=" + cachedElements + "}";
+        return "Sarray[" + id + "]{repState=" + representationState + ",elements=" + cachedElements + "}";
     }
 
     protected abstract T symbolicDefault(SymbolicExecution se);
@@ -836,6 +836,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                         nextInnerElementsType
                 );
             }
+            assert lengths.length == 1;
             return generateNonSarraySarray(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
         }
 
@@ -889,7 +890,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
-                result = se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic(), canCurrentlyContainUnsetNonSymbolicDefault());
+                result = se.sarraySarray(se.symSint(), elementType.getComponentType(), defaultIsSymbolic(), canCurrentlyContainUnsetNonSymbolicDefault());
             } else {
                 result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
             }
