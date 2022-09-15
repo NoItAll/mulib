@@ -9,7 +9,6 @@ import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Set;
-import java.util.stream.StreamSupport;
 
 @SuppressWarnings( { "rawtypes", "unchecked" })
 public class SymbolicCalculationFactory extends AbstractCalculationFactory {
@@ -553,36 +552,6 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         }
     }
 
-    private static ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
-        assert !se.nextIsOnKnownPath();
-        Set<Sint> cachedIndices = sarray.getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
-
-        ArrayAccessConstraint[] initialConstraints = new ArrayAccessConstraint[cachedIndices.size()];
-        int constraintNumber = 0;
-        for (Sint i : cachedIndices) {
-            SubstitutedVar value = sarray.getFromCacheForIndex(i);
-            if (value == null) {
-                // We skip nulls
-                continue;
-            }
-            ArrayAccessConstraint ac = new ArrayAccessConstraint(sarray.getId(), i, value, ArrayAccessConstraint.Type.SELECT);
-            initialConstraints[constraintNumber] = ac;
-            constraintNumber++;
-        }
-        return initialConstraints;
-    }
-
-    private static void checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization(Sarray sarray) {
-        if (sarray instanceof Sarray.SarraySarray
-                && sarray.isKnownToHaveEveryIndexInitialized()
-                && StreamSupport.stream(
-                        sarray.getCachedElements().spliterator(), false)
-                            .allMatch(s -> s != null && ((Sarray) s).isNull() == Sbool.ConcSbool.FALSE)) {
-            sarray.setCannotCurrentlyContainNonSymbolicDefault();
-        }
-    }
-
     private static void representArrayIfNeeded(
             SymbolicExecution se,
             Sarray sarray,
@@ -592,12 +561,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
-        Sint sarrayLength = sarray.getLength();
-        if (sarrayLength instanceof ConcSnumber
-                && ((ConcSnumber) sarrayLength).intVal() == cachedIndices.size()) {
-            // This is possible due to the assumption that we at this point only have concrete indices
-            sarray.setIsKnownToHaveEveryIndexInitialized();
-        }
+        sarray.checkIfSarrayIsKnownToHaveEveryIndexInitialized();
 
         if (sarray instanceof Sarray.SarraySarray) {
             Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
@@ -618,16 +582,16 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
             if (!sarray.isRepresentedInSolver()) {
-                checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization(sarray);
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             sarray.getId(),
-                            sarrayLength,
+                            sarray._getLengthWithoutCheckingForIsNull(),
                             sarray.isNull(),
                             sarray.getElementType(),
-                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.collectInitialArrayAccessConstraints(),
                             sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainNonSymbolicDefault()
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }
@@ -637,19 +601,19 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
             Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
             if (!sarray.isRepresentedInSolver()) {
-                checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization(sarray);
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             sarray.getId(),
-                            sarrayLength,
+                            sarray._getLengthWithoutCheckingForIsNull(),
                             sarray.isNull(),
                             // Id reserved for this Sarray, if needed
                             nextNumberInitializedSymSarray,
                             idOfContainingSarraySarray,
                             sarray.getElementType(),
-                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.collectInitialArrayAccessConstraints(),
                             sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainNonSymbolicDefault()
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }

@@ -844,12 +844,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
-        Sint sarrayLength = sarray.getLength();
-        if (sarrayLength instanceof ConcSnumber
-                && ((ConcSnumber) sarrayLength).intVal() == cachedIndices.size()) {
-            // This is possible due to the assumption that we at this point only have concrete indices
-            sarray.setIsKnownToHaveEveryIndexInitialized();
-        }
+        sarray.checkIfSarrayIsKnownToHaveEveryIndexInitialized();
 
         if (sarray instanceof Sarray.SarraySarray) {
             Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
@@ -868,16 +863,16 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ArrayConstraint arrayInitializationConstraint;
         if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
             if (!sarray.isRepresentedInSolver()) {
-                checkIfSarrayCanContainNullValues(sarray);
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromConcolic(sarray.getId()),
-                            (Sint) tryGetSymFromConcolic(sarray.getLength()),
+                            (Sint) tryGetSymFromConcolic(sarray._getLengthWithoutCheckingForIsNull()),
                             tryGetSymFromConcolic(sarray.isNull()),
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se),
                             sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainNonSymbolicDefault()
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }
@@ -886,11 +881,11 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         } else {
             Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
             if (!sarray.isRepresentedInSolver()) {
-                checkIfSarrayCanContainNullValues(sarray);
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromConcolic(sarray.getId()),
-                            (Sint) tryGetSymFromConcolic(sarray.getLength()),
+                            (Sint) tryGetSymFromConcolic(sarray._getLengthWithoutCheckingForIsNull()),
                             tryGetSymFromConcolic(sarray.isNull()),
                             // Id reserved for this Sarray, if needed
                             nextNumberInitializedSymSarray,
@@ -898,7 +893,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se),
                             sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainNonSymbolicDefault()
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }
@@ -912,8 +907,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
-        ArrayAccessConstraint[] initialConstraints = new ArrayAccessConstraint[cachedIndices.size()];
-        int constraintNumber = 0;
+        List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
             Sprimitive val;
@@ -932,20 +926,9 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
                     val,
                     ArrayAccessConstraint.Type.SELECT
             );
-            initialConstraints[constraintNumber] = ac;
-            constraintNumber++;
+            initialConstraints.add(ac);
         }
-        return initialConstraints;
-    }
-
-    private static void checkIfSarrayCanContainNullValues(Sarray sarray) {
-        if (sarray instanceof Sarray.SarraySarray
-                && sarray.isKnownToHaveEveryIndexInitialized()
-                && StreamSupport.stream(
-                        sarray.getCachedElements().spliterator(), false)
-                            .allMatch(s -> s != null && ((Sarray) s).isNull() == Sbool.ConcSbool.FALSE)) {
-            sarray.setCannotCurrentlyContainNonSymbolicDefault();
-        }
+        return initialConstraints.toArray(new ArrayAccessConstraint[0]);
     }
 
     private static void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {

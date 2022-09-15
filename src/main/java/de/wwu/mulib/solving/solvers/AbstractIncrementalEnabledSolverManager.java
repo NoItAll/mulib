@@ -391,7 +391,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     protected abstract Object labelSymSprimitive(SymSprimitive symSprimitive);
 
     protected Object labelSarray(Sarray<?> sarray) {
-        int length = (Integer) labelSprimitive(sarray.getLength());
+        int length = (Integer) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull());
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
         if (!sarray.shouldBeRepresentedInSolver()) {

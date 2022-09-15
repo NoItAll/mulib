@@ -58,7 +58,8 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         this.isNull = isNull;
         this.valueType = valueType;
         this.isCompletelyInitialized = isCompletelyInitialized;
-        this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization = canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
+        this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization =
+                canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
     }
 
     /**

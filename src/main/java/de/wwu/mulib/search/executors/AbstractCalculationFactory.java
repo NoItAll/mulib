@@ -150,11 +150,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (i instanceof ConcSnumber && ((ConcSnumber) i).intVal() < 0) {
             throw new ArrayIndexOutOfBoundsException();
         }
+        // Use sarray.getLength to also check for null
         if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.
             Sbool indexInBound = se.and(
-                    se.lt(i, sarray.getLength()),
+                    se.lt(i, sarray._getLengthWithoutCheckingForIsNull()),
                     se.lte(Sint.ConcSint.ZERO, i)
             );
             if (throwExceptionOnOOB) {
@@ -169,7 +170,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 _addIndexInBoundsConstraint(se, indexInBound);
             }
         } else {
-            ConcSnumber concLen = (ConcSnumber) sarray.getLength();
+            ConcSnumber concLen = (ConcSnumber) sarray._getLengthWithoutCheckingForIsNull();
             ConcSnumber concI = (ConcSnumber) i;
             if (concLen.intVal() <= concI.intVal() || concI.intVal() < 0) {
                 throw new ArrayIndexOutOfBoundsException();
