@@ -768,7 +768,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 Sint[] nextLengths = new Sint[lengths.length-1];
                 System.arraycopy(lengths, 1, nextLengths, 0, nextLengths.length);
                 se.store(this, i,
-                        generateNonSymbolicSarrayDependingOnState(
+                        generateNonSymbolicSarrayDependingOnStateForMultiANewArray(
                                 nextLengths,
                                 (Class<? extends SubstitutedVar>) elementType.getComponentType(),
                                 se
@@ -813,42 +813,41 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             return dim > 2;
         }
 
-        private Sarray generateNonSymbolicSarrayDependingOnState(
+        private Sarray generateNonSymbolicSarrayDependingOnStateForMultiANewArray(
                 Sint[] lengths,
                 Class<? extends SubstitutedVar> nextInnerElementsType, SymbolicExecution se) {
             if (elementsAreSarraySarrays()) {
                 assert nextInnerElementsType.isArray();
                 assert lengths.length > 2;
-                return SymbolicExecution.sarraySarray(
+                return se.sarraySarray(
                         lengths,
-                        nextInnerElementsType,
-                        se
+                        nextInnerElementsType
                 );
             }
-            return generateNonSarraySarray(lengths[0], nextInnerElementsType.getComponentType(), false, se);
+            return generateNonSarraySarray(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
         }
 
         @SuppressWarnings("unchecked")
-        private static Sarray generateNonSarraySarray(Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+        private static Sarray generateNonSarraySarray(boolean canBeNull, Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
             assert !innermostType.isArray();
             assert Sprimitive.class.isAssignableFrom(innermostType)
                     || PartnerClass.class.isAssignableFrom(innermostType);
             // Determine which kind of array must be set
             if (Sprimitive.class.isAssignableFrom(innermostType)) {
                 if (innermostType == Sint.class) {
-                    return se.sintSarray(len, defaultIsSymbolic);
+                    return se.sintSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Slong.class) {
-                    return se.slongSarray(len, defaultIsSymbolic);
+                    return se.slongSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Sdouble.class) {
-                    return se.sdoubleSarray(len, defaultIsSymbolic);
+                    return se.sdoubleSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Sfloat.class) {
-                    return se.sfloatSarray(len, defaultIsSymbolic);
+                    return se.sfloatSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Sshort.class) {
-                    return se.sshortSarray(len, defaultIsSymbolic);
+                    return se.sshortSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Sbyte.class) {
-                    return se.sbyteSarray(len, defaultIsSymbolic);
+                    return se.sbyteSarray(len, defaultIsSymbolic, canBeNull);
                 } else if (innermostType == Sbool.class) {
-                    return se.sboolSarray(len, defaultIsSymbolic);
+                    return se.sboolSarray(len, defaultIsSymbolic, canBeNull);
                 } else {
                     throw new NotYetImplementedException();
                 }
@@ -881,9 +880,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
-                result = se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic());
+                result = se.sarraySarray(se.symSint(), elementType, defaultIsSymbolic(), canCurrentlyContainUnsetNonSymbolicDefault());
             } else {
-                result = generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
+                result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
             }
             //// TODO set isNotNull() for result of this...and perhaps also of results of results?
 //            result.setIsNotNull();

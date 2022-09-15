@@ -467,8 +467,44 @@ public final class SymbolicExecution {
         return valueFactory.sarraySarray(this, len, innerElementClass, defaultIsSymbolic);
     }
 
+    public Sarray.SintSarray sintSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sintSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SdoubleSarray sdoubleSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sdoubleSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SfloatSarray sfloatSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sfloatSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SlongSarray slongSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.slongSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SshortSarray sshortSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sshortSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SbyteSarray sbyteSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sbyteSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SboolSarray sboolSarray(Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sboolSarray(this, len, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.PartnerClassSarray partnerClassSarray(Sint len, Class<? extends PartnerClass> innerElementClass, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.partnerClassSarray(this, len, innerElementClass, defaultIsSymbolic, canBeNull);
+    }
+
+    public Sarray.SarraySarray sarraySarray(Sint len, Class<?> innerElementClass, boolean defaultIsSymbolic, boolean canBeNull) {
+        return valueFactory.sarraySarray(this, len, innerElementClass, defaultIsSymbolic, canBeNull);
+    }
+
     public Sarray.SarraySarray sarraySarray(Sint[] lengths, Class<?> innerElementClass) {
-        return valueFactory.sarrarSarray(this, lengths, innerElementClass);
+        return valueFactory.sarrarySarray(this, lengths, innerElementClass);
     }
 
 
@@ -480,10 +516,6 @@ public final class SymbolicExecution {
 
     public Object label(Object var) {
         return mulibExecutor.label(var);
-    }
-
-    public static Sarray.SarraySarray sarraySarray(Sint[] lengths, Class<? extends SubstitutedVar> innerElementClass, SymbolicExecution se) {
-        return se.sarraySarray(lengths, innerElementClass);
     }
 
     public static Sbool evalInstanceof(PartnerClass partnerClass, Class<?> c, SymbolicExecution se) {
