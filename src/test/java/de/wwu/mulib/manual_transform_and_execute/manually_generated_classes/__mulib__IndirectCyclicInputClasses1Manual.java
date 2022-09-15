@@ -1,8 +1,10 @@
 package de.wwu.mulib.manual_transform_and_execute.manually_generated_classes;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -53,5 +55,15 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
     @Override
     public void prepareToRepresentSymbolically(SymbolicExecution se) {
 
+    }
+
+    @Override
+    public Sbool isNull() {
+        throw new MulibIllegalStateException("Should not be entered");
+    }
+
+    @Override
+    public void setIsNotNull() {
+        throw new MulibIllegalStateException("Should not be entered");
     }
 }

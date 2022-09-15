@@ -23,12 +23,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     private void nullCheck(Sarray sarray, SymbolicExecution se) {
-        if (enableInitializeFreeArraysWithNull) {
-            if (sarray.isNull().boolChoice(se)) {
-                throw new NullPointerException();
-            } else {
-                sarray.setIsNotNull();
-            }
+        if (sarray.isNull().boolChoice(se)) {
+            throw new NullPointerException();
+        } else {
+            sarray.setIsNotNull();
         }
     }
 

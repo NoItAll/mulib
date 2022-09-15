@@ -1,6 +1,6 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.substitutions.primitives.ConcSnumber;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
@@ -24,6 +24,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
     private final Sbool isNull;
     private final Class<?> valueType;
     private final boolean isCompletelyInitialized;
+    private final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
 
     private ArrayInitializationConstraint(
             Sint arrayId,
@@ -33,11 +34,14 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint reservedId,
             Sint containingSarraySarrayId,
             Class<?> valueType,
-            ArrayAccessConstraint[] initialSelectConstraints) {
+            ArrayAccessConstraint[] initialSelectConstraints,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
         assert potentialIds == null || containingSarraySarrayId == null;
         assert initialSelectConstraints != null;
         assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getType() == ArrayAccessConstraint.Type.SELECT);
         assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getArrayId() == arrayId);
+        assert Arrays.stream(initialSelectConstraints).noneMatch(isc -> isc.getIndex() instanceof Sym);
         this.initialSelectConstraints = initialSelectConstraints;
         if (potentialIds == null && containingSarraySarrayId == null) {
             this.type = Type.SIMPLE_SARRAY;
@@ -53,13 +57,8 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         this.arrayLength = arrayLength;
         this.isNull = isNull;
         this.valueType = valueType;
-        if (arrayLength instanceof ConcSnumber) {
-            int length = ((ConcSnumber) arrayLength).intVal();
-            assert length >= initialSelectConstraints.length;
-            isCompletelyInitialized = length == initialSelectConstraints.length;
-        } else {
-            isCompletelyInitialized = false;
-        }
+        this.isCompletelyInitialized = isCompletelyInitialized;
+        this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization = canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
     }
 
     /**
@@ -69,14 +68,21 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param isNull The Sbool representing the possibility to be null of the array
      * @param valueType The element types of the array
      * @param initialSelectConstraints The content of the array upon initialization
+     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
+     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
+     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
+     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
             Sint arrayLength,
             Sbool isNull,
             Class<?> valueType,
-            ArrayAccessConstraint[] initialSelectConstraints) {
-        this(arrayId, arrayLength, isNull, null, null, null, valueType, initialSelectConstraints);
+            ArrayAccessConstraint[] initialSelectConstraints,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+        this(arrayId, arrayLength, isNull, null, null, null, valueType, initialSelectConstraints,
+                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
     }
 
     /**
@@ -88,6 +94,10 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param containingSarraySarrayId The id of the array of arrays that is to be represented
      * @param valueType The element types of the array
      * @param initialSelectConstraints The content of the array upon initialization
+     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
+     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
+     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
+     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -96,8 +106,11 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint reservedId,
             Sint containingSarraySarrayId,
             Class<?> valueType,
-            ArrayAccessConstraint[] initialSelectConstraints) {
-        this(arrayId, arrayLength, isNull, null, reservedId, containingSarraySarrayId, valueType, initialSelectConstraints);
+            ArrayAccessConstraint[] initialSelectConstraints,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+        this(arrayId, arrayLength, isNull, null, reservedId, containingSarraySarrayId, valueType, initialSelectConstraints,
+                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
     }
 
     /**
@@ -108,6 +121,10 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
      * @param potentialIds The ids this array might be representing
      * @param valueType The element types of the array
      * @param initialSelectConstraints The content of the array upon initialization
+     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
+     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
+     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
+     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -115,8 +132,11 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sbool isNull,
             Set<Sint> potentialIds,
             Class<?> valueType,
-            ArrayAccessConstraint[] initialSelectConstraints) {
-        this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType, initialSelectConstraints);
+            ArrayAccessConstraint[] initialSelectConstraints,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+        this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType, initialSelectConstraints,
+                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
     }
 
     @Override
@@ -160,9 +180,14 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         return isCompletelyInitialized;
     }
 
+    public boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization() {
+        return canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
+    }
+
     @Override
     public String toString() {
         return "AR_INIT{arrayId=" + arrayId + ",type=" + type
-                + ",valueType=" + valueType + ",completelyInitialized=" + isCompletelyInitialized + "}";
+                + ",valueType=" + valueType + ",completelyInitialized=" + isCompletelyInitialized
+                + ",canPotentiallyContainCurrentlyUnsetNonSymbolicDefaultAtInitialization=" + canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization + "}";
     }
 }

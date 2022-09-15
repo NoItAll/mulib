@@ -21,7 +21,9 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
         assert arrayId != null;
         this.arrayId = arrayId;
         this.index = index;
-        if (value instanceof Sprimitive) {
+        if (value == null) {
+            this.value = null;
+        } else if (value instanceof Sprimitive) {
             this.value = (Sprimitive) value;
         } else if (value instanceof Sarray<?>) {
             this.value = ((Sarray<?>) value).getId();
