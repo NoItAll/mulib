@@ -836,28 +836,27 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             // Determine which kind of array must be set
             if (Sprimitive.class.isAssignableFrom(innermostType)) {
                 if (innermostType == Sint.class) {
-                    return SymbolicExecution.sintSarray(len, defaultIsSymbolic, se);
+                    return se.sintSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Slong.class) {
-                    return SymbolicExecution.slongSarray(len, defaultIsSymbolic, se);
+                    return se.slongSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Sdouble.class) {
-                    return SymbolicExecution.sdoubleSarray(len, defaultIsSymbolic, se);
+                    return se.sdoubleSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Sfloat.class) {
-                    return SymbolicExecution.sfloatSarray(len, defaultIsSymbolic, se);
+                    return se.sfloatSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Sshort.class) {
-                    return SymbolicExecution.sshortSarray(len, defaultIsSymbolic, se);
+                    return se.sshortSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Sbyte.class) {
-                    return SymbolicExecution.sbyteSarray(len, defaultIsSymbolic, se);
+                    return se.sbyteSarray(len, defaultIsSymbolic);
                 } else if (innermostType == Sbool.class) {
-                    return SymbolicExecution.sboolSarray(len, defaultIsSymbolic, se);
+                    return se.sboolSarray(len, defaultIsSymbolic);
                 } else {
                     throw new NotYetImplementedException();
                 }
             } else if (PartnerClass.class.isAssignableFrom(innermostType)) {
-                return SymbolicExecution.partnerClassSarray(
-                        (Class<? extends PartnerClass>) innermostType,
+                return se.partnerClassSarray(
                         len,
-                        defaultIsSymbolic,
-                        se
+                        (Class<? extends PartnerClass>) innermostType,
+                        defaultIsSymbolic
                 );
             } else {
                 throw new NotYetImplementedException();

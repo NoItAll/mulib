@@ -70,7 +70,7 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
             }
         }
 
-        return SymbolicExecution.concSint(alreadySeen.size(), se);
+        return se.concSint(alreadySeen.size());
     }
 
     public static Sint calc1() {

@@ -45,24 +45,24 @@ public class LongComparisons {
     public static int abs0() {
         SymbolicExecution se = SymbolicExecution.get();
         Slong l = se.namedSymSlong("l");
-        Sint cmp = l.cmp(SymbolicExecution.concSlong(0, se), se);
-        if (cmp.eqChoice(SymbolicExecution.concSint(0, se), se)) {
-            if (!l.eqChoice(SymbolicExecution.concSlong(0, se), se)) {
+        Sint cmp = l.cmp(se.concSlong(0), se);
+        if (cmp.eqChoice(se.concSint(0), se)) {
+            if (!l.eqChoice(se.concSlong(0), se)) {
                 throw new MulibRuntimeException("Must not occur!");
             }
         }
-        if (cmp.eqChoice(SymbolicExecution.concSint(1, se), se)) {
-            if (!l.gtChoice(SymbolicExecution.concSlong(0, se), se)) {
+        if (cmp.eqChoice(se.concSint(1), se)) {
+            if (!l.gtChoice(se.concSlong(0), se)) {
                 throw new MulibRuntimeException("Must not occur!");
             }
         }
-        if (cmp.eqChoice(SymbolicExecution.concSint(-1, se), se)) {
-            if (!l.ltChoice(SymbolicExecution.concSlong(0, se), se)) {
+        if (cmp.eqChoice(se.concSint(-1), se)) {
+            if (!l.ltChoice(se.concSlong(0), se)) {
                 throw new MulibRuntimeException("Must not occur!");
             }
         }
         l = cmp.gtChoice(se) ? l.neg(se) : l;
-        if (l.gtChoice(SymbolicExecution.concSlong(0, se), se)) {
+        if (l.gtChoice(se.concSlong(0), se)) {
             throw new MulibRuntimeException("Must not occur!");
         }
         return 0;
@@ -71,9 +71,9 @@ public class LongComparisons {
     public static int abs1() {
         SymbolicExecution se = SymbolicExecution.get();
         Slong l = se.namedSymSlong("l");
-        Sint cmp = l.cmp(SymbolicExecution.concSlong(0, se), se);
+        Sint cmp = l.cmp(se.concSlong(0), se);
         l = cmp.gtChoice(se) ? l.neg(se) : l;
-        if (l.gtChoice(SymbolicExecution.concSlong(0, se), se)) {
+        if (l.gtChoice(se.concSlong(0), se)) {
             throw new MulibRuntimeException("Must not occur!");
         }
         return 0;

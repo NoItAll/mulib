@@ -81,10 +81,10 @@ public class TspSolver {
         SymbolicExecution se = SymbolicExecution.get();
         best = se.concSint(2000000); // Adapted since otherwise an integer overflow occurs in Muli.
 
-        for (int i = 0; SymbolicExecution.concSint(i, se).ltChoice(N, se); i++) visited[i] = se.concSbool(false);
+        for (int i = 0; se.concSint(i).ltChoice(N, se); i++) visited[i] = se.concSbool(false);
 
         visited[0] = se.concSbool(true);
-        search(SymbolicExecution.concSint(0, se), SymbolicExecution.concSint(0, se), N.sub(SymbolicExecution.concSint(1, se), se));
+        search(se.concSint(0), se.concSint(0), N.sub(se.concSint(1), se));
 
         return best;
     }
@@ -95,20 +95,20 @@ public class TspSolver {
 
     private void search(Sint src, Sint length, Sint nLeft) {
         SymbolicExecution se = SymbolicExecution.get();
-        nCalls.add(SymbolicExecution.concSint(1, se), se);
+        nCalls.add(se.concSint(1), se);
 
         if (nLeft.eqChoice(se)) {
-            if (length.add(D[(Integer) SymbolicExecution.concretize(src, se)][0], se).ltChoice(best, se)) best = length.add(D[(Integer) SymbolicExecution.concretize(src, se)][0], se);
+            if (length.add(D[(Integer) se.concretize(src)][0], se).ltChoice(best, se)) best = length.add(D[(Integer) se.concretize(src)][0], se);
             return;
         }
 
         if (bound(src, length, nLeft).gteChoice(best, se)) return;
 
-        for (int i = 0; SymbolicExecution.concSint(i, se).ltChoice(N, se); i++) {
+        for (int i = 0; se.concSint(i).ltChoice(N, se); i++) {
             if (visited[i].boolChoice(se)) continue;
 
             visited[i] = se.concSbool(true);
-            search(se.concSint(i), length.add(D[(Integer) SymbolicExecution.concretize(src, se)][i], se), nLeft.sub(se.concSint(1), se));
+            search(se.concSint(i), length.add(D[(Integer) se.concretize(src)][i], se), nLeft.sub(se.concSint(1), se));
             visited[i] = se.concSbool(false);
         }
     }
