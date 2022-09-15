@@ -17,17 +17,21 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
     private static final byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
     private static final byte IS_REPRESENTED_IN_SOLVER = 2;
     private static final byte CACHE_IS_BLOCKED = 4;
-    // Only for SarraySarray and PartnerClassSarray
+    // This is only dynamic for SarraySarray and PartnerClassSarray since null is their default value and must be treated
+    // dedicatedly.
     private static final byte CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT = 8;
     private static final byte DEFAULT_IS_SYMBOLIC = 16;
     private static final byte IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED = 32;
+    // representationState encodes several states that are important when representing an Array as a constraint or
+    // when interacting with the constraint solver. Each bit represents one possible state.
+    private byte representationState;
+
     // Is null until to-be-represented in constraint solver
     private Sint id;
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
-    private byte representationState;
     private Sbool isNull;
 
     /** New instance constructor */
@@ -125,11 +129,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return (this.representationState & CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT) == 0;
     }
 
-    public final void setCannotCurrentlyContainUnsetNonSymbolicDefault() {
+    protected final void setCannotCurrentlyContainUnsetNonSymbolicDefault() {
         representationState |= CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT;
     }
 
-    public final void setCanCurrentlyContainUnsetNonSymbolicDefault() {
+    protected void setCanCurrentlyContainUnsetNonSymbolicDefault() {
         representationState = (byte) (representationState & ~CANNOT_CURRENTLY_CONTAIN_UNSET_NON_SYMBOLIC_DEFAULT);
     }
 
@@ -142,7 +146,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return (representationState & IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED) != 0;
     }
 
-    public final void setIsKnownToHaveEveryIndexInitialized() {
+    protected final void setIsKnownToHaveEveryIndexInitialized() {
         representationState |= IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED;
     }
 
@@ -186,7 +190,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
     @Override
     public String toString() {
-        return "Sarray{id=" + id + ", elements=" + cachedElements + "}";
+        return "Sarray" + id + "{repState=" + representationState + ",elements=" + cachedElements + "}";
     }
 
     protected abstract T symbolicDefault(SymbolicExecution se);
@@ -210,7 +214,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         representationState |= CACHE_IS_BLOCKED;
     }
 
-    private boolean isCacheBlocked() {
+    protected boolean isCacheBlocked() {
         return (representationState & CACHE_IS_BLOCKED) != 0;
     }
 
@@ -297,13 +301,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return cachedElements.get(index);
     }
 
-    public final void setInCacheForIndexForSelect(Sint index, T value) {
+    public void setInCacheForIndexForSelect(Sint index, T value) {
         if (!isCacheBlocked()) {
             cachedElements.put(index, value);
         }
     }
 
-    public final void setInCacheForIndexForStore(Sint index, T value) {
+    public void setInCacheForIndexForStore(Sint index, T value) {
         if (!isCacheBlocked()) {
             cachedElements.put(index, value);
         }
@@ -879,9 +883,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         public final void store(Sint i, Sarray val, SymbolicExecution se) {
-            if (val == null || val.isNull() != Sbool.ConcSbool.FALSE) {
-                setCanCurrentlyContainUnsetNonSymbolicDefault();
-            }
             se.store(this, i, val);
         }
 
@@ -894,8 +895,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             } else {
                 result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
             }
-            //// TODO set isNotNull() for result of this...and perhaps also of results of results?
+
             result.initializeForAliasingAndBlockCache(se);
+            result.initializeWithPotentiallySameArrays(potentiallyContainedSarrays);
             return result;
         }
 
@@ -910,25 +912,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
 
         @Override
-        public void prepareToRepresentSymbolically(SymbolicExecution se) {
-            initializeId(se);
-            assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
-            for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
-                Sarray val = entry.getValue();
-                if (val == null) {
-                    continue;
-                }
-                val.blockCache();
-            }
-        }
-
-        @Override
         protected void blockCache() {
-            super.blockCache();
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
                 val.blockCache();
             }
+            super.blockCache();
         }
 
         @Override
@@ -942,11 +931,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         public void clearCache() {
-            super.clearCache();
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
                 val.clearCache();
             }
+            super.clearCache();
         }
 
         @Override
@@ -957,6 +946,86 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                         .allMatch(s -> s != null && s.isNull() == Sbool.ConcSbool.FALSE)) {
                 setCannotCurrentlyContainUnsetNonSymbolicDefault();
             }
+        }
+
+        @Override
+        public void setInCacheForIndexForSelect(Sint index, Sarray value) {
+            if (!isCacheBlocked()) {
+                cachedElements.put(index, value);
+            }
+            addPotentiallyContainedSarray(value);
+        }
+
+        @Override
+        public void setInCacheForIndexForStore(Sint index, Sarray value) {
+            if (value == null || value.isNull() != Sbool.ConcSbool.FALSE) {
+                setCanCurrentlyContainUnsetNonSymbolicDefault();
+            }
+            if (!isCacheBlocked()) {
+                cachedElements.put(index, value);
+            }
+            addPotentiallyContainedSarray(value);
+        }
+
+        @Override
+        public void prepareToRepresentSymbolically(SymbolicExecution se) {
+            initializeId(se);
+            assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
+            for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
+                Sarray val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
+                val.blockCache();
+                addPotentiallyContainedSarray(val);
+            }
+        }
+
+        @Override
+        protected void setCanCurrentlyContainUnsetNonSymbolicDefault() {
+            super.setCanCurrentlyContainUnsetNonSymbolicDefault();
+            for (SarraySarray s : (Set<SarraySarray>) (Object) arraysPotentiallyEqualToThis) {
+                s._setCanCurrentlyContainUnsetNonSymbolicDefault();
+            }
+        }
+        private void _setCanCurrentlyContainUnsetNonSymbolicDefault() {
+            super.setCanCurrentlyContainUnsetNonSymbolicDefault();
+        }
+
+
+        private final Set<Sarray> potentiallyContainedSarrays = new HashSet<>();
+        private void addPotentiallyContainedSarray(Sarray s) {
+            for (SarraySarray p : (Set<SarraySarray>) (Object) arraysPotentiallyEqualToThis) {
+                p.addPotentiallyContainedSarray(s);
+            }
+            potentiallyContainedSarrays.add(s);
+        }
+    }
+
+    protected final Set<Sarray> arraysPotentiallyEqualToThis = new HashSet<>();
+    protected void initializeWithPotentiallySameArrays(Collection<Sarray> candidates) {
+        assert id instanceof Sym; // This method should be executed for potentially aliasing arrays
+        // Since we use aliasing for the current array, the representationState of the current array, i.e., 'this', only
+        // is responsible for the case where 'this' represents a new Sarray.
+        // Therefore, the representationState set in SarraySarray.symbolicDefault(SymbolicExecution) is valid in that
+        // 'this' initializes a new value the same way (default value enforced for not-yet-represented indices or a symbolic value)
+        // Furthermore, we cannot set the state to IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED.
+        // Again, this is only relevant if the parent is not already fully initialized (or if the parent is aliasing
+        // and can represent a new Sarray).
+        for (Sarray s : candidates) {
+            s.addPotentiallySameArray(this);
+        }
+    }
+    protected void addPotentiallySameArray(Sarray value) {
+        for (Sarray s : arraysPotentiallyEqualToThis) {
+            if (s != value) {
+                s.arraysPotentiallyEqualToThis.add(value);
+                value.arraysPotentiallyEqualToThis.add(s);
+            }
+        }
+        if (value != this) {
+            arraysPotentiallyEqualToThis.add(value);
+            value.arraysPotentiallyEqualToThis.add(this);
         }
     }
 }
