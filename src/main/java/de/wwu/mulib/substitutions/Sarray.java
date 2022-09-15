@@ -46,10 +46,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             setDefaultIsSymbolic();
         }
         this.len = len;
+        this.cachedElements = new HashMap<>();
         if (!defaultIsSymbolic) {
             if (len instanceof ConcSnumber) {
                 int length = ((ConcSnumber) len).intVal();
-                this.cachedElements = new HashMap<>();
                 for (int i = 0; i < length; i++) {
                     cachedElements.put(se.concSint(i), nonSymbolicDefaultElement(se));
                 }
@@ -60,12 +60,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 // SarraySarray and PartnerClassSarray, on the other hand, can contain null which must be treated differently
                 setCannotCurrentlyContainUnsetNonSymbolicDefault();
             } else {
-                throw new NotYetImplementedException("Behavior if length is not concrete and default is not symbolic " +
-                        "is not yet implemented");
+                setCanCurrentlyContainUnsetNonSymbolicDefault();
             }
         } else {
-            this.cachedElements = new HashMap<>();
-            setCanCurrentlyContainUnsetNonSymbolicDefault();
+            setCannotCurrentlyContainUnsetNonSymbolicDefault();
         }
         this.isNull = isNull;
     }
@@ -915,6 +913,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         protected void blockCache() {
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
                 val.blockCache();
             }
             super.blockCache();
@@ -925,6 +926,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             super.setAsRepresentedInSolver();
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
+                assert val.isRepresentedInSolver();
                 val.clearCache();
             }
         }
@@ -933,6 +938,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public void clearCache() {
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
                 val.clearCache();
             }
             super.clearCache();
@@ -995,10 +1003,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         private final Set<Sarray> potentiallyContainedSarrays = new HashSet<>();
         private void addPotentiallyContainedSarray(Sarray s) {
+            potentiallyContainedSarrays.add(s);
             for (SarraySarray p : (Set<SarraySarray>) (Object) arraysPotentiallyEqualToThis) {
+                if (p.potentiallyContainedSarrays.contains(s)) {
+                    continue;
+                }
                 p.addPotentiallyContainedSarray(s);
             }
-            potentiallyContainedSarrays.add(s);
         }
     }
 
