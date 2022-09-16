@@ -4,7 +4,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -303,16 +302,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
-            Sprimitive val;
-            if (value instanceof Sarray) {
-                val = tryGetSymFromSnumber.apply(((Sarray<?>) value).getId());
-            } else if (value instanceof Sbool) {
-                val = tryGetSymFromSbool.apply((Sbool) value);
-            } else if (value instanceof Snumber) {
-                val = tryGetSymFromSnumber.apply((Snumber) value);
-            } else {
-                throw new NotYetImplementedException();
-            }
+            SubstitutedVar val = getValueToBeRepresentedInSarray(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
                     (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
                     (Sint) tryGetSymFromSnumber.apply(i),
