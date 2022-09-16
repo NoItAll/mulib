@@ -226,19 +226,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
     public abstract void store(Sint i, T val, SymbolicExecution se);
 
-    // If the new constraint is not concrete, we must account for non-deterministic accesses. Therefore,
-    // we will add all current stored pairs (i.e. all relevant stores) as constraints to the constraint stack.
-    public final boolean checkIfNeedsToRepresentOldEntries(Sint i, SymbolicExecution se) {
-        if (!shouldBeRepresentedInSolver()) {
-            if (i instanceof SymNumericExpressionSprimitive) {
-                prepareToRepresentSymbolically(se);
-                // We do not have to add any constraints if we are on a known path or if there are not yet any elements.
-                return true;
-            }
-        }
-        return false;
-    }
-
     @Override
     public void prepareToRepresentSymbolically(SymbolicExecution se) {
         initializeId(se);
@@ -865,6 +852,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         protected Sarray symbolicDefault(SymbolicExecution se) {
+            assert isRepresentedInSolver();
             Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
@@ -875,6 +863,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
             result.initializeForAliasingAndBlockCache(se);
             result.initializeWithPotentiallySameArrays(potentiallyContainedSarrays);
+            se.getCalculationFactory().representArrayIfNeeded(se, result, getId());
             return result;
         }
 

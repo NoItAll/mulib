@@ -77,6 +77,10 @@ public final class SymbolicExecution {
         return mulibValueCopier;
     }
 
+    public CalculationFactory getCalculationFactory() {
+        return calculationFactory;
+    }
+
     public int getNextNumberInitializedAtomicSymSints() {
         return nextNumberInitializedAtomicSymSints++;
     }

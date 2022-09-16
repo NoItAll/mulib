@@ -219,17 +219,21 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     protected abstract SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value);
 
     private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(newIndex, se)) {
-            representArrayIfNeeded(se, sarray, null);
+        if (!sarray.shouldBeRepresentedInSolver() && newIndex instanceof Sym) {
+            sarray.prepareToRepresentSymbolically(se);
         }
+        representArrayIfNeeded(se, sarray, null);
     }
 
-    private void representArrayIfNeeded(
+    @Override
+    public void representArrayIfNeeded(
             SymbolicExecution se,
             Sarray sarray,
             // null if sarray does not belong to a SarraySarray that is to be represented:
             Sint idOfContainingSarraySarray) {
-        assert sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
+        if (!sarray.shouldBeRepresentedInSolver() || sarray.isRepresentedInSolver()) {
+            return;
+        }
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
