@@ -5,9 +5,6 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
-import java.util.Collections;
-import java.util.Set;
-
 public abstract class AbstractArraySolverRepresentation implements ArraySolverRepresentation {
     protected ArrayHistorySolverRepresentation currentRepresentation;
     protected final Sint arrayId;
@@ -73,5 +70,10 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     @Override
     public boolean isCompletelyInitialized() {
         return isCompletelyInitialized;
+    }
+
+    @Override
+    public Class<?> getElementType() {
+        return valueType;
     }
 }

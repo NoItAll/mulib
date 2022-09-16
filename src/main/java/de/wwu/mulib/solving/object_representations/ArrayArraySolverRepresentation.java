@@ -2,17 +2,16 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
-/**
- * Represents an array with Sint --> Sprimitive. Is also used to symbolically represent an array of arrays
- * using the IDs of the respective Sarrays.
- */
-public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation {
+import java.util.Set;
 
-    public PrimitiveValuedArraySolverRepresentation(ArrayInitializationConstraint aic, int level) {
+public class ArrayArraySolverRepresentation extends AbstractArraySolverRepresentation implements IArrayArraySolverRepresentation {
+
+    public ArrayArraySolverRepresentation(ArrayInitializationConstraint aic, int level) {
         this(
                 aic.getArrayId(),
                 aic.getArrayLength(),
@@ -22,10 +21,11 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 aic.isCompletelyInitialized(),
                 aic.getValueType()
         );
-        assert !aic.getValueType().isArray();
+        assert aic.getValueType().isArray();
+
     }
 
-    private PrimitiveValuedArraySolverRepresentation(
+    private ArrayArraySolverRepresentation(
             Sint arrayId,
             Sint length,
             Sbool isNull,
@@ -37,18 +37,18 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
     }
 
     @Override
-    public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
-        return currentRepresentation.select(guard, index, selectedValue, isCompletelyInitialized);
+    public Set<Sint> getPotentialValues() {
+        return (Set<Sint>) currentRepresentation.getPotentialValues(); // TODO better name; if is fully initialized, potential values are initialconcreteandstoredvalues
     }
 
     @Override
-    public void store(Constraint guard, Sint index, Sprimitive storedValue) {
-        this.currentRepresentation = currentRepresentation.store(guard, index, storedValue);
+    public Set<Sint> getInitialConcreteAndStoredValues() {
+        return (Set<Sint>) currentRepresentation.getInitialConcreteAndStoredValues();
     }
 
     @Override
-    public PrimitiveValuedArraySolverRepresentation copyForNewLevel(int level) {
-        return new PrimitiveValuedArraySolverRepresentation(
+    public IArrayArraySolverRepresentation copyForNewLevel(int level) {
+        return new ArrayArraySolverRepresentation(
                 arrayId,
                 length,
                 isNull,
@@ -57,5 +57,15 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 isCompletelyInitialized,
                 valueType
         );
+    }
+
+    @Override
+    public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
+        throw new NotYetImplementedException(); //// TODO
+    }
+
+    @Override
+    public void store(Constraint guard, Sint index, Sprimitive storedValue) {
+        throw new NotYetImplementedException(); //// TODO
     }
 }

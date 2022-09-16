@@ -11,6 +11,7 @@ import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
+import de.wwu.mulib.solving.object_representations.AliasingPrimitiveValuedArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -405,7 +406,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
-            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.getId()).getNewestRepresentation() instanceof AliasingArraySolverRepresentation) {
+            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
                 throw new NotYetImplementedException();
             }
             ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);

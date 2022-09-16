@@ -121,7 +121,7 @@ public class ArrayHistorySolverRepresentation {
         );
     }
 
-    public Set<Sprimitive> getPotentialValues() {
+    public Set<? extends Sprimitive> getPotentialValues() {
         Set<Sprimitive> result = new HashSet<>();
         if (beforeStore != null) {
             assert store != null;
@@ -134,7 +134,7 @@ public class ArrayHistorySolverRepresentation {
         return result;
     }
 
-    public Set<Sprimitive> getInitialConcreteAndStoredValues() {
+    public Set<? extends Sprimitive> getInitialConcreteAndStoredValues() {
         Set<Sprimitive> result = new HashSet<>();
         ArrayHistorySolverRepresentation current = this;
         while (current.store != null) {

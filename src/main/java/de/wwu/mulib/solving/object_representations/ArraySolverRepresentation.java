@@ -17,37 +17,58 @@ public interface ArraySolverRepresentation {
             int level) {
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
-            result = new PrimitiveValuedArraySolverRepresentation(
-                    ac,
-                    level
-            );
+            result = ac.getValueType().isArray() ?
+                    new ArrayArraySolverRepresentation(ac, level)
+                    :
+                    new PrimitiveValuedArraySolverRepresentation(ac, level);
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
             ArraySolverRepresentation asr =
                     symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
-
+            assert asr instanceof IArrayArraySolverRepresentation;
+            IArrayArraySolverRepresentation aasr = (IArrayArraySolverRepresentation) asr;
             Set<Sint> aliasedArrays;
             if (asr.isCompletelyInitialized()) {
-                aliasedArrays = (Set<Sint>) asr.getInitialConcreteAndStoredValues();
+                aliasedArrays = aasr.getInitialConcreteAndStoredValues();
             } else {
-                aliasedArrays = (Set<Sint>) asr.getPotentialValues();
+                aliasedArrays = aasr.getPotentialValues();
             }
-            result = new AliasingArraySolverRepresentation(
-                    ac,
-                    level,
-                    // The Sint-values here are the IDs of the aliased arrays
-                    aliasedArrays,
-                    symbolicArrayStates,
-                    asr.isCompletelyInitialized()
-            );
+            result =
+                    ac.getValueType().isArray() ?
+                            new AliasingArrayArraySolverRepresentation(
+                                    ac,
+                                    level,
+                                    aliasedArrays,
+                                    symbolicArrayStates,
+                                    asr.isCompletelyInitialized()
+                            )
+                            :
+                            new AliasingPrimitiveValuedArraySolverRepresentation(
+                                    ac,
+                                    level,
+                                    // The Sint-values here are the IDs of the aliased arrays
+                                    aliasedArrays,
+                                    symbolicArrayStates,
+                                    asr.isCompletelyInitialized()
+                            );
         } else {
             assert ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY;
-            result = new AliasingArraySolverRepresentation(
-                    ac,
-                    level,
-                    ac.getPotentialIds(),
-                    symbolicArrayStates,
-                    false
-            );
+            result =
+                    ac.getValueType().isArray() ?
+                            new AliasingArrayArraySolverRepresentation(
+                                    ac,
+                                    level,
+                                    ac.getPotentialIds(),
+                                    symbolicArrayStates,
+                                    false
+                            )
+                            :
+                            new AliasingPrimitiveValuedArraySolverRepresentation(
+                                    ac,
+                                    level,
+                                    ac.getPotentialIds(),
+                                    symbolicArrayStates,
+                                    false
+                            );
         }
         return result;
     }
@@ -70,10 +91,8 @@ public interface ArraySolverRepresentation {
 
     int getLevel();
 
-    Set<? extends Sprimitive> getPotentialValues();
-
-    Set<? extends Sprimitive> getInitialConcreteAndStoredValues();
-
     boolean isCompletelyInitialized();
+
+    Class<?> getElementType();
 
 }
