@@ -1,6 +1,5 @@
 package de.wwu.mulib.substitutions;
 
-import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -146,27 +145,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
     protected final void setIsKnownToHaveEveryIndexInitialized() {
         representationState |= IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED;
-    }
-
-    /**
-     * SymbolicCalculationFactory has an own implementation of this.
-     * @return Select constraints representing the current stored not-null values of the sarray
-     */
-    public ArrayAccessConstraint[] collectInitialArrayAccessConstraints() {
-        assert shouldBeRepresentedInSolver() && !isRepresentedInSolver();
-        Set<Sint> cachedIndices = getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
-        List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
-        for (Sint i : cachedIndices) {
-            SubstitutedVar value = getFromCacheForIndex(i);
-            if (value == null) {
-                // We skip nulls
-                continue;
-            }
-            ArrayAccessConstraint ac = new ArrayAccessConstraint(getId(), i, value, ArrayAccessConstraint.Type.SELECT);
-            initialConstraints.add(ac);
-        }
-        return initialConstraints.toArray(new ArrayAccessConstraint[0]);
     }
 
     public void checkIfSarrayIsKnownToHaveEveryIndexInitialized() {

@@ -1,19 +1,19 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.constraints.And;
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
+import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.StreamSupport;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
@@ -27,7 +27,12 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     private final SymbolicCalculationFactory scf;
 
     ConcolicCalculationFactory(MulibConfig config, ValueFactory vf) {
-        super(config, vf);
+        super(
+                config,
+                vf,
+                ConcolicNumericContainer::tryGetSymFromConcolic,
+                ConcolicConstraintContainer::tryGetSymFromConcolic
+        );
         this.scf = SymbolicCalculationFactory.getInstance(config, vf);
     }
 
@@ -725,23 +730,6 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         return Sshort.newExpressionSymbolicSshort(container);
     }
 
-    @Override
-    protected SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.getFromCacheForIndex(index);
-        if (result != null) {
-            return result;
-        }
-
-        representArrayViaConstraintsIfNeeded(se, sarray, index);
-        checkIndexAccess(sarray, index, se);
-
-        result = sarray.getNewValueForSelect(se);
-        addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setInCacheForIndexForSelect(index, result);
-        evaluateRelabeling(sarray, se); // TODO Possibly prune the amount of constraints via the given index?
-        return result;
-    }
-
     private static Constraint getEqOfConcolic(SubstitutedVar e, SymbolicExecution se) {
         Sbool eq;
         if (e instanceof Sarray) {
@@ -770,9 +758,12 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         return tryGetSymFromConcolic(eq);
     }
 
-    private static void evaluateRelabeling(
-            Sarray<?> s,
+    @Override
+    protected void additionalChecksAfterSelect(
+            Sarray s,
             SymbolicExecution se) {
+        // TODO Possibly prune the amount of constraints via the given index?
+        // Evaluate relabeling
         if (se.nextIsOnKnownPath() || !s.shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
             return;
         }
@@ -791,167 +782,9 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         }
     }
 
-    @Override
-    protected SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
-        representArrayViaConstraintsIfNeeded(se, sarray, index);
-        checkIndexAccess(sarray, index, se);
-        Sarray.checkIfValueIsStorableForSarray(sarray, value);
-
-        if (sarray.shouldBeRepresentedInSolver()) {
-            sarray.clearCache();
-            if (!se.nextIsOnKnownPath()) {
-                SubstitutedVar inner;
-                if (value instanceof Sbool) {
-                    inner = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) value);
-                } else if (value instanceof Snumber) {
-                    inner = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) value);
-                } else {
-                    throw new NotYetImplementedException();
-                }
-                ArrayConstraint storeConstraint =
-                        new ArrayAccessConstraint(
-                                (Sint) tryGetSymFromConcolic(sarray.getId()),
-                                (Sint) tryGetSymFromConcolic(index),
-                                inner,
-                                ArrayAccessConstraint.Type.STORE
-                        );
-                se.addNewArrayConstraint(storeConstraint);
-            }
-        }
-        sarray.setInCacheForIndexForStore(index, value);
-        return value;
-    }
-
     private static void markForReevaluation(SymbolicExecution se) {
         if (!se.getCurrentChoiceOption().reevaluationNeeded()) {
             se.getCurrentChoiceOption().setReevaluationNeeded();
-        }
-    }
-
-    private static void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
-        if (sarray.checkIfNeedsToRepresentOldEntries(newIndex, se)) {
-            representArrayIfNeeded(se, sarray, null);
-        }
-    }
-
-    private static void representArrayIfNeeded(SymbolicExecution se, Sarray sarray, Sint idOfContainingSarraySarray) {
-        assert sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
-        Set<Sint> cachedIndices = sarray.getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
-
-        sarray.checkIfSarrayIsKnownToHaveEveryIndexInitialized();
-
-        if (sarray instanceof Sarray.SarraySarray) {
-            Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
-            for (Sarray entry : ss.getCachedElements()) {
-                if (entry == null) {
-                    continue;
-                }
-                if (!entry.isRepresentedInSolver()) {
-                    assert !entry.shouldBeRepresentedInSolver();
-                    entry.prepareToRepresentSymbolically(se);
-                    representArrayIfNeeded(se, entry, (Sint) tryGetSymFromConcolic(ss.getId()));
-                }
-            }
-        }
-
-        ArrayConstraint arrayInitializationConstraint;
-        if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
-            if (!sarray.isRepresentedInSolver()) {
-                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
-                if (!se.nextIsOnKnownPath()) {
-                    arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromConcolic(sarray.getId()),
-                            (Sint) tryGetSymFromConcolic(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromConcolic(sarray.isNull()),
-                            sarray.getElementType(),
-                            collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se),
-                            sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
-                    );
-                    se.addNewArrayConstraint(arrayInitializationConstraint);
-                }
-                sarray.setAsRepresentedInSolver();
-            }
-        } else {
-            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
-            if (!sarray.isRepresentedInSolver()) {
-                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
-                if (!se.nextIsOnKnownPath()) {
-                    arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromConcolic(sarray.getId()),
-                            (Sint) tryGetSymFromConcolic(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromConcolic(sarray.isNull()),
-                            // Id reserved for this Sarray, if needed
-                            nextNumberInitializedSymSarray,
-                            idOfContainingSarraySarray,
-                            sarray.getElementType(),
-                            collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(sarray, se),
-                            sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
-                    );
-                    se.addNewArrayConstraint(arrayInitializationConstraint);
-                }
-                sarray.setAsRepresentedInSolver();
-            }
-        }
-    }
-
-    private static ArrayAccessConstraint[] collectInitialArrayAccessConstraintsAndPotentiallyInitializeSarrays(Sarray sarray, SymbolicExecution se) {
-        assert !se.nextIsOnKnownPath();
-        Set<Sint> cachedIndices = sarray.getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
-
-        List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
-        for (Sint i : cachedIndices) {
-            SubstitutedVar value = sarray.getFromCacheForIndex(i);
-            Sprimitive val;
-            if (value instanceof Sarray) {
-                val = tryGetSymFromConcolic(((Sarray<?>) value).getId());
-            } else if (value instanceof Sbool) {
-                val = tryGetSymFromConcolic((Sbool) value);
-            } else if (value instanceof Snumber) {
-                val = tryGetSymFromConcolic((Snumber) value);
-            } else {
-                throw new NotYetImplementedException();
-            }
-            ArrayAccessConstraint ac = new ArrayAccessConstraint(
-                    (Sint) tryGetSymFromConcolic(sarray.getId()),
-                    (Sint) tryGetSymFromConcolic(i),
-                    val,
-                    ArrayAccessConstraint.Type.SELECT
-            );
-            initialConstraints.add(ac);
-        }
-        return initialConstraints.toArray(new ArrayAccessConstraint[0]);
-    }
-
-    private static void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
-        // We will now add a constraint indicating to the solver that at position i a value can be found that previously
-        // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
-        // is the case if symbolic indices have been used.
-        if (sarray.shouldBeRepresentedInSolver()) {
-            if (result instanceof Sarray) {
-                assert sarray instanceof Sarray.SarraySarray;
-                representArrayIfNeeded(se, (Sarray) result, sarray.getId());
-            }
-            if (!se.nextIsOnKnownPath()) {
-                if (result instanceof Sbool.SymSbool) {
-                    result = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) result);
-                } else if (result instanceof SymNumericExpressionSprimitive) {
-                    result = ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) result);
-                } else if (result instanceof Sarray) {
-                    result = tryGetSymFromConcolic(((Sarray<?>) result).getId());
-                }
-                ArrayConstraint selectConstraint =
-                        new ArrayAccessConstraint(
-                                (Sint) tryGetSymFromConcolic(sarray.getId()),
-                                (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(index),
-                                result,
-                                ArrayAccessConstraint.Type.SELECT
-                        );
-                se.addNewArrayConstraint(selectConstraint);
-            }
         }
     }
 
@@ -966,6 +799,18 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         if (isLabeledIndexInBounds.isFalse()) {
             markForReevaluation(se);
         }
+    }
+
+    @Override
+    protected SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value) {
+        if (value instanceof Sbool.SymSbool) {
+            return tryGetSymFromConcolic((Sbool.SymSbool) value);
+        } else if (value instanceof SymNumericExpressionSprimitive) {
+            return tryGetSymFromConcolic((SymNumericExpressionSprimitive) value);
+        } else if (value instanceof Sarray) {
+            return tryGetSymFromConcolic(((Sarray<?>) value).getId());
+        }
+        return value;
     }
 
     private Slong toSlong(Snumber original, Slong sym) {

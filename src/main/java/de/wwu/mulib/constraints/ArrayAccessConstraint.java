@@ -1,7 +1,6 @@
 package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -25,8 +24,6 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
             this.value = null;
         } else if (value instanceof Sprimitive) {
             this.value = (Sprimitive) value;
-        } else if (value instanceof Sarray<?>) {
-            this.value = ((Sarray<?>) value).getId();
         } else {
             throw new NotYetImplementedException();
         }

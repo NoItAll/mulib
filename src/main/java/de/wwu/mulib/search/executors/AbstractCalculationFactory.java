@@ -1,25 +1,45 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.ArrayAccessConstraint;
+import de.wwu.mulib.constraints.ArrayConstraint;
+import de.wwu.mulib.constraints.ArrayInitializationConstraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.function.Function;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractCalculationFactory implements CalculationFactory {
+    protected final MulibConfig config;
     protected final boolean throwExceptionOnOOB;
     protected final boolean useEagerIndexesForFreeArrayPrimitiveElements;
     protected final boolean useEagerIndexesForFreeArrayObjectElements;
     protected final boolean enableInitializeFreeArraysWithNull;
     protected final ValueFactory valueFactory;
+    protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
+    protected final Function<Sbool, Sbool> tryGetSymFromSbool;
 
-    AbstractCalculationFactory(MulibConfig config, ValueFactory valueFactory) {
+    protected AbstractCalculationFactory(
+            MulibConfig config,
+            ValueFactory valueFactory,
+            Function<Snumber, Snumber> tryGetSymFromSnumber,
+            Function<Sbool, Sbool> tryGetSymFromSbool) {
+        this.config = config;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
         this.useEagerIndexesForFreeArrayPrimitiveElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
         this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.valueFactory = valueFactory;
+        this.tryGetSymFromSbool = tryGetSymFromSbool;
+        this.tryGetSymFromSnumber = tryGetSymFromSnumber;
     }
 
     private void nullCheck(Sarray sarray, SymbolicExecution se) {
@@ -173,8 +193,181 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
     }
 
+
+    protected void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
+        // We will now add a constraint indicating to the solver that at position i a value can be found that previously
+        // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
+        // is the case if symbolic indices have been used.
+        if (sarray.shouldBeRepresentedInSolver()) {
+            if (result instanceof Sarray) {
+                assert sarray instanceof Sarray.SarraySarray;
+                representArrayIfNeeded(se, (Sarray) result, sarray.getId());
+            }
+            if (!se.nextIsOnKnownPath()) {
+                result = getValueToBeRepresentedInSarray(result);
+                ArrayConstraint selectConstraint =
+                        new ArrayAccessConstraint(
+                                (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                                (Sint) tryGetSymFromSnumber.apply(index),
+                                result,
+                                ArrayAccessConstraint.Type.SELECT
+                        );
+                se.addNewArrayConstraint(selectConstraint);
+            }
+        }
+    }
+
+    protected abstract SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value);
+
+    private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
+        if (sarray.checkIfNeedsToRepresentOldEntries(newIndex, se)) {
+            representArrayIfNeeded(se, sarray, null);
+        }
+    }
+
+    private void representArrayIfNeeded(
+            SymbolicExecution se,
+            Sarray sarray,
+            // null if sarray does not belong to a SarraySarray that is to be represented:
+            Sint idOfContainingSarraySarray) {
+        assert sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
+        Set<Sint> cachedIndices = sarray.getCachedIndices();
+        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
+
+        sarray.checkIfSarrayIsKnownToHaveEveryIndexInitialized();
+
+        if (sarray instanceof Sarray.SarraySarray) {
+            Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
+            for (Sarray entry : ss.getCachedElements()) {
+                if (entry == null) {
+                    continue;
+                }
+                if (!entry.isRepresentedInSolver()) {
+                    assert !entry.shouldBeRepresentedInSolver();
+                    entry.prepareToRepresentSymbolically(se);
+                    representArrayIfNeeded(se, entry, ss.getId());
+                }
+            }
+        }
+
+        ArrayConstraint arrayInitializationConstraint;
+        // Represent array in constraint solver, if needed
+        if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
+            // In this case the Sarray was not spawned from a select from a SarraySarray
+            if (!sarray.isRepresentedInSolver()) {
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
+                if (!se.nextIsOnKnownPath()) {
+                    arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                            tryGetSymFromSbool.apply(sarray.isNull()),
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.isKnownToHaveEveryIndexInitialized(),
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
+                    );
+                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                }
+                sarray.setAsRepresentedInSolver();
+            }
+        } else {
+            // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
+            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
+            if (!sarray.isRepresentedInSolver()) {
+                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
+                if (!se.nextIsOnKnownPath()) {
+                    arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                            tryGetSymFromSbool.apply(sarray.isNull()),
+                            // Id reserved for this Sarray, if needed
+                            nextNumberInitializedSymSarray,
+                            (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.isKnownToHaveEveryIndexInitialized(),
+                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
+                    );
+                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                }
+                sarray.setAsRepresentedInSolver();
+            }
+        }
+    }
+
+    protected ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
+        assert !se.nextIsOnKnownPath() && sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
+        Set<Sint> cachedIndices = sarray.getCachedIndices();
+        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
+
+        List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
+        for (Sint i : cachedIndices) {
+            SubstitutedVar value = sarray.getFromCacheForIndex(i);
+            Sprimitive val;
+            if (value instanceof Sarray) {
+                val = tryGetSymFromSnumber.apply(((Sarray<?>) value).getId());
+            } else if (value instanceof Sbool) {
+                val = tryGetSymFromSbool.apply((Sbool) value);
+            } else if (value instanceof Snumber) {
+                val = tryGetSymFromSnumber.apply((Snumber) value);
+            } else {
+                throw new NotYetImplementedException();
+            }
+            ArrayAccessConstraint ac = new ArrayAccessConstraint(
+                    (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                    (Sint) tryGetSymFromSnumber.apply(i),
+                    val,
+                    ArrayAccessConstraint.Type.SELECT
+            );
+            initialConstraints.add(ac);
+        }
+        return initialConstraints.toArray(new ArrayAccessConstraint[0]);
+    }
+
     protected abstract void _addIndexInBoundsConstraint(SymbolicExecution se, Sbool indexInBounds);
 
-    protected abstract SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index);
-    protected abstract SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value);
+    private SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
+        SubstitutedVar result = sarray.getFromCacheForIndex(index);
+        if (result != null) {
+            return result;
+        }
+
+        representArrayViaConstraintsIfNeeded(se, sarray, index);
+        checkIndexAccess(sarray, index, se);
+
+        result = sarray.getNewValueForSelect(se);
+        addSelectConstraintIfNeeded(se, sarray, index, result);
+        sarray.setInCacheForIndexForSelect(index, result);
+        additionalChecksAfterSelect(sarray, se);
+        return result;
+    }
+
+    private SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
+        representArrayViaConstraintsIfNeeded(se, sarray, index);
+        checkIndexAccess(sarray, index, se);
+        Sarray.checkIfValueIsStorableForSarray(sarray, value);
+
+        // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
+        if (sarray.shouldBeRepresentedInSolver()) {
+            // We must reset the cached elements, if a symbolic variable is present and store was used
+            // This is because we can't be sure which index-element pair was overwritten
+            sarray.clearCache();
+            if (!se.nextIsOnKnownPath()) {
+                SubstitutedVar inner = getValueToBeRepresentedInSarray(value);
+                ArrayConstraint storeConstraint =
+                        new ArrayAccessConstraint(
+                                (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                                (Sint) tryGetSymFromSnumber.apply(index),
+                                inner,
+                                ArrayAccessConstraint.Type.STORE
+                        );
+                se.addNewArrayConstraint(storeConstraint);
+            }
+        }
+        sarray.setInCacheForIndexForStore(index, value);
+        return value;
+    }
+
+    protected void additionalChecksAfterSelect(Sarray sarray, SymbolicExecution se) {};
+
 }

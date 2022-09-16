@@ -778,7 +778,7 @@ public final class SymbolicExecution {
     public Object castTo(Object sarrayOrPartnerClassObject, Class<?> castTo) {
         /// TODO To CalculationFactory
         if (sarrayOrPartnerClassObject == null) {
-            throw new ClassCastException();
+            return null;
         }
         return castTo.cast(sarrayOrPartnerClassObject);
     }
