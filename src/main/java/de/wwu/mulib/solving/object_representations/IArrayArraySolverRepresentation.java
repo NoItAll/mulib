@@ -6,20 +6,13 @@ import java.util.Set;
 
 public interface IArrayArraySolverRepresentation extends ArraySolverRepresentation {
 
-    Set<Sint> getPotentialValues();
-
-    Set<Sint> getInitialConcreteAndStoredValues();
+    Set<Sint> getValuesKnownToPossiblyBeContainedInArray();
 
     @Override
     IArrayArraySolverRepresentation copyForNewLevel(int level);
 
     default boolean canContainExplicitNull() {
-        Set<Sint> relevantValues;
-        if (isCompletelyInitialized()) {
-            relevantValues = getInitialConcreteAndStoredValues();
-        } else {
-            relevantValues = getPotentialValues();
-        }
+        Set<Sint> relevantValues = getValuesKnownToPossiblyBeContainedInArray();
         return relevantValues.stream().anyMatch(s -> s == Sint.ConcSint.MINUS_ONE);
     }
 

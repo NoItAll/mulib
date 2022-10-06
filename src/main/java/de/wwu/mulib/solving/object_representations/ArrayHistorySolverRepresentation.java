@@ -9,6 +9,7 @@ import java.util.ArrayDeque;
 import java.util.Deque;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.function.Function;
 
 /**
  * Contains the select for an array. A store yields a nested structure of ArrayHistorySolverRepresentations
@@ -184,7 +185,7 @@ public class ArrayHistorySolverRepresentation {
                             // Furthermore, it must hold that if neither the index-equals constraints for the store or selects
                             // hold, the value must equal to the default value
                             implies(
-                                    Or.newInstance(indexEqualsToStoreIndexWithGuard, indexEqualsToAnySelectIndexWithGuard),
+                                    Not.newInstance(Or.newInstance(indexEqualsToStoreIndexWithGuard, indexEqualsToAnySelectIndexWithGuard)),
                                     elementsEqualConstraint(value, defaultValue)
                             )
                     );
@@ -207,33 +208,51 @@ public class ArrayHistorySolverRepresentation {
         );
     }
 
-    public Set<? extends Sprimitive> getPotentialValues() {
-        //// TODO If index is overwritten (especially concrete) only use the newer version
-        Set<Sprimitive> result = new HashSet<>();
+    public Set<? extends Sprimitive> getValuesKnownToPossiblyBeContainedInArray(boolean arrayHasFixedLength) {
+        // In the case where the array has a fixed length, the array is fully initialized directly. We only have
+        // to regard the initially selected values as well as the stored values
+        if (arrayHasFixedLength) {
+            return getInitialConcreteAndStoredFromHistory(h -> h.value);
+        } else {
+            return getFromHistory(h -> h.value);
+        }
+    }
+
+    public Set<Sint> getIndicesKnownToPossiblyBeContainedInArray(boolean arrayHasFixedLength) {
+        // In the case where the array has a fixed length, the array is fully initialized directly. And all indices
+        // are already given in the first layer of the array
+        if (arrayHasFixedLength) {
+            return getInitialConcreteAndStoredFromHistory(h -> h.index);
+        } else {
+            return getFromHistory(h -> h.index);
+        }
+    }
+
+    private <T> Set<T> getFromHistory(Function<ArrayAccessSolverRepresentation, T> get) {
+        Set<T> result = new HashSet<>();
         if (beforeStore != null) {
             assert store != null;
-            result.addAll(beforeStore.getPotentialValues());
-            result.add(store.value);
+            result.addAll(beforeStore.getFromHistory(get));
+            result.add(get.apply(store));
         }
         for (ArrayAccessSolverRepresentation aasr : this.selects) {
-            result.add(aasr.value);
+            result.add(get.apply(aasr));
         }
         return result;
     }
 
-    public Set<? extends Sprimitive> getInitialConcreteAndStoredValues() {
-        //// TODO If index is overwritten (especially concrete) only use the newer version
-        Set<Sprimitive> result = new HashSet<>();
+    private <T> Set<T> getInitialConcreteAndStoredFromHistory(Function<ArrayAccessSolverRepresentation, T> get) {
+        Set<T> result = new HashSet<>();
         ArrayHistorySolverRepresentation current = this;
         while (current.store != null) {
-            result.add(current.store.value);
+            result.add(get.apply(current.store));
             assert current.beforeStore != null;
             current = current.beforeStore;
         }
         for (ArrayAccessSolverRepresentation aasr : current.selects) {
             // Get the selects from the first representation which are not symbolic
             if (aasr.index instanceof ConcSnumber && Sbool.ConcSbool.TRUE.equals(aasr.guard)) {
-                result.add(aasr.value);
+                result.add(get.apply(aasr));
             }
         }
         return result;

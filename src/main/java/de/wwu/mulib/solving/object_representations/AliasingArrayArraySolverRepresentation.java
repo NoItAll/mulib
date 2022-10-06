@@ -28,10 +28,10 @@ public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveVal
     }
 
     @Override @SuppressWarnings("unchecked")
-    public Set<Sint> getPotentialValues() {
+    public Set<Sint> getValuesKnownToPossiblyBeContainedInArray() {
         Set<Sint> result;
         if (!containingSarrayIsCompletelyInitialized) {
-            result = (Set<Sint>) currentRepresentation.getPotentialValues();
+            result = (Set<Sint>) currentRepresentation.getValuesKnownToPossiblyBeContainedInArray(isCompletelyInitialized);
         } else {
             result = new HashSet<>();
         }
@@ -39,24 +39,7 @@ public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveVal
         for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             assert asr instanceof IArrayArraySolverRepresentation;
-            result.addAll(((IArrayArraySolverRepresentation) asr).getPotentialValues());
-        }
-
-        return result;
-    }
-
-    @Override @SuppressWarnings("unchecked")
-    public Set<Sint> getInitialConcreteAndStoredValues() {
-        Set<Sint> result;
-        if (!containingSarrayIsCompletelyInitialized) {
-            result = (Set<Sint>) currentRepresentation.getInitialConcreteAndStoredValues();
-        } else {
-            result = new HashSet<>();
-        }
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            assert asr instanceof IArrayArraySolverRepresentation;
-            result.addAll(((IArrayArraySolverRepresentation) asr).getInitialConcreteAndStoredValues());
+            result.addAll(((IArrayArraySolverRepresentation) asr).getValuesKnownToPossiblyBeContainedInArray());
         }
 
         return result;

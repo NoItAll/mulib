@@ -27,13 +27,8 @@ public class ArrayArraySolverRepresentation extends PrimitiveValuedArraySolverRe
     }
 
     @Override @SuppressWarnings("unchecked")
-    public Set<Sint> getPotentialValues() {
-        return (Set<Sint>) currentRepresentation.getPotentialValues(); // TODO better name; if is fully initialized, potential values are initialconcreteandstoredvalues
-    }
-
-    @Override @SuppressWarnings("unchecked")
-    public Set<Sint> getInitialConcreteAndStoredValues() {
-        return (Set<Sint>) currentRepresentation.getInitialConcreteAndStoredValues();
+    public Set<Sint> getValuesKnownToPossiblyBeContainedInArray() {
+        return (Set<Sint>) currentRepresentation.getValuesKnownToPossiblyBeContainedInArray(isCompletelyInitialized);
     }
 
     @Override

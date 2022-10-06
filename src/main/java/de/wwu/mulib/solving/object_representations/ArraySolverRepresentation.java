@@ -28,13 +28,7 @@ public interface ArraySolverRepresentation {
                             .getNewestRepresentation();
             assert asr instanceof IArrayArraySolverRepresentation;
             IArrayArraySolverRepresentation aasr = (IArrayArraySolverRepresentation) asr;
-            Set<Sint> aliasedArrays;
-
-            if (asr.isCompletelyInitialized()) {
-                aliasedArrays = aasr.getInitialConcreteAndStoredValues();
-            } else {
-                aliasedArrays = aasr.getPotentialValues();
-            }
+            Set<Sint> aliasedArrays = aasr.getValuesKnownToPossiblyBeContainedInArray();
             result =
                     ac.getValueType().isArray() ?
                             new AliasingArrayArraySolverRepresentation(
