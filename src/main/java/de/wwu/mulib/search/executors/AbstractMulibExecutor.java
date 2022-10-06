@@ -12,15 +12,13 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Snumber;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
-import de.wwu.mulib.substitutions.primitives.ValueFactory;
+import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.ArrayDeque;
@@ -87,6 +85,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         result.put("unsatEvals", String.valueOf(this.unsatEvals));
         result.put("solverBacktrack", String.valueOf(this.solverBacktrack));
         return result;
+    }
+
+    @Override
+    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
+        return solverManager.getAvailableInformationOnIdentityHavingSubstitutedVar(id);
     }
 
     @Override
@@ -160,7 +163,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     // This executes the search region with the choice path predetermined by the chosen choice option
                     Object solutionValue = invokeSearchRegion();
                     if (!solverManager.isSatisfiable()) {
-                        throw new Fail();
+                        currentChoiceOption.setUnsatisfiable();
+                        continue;
                     }
                     PathSolution solution;
                     try {

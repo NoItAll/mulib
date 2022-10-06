@@ -2,16 +2,14 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.HashSet;
 import java.util.Set;
 
-public class AliasingArrayArraySolverRepresentation extends AbstractAliasingArraySolverRepresentation implements IArrayArraySolverRepresentation {
+public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveValuedArraySolverRepresentation implements IArrayArraySolverRepresentation {
 
     public AliasingArrayArraySolverRepresentation(
             ArrayInitializationConstraint aic,
@@ -23,36 +21,13 @@ public class AliasingArrayArraySolverRepresentation extends AbstractAliasingArra
         assert aic.getValueType().isArray();
     }
 
-
-
     private AliasingArrayArraySolverRepresentation(
-            Sint arrayId,
-            Sint reservedId,
-            Sint arrayLength,
-            Sbool isNull,
-            boolean isCompletelyInitialized,
-            int level,
-            Constraint metadataConstraintForPotentialIds,
-            Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays,
-            ArrayHistorySolverRepresentation arrayHistorySolverRepresentation,
-            boolean containingSarrayIsCompletelyInitialized,
-            Class<?> valueType) {
-        super(
-                arrayId,
-                reservedId,
-                arrayLength,
-                isNull,
-                isCompletelyInitialized,
-                level,
-                metadataConstraintForPotentialIds,
-                aliasedArrays,
-                arrayHistorySolverRepresentation,
-                containingSarrayIsCompletelyInitialized,
-                valueType
-        );
+            AliasingArrayArraySolverRepresentation aaasr,
+            int level) {
+        super(aaasr, level);
     }
 
-    @Override
+    @Override @SuppressWarnings("unchecked")
     public Set<Sint> getPotentialValues() {
         Set<Sint> result;
         if (!containingSarrayIsCompletelyInitialized) {
@@ -70,7 +45,7 @@ public class AliasingArrayArraySolverRepresentation extends AbstractAliasingArra
         return result;
     }
 
-    @Override
+    @Override @SuppressWarnings("unchecked")
     public Set<Sint> getInitialConcreteAndStoredValues() {
         Set<Sint> result;
         if (!containingSarrayIsCompletelyInitialized) {
@@ -88,29 +63,23 @@ public class AliasingArrayArraySolverRepresentation extends AbstractAliasingArra
     }
 
     @Override
-    public IArrayArraySolverRepresentation copyForNewLevel(int level) {
+    public AliasingArrayArraySolverRepresentation copyForNewLevel(int level) {
         return new AliasingArrayArraySolverRepresentation(
-                arrayId,
-                reservedId,
-                length,
-                isNull,
-                isCompletelyInitialized,
-                level,
-                metadataConstraintForPotentialIds,
-                aliasedArrays,
-                currentRepresentation.copy(),
-                containingSarrayIsCompletelyInitialized,
-                valueType
+                this, level
         );
     }
 
     @Override
-    public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
-        throw new NotYetImplementedException(); //// TODO
+    protected Constraint _select(Constraint guard, Sint index, Sprimitive selectedValue) {
+        assert selectedValue != Sint.ConcSint.MINUS_ONE;
+        return super._select(guard, index, selectedValue);
     }
 
     @Override
-    public void store(Constraint guard, Sint index, Sprimitive storedValue) {
-        throw new NotYetImplementedException(); //// TODO
+    protected void _store(Constraint guard, Sint index, Sprimitive storedValue) {
+        if (storedValue == null) {
+            storedValue = Sint.ConcSint.MINUS_ONE;
+        }
+        super._store(guard, index, storedValue);
     }
 }

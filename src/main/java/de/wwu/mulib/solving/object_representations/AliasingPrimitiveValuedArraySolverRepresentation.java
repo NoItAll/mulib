@@ -1,14 +1,13 @@
 package de.wwu.mulib.solving.object_representations;
 
-import de.wwu.mulib.constraints.And;
-import de.wwu.mulib.constraints.ArrayInitializationConstraint;
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.Eq;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
+import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
+import java.util.HashSet;
 import java.util.Set;
 
 /**
@@ -17,48 +16,113 @@ import java.util.Set;
  * this array could be a new array or a pre-existing array. It is expected that the ID of this array is symbolic
  * so that it can in fact represent another array.
  */
-public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAliasingArraySolverRepresentation {
+public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation implements AliasingArraySolverRepresentation {
 
-
+    protected final Sint reservedId;
+    protected final Constraint metadataConstraintForPotentialIds;
+    protected final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
+    // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
+    protected final boolean containingSarrayIsCompletelyInitialized;
     public AliasingPrimitiveValuedArraySolverRepresentation(
             final ArrayInitializationConstraint aic,
             final int level,
             final Set<Sint> potentialIds,
             final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
             boolean containingSarrayIsCompletelyInitialized) {
-        super(aic, level, potentialIds, symbolicArrayStates, containingSarrayIsCompletelyInitialized);
-        assert !aic.getValueType().isArray();
+        super(aic, level);
+        this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
+        this.reservedId = aic.getReservedId();
+        assert arrayId instanceof SymNumericExpressionSprimitive;
+        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
+        this.aliasedArrays = new HashSet<>();
+        this.metadataConstraintForPotentialIds =
+                getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
     }
 
-    private AliasingPrimitiveValuedArraySolverRepresentation(
-            Sint arrayId,
-            Sint reservedId,
-            Sint arrayLength,
-            Sbool isNull,
-            boolean isCompletelyInitialized,
-            int level,
-            Constraint metadataConstraintForPotentialIds,
-            Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays,
-            ArrayHistorySolverRepresentation arrayHistorySolverRepresentation,
-            boolean containingSarrayIsCompletelyInitialized,
-            Class<?> valueType) {
-        super(
-                arrayId,
-                reservedId,
-                arrayLength,
-                isNull,
-                isCompletelyInitialized,
-                level,
-                metadataConstraintForPotentialIds,
-                aliasedArrays,
-                arrayHistorySolverRepresentation,
-                containingSarrayIsCompletelyInitialized,
-                valueType
-        );
+    private Constraint getMetadataConstraintForPotentialIds(
+            Set<Sint> potentialIds,
+            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates) {
+        Constraint metadataEqualsDependingOnId;
+        boolean mustBeAbleToBeNull = false;
+        if (containingSarrayIsCompletelyInitialized) {
+            // If the array is completely initialized, we do not need to enforce any defaults
+            // Everything is already represented, including null values
+            metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
+        } else {
+            // If the array is not completely initialized, we need to differentiate two cases
+            // 1: defaultIsSymbolic
+            if (defaultIsSymbolic) {
+                // If defaultIsSymbolic, we might address a completely new array. This "array" might still be null
+                // and will be initialized with isNull as an unrestricted SymSbool.
+                metadataEqualsDependingOnId = Eq.newInstance(arrayId, reservedId);
+            } else {
+                // If the default is the Java-usual semantics, we must add that the ID can be null.
+                // In this case, the arrayId might be MINUS_ONE indicating that the array is null.
+                // We do this below
+                mustBeAbleToBeNull = true;
+                metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
+            }
+        }
+        for (Sint id : potentialIds) {
+            if (id == Sint.ConcSint.MINUS_ONE) {
+                // We skip this case for now (there is no ArrayRepresentation of the null-array)
+                mustBeAbleToBeNull = true;
+                continue;
+            }
+            IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar =
+                    symbolicArrayStates.getArraySolverRepresentationForId(id);
+            assert ar != null : "All Sarrays for aliasingPotentialIds must be not null!";
+            aliasedArrays.add(ar);
+            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            Constraint idsEqual = Eq.newInstance(id, arrayId);
+            Constraint isNullsEqual = Or.newInstance(
+                    And.newInstance(isNull, asr.getIsNull()),
+                    And.newInstance(Not.newInstance(isNull), Not.newInstance(asr.getIsNull()))
+            );
+            Constraint lengthsEqual = Eq.newInstance(length, asr.getLength());
+            Constraint idEqualityImplies = And.newInstance(
+                    idsEqual,
+                    isNullsEqual,
+                    lengthsEqual
+            );
+            metadataEqualsDependingOnId = Or.newInstance(metadataEqualsDependingOnId, idEqualityImplies);
+        }
+
+        if (mustBeAbleToBeNull) {
+            // If the containing array can contain null, this is indicated by this array's ID being MINUS_ONE.
+            // Thus, if the ID is MINUS_ONE, we imply isNull
+            metadataEqualsDependingOnId =
+                    Or.newInstance(
+                            metadataEqualsDependingOnId,
+                            And.newInstance(
+                                    Eq.newInstance(arrayId, Sint.ConcSint.MINUS_ONE),
+                                    isNull
+                            )
+                    );
+        }
+
+
+        return metadataEqualsDependingOnId;
+    }
+
+    protected AliasingPrimitiveValuedArraySolverRepresentation(
+            AliasingPrimitiveValuedArraySolverRepresentation apvasr,
+            int level) {
+        super(apvasr, level);
+        this.reservedId = apvasr.reservedId;
+        this.metadataConstraintForPotentialIds = apvasr.metadataConstraintForPotentialIds;
+        this.containingSarrayIsCompletelyInitialized = apvasr.containingSarrayIsCompletelyInitialized;
+        this.aliasedArrays = apvasr.aliasedArrays;
+        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : apvasr.aliasedArrays) {
+            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            if (asr.getLevel() != level) {
+                ar.addNewRepresentation(asr.copyForNewLevel(level), level);
+            }
+        }
     }
 
     @Override
-    public Constraint select(Constraint guard, Sint index, Sprimitive selectedValue) {
+    protected Constraint _select(Constraint guard, Sint index, Sprimitive selectedValue) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return Sbool.ConcSbool.TRUE;
         }
@@ -73,7 +137,8 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAl
                             And.newInstance(guard, Eq.newInstance(arrayId, reservedId)),
                             index,
                             selectedValue,
-                            isCompletelyInitialized
+                            isCompletelyInitialized,
+                            canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault()
                     );
             joinedSelectConstraint = ownConstraint;
         }
@@ -86,7 +151,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAl
     }
 
     @Override
-    public void store(Constraint guard, Sint index, Sprimitive storedValue) {
+    protected void _store(Constraint guard, Sint index, Sprimitive storedValue) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return;
         }
@@ -102,19 +167,15 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAl
     }
 
     @Override
-    public AliasingPrimitiveValuedArraySolverRepresentation copyForNewLevel(int level) {
+    public AliasingArraySolverRepresentation copyForNewLevel(int level) {
         return new AliasingPrimitiveValuedArraySolverRepresentation(
-                arrayId,
-                reservedId,
-                length,
-                isNull,
-                isCompletelyInitialized,
-                level,
-                metadataConstraintForPotentialIds,
-                aliasedArrays,
-                currentRepresentation.copy(),
-                containingSarrayIsCompletelyInitialized,
-                valueType
+                this,
+                level
         );
+    }
+
+    @Override
+    public Constraint getMetadataConstraintForPotentialIds() {
+        return metadataConstraintForPotentialIds;
     }
 }

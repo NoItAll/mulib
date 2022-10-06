@@ -41,17 +41,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         this.tryGetSymFromSnumber = tryGetSymFromSnumber;
     }
 
-    private void nullCheck(Sarray sarray, SymbolicExecution se) {
-        if (sarray.isNull().boolChoice(se)) {
-            throw new NullPointerException();
-        } else {
-            sarray.setIsNotNull();
-        }
-    }
-
     @Override
     public final Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index) {
-        nullCheck(sarray, se);
+        sarray.nullCheck();
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
         } else {
@@ -61,7 +53,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value) {
-        nullCheck(sarray, se);
+        sarray.nullCheck();
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
         } else {
@@ -71,7 +63,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index) {
-        nullCheck(sarraySarray, se);
+        sarraySarray.nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
         } else {
@@ -81,7 +73,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
-        nullCheck(sarraySarray, se);
+        sarraySarray.nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
         } else {
@@ -91,7 +83,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
-        nullCheck(partnerClassSarray, se);
+        partnerClassSarray.nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
         } else {
@@ -101,7 +93,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
-        nullCheck(partnerClassSarray, se);
+        partnerClassSarray.nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
         } else {
@@ -219,7 +211,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     protected abstract SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value);
 
     private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
-        if (!sarray.shouldBeRepresentedInSolver() && newIndex instanceof Sym) {
+        representArrayViaConstraintsIfNeeded(se, sarray, newIndex instanceof Sym);
+    }
+    private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, boolean additionalConstraintToPrepare) {
+        if (!sarray.shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
             sarray.prepareToRepresentSymbolically(se);
         }
         representArrayIfNeeded(se, sarray, null);
@@ -266,8 +261,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                             tryGetSymFromSbool.apply(sarray.isNull()),
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraints(sarray, se),
-                            sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
+                            sarray.defaultIsSymbolic()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }
@@ -288,8 +282,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                             (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraints(sarray, se),
-                            sarray.isKnownToHaveEveryIndexInitialized(),
-                            sarray.canCurrentlyContainUnsetNonSymbolicDefault()
+                            sarray.defaultIsSymbolic()
                     );
                     se.addNewArrayConstraint(arrayInitializationConstraint);
                 }
@@ -306,6 +299,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
+            if (value instanceof Sarray<?>) {
+                representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
+            }
             SubstitutedVar val = getValueToBeRepresentedInSarray(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
                     (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
@@ -347,6 +343,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
             if (!se.nextIsOnKnownPath()) {
+                if (value instanceof Sarray<?>) {
+                    representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
+                }
                 SubstitutedVar inner = getValueToBeRepresentedInSarray(value);
                 ArrayConstraint storeConstraint =
                         new ArrayAccessConstraint(

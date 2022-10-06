@@ -17,14 +17,44 @@ public class ArrayHistorySolverRepresentation {
     private final Deque<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
     private final ArrayHistorySolverRepresentation beforeStore;
+    private final SubstitutedVar defaultValue;
 
-    public ArrayHistorySolverRepresentation(ArrayAccessConstraint[] initialSelects) {
+    public ArrayHistorySolverRepresentation(
+            ArrayAccessConstraint[] initialSelects,
+            Class<?> valueType) {
+        SubstitutedVar defaultValue;
+        if (valueType.isArray()) {
+            defaultValue = Sint.ConcSint.MINUS_ONE;
+        } else if (Sbool.class.isAssignableFrom(valueType)) {
+            defaultValue = Sbool.ConcSbool.FALSE;
+        } else if (Sbyte.class.isAssignableFrom(valueType)) {
+            defaultValue = Sbyte.ConcSbyte.ZERO;
+        } else if (Sshort.class.isAssignableFrom(valueType)) {
+            defaultValue = Sshort.ConcSshort.ZERO;
+        } else if (Sint.class.isAssignableFrom(valueType)) {
+            defaultValue = Sint.ConcSint.ZERO;
+        } else if (Slong.class.isAssignableFrom(valueType)) {
+            defaultValue = Slong.ConcSlong.ZERO;
+        } else if (Sdouble.class.isAssignableFrom(valueType)) {
+            defaultValue = Sdouble.ConcSdouble.ZERO;
+        } else if (Sfloat.class.isAssignableFrom(valueType)) {
+            defaultValue = Sfloat.ConcSfloat.ZERO;
+        } else {
+            throw new NotYetImplementedException();
+        }
+        this.defaultValue = defaultValue;
         this.selects = new ArrayDeque<>();
         for (ArrayAccessConstraint ac : initialSelects) {
+            Sprimitive value = ac.getValue();
+            if (value == null) {
+                // TODO Perhaps find more elegant, less hard-wired way
+                assert valueType.isArray();
+                value = Sint.ConcSint.MINUS_ONE;
+            }
             selects.push(new ArrayAccessSolverRepresentation(
                     Sbool.ConcSbool.TRUE,
                     ac.getIndex(),
-                    ac.getValue()
+                    value
             ));
         }
         this.store = null;
@@ -37,6 +67,7 @@ public class ArrayHistorySolverRepresentation {
         this.selects = new ArrayDeque<>(toCopy.selects);
         this.store = toCopy.store;
         this.beforeStore = toCopy.beforeStore;
+        this.defaultValue = toCopy.defaultValue;
     }
 
     protected ArrayHistorySolverRepresentation(
@@ -48,17 +79,36 @@ public class ArrayHistorySolverRepresentation {
         // We do not directly reference the old object to keep it unmodified by the selects of other
         // alternative choice options
         this.beforeStore = beforeStore;
+        this.defaultValue = beforeStore.defaultValue;
     }
 
     public ArrayHistorySolverRepresentation copy() {
         return new ArrayHistorySolverRepresentation(this);
     }
 
-    public Constraint select(Constraint guard, Sint index, Sprimitive value, boolean arrayIsCompletelyInitialized) {
-        return _select(guard, index, value, !arrayIsCompletelyInitialized);
+    public Constraint select(
+            Constraint guard,
+            Sint index,
+            Sprimitive value,
+            boolean arrayIsCompletelyInitialized,
+            boolean canContainUnrepresentedNonSymbolicDefaultValue) {
+        return _select(
+                guard,
+                index,
+                value,
+                !arrayIsCompletelyInitialized,
+                // We do not have to enforce that, if index is unseen, value is a default value, if
+                // there are not unseen indices
+                canContainUnrepresentedNonSymbolicDefaultValue
+        );
     }
 
-    private Constraint _select(Constraint guard, Sint index, Sprimitive value, boolean pushSelect) {
+    private Constraint _select(
+            Constraint guard,
+            Sint index,
+            Sprimitive value,
+            boolean pushSelect,
+            boolean defaultValueForUnknownsShouldBeEnforced) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
@@ -72,11 +122,18 @@ public class ArrayHistorySolverRepresentation {
             indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
             Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
             indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
-            resultForSelectOperations = beforeStore._select(guard, index, value, false);
+            resultForSelectOperations = beforeStore._select(guard, index, value, false, false);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
             resultForSelectOperations = Sbool.ConcSbool.TRUE;
+        }
+
+        Constraint indexEqualsToAnySelectIndexWithGuard = null;
+        if (defaultValueForUnknownsShouldBeEnforced) {
+            // If we have to enforce a default value, for instance 0 for int arrays, for unknown values, we
+            // have to gather all guarded index-equals-constraints to use later
+            indexEqualsToAnySelectIndexWithGuard = Sbool.ConcSbool.FALSE;
         }
 
         // If it is not clear that the value must stem from the store operation, we check all previous selected values
@@ -90,19 +147,48 @@ public class ArrayHistorySolverRepresentation {
                     continue;
                 } else if (s.guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) s.guard).isTrue()) {
                     resultForSelectOperations = elementsEqualConstraint(s.value, value);
+                    indexEqualsToAnySelectIndexWithGuard = indexEqualsToSelectIndex;
                     break;
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
-            Constraint indexEqualsToSelectIndexImplication = implies(And.newInstance(s.guard, indexEqualsToSelectIndex), valuesEqual);
+            Constraint indexEqualsToSelectIndexWithGuard = And.newInstance(s.guard, indexEqualsToSelectIndex);
+            Constraint indexEqualsToSelectIndexImplication =
+                    implies(indexEqualsToSelectIndexWithGuard, valuesEqual);
             resultForSelectOperations = And.newInstance(
                     indexEqualsToSelectIndexImplication,
                     resultForSelectOperations
             );
+
+            if (defaultValueForUnknownsShouldBeEnforced) {
+                // Enlist this constraint for the select
+                indexEqualsToAnySelectIndexWithGuard = Or.newInstance(indexEqualsToAnySelectIndexWithGuard, indexEqualsToAnySelectIndexWithGuard); //// TODO
+            }
         }
 
-        Constraint indexDoesNotEqualToStoreImplication = implies(Not.newInstance(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
-        Constraint bothCasesImplications = And.newInstance(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
+        Constraint indexDoesNotEqualToStoreImplication =
+                implies(Not.newInstance(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
+        Constraint bothCasesImplications =
+                And.newInstance(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
+
+        if (defaultValueForUnknownsShouldBeEnforced) {
+            // If the default value is used for unset values, we must check if it is a currently unrepresented index and
+            // in this case, imply that the default value is used. E.g. 0 for int-arrays
+            // For objects, -1 is used to signal null
+            // If the defaultValue is not enforced for unknown index-value pairs, defaultValueForUnknownPossible is
+            // false and 'value' is unrestricted
+            bothCasesImplications =
+                    And.newInstance(
+                            // bothCasesImplications must hold
+                            bothCasesImplications,
+                            // Furthermore, it must hold that if neither the index-equals constraints for the store or selects
+                            // hold, the value must equal to the default value
+                            implies(
+                                    Or.newInstance(indexEqualsToStoreIndexWithGuard, indexEqualsToAnySelectIndexWithGuard),
+                                    elementsEqualConstraint(value, defaultValue)
+                            )
+                    );
+        }
 
         Constraint result = implies(guard, bothCasesImplications);
         if (pushSelect) {
@@ -122,6 +208,7 @@ public class ArrayHistorySolverRepresentation {
     }
 
     public Set<? extends Sprimitive> getPotentialValues() {
+        //// TODO If index is overwritten (especially concrete) only use the newer version
         Set<Sprimitive> result = new HashSet<>();
         if (beforeStore != null) {
             assert store != null;
@@ -135,12 +222,13 @@ public class ArrayHistorySolverRepresentation {
     }
 
     public Set<? extends Sprimitive> getInitialConcreteAndStoredValues() {
+        //// TODO If index is overwritten (especially concrete) only use the newer version
         Set<Sprimitive> result = new HashSet<>();
         ArrayHistorySolverRepresentation current = this;
         while (current.store != null) {
-            result.add(store.value);
+            result.add(current.store.value);
             assert current.beforeStore != null;
-            current = beforeStore;
+            current = current.beforeStore;
         }
         for (ArrayAccessSolverRepresentation aasr : current.selects) {
             // Get the selects from the first representation which are not symbolic
@@ -155,7 +243,7 @@ public class ArrayHistorySolverRepresentation {
         if (s0 instanceof Sbool && s1 instanceof Sbool) {
             return Or.newInstance(
                     And.newInstance((Sbool) s0, (Sbool) s1),
-                    And.newInstance(Not.newInstance((Sbool) s0), Not.newInstance((Sbool) s1))
+                    Not.newInstance(Or.newInstance((Sbool) s0, (Sbool) s1))
             );
         } else if (s0 instanceof Snumber) {
             return Eq.newInstance((Snumber) s0, (Snumber) s1);

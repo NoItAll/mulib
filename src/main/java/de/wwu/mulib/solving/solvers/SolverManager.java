@@ -3,6 +3,8 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
 import java.util.List;
@@ -48,4 +50,6 @@ public interface SolverManager {
     int getLevel();
 
     List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
+
+    IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id);
 }

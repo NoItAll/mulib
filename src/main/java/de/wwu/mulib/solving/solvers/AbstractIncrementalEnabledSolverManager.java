@@ -3,11 +3,13 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.LabelingNotPossibleException;
+import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
@@ -91,6 +93,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     private void _resetSatisfiabilityWasCalculatedAndModel() {
         satisfiabilityWasCalculated = false;
         currentModel = null;
+    }
+
+    @Override
+    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
+        if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            // TODO Potentially implement for solver-internal array theories
+            throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
+        }
+        IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas =
+                incrementalSolverState.getSymbolicArrayStates();
+        ArraySolverRepresentation asr = sas.getArraySolverRepresentationForId(id).getNewestRepresentation();
+        return new IdentityHavingSubstitutedVarInformation(asr);
     }
 
     @Override

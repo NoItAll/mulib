@@ -23,8 +23,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
     private final Sint arrayLength;
     private final Sbool isNull;
     private final Class<?> valueType;
-    private final boolean isCompletelyInitialized;
-    private final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
+    private final boolean defaultIsSymbolic;
 
     private ArrayInitializationConstraint(
             Sint arrayId,
@@ -35,8 +34,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint containingSarraySarrayId,
             Class<?> valueType,
             ArrayAccessConstraint[] initialSelectConstraints,
-            boolean isCompletelyInitialized,
-            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+            boolean defaultIsSymbolic) {
         assert potentialIds == null || containingSarraySarrayId == null;
         assert initialSelectConstraints != null;
         assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getType() == ArrayAccessConstraint.Type.SELECT);
@@ -57,22 +55,11 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         this.arrayLength = arrayLength;
         this.isNull = isNull;
         this.valueType = valueType;
-        this.isCompletelyInitialized = isCompletelyInitialized;
-        this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization =
-                canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
+        this.defaultIsSymbolic = defaultIsSymbolic;
     }
 
     /**
      * Constructor for symbolically representing a usual array
-     * @param arrayId The arrayId of the array that is represented
-     * @param arrayLength The length of the array that is represented
-     * @param isNull The Sbool representing the possibility to be null of the array
-     * @param valueType The element types of the array
-     * @param initialSelectConstraints The content of the array upon initialization
-     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
-     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
-     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
-     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -80,25 +67,13 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sbool isNull,
             Class<?> valueType,
             ArrayAccessConstraint[] initialSelectConstraints,
-            boolean isCompletelyInitialized,
-            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+            boolean defaultIsSymbolic) {
         this(arrayId, arrayLength, isNull, null, null, null, valueType, initialSelectConstraints,
-                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
+                defaultIsSymbolic);
     }
 
     /**
      * Constructor for symbolically representing an array contained in an array of arrays
-     * @param arrayId The arrayId of the array that is represented
-     * @param arrayLength The length of the array that is represented
-     * @param isNull The Sbool representing the possibility to be null of the array
-     * @param reservedId The id reserved for forming a potentially new array
-     * @param containingSarraySarrayId The id of the array of arrays that is to be represented
-     * @param valueType The element types of the array
-     * @param initialSelectConstraints The content of the array upon initialization
-     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
-     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
-     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
-     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -108,24 +83,13 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint containingSarraySarrayId,
             Class<?> valueType,
             ArrayAccessConstraint[] initialSelectConstraints,
-            boolean isCompletelyInitialized,
-            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+            boolean defaultIsSymbolic) {
         this(arrayId, arrayLength, isNull, null, reservedId, containingSarraySarrayId, valueType, initialSelectConstraints,
-                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
+                defaultIsSymbolic);
     }
 
     /**
      * Constructor for symbolically representing an array using aliasing
-     * @param arrayId The arrayId of the array that is represented
-     * @param arrayLength The length of the array that is represented
-     * @param isNull The Sbool representing the possibility to be null of the array
-     * @param potentialIds The ids this array might be representing
-     * @param valueType The element types of the array
-     * @param initialSelectConstraints The content of the array upon initialization
-     * @param isCompletelyInitialized Whether there is a constraint for each of the possible indices of the array
-     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization
-     * Whether there can be a value that is not yet set and that has an array-specific default value, such as null for
-     * SarraySarrays or Sint.ConcSint.ZERO for SintSarray.
      */
     public ArrayInitializationConstraint(
             Sint arrayId,
@@ -134,10 +98,9 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Set<Sint> potentialIds,
             Class<?> valueType,
             ArrayAccessConstraint[] initialSelectConstraints,
-            boolean isCompletelyInitialized,
-            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization) {
+            boolean defaultIsSymbolic) {
         this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType, initialSelectConstraints,
-                isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization);
+                defaultIsSymbolic);
     }
 
     @Override
@@ -177,18 +140,13 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         return valueType;
     }
 
-    public boolean isCompletelyInitialized() {
-        return isCompletelyInitialized;
-    }
-
-    public boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization() {
-        return canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization;
+    public boolean defaultIsSymbolic() {
+        return defaultIsSymbolic;
     }
 
     @Override
     public String toString() {
         return "AR_INIT{arrayId=" + arrayId + ",type=" + type
-                + ",valueType=" + valueType + ",completelyInitialized=" + isCompletelyInitialized
-                + ",canPotentiallyContainCurrentlyUnsetNonSymbolicDefaultAtInitialization=" + canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaultAtInitialization + "}";
+                + ",valueType=" + valueType + "}";
     }
 }

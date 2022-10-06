@@ -8,6 +8,7 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -30,7 +31,7 @@ public final class SymbolicExecution {
     private Choice.ChoiceOption currentChoiceOption;
     private final ExecutionBudgetManager executionBudgetManager;
     private final MulibValueCopier mulibValueCopier;
-    private Map<String, SubstitutedVar> _namedVariables = new LinkedHashMap<>();
+    private Map<String, SubstitutedVar> _namedVariables;
     private int nextNumberInitializedAtomicSymSints = 0;
     private int nextNumberInitializedAtomicSymSdoubles = 0;
     private int nextNumberInitializedAtomicSymSfloats = 0;
@@ -109,7 +110,17 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
-    public int getNextNumberInitializedSymSarray() { return nextSarrayId++; }
+    public int getNextNumberInitializedSymSarray() {
+        int result = nextSarrayId++;
+        if (result == -1) { // Reserved for null-representation
+            result = nextSarrayId++;
+        }
+        return result;
+    }
+
+    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
+        return mulibExecutor.getAvailableInformationOnIdentityHavingSubstitutedVar(id);
+    }
 
     private void set() {
         se.set(this);

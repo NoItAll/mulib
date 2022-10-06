@@ -5,6 +5,8 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -44,4 +46,6 @@ public interface MulibExecutor {
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 
     boolean isSatisfiable();
+
+    IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id);
 }

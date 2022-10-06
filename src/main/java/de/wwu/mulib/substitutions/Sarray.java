@@ -3,6 +3,7 @@ package de.wwu.mulib.substitutions;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -46,23 +47,23 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         }
         this.len = len;
         this.cachedElements = new HashMap<>();
-        if (!defaultIsSymbolic) {
-            if (len instanceof ConcSnumber) {
-                int length = ((ConcSnumber) len).intVal();
-                for (int i = 0; i < length; i++) {
-                    cachedElements.put(se.concSint(i), nonSymbolicDefaultElement(se));
-                }
-                setIsKnownToHaveEveryIndexInitialized();
-                // This is overwritten in SarraySarray and PartnerClassSarray
-                // It is not needed that default element of arrays with primitive-typed elements (e.g. Sint.ConcSint.ZERO)
-                // are treated differently from the symbolic values if everything is already set.
-                // SarraySarray and PartnerClassSarray, on the other hand, can contain null which must be treated differently
+        if (len instanceof ConcSnumber) {
+            int length = ((ConcSnumber) len).intVal();
+            for (int i = 0; i < length; i++) {
+                cachedElements.put(se.concSint(i), defaultIsSymbolic ? symbolicDefault(se) : nonSymbolicDefaultElement(se));
+            }
+            setIsKnownToHaveEveryIndexInitialized();
+            // This is overwritten in SarraySarray and PartnerClassSarray
+            // It is not needed that default element of arrays with primitive-typed elements (e.g. Sint.ConcSint.ZERO)
+            // are treated differently from the symbolic values if everything is already set.
+            // SarraySarray and PartnerClassSarray, on the other hand, can contain null which must be treated differently
+            setCannotCurrentlyContainUnsetNonSymbolicDefault();
+        } else {
+            if (defaultIsSymbolic) {
                 setCannotCurrentlyContainUnsetNonSymbolicDefault();
             } else {
                 setCanCurrentlyContainUnsetNonSymbolicDefault();
             }
-        } else {
-            setCannotCurrentlyContainUnsetNonSymbolicDefault();
         }
         this.isNull = isNull;
     }
@@ -244,7 +245,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return len;
     }
 
-    public final Sint getLength() {
+    public void nullCheck() {
+        _nullCheck();
+    }
+
+    private void _nullCheck() {
         if (isNull != Sbool.ConcSbool.FALSE) {
             SymbolicExecution se = SymbolicExecution.get();
             if (isNull.boolChoice(se)) {
@@ -253,6 +258,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 setIsNotNull();
             }
         }
+    }
+
+    public final Sint getLength() {
+        _nullCheck();
         return len;
     }
 
@@ -854,11 +863,23 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         protected Sarray symbolicDefault(SymbolicExecution se) {
             assert isRepresentedInSolver();
             Sarray result;
+            IdentityHavingSubstitutedVarInformation info = se.getAvailableInformationOnIdentityHavingSubstitutedVar(this.getId());
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
-                result = se.sarraySarray(se.symSint(), elementType.getComponentType(), defaultIsSymbolic(), canCurrentlyContainUnsetNonSymbolicDefault());
+                result = se.sarraySarray(
+                        se.symSint(),
+                        elementType.getComponentType(),
+                        true,
+                        info.canContainExplicitNull
+                );
             } else {
-                result = generateNonSarraySarray(canCurrentlyContainUnsetNonSymbolicDefault(), se.symSint(), elementType.getComponentType(), true, se);
+                result = generateNonSarraySarray(
+                        info.canContainExplicitNull,
+                        se.symSint(),
+                        elementType.getComponentType(),
+                        true,
+                        se
+                );
             }
 
             result.initializeForAliasingAndBlockCache(se);

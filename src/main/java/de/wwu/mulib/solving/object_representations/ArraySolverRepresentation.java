@@ -23,10 +23,13 @@ public interface ArraySolverRepresentation {
                     new PrimitiveValuedArraySolverRepresentation(ac, level);
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
             ArraySolverRepresentation asr =
-                    symbolicArrayStates.getArraySolverRepresentationForId(ac.getContainingSarraySarrayId()).getNewestRepresentation();
+                    symbolicArrayStates
+                            .getArraySolverRepresentationForId(ac.getContainingSarraySarrayId())
+                            .getNewestRepresentation();
             assert asr instanceof IArrayArraySolverRepresentation;
             IArrayArraySolverRepresentation aasr = (IArrayArraySolverRepresentation) asr;
             Set<Sint> aliasedArrays;
+
             if (asr.isCompletelyInitialized()) {
                 aliasedArrays = aasr.getInitialConcreteAndStoredValues();
             } else {
@@ -93,6 +96,12 @@ public interface ArraySolverRepresentation {
 
     boolean isCompletelyInitialized();
 
+    boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault();
+
     Class<?> getElementType();
+
+    boolean defaultIsSymbolic();
+
+    ArrayHistorySolverRepresentation getCurrentRepresentation();
 
 }

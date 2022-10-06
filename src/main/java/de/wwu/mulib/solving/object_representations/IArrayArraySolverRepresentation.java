@@ -13,5 +13,15 @@ public interface IArrayArraySolverRepresentation extends ArraySolverRepresentati
     @Override
     IArrayArraySolverRepresentation copyForNewLevel(int level);
 
+    default boolean canContainExplicitNull() {
+        Set<Sint> relevantValues;
+        if (isCompletelyInitialized()) {
+            relevantValues = getInitialConcreteAndStoredValues();
+        } else {
+            relevantValues = getPotentialValues();
+        }
+        return relevantValues.stream().anyMatch(s -> s == Sint.ConcSint.MINUS_ONE);
+    }
+
 
 }
