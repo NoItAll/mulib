@@ -7,9 +7,13 @@ import de.wwu.mulib.substitutions.primitives.Sint;
 
 public interface IdentityHavingSubstitutedVar extends SubstitutedVar {
 
-    Sint getId();
+    default Sint getId() {
+        throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
+    }
 
-    void prepareToRepresentSymbolically(SymbolicExecution se);
+    default void prepareToRepresentSymbolically(SymbolicExecution se) {
+        throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
+    }
 
     default Sbool isNull() {
         throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
