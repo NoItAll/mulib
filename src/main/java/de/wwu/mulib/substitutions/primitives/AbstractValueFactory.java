@@ -107,55 +107,55 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public final Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SintSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SintSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SdoubleSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SdoubleSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SfloatSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SfloatSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SlongSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SlongSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SshortSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SshortSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SbyteSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SbyteSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SboolSarray(len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SboolSarray(len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.PartnerClassSarray(clazz, len, se, freeElements, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.PartnerClassSarray(clazz, len, se, freeElements, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean freeElements, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SarraySarray(len, se, freeElements, clazz, canBeNull ? Sbool.ConcSbool.TRUE : Sbool.ConcSbool.FALSE);
+        return new Sarray.SarraySarray(len, se, freeElements, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
     }
 
     @Override
