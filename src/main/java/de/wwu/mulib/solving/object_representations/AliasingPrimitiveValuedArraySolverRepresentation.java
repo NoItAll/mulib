@@ -138,7 +138,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                             index,
                             selectedValue,
                             isCompletelyInitialized,
-                            canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault()
+                            canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
                     );
             joinedSelectConstraint = ownConstraint;
         }
