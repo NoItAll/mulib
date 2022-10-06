@@ -162,7 +162,7 @@ public class ArrayHistorySolverRepresentation {
 
             if (defaultValueForUnknownsShouldBeEnforced) {
                 // Enlist this constraint for the select
-                indexEqualsToAnySelectIndexWithGuard = Or.newInstance(indexEqualsToAnySelectIndexWithGuard, indexEqualsToAnySelectIndexWithGuard); //// TODO
+                indexEqualsToAnySelectIndexWithGuard = Or.newInstance(indexEqualsToAnySelectIndexWithGuard, indexEqualsToSelectIndexWithGuard);
             }
         }
 
