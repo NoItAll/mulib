@@ -5,9 +5,9 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.ArrayDeque;
-import java.util.Deque;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -15,7 +15,7 @@ import java.util.function.Function;
  * Contains the select for an array. A store yields a nested structure of ArrayHistorySolverRepresentations
  */
 public class ArrayHistorySolverRepresentation {
-    private final Deque<ArrayAccessSolverRepresentation> selects;
+    private final List<ArrayAccessSolverRepresentation> selects;
     private final ArrayAccessSolverRepresentation store;
     private final ArrayHistorySolverRepresentation beforeStore;
     private final SubstitutedVar defaultValue;
@@ -44,7 +44,7 @@ public class ArrayHistorySolverRepresentation {
             throw new NotYetImplementedException();
         }
         this.defaultValue = defaultValue;
-        this.selects = new ArrayDeque<>();
+        this.selects = new ArrayList<>();
         for (ArrayAccessConstraint ac : initialSelects) {
             Sprimitive value = ac.getValue();
             if (value == null) {
@@ -52,7 +52,7 @@ public class ArrayHistorySolverRepresentation {
                 assert valueType.isArray();
                 value = Sint.ConcSint.MINUS_ONE;
             }
-            selects.push(new ArrayAccessSolverRepresentation(
+            selects.add(new ArrayAccessSolverRepresentation(
                     Sbool.ConcSbool.TRUE,
                     ac.getIndex(),
                     value
@@ -65,7 +65,7 @@ public class ArrayHistorySolverRepresentation {
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
     protected ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
-        this.selects = new ArrayDeque<>(toCopy.selects);
+        this.selects = new ArrayList<>(toCopy.selects);
         this.store = toCopy.store;
         this.beforeStore = toCopy.beforeStore;
         this.defaultValue = toCopy.defaultValue;
@@ -75,7 +75,7 @@ public class ArrayHistorySolverRepresentation {
             ArrayHistorySolverRepresentation beforeStore,
             ArrayAccessSolverRepresentation store) {
         assert store != null && beforeStore != null;
-        this.selects = new ArrayDeque<>();
+        this.selects = new ArrayList<>();
         this.store = store;
         // We do not directly reference the old object to keep it unmodified by the selects of other
         // alternative choice options
@@ -188,7 +188,7 @@ public class ArrayHistorySolverRepresentation {
 
         Constraint result = implies(guard, bothCasesImplications);
         if (pushSelect) {
-            selects.push(new ArrayAccessSolverRepresentation(guard, index, value));
+            selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
         }
         return result;
     }
