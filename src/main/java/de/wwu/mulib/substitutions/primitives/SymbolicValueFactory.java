@@ -243,8 +243,6 @@ public class SymbolicValueFactory extends AbstractValueFactory {
                     stamp = zeroOrOneDelegateLock.writeLock();
                     createdZeroOrOneDelegates.put(b, leaf);
                     zeroOrOneDelegateLock.unlockWrite(stamp);
-                } else {
-                    int i = 0;
                 }
             }
             if (!se.nextIsOnKnownPath()) {

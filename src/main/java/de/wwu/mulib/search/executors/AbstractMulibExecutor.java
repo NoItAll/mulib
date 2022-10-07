@@ -191,7 +191,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 } catch (MulibException e) {
                     Mulib.log.log(Level.WARNING, config.toString());
                     throw e;
-                } catch (Exception | AssertionError e) {
+                } catch (Throwable e) {
+                    if (!solverManager.isSatisfiable()) {
+                        currentChoiceOption.setUnsatisfiable();
+                        continue;
+                    }
                     if (config.ALLOW_EXCEPTIONS) {
                         PathSolution solution = getPathSolution(e, symbolicExecution, true);
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
@@ -201,9 +205,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         e.printStackTrace();
                         throw new MulibRuntimeException("Exception was thrown but not expected, config: " + config, e);
                     }
-                } catch (Throwable t) {
-                    Mulib.log.log(Level.WARNING, config.toString());
-                    throw new MulibRuntimeException(t);
                 }
             }
         }
