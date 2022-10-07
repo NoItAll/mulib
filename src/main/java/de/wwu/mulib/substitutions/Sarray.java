@@ -9,7 +9,9 @@ import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.util.*;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.Set;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class Sarray<T extends SubstitutedVar> implements IdentityHavingSubstitutedVar {
@@ -812,7 +814,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             }
 
             result.initializeForAliasingAndBlockCache(se);
-            result.initializeWithPotentiallySameArrays(potentiallyContainedSarrays);
             se.getCalculationFactory().representArrayIfNeeded(se, result, getId());
             return result;
         }
@@ -869,7 +870,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             if (!isCacheBlocked()) {
                 cachedElements.put(index, value);
             }
-            addPotentiallyContainedSarray(value);
         }
 
         @Override
@@ -877,7 +877,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             if (!isCacheBlocked()) {
                 cachedElements.put(index, value);
             }
-            addPotentiallyContainedSarray(value);
         }
 
         @Override
@@ -890,46 +889,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                     continue;
                 }
                 val.blockCache();
-                addPotentiallyContainedSarray(val);
-            }
-        }
-
-        private final Set<Sarray> potentiallyContainedSarrays = new HashSet<>();
-        private void addPotentiallyContainedSarray(Sarray s) {
-            potentiallyContainedSarrays.add(s);
-            for (SarraySarray p : (Set<SarraySarray>) (Object) arraysPotentiallyEqualToThis) {
-                if (p.potentiallyContainedSarrays.contains(s)) {
-                    continue;
-                }
-                p.addPotentiallyContainedSarray(s);
             }
         }
     }
 
-    protected final Set<Sarray> arraysPotentiallyEqualToThis = new HashSet<>();
-    protected void initializeWithPotentiallySameArrays(Collection<Sarray> candidates) {
-        assert id instanceof Sym; // This method should be executed for potentially aliasing arrays
-        // Since we use aliasing for the current array, the representationState of the current array, i.e., 'this', only
-        // is responsible for the case where 'this' represents a new Sarray.
-        // Therefore, the representationState set in SarraySarray.symbolicDefault(SymbolicExecution) is valid in that
-        // 'this' initializes a new value the same way (default value enforced for not-yet-represented indices or a symbolic value)
-        // Furthermore, we cannot set the state to IS_KNOWN_TO_HAVE_EVERY_INDEX_INITIALIZED.
-        // Again, this is only relevant if the parent is not already fully initialized (or if the parent is aliasing
-        // and can represent a new Sarray).
-        for (Sarray s : candidates) {
-            s.addPotentiallySameArray(this);
-        }
-    }
-    protected void addPotentiallySameArray(Sarray value) {
-        for (Sarray s : arraysPotentiallyEqualToThis) {
-            if (s != value) {
-                s.arraysPotentiallyEqualToThis.add(value);
-                value.arraysPotentiallyEqualToThis.add(s);
-            }
-        }
-        if (value != this) {
-            arraysPotentiallyEqualToThis.add(value);
-            value.arraysPotentiallyEqualToThis.add(this);
-        }
-    }
 }
