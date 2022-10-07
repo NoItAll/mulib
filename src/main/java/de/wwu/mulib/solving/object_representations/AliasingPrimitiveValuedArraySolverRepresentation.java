@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -23,13 +24,15 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
     protected final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
     // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
     protected final boolean containingSarrayIsCompletelyInitialized;
+
     public AliasingPrimitiveValuedArraySolverRepresentation(
+            MulibConfig config,
             final ArrayInitializationConstraint aic,
             final int level,
             final Set<Sint> potentialIds,
             final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
             boolean containingSarrayIsCompletelyInitialized) {
-        super(aic, level);
+        super(config, aic, level);
         this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
         this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
@@ -55,6 +58,9 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 // If defaultIsSymbolic, we might address a completely new array. This "array" might still be null
                 // and will be initialized with isNull as an unrestricted SymSbool.
                 metadataEqualsDependingOnId = Eq.newInstance(arrayId, reservedId);
+                if (config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) { //// TODO Objects
+                    mustBeAbleToBeNull = true;
+                }
             } else {
                 // If the default is the Java-usual semantics, we must add that the ID can be null.
                 // In this case, the arrayId might be MINUS_ONE indicating that the array is null.

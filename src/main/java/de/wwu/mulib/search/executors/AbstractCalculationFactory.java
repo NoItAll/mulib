@@ -342,10 +342,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // We must reset the cached elements, if a symbolic variable is present and store was used
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
+            if (value instanceof Sarray<?>) {
+                representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
+            }
             if (!se.nextIsOnKnownPath()) {
-                if (value instanceof Sarray<?>) {
-                    representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
-                }
                 SubstitutedVar inner = getValueToBeRepresentedInSarray(value);
                 ArrayConstraint storeConstraint =
                         new ArrayAccessConstraint(

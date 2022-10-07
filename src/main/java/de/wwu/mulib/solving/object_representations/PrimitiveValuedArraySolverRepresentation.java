@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -10,8 +11,8 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
  */
 public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation {
 
-    public PrimitiveValuedArraySolverRepresentation(ArrayInitializationConstraint aic, int level) {
-        super(aic, level);
+    public PrimitiveValuedArraySolverRepresentation(MulibConfig config, ArrayInitializationConstraint aic, int level) {
+        super(config, aic, level);
     }
 
     protected PrimitiveValuedArraySolverRepresentation(

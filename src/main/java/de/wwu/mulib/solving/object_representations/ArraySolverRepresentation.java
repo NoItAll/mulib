@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
@@ -12,15 +13,16 @@ import java.util.Set;
 public interface ArraySolverRepresentation {
 
     static ArraySolverRepresentation newInstance(
+            MulibConfig config,
             ArrayInitializationConstraint ac,
             IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
             int level) {
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
             result = ac.getValueType().isArray() ?
-                    new ArrayArraySolverRepresentation(ac, level)
+                    new ArrayArraySolverRepresentation(config, ac, level)
                     :
-                    new PrimitiveValuedArraySolverRepresentation(ac, level);
+                    new PrimitiveValuedArraySolverRepresentation(config, ac, level);
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
             ArraySolverRepresentation asr =
                     symbolicArrayStates
@@ -32,6 +34,7 @@ public interface ArraySolverRepresentation {
             result =
                     ac.getValueType().isArray() ?
                             new AliasingArrayArraySolverRepresentation(
+                                    config,
                                     ac,
                                     level,
                                     aliasedArrays,
@@ -40,6 +43,7 @@ public interface ArraySolverRepresentation {
                             )
                             :
                             new AliasingPrimitiveValuedArraySolverRepresentation(
+                                    config,
                                     ac,
                                     level,
                                     // The Sint-values here are the IDs of the aliased arrays
@@ -52,6 +56,7 @@ public interface ArraySolverRepresentation {
             result =
                     ac.getValueType().isArray() ?
                             new AliasingArrayArraySolverRepresentation(
+                                    config,
                                     ac,
                                     level,
                                     ac.getPotentialIds(),
@@ -60,6 +65,7 @@ public interface ArraySolverRepresentation {
                             )
                             :
                             new AliasingPrimitiveValuedArraySolverRepresentation(
+                                    config,
                                     ac,
                                     level,
                                     ac.getPotentialIds(),

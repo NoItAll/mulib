@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -14,9 +15,10 @@ import java.util.Set;
 public class ArrayArraySolverRepresentation extends PrimitiveValuedArraySolverRepresentation implements IArrayArraySolverRepresentation {
 
     public ArrayArraySolverRepresentation(
+            MulibConfig config,
             ArrayInitializationConstraint aic,
             int level) {
-        super(aic, level);
+        super(config, aic, level);
         assert aic.getValueType().isArray();
     }
 

@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.substitutions.Sym;
@@ -9,6 +10,7 @@ import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 public abstract class AbstractArraySolverRepresentation implements ArraySolverRepresentation {
+    protected final MulibConfig config;
     protected ArrayHistorySolverRepresentation currentRepresentation;
     protected final Sint arrayId;
     protected final Sint length;
@@ -20,8 +22,10 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     protected final boolean defaultIsSymbolic;
 
     protected AbstractArraySolverRepresentation(
+            MulibConfig config,
             ArrayInitializationConstraint aic,
             int level) {
+        this.config = config;
         this.arrayId = aic.getArrayId();
         this.length = aic.getArrayLength();
         this.isNull = aic.getIsNull();
@@ -52,6 +56,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     protected AbstractArraySolverRepresentation(
             AbstractArraySolverRepresentation aasr,
             int level) {
+        this.config = aasr.config;
         this.arrayId = aasr.arrayId;
         this.length = aasr.length;
         this.isNull = aasr.isNull;

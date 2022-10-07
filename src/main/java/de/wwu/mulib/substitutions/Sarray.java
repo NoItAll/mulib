@@ -2,6 +2,7 @@ package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -863,18 +864,23 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         protected Sarray symbolicDefault(SymbolicExecution se) {
             assert isRepresentedInSolver();
             Sarray result;
-            IdentityHavingSubstitutedVarInformation info = se.getAvailableInformationOnIdentityHavingSubstitutedVar(this.getId());
+            IdentityHavingSubstitutedVarInformation info =
+                    // TODO Avoid using ConcolicNumericContainer-call here
+                    se.getAvailableInformationOnIdentityHavingSubstitutedVar((Sint) ConcolicNumericContainer.tryGetSymFromConcolic(this.getId()));
+            // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
+            //  sarrays are allowed to be initialized to null
+            boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
                 result = se.sarraySarray(
                         se.symSint(),
                         elementType.getComponentType(),
                         true,
-                        info.canContainExplicitNull
+                        canBeNull
                 );
             } else {
                 result = generateNonSarraySarray(
-                        info.canContainExplicitNull,
+                        canBeNull,
                         se.symSint(),
                         elementType.getComponentType(),
                         true,

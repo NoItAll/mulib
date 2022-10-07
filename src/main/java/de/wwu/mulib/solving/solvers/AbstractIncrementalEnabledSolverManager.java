@@ -143,6 +143,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                 // The addition of the initial elements is taken cae of in the instance of ArraySolverRepresentation
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
+                                config,
                                 (ArrayInitializationConstraint) ac,
                                 incrementalSolverState.getSymbolicArrayStates(),
                                 getLevel()

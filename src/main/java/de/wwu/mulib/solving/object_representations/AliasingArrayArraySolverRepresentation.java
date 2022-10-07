@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.object_representations;
 
+import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
@@ -12,12 +13,13 @@ import java.util.Set;
 public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveValuedArraySolverRepresentation implements IArrayArraySolverRepresentation {
 
     public AliasingArrayArraySolverRepresentation(
+            MulibConfig config,
             ArrayInitializationConstraint aic,
             int level,
             Set<Sint> potentialIds,
             IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
             boolean containingSarrayIsCompletelyInitialized) {
-        super(aic, level, potentialIds, symbolicArrayStates, containingSarrayIsCompletelyInitialized);
+        super(config, aic, level, potentialIds, symbolicArrayStates, containingSarrayIsCompletelyInitialized);
         assert aic.getValueType().isArray();
     }
 
