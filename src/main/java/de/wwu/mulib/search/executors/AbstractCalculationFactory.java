@@ -232,8 +232,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
-        sarray.checkIfSarrayIsKnownToHaveEveryIndexInitialized();
-
         if (sarray instanceof Sarray.SarraySarray) {
             Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
             for (Sarray entry : ss.getCachedElements()) {
@@ -253,7 +251,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
             if (!sarray.isRepresentedInSolver()) {
-                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
@@ -271,7 +268,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
             Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
             if (!sarray.isRepresentedInSolver()) {
-                sarray.checkIfSarrayCanPotentiallyContainUnsetNonSymbolicDefaultAtInitialization();
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
