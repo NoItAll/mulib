@@ -104,7 +104,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
         ArraySolverRepresentation asr = sas.getArraySolverRepresentationForId(id).getNewestRepresentation();
-        return new IdentityHavingSubstitutedVarInformation(asr);
+        return new IdentityHavingSubstitutedVarInformation(sas, asr);
     }
 
     @Override
@@ -267,13 +267,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     @Override
     public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N) {
         Solution latestSolution = initialSolution;
+        // Decrement to account for initialSolution
+        int currentN = N.decrementAndGet();
         if (latestSolution.labels.getNamedVars().length == 0) {
             return Collections.singletonList(initialSolution); // No named variables --> nothing to negate.
         }
         List<Solution> solutions = new ArrayList<>();
         solutions.add(initialSolution);
-        // Decrement to account for initialSolution
-        int currentN = N.decrementAndGet();
         int backtrackAfterwards = 0;
         while (currentN > 0) {
             Labels l = latestSolution.labels;

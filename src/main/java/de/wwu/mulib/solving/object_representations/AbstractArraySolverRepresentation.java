@@ -29,6 +29,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
         this.arrayId = aic.getArrayId();
         this.length = aic.getArrayLength();
         this.isNull = aic.getIsNull();
+        assert isNull != Sbool.ConcSbool.TRUE || arrayId == Sint.ConcSint.MINUS_ONE;
         this.level = level;
         this.valueType = aic.getValueType();
         this.defaultIsSymbolic = aic.defaultIsSymbolic();

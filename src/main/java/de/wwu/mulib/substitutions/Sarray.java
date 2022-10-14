@@ -2,7 +2,6 @@ package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -36,6 +35,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
                      boolean defaultIsSymbolic,
                      Sbool isNull) {
+        this(clazz, len, se, defaultIsSymbolic, isNull, true);
+    }
+
+    protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
+                     boolean defaultIsSymbolic,
+                     Sbool isNull,
+                     boolean initializeImmediately) {
         assert clazz != null && len != null;
         this.id = null;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
@@ -44,14 +50,20 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             setDefaultIsSymbolic();
         }
         this.len = len;
+        this.isNull = isNull;
         this.cachedElements = new HashMap<>();
+        if (initializeImmediately) {
+            _initializeCachedElements(se);
+        }
+    }
+
+    protected void _initializeCachedElements(SymbolicExecution se) {
         if (len instanceof ConcSnumber) {
             int length = ((ConcSnumber) len).intVal();
             for (int i = 0; i < length; i++) {
-                cachedElements.put(se.concSint(i), defaultIsSymbolic ? symbolicDefault(se) : nonSymbolicDefaultElement(se));
+                cachedElements.put(se.concSint(i), getNewValueForSelect(se));
             }
         }
-        this.isNull = isNull;
     }
 
     /** Transformation constructor */
@@ -90,12 +102,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         _initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
     }
 
-    private void initializeForAliasingAndBlockCache(SymbolicExecution se) {
+    protected void initializeForAliasingAndBlockCache(SymbolicExecution se) {
         _initializeId(se.symSint());
         blockCache();
     }
 
-    protected final void _initializeId(Sint id) {
+    private void _initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
@@ -104,7 +116,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         this.id = id;
     }
 
-    protected final void setDefaultIsSymbolic() {
+    private void setDefaultIsSymbolic() {
         this.representationState |= DEFAULT_IS_SYMBOLIC;
     }
 
@@ -196,6 +208,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         if (isNull != Sbool.ConcSbool.FALSE) {
             SymbolicExecution se = SymbolicExecution.get();
             if (isNull.boolChoice(se)) {
+                isNull = Sbool.ConcSbool.TRUE;
                 throw new NullPointerException();
             } else {
                 setIsNotNull();
@@ -656,11 +669,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                             boolean defaultIsSymbolic,
                             Class<?> elementType,
                             Sbool isNull) {
-            super(Sarray.class, len, se, defaultIsSymbolic, isNull);
+            super(Sarray.class, len, se, defaultIsSymbolic, isNull, false);
             this.elementType = elementType;
             this.dim = determineDimFromInnerElementType(elementType);
-            assert !(len instanceof ConcSnumber) || ((ConcSnumber) len).intVal() == getCachedIndices().size();
             assert elementType.isArray() && dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
+            _initializeCachedElements(se);
+            assert !(len instanceof ConcSnumber) || ((ConcSnumber) len).intVal() == getCachedIndices().size();
         }
 
         /** Other new instance constructor for MULTIANEWARRAY bytecode. This is not implemented too efficiently
@@ -670,7 +684,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public SarraySarray(
                 Sint[] lengths,
                 SymbolicExecution se, Class<?> elementType) {
-            super(Sarray.class, lengths[0], se, false, Sbool.ConcSbool.FALSE);
+            super(Sarray.class, lengths[0], se, false, Sbool.ConcSbool.FALSE, false);
             assert elementType.isArray();
             this.dim = determineDimFromInnerElementType(elementType);
             assert dim >= 2 : "Dim of SarraySarray must be >= 2. For dim == 1 the other built-in arrays should be used";
@@ -690,6 +704,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 i = i.add(Sint.ConcSint.ONE, se);
                 lengths = nextLengths;
             }
+            assert !(_getLengthWithoutCheckingForIsNull() instanceof ConcSnumber) || ((ConcSnumber) _getLengthWithoutCheckingForIsNull()).intVal() == getCachedIndices().size();
         }
 
         /** Copy constructor */
@@ -697,6 +712,23 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             super(mvt, s, copyArrayElements(mvt, s.cachedElements));
             this.dim = s.dim;
             this.elementType = s.elementType;
+        }
+
+        @Override
+        protected void _initializeCachedElements(SymbolicExecution se) {
+            if (_getLengthWithoutCheckingForIsNull() instanceof ConcSnumber) {
+                int length = ((ConcSnumber) _getLengthWithoutCheckingForIsNull()).intVal();
+                for (int i = 0; i < length; i++) {
+                    Sarray result;
+                    if (!defaultIsSymbolic()) {
+                        result = nonSymbolicDefaultElement(se);
+                    } else {
+                        // If symbolic is required, optional aliasing etc. is handled here
+                        result = symbolicDefaultDuringInitializationForConcreteLength(se);
+                    }
+                    cachedElements.put(se.concSint(i), result);
+                }
+            }
         }
 
         private static Map<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, Map<Sint, Sarray> elementCache) {
@@ -768,6 +800,41 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 return se.partnerClassSarray(
                         len,
                         (Class<? extends PartnerClass>) innermostType,
+                        defaultIsSymbolic,
+                        canBeNull
+                );
+            } else {
+                throw new NotYetImplementedException();
+            }
+        }
+
+        private static Sarray generateNonSarraySarray(Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+            assert !innermostType.isArray();
+            assert Sprimitive.class.isAssignableFrom(innermostType)
+                    || PartnerClass.class.isAssignableFrom(innermostType);
+            // Determine which kind of array must be set
+            if (Sprimitive.class.isAssignableFrom(innermostType)) {
+                if (innermostType == Sint.class) {
+                    return se.sintSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Slong.class) {
+                    return se.slongSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Sdouble.class) {
+                    return se.sdoubleSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Sfloat.class) {
+                    return se.sfloatSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Sshort.class) {
+                    return se.sshortSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Sbyte.class) {
+                    return se.sbyteSarray(len, defaultIsSymbolic);
+                } else if (innermostType == Sbool.class) {
+                    return se.sboolSarray(len, defaultIsSymbolic);
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else if (PartnerClass.class.isAssignableFrom(innermostType)) {
+                return se.partnerClassSarray(
+                        len,
+                        (Class<? extends PartnerClass>) innermostType,
                         defaultIsSymbolic
                 );
             } else {
@@ -787,13 +854,12 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
 
         @Override
         protected Sarray symbolicDefault(SymbolicExecution se) {
-            assert isRepresentedInSolver();
+            assert defaultIsSymbolic() || isRepresentedInSolver();
             Sarray result;
-            IdentityHavingSubstitutedVarInformation info =
-                    // TODO Avoid using ConcolicNumericContainer-call here
-                    se.getAvailableInformationOnIdentityHavingSubstitutedVar((Sint) ConcolicNumericContainer.tryGetSymFromConcolic(this.getId()));
             // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
             //  sarrays are allowed to be initialized to null
+            IdentityHavingSubstitutedVarInformation info =
+                    se.getCalculationFactory().getAvailableInformationOnIdentityHavingSubstitutedVar(se, this);
             boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
@@ -817,6 +883,20 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             se.getCalculationFactory().representArrayIfNeeded(se, result, getId());
             return result;
         }
+
+        private Sarray symbolicDefaultDuringInitializationForConcreteLength(SymbolicExecution se) {
+            assert defaultIsSymbolic()
+                    && !isRepresentedInSolver()
+                    && _getLengthWithoutCheckingForIsNull() instanceof ConcSnumber;
+            Sarray result;
+            if (elementsAreSarraySarrays()) {
+                result = se.sarraySarray(se.symSint(), elementType.getComponentType(), true);
+            } else {
+                result = generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
+            }
+            return result;
+        }
+
 
         @Override
         protected Sarray nonSymbolicDefaultElement(SymbolicExecution se) {

@@ -4,10 +4,8 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.Sym;
+import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
@@ -285,6 +283,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 sarray.setAsRepresentedInSolver();
             }
         }
+    }
+
+    @Override
+    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(SymbolicExecution se, IdentityHavingSubstitutedVar var) {
+        return se.getAvailableInformationOnIdentityHavingSubstitutedVar((Sint) tryGetSymFromSnumber.apply(var.getId()));
     }
 
     protected ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
