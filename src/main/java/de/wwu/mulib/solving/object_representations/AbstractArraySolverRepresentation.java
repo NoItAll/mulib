@@ -39,7 +39,12 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
             // We should track index accesses so that unset indices are forced to be the default value only if the
             // default is not symbolic (any value can be returned then) and if the length is symbolic.
             // If the length is not symbolic, we pre-initialize all values.
-            this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic;
+            this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic
+                    // If the value is an array there is special behavior: It can be symbolically initialized be null which
+                    // is treated differently from other sarrays and must be treated explicitly. Note that this is
+                    // different from, e.g., SintSarray, where the default value ConcSint{0} can be assumed by SymSint as well
+                    // without failing to illustrate special behavior.
+                    || (this instanceof IArrayArraySolverRepresentation && config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL);
         } else {
             assert isCompletelyInitialized;
             //// TODO New array only if not null as default

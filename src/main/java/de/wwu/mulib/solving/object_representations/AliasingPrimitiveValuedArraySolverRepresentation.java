@@ -144,7 +144,10 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                             index,
                             selectedValue,
                             isCompletelyInitialized,
-                            canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+                            this instanceof IArrayArraySolverRepresentation && defaultIsSymbolic ?
+                                    false // The metadata constraint of the selected sarray will already validly restrict the id values
+                                    :
+                                    canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
                     );
             joinedSelectConstraint = ownConstraint;
         }

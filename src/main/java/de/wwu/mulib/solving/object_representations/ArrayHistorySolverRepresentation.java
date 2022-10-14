@@ -92,7 +92,7 @@ public class ArrayHistorySolverRepresentation {
             Sint index,
             Sprimitive value,
             boolean arrayIsCompletelyInitialized,
-            boolean canContainUnrepresentedNonSymbolicDefaultValue) {
+            boolean defaultValueForUnknownsShouldBeEnforced) {
         return _select(
                 guard,
                 index,
@@ -100,7 +100,7 @@ public class ArrayHistorySolverRepresentation {
                 !arrayIsCompletelyInitialized,
                 // We do not have to enforce that, if index is unseen, value is a default value, if
                 // there are not unseen indices
-                canContainUnrepresentedNonSymbolicDefaultValue
+                defaultValueForUnknownsShouldBeEnforced
         );
     }
 

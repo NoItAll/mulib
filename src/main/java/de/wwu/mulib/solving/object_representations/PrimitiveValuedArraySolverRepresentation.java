@@ -30,7 +30,10 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 // If the array is completely initialized, we do not have to push this index-value combination since
                 // it is already represented
                 isCompletelyInitialized,
-                canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+                this instanceof IArrayArraySolverRepresentation && defaultIsSymbolic ?
+                        false // The metadata constraint of the selected sarray will already validly restrict the id values
+                        :
+                        canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
         );
     }
 
