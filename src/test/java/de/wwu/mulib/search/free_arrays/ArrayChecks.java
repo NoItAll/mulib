@@ -2911,4 +2911,453 @@ public class ArrayChecks {
         }
         return element;
     }
+
+    @Test
+    public void testSarrayWithInsertedNulls6() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setALLOW_EXCEPTIONS(true);
+                    List<PathSolution> pathSolutions = TestUtility.executeMulib(
+                            "sarrayWithInsertedNulls6",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, pathSolutions.size());
+                    assertEquals(1, pathSolutions.stream().filter(s -> s.getSolution().returnValue instanceof NullPointerException).count());
+
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            10,
+                            "sarrayWithInsertedNulls6",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(1, solutions.size());
+                    assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
+                    return solutions;
+                },
+                "sarrayWithInsertedNulls6"
+        );
+    }
+
+    public static Sbyte sarrayWithInsertedNulls6() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
+        if (sarraySarraySarray.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
+        Sint sbyteSarrayLength0 = se.symSint();
+        if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
+        sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
+        sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), false); // byte[]
+        sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
+        sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
+        Sint index = se.symSint();
+        sarraySarray0.store(index, null, se);
+        sarraySarraySarray.store(se.symSint(), sarraySarray0, se);
+
+        Sint insertFirstNull = se.symSint();
+        Sint insertSecondNull = se.symSint();
+        if (insertFirstNull.eqChoice(insertSecondNull, se)) {
+            throw Mulib.fail();
+        }
+        sarraySarraySarray.store(insertFirstNull, null, se);
+        sarraySarraySarray.store(insertSecondNull, null, se);
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+        if (selectFromSarraySarray._getLengthWithoutCheckingForIsNull().notEqChoice(se.concSint(2), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se); // Triggers NPE
+        throw new MulibIllegalStateException("Should be unreachable");
+    }
+
+    @Test
+    public void testSarrayWithInsertedNulls7() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setALLOW_EXCEPTIONS(true);
+                    List<PathSolution> pathSolutions = TestUtility.executeMulib(
+                            "sarrayWithInsertedNulls7",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, pathSolutions.size());
+                    assertEquals(1, pathSolutions.stream().filter(s -> s.getSolution().returnValue instanceof NullPointerException).count());
+
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            10,
+                            "sarrayWithInsertedNulls7",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(1, solutions.size());
+                    assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
+                    return solutions;
+                },
+                "sarrayWithInsertedNulls7"
+        );
+    }
+
+    public static Sbyte sarrayWithInsertedNulls7() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sint sarraySarraySarrayLength = se.symSint();
+        if (sarraySarraySarrayLength.notEqChoice(se.concSint(2), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(sarraySarraySarrayLength, Sbyte[][].class, true);
+        if (sarraySarraySarray.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.symSint(), Sbyte[].class, false); // byte[][]
+        Sint sbyteSarrayLength0 = se.symSint();
+        if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
+        sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
+        sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), false); // byte[]
+        sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
+        sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
+        Sint index = se.symSint();
+        sarraySarray0.store(index, null, se);
+        Sint storeSarraySarrayIndex = se.symSint();
+        sarraySarraySarray.store(storeSarraySarrayIndex, sarraySarray0, se);
+
+        Sint firstIndex = se.symSint();
+        Sint otherIndex = se.concSint(0);
+        if (firstIndex.eqChoice(otherIndex, se)) {
+            throw Mulib.fail();
+        }
+        sarraySarraySarray.store(firstIndex, null, se);
+        sarraySarraySarray.store(otherIndex, null, se);
+
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se); // Produces NPE
+        throw new MulibIllegalStateException("Should be unreachable");
+    }
+
+    @Test
+    public void testSarrayWithOverwrittenNulls0() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    List<PathSolution> pathSolutions = TestUtility.executeMulib(
+                            "sarrayWithOverwrittenNulls0",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(1, pathSolutions.size());
+                    assertFalse(pathSolutions.stream().anyMatch(s -> s.getSolution().returnValue instanceof NullPointerException));
+                    assertTrue(pathSolutions.stream().anyMatch(s -> ((Byte) s.getSolution().returnValue) == 0));
+
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            10,
+                            "sarrayWithOverwrittenNulls0",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(1, solutions.size());
+                    assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
+                    assertTrue(solutions.stream().anyMatch(s -> ((Byte) s.returnValue) == 0));
+                    return solutions;
+                },
+                "sarrayWithOverwrittenNulls0"
+        );
+    }
+
+    public static Sbyte sarrayWithOverwrittenNulls0() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
+        if (sarraySarraySarray.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
+        Sint sbyteSarrayLength0 = se.symSint();
+        if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
+        if (sbyteSarray0.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
+        sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
+        if (sbyteSarray1.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
+        sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
+        Sint index = se.symSint();
+        sarraySarray0.store(index, null, se);
+        sarraySarraySarray.store(se.symSint(), sarraySarray0, se);
+
+        Sint insertFirstNull = se.symSint();
+        Sint insertSecondNull = se.symSint();
+        if (insertFirstNull.eqChoice(insertSecondNull, se)) {
+            throw Mulib.fail();
+        }
+        sarraySarraySarray.store(insertFirstNull, null, se);
+        sarraySarraySarray.store(insertSecondNull, null, se);
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+        Sint firstOverwriteNull = se.symSint();
+        Sint secondOverwriteNull = se.symSint();
+        if (firstOverwriteNull.eqChoice(secondOverwriteNull, se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray firstOverwriteWith = se.sarraySarray(se.symSint(), Sbyte[].class, false, false);
+        Sarray.SarraySarray secondOverwriteWith = se.sarraySarray(se.concSint(1), Sbyte[].class, false, false);
+        sarraySarraySarray.store(firstOverwriteNull, firstOverwriteWith, se);
+        sarraySarraySarray.store(secondOverwriteNull, secondOverwriteWith, se);
+        if (firstOverwriteWith.length().notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        firstOverwriteWith.store(se.concSint(0), se.sbyteSarray(se.concSint(1), false), se);
+        secondOverwriteWith.store(se.concSint(0), se.sbyteSarray(se.concSint(1), false), se);
+        selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se);
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se);
+        Sbyte result = symSelected.select(se.symSint(), se);
+        return result;
+    }
+
+    @Test
+    public void testSarrayWithOverwrittenNulls1() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setALLOW_EXCEPTIONS(true);
+                    List<PathSolution> pathSolutions = TestUtility.executeMulib(
+                            "sarrayWithOverwrittenNulls1",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(2, pathSolutions.size());
+                    assertTrue(pathSolutions.stream().anyMatch(s -> s.getSolution().returnValue instanceof NullPointerException));
+                    assertTrue(pathSolutions.stream().anyMatch(s -> s.getSolution().returnValue instanceof Byte));
+
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            5,
+                            "sarrayWithOverwrittenNulls1",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(4, solutions.size());
+                    assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException), mb.build().toString());
+                    assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte));
+                    return solutions;
+                },
+                "sarrayWithOverwrittenNulls1"
+        );
+    }
+
+    public static Sbyte sarrayWithOverwrittenNulls1() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
+        if (sarraySarraySarray.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
+        Sint sbyteSarrayLength0 = se.symSint();
+        if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
+        if (sbyteSarray0.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
+        sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
+        if (sbyteSarray1.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
+        sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
+        Sint index = se.symSint();
+        sarraySarray0.store(index, null, se);
+        sarraySarraySarray.store(se.symSint(), sarraySarray0, se);
+
+        Sint insertFirstNull = se.symSint();
+        Sint insertSecondNull = se.symSint();
+        if (insertFirstNull.eqChoice(insertSecondNull, se)) {
+            throw Mulib.fail();
+        }
+        sarraySarraySarray.store(insertFirstNull, null, se);
+        sarraySarraySarray.store(insertSecondNull, null, se);
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+        Sint firstOverwriteNull = se.symSint();
+        Sint secondOverwriteNull = se.symSint();
+        if (firstOverwriteNull.eqChoice(secondOverwriteNull, se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray firstOverwriteWith = se.sarraySarray(se.symSint(), Sbyte[].class, false);
+        Sarray.SarraySarray secondOverwriteWith = se.sarraySarray(se.concSint(1), Sbyte[].class, false);
+        sarraySarraySarray.store(firstOverwriteNull, firstOverwriteWith, se);
+        sarraySarraySarray.store(secondOverwriteNull, secondOverwriteWith, se);
+        if (firstOverwriteWith.length().notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray firstSbyteSarray = se.sbyteSarray(se.concSint(1), true);
+        firstOverwriteWith.store(se.symSint(), firstSbyteSarray, se);
+        Sarray.SbyteSarray secondSbyteSarray = se.sbyteSarray(se.concSint(1), true);
+        secondOverwriteWith.store(se.symSint(), secondSbyteSarray, se);
+        selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se);
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se);
+        Sbyte result = symSelected.select(se.symSint(), se);
+        if (result.ltChoice(se.concSint(3), se) || result.gtChoice(se.concSint(5), se)) {
+            throw Mulib.fail();
+        }
+        return result;
+    }
+
+
+    @Test
+    public void testSarrayWithOverwrittenNulls2() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setALLOW_EXCEPTIONS(true);
+                    List<PathSolution> pathSolutions = TestUtility.executeMulib(
+                            "sarrayWithOverwrittenNulls2",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+                    assertEquals(3, pathSolutions.size());
+                    assertTrue(pathSolutions.stream().anyMatch(s -> s.getSolution().returnValue instanceof NullPointerException));
+                    assertTrue(pathSolutions.stream().anyMatch(s -> (s.getSolution().returnValue instanceof Byte) && (((Byte) s.getSolution().returnValue) == 8 || ((Byte) s.getSolution().returnValue) == 6)));
+
+                    List<Solution> solutions = TestUtility.getUpToNSolutions(
+                            5,
+                            "sarrayWithOverwrittenNulls2",
+                            ArrayChecks.class,
+                            mb,
+                            false,
+                            new Class[0],
+                            new Object[0]
+                    );
+
+                    assertEquals(4, solutions.size());
+                    assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
+                    assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte  && ((Byte) s.returnValue) == 8));
+                    assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte  && ((Byte) s.returnValue) == 6));
+                    return solutions;
+                },
+                "sarrayWithOverwrittenNulls2"
+        );
+    }
+
+    public static Sbyte sarrayWithOverwrittenNulls2() {
+        SymbolicExecution se = SymbolicExecution.get();
+        Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
+        if (sarraySarraySarray.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
+        Sint sbyteSarrayLength0 = se.symSint();
+        if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
+        if (sbyteSarray0.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
+        sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
+        if (sbyteSarray1.isNull().boolChoice(se)) {
+            throw Mulib.fail();
+        }
+        sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
+        sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
+        Sint index = se.symSint();
+        sarraySarray0.store(index, null, se);
+        sarraySarraySarray.store(se.symSint(), sarraySarray0, se);
+
+        Sint insertFirstNull = se.symSint();
+        Sint insertSecondNull = se.symSint();
+        if (insertFirstNull.eqChoice(insertSecondNull, se)) {
+            throw Mulib.fail();
+        }
+        sarraySarraySarray.store(insertFirstNull, null, se);
+        sarraySarraySarray.store(insertSecondNull, null, se);
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+        Sint firstOverwriteNull = se.symSint();
+        Sint secondOverwriteNull = se.symSint();
+        if (firstOverwriteNull.eqChoice(secondOverwriteNull, se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SarraySarray firstOverwriteWith = se.sarraySarray(se.symSint(), Sbyte[].class, false);
+        Sarray.SarraySarray secondOverwriteWith = se.sarraySarray(se.concSint(1), Sbyte[].class, false);
+        sarraySarraySarray.store(firstOverwriteNull, firstOverwriteWith, se);
+        sarraySarraySarray.store(secondOverwriteNull, secondOverwriteWith, se);
+        if (firstOverwriteWith.length().notEqChoice(se.concSint(1), se)) {
+            throw Mulib.fail();
+        }
+        Sarray.SbyteSarray firstSbyteSarray = se.sbyteSarray(se.concSint(1), true);
+        firstOverwriteWith.store(se.symSint(), firstSbyteSarray, se);
+        Sarray.SbyteSarray secondSbyteSarray = se.sbyteSarray(se.concSint(1), true);
+        secondOverwriteWith.store(se.symSint(), secondSbyteSarray, se);
+        selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se);
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se);
+
+        // Restrict values of firstSbyteSarray and secondSbyteSarray. Values of symSelected also should be restricted
+        // as a side-effect
+        Sbyte current = firstSbyteSarray.select(se.symSint(), se);
+        if (current.notEqChoice(se.concSint(8), se)) {
+            throw Mulib.fail();
+        }
+        current = secondSbyteSarray.select(se.symSint(), se);
+        if (current.notEqChoice(se.concSint(6), se)) {
+            throw Mulib.fail();
+        }
+
+
+        Sbyte result = symSelected.select(se.symSint(), se);
+        return result;
+    }
+
 }
