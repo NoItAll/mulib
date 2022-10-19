@@ -93,8 +93,8 @@ public final class SearchTree {
     /**
      * Get the ChoiceOptions between getFrom and getTo. Assumes that there is a path with strictly increasing depth
      * between the two ChoiceOptions.
-     * @param getFrom First ChoiceOption, depth does not matter.
-     * @param getTo Seconds ChoiceOption, depth does not matter
+     * @param getFrom First ChoiceOption, depth <= getTo.depth.
+     * @param getTo Second ChoiceOption, depth >= getFrom.depth
      * @return The path between (excluding) the ChoiceOption with the lesser depth to the ChoiceOption with the higher depth.
      */
     public static ArrayDeque<Choice.ChoiceOption> getPathBetween(
