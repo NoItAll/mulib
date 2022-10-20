@@ -23,4 +23,12 @@ public interface IdentityHavingSubstitutedVar extends SubstitutedVar {
         throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
     }
 
+    default boolean isRepresentedInSolver() {
+        throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
+    }
+
+    default boolean shouldBeRepresentedInSolver() {
+        throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
+    }
+
 }

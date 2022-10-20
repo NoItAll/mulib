@@ -2,7 +2,6 @@ package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -179,7 +178,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             } else if (componentType == byte.class) {
                 return sarraysToRealArrayTypes ? Sbyte[].class : Sarray.SbyteSarray.class;
             } else {
-                throw new NotYetImplementedException(toTransform.getName());
+                assert componentType != char.class;
+                return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : Sarray.PartnerClassSarray.class;
             }
         } else {
             return getPossiblyTransformedClass(toTransform);
