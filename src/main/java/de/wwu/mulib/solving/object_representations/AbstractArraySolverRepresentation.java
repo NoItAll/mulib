@@ -47,7 +47,6 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
                     || (this instanceof IArrayArraySolverRepresentation && config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL);
         } else {
             assert isCompletelyInitialized;
-            //// TODO New array only if not null as default
             this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = false;
         }
         this.currentRepresentation =
