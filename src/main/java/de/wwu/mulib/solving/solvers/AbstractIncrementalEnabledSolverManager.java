@@ -407,13 +407,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     protected abstract Object labelSymSprimitive(SymSprimitive symSprimitive);
 
     protected Object labelSarray(Sarray<?> sarray) {
-        int length = (Integer) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull());
+        int length = ((Number) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull())).intValue();
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
         if (!sarray.shouldBeRepresentedInSolver()) {
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
-                Integer labeledIndex = (Integer) labelSprimitive(index);
+                int labeledIndex = ((Number) labelSprimitive(index)).intValue();
                 SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
                 Object labeledValue = getLabel(cachedValue);
                 result[labeledIndex] = labeledValue;
@@ -430,7 +430,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
                     continue; // TODO Perhaps initialize array with that
                 }
                 ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
-                Integer labeledIndex = (Integer) labelSprimitive(aac.getIndex());
+                int labeledIndex = ((Number) labelSprimitive(aac.getIndex())).intValue();
                 Object labeledValue = getLabel(aac.getValue());
                 result[labeledIndex] = labeledValue;
             }
