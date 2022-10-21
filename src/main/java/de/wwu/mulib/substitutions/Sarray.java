@@ -102,7 +102,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         _initializeId(se.concSint(se.getNextNumberInitializedSymSarray()));
     }
 
-    protected void initializeForAliasingAndBlockCache(SymbolicExecution se) {
+    private void initializeForAliasingAndBlockCache(SymbolicExecution se) {
         _initializeId(se.symSint());
         blockCache();
     }
@@ -968,6 +968,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 if (val == null) {
                     continue;
                 }
+                // Cache is cleared after representing each element in CalculationFactory. This is done in setAsRepresentedInSolver
                 val.blockCache();
             }
         }
