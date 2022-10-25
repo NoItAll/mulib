@@ -36,7 +36,7 @@ public interface IdentityHavingSubstitutedVar extends SubstitutedVar {
     default void __mulib__nullCheck() {
         if (__mulib__isNull() == Sbool.ConcSbool.TRUE) {
             throw new NullPointerException();
-        } else if (__mulib__isNull() == Sbool.ConcSbool.FALSE) {
+        } else if (__mulib__isNull() != Sbool.ConcSbool.FALSE) {
             SymbolicExecution se = SymbolicExecution.get();
             if (__mulib__isNull().boolChoice(se)) {
                 __mulib__setIsNull();

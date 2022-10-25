@@ -245,6 +245,7 @@ public final class TestUtility {
                     );
             currentBatch.parallelStream().forEach(mcb -> {
                 MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
+                mb.setTRANSF_VALIDATE_TRANSFORMATION(true);
                 Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
                 mulibConfigToList.apply(mb);
                 Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
