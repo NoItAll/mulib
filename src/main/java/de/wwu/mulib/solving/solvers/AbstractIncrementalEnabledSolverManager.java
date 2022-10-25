@@ -410,7 +410,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         int length = ((Number) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull())).intValue();
         Object[] result = new Object[length];
         searchSpaceRepresentationToLabelObject.put(sarray, result);
-        if (!sarray.shouldBeRepresentedInSolver()) {
+        if (!sarray.__mulib__shouldBeRepresentedInSolver()) {
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 int labeledIndex = ((Number) labelSprimitive(index)).intValue();
@@ -421,7 +421,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
-            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
+            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.__mulib__getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
                 throw new NotYetImplementedException();
             }
             ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);
@@ -440,7 +440,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
 
     private ArrayConstraint[] getArrayConstraintsForSarray(Sarray sarray) {
         return getArrayConstraints().stream()
-                .filter(ac -> ac.getArrayId().equals(sarray.getId()))
+                .filter(ac -> ac.getArrayId().equals(sarray.__mulib__getId()))
                 .toArray(ArrayConstraint[]::new);
     }
 
@@ -560,7 +560,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
             Constraint result = Sbool.ConcSbool.FALSE;
             Sarray sarray = (Sarray) sv;
             Constraint disjunctionConstraint;
-            if (!sarray.shouldBeRepresentedInSolver()) {
+            if (!sarray.__mulib__shouldBeRepresentedInSolver()) {
                 Set<Sint> indices = sarray.getCachedIndices();
                 for (Sint index : indices) {
                     SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);

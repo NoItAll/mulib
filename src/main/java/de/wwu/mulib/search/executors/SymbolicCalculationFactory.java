@@ -506,7 +506,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     protected SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value) {
         if (value instanceof IdentityHavingSubstitutedVar) {
-            return ((IdentityHavingSubstitutedVar) value).getId();
+            return ((IdentityHavingSubstitutedVar) value).__mulib__getId();
         }
         return value;
     }

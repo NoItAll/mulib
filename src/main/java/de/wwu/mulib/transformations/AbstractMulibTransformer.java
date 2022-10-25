@@ -90,13 +90,18 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 transformClass(classesToTransform.poll());
             }
 
+            // Replace GETFIELD and PUTFIELD
+            for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+                replaceGetFieldsAndPutFieldsWithGeneratedMethods(getClassNodeForName(entry.getKey()), entry.getValue());
+            }
+
 
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+                maybeCheckIsValidWrittenClassNode(entry.getValue());
                 // Optionally, conduct some checks and write class node to class file
                 if (!usedLoadedAndAlreadyWrittenVersion.contains(entry.getKey())) {
                     maybeWriteToFile(entry.getValue());
                 }
-                maybeCheckIsValidWrittenClassNode(entry.getValue());
                 if (transformedClasses.get(entry.getKey()) != null) {
                     continue;
                 }
@@ -251,11 +256,23 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             generateAndAddOriginalClassMethod(originalCn, result);
             // Method for setting static fields, if any
             generateOrEnhanceClinit(originalCn, result);
+            // Method for generating the id-, representationState-, and isNull-field
+            decideOnGenerateIdAndStateAndIsNullField(originalCn, result);
+            // Replace GETFIELD and PUTFIELD with methods to add additional logic. Generate those methods here
+            generateAccessorAndSetterMethodsForFields(originalCn, result);
         }
         ensureInitializedLibraryTypeFieldsInConstructors(result);
 
+
         return result;
     }
+
+    protected abstract void decideOnGenerateIdAndStateAndIsNullField(T old, T result);
+
+    protected abstract void generateAccessorAndSetterMethodsForFields(T old, T result);
+
+    protected abstract void replaceGetFieldsAndPutFieldsWithGeneratedMethods(T old, T result);
+
 
     /**
      * Adds a constructor for symbolically initializing a new instance of a class <init>(LSymbolicExecution;)
@@ -344,6 +361,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * @return true, if the class should be transformed, otherwise false.
      */
     public boolean shouldBeTransformed(String classAsPath) {
+        // TODO "/" in classAsPath is not really always respected but does not disturb since it is later replaced via '.' anyway. Still, this is unclean
         Class<?> c = getClassForPath(classAsPath);
         return !isIgnored(c);
     }

@@ -39,7 +39,7 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
-    private int nextSarrayId;
+    private int nextIdentitiyHavingObjectNr;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -48,9 +48,9 @@ public final class SymbolicExecution {
             CalculationFactory calculationFactory,
             Choice.ChoiceOption navigateTo,
             ExecutionBudgetManager executionBudgetManager,
-            int nextSarrayId,
+            int nextIdentitiyHavingObjectNr,
             MulibConfig config) {
-        this.nextSarrayId = nextSarrayId;
+        this.nextIdentitiyHavingObjectNr = nextIdentitiyHavingObjectNr;
         this.mulibExecutor = mulibExecutor;
         this.choicePointFactory = choicePointFactory;
         this.valueFactory = valueFactory;
@@ -111,9 +111,9 @@ public final class SymbolicExecution {
     }
 
     public int getNextNumberInitializedSymSarray() {
-        int result = nextSarrayId++;
+        int result = nextIdentitiyHavingObjectNr++;
         if (result == -1) { // Reserved for null-representation
-            result = nextSarrayId++;
+            result = nextIdentitiyHavingObjectNr++;
         }
         return result;
     }

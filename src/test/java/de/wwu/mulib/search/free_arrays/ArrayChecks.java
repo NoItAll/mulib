@@ -1981,7 +1981,7 @@ public class ArrayChecks {
         if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
@@ -2101,7 +2101,7 @@ public class ArrayChecks {
         if (slongSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SlongSarray slongSarray0 = se.slongSarray(slongSarrayLength0, false); // long[]
@@ -2170,7 +2170,7 @@ public class ArrayChecks {
         if (sdoubleSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SdoubleSarray sdoubleSarray0 = se.sdoubleSarray(sdoubleSarrayLength0, false); // double[]
@@ -2237,11 +2237,11 @@ public class ArrayChecks {
         if (sfloatSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SfloatSarray sfloatSarray0 = se.sfloatSarray(sfloatSarrayLength0, true); // float[]
-        if (sfloatSarray0.isNull().boolChoice(se)) {
+        if (sfloatSarray0.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray.store(se.concSint(0), sfloatSarray0, se);
@@ -2305,11 +2305,11 @@ public class ArrayChecks {
         if (sboolSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SboolSarray sboolSarray0 = se.sboolSarray(sboolSarrayLength0, true); // bool[]
-        if (sboolSarray0.isNull().boolChoice(se)) {
+        if (sboolSarray0.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sint storeInSarraySarray0 = se.symSint();
@@ -2506,7 +2506,7 @@ public class ArrayChecks {
         if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
@@ -2575,7 +2575,7 @@ public class ArrayChecks {
         if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        if (sarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
@@ -2644,7 +2644,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithInsertedNulls2() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, true);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -2720,7 +2720,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithInsertedNulls3() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, true);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -2749,7 +2749,7 @@ public class ArrayChecks {
                 selectFromSarraySarrayIndex.notEqChoice(storeSarraySarrayIndex, se)) {
             throw Mulib.fail();
         }
-        if (selectFromSarraySarray.isNull().boolChoice(se)) { // Cannot be null
+        if (selectFromSarraySarray.__mulib__isNull().boolChoice(se)) { // Cannot be null
             throw new MulibIllegalStateException("Must not occur");
         }
         Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(otherIndex, se); // Must be null since we stored null for index and index == otherIndex
@@ -2802,7 +2802,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithInsertedNulls4() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -2874,7 +2874,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithInsertedNulls5() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -2902,7 +2902,7 @@ public class ArrayChecks {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(otherIndex, se); // Must be null since we stored null for index and index == otherIndex
-        if (selectFromSarraySarray.isNull().boolChoice(se) && selectFromSarraySarrayIndex.eqChoice(index, se)) {
+        if (selectFromSarraySarray.__mulib__isNull().boolChoice(se) && selectFromSarraySarrayIndex.eqChoice(index, se)) {
             throw new MulibIllegalStateException("Must not occur");
         }
         Sbyte element = symSelected.select(se.symSint(), se); // Must trigger NPE
@@ -2951,7 +2951,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithInsertedNulls6() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -3027,7 +3027,7 @@ public class ArrayChecks {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(sarraySarraySarrayLength, Sbyte[][].class, true);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.symSint(), Sbyte[].class, false); // byte[][]
@@ -3100,7 +3100,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithOverwrittenNulls0() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -3109,13 +3109,13 @@ public class ArrayChecks {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
-        if (sbyteSarray0.isNull().boolChoice(se)) {
+        if (sbyteSarray0.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
         sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
         Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
-        if (sbyteSarray1.isNull().boolChoice(se)) {
+        if (sbyteSarray1.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
@@ -3193,7 +3193,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithOverwrittenNulls1() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -3202,13 +3202,13 @@ public class ArrayChecks {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
-        if (sbyteSarray0.isNull().boolChoice(se)) {
+        if (sbyteSarray0.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
         sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
         Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
-        if (sbyteSarray1.isNull().boolChoice(se)) {
+        if (sbyteSarray1.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
@@ -3293,7 +3293,7 @@ public class ArrayChecks {
     public static Sbyte sarrayWithOverwrittenNulls2() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SarraySarray sarraySarraySarray = se.sarraySarray(se.concSint(2), Sbyte[][].class, false);
-        if (sarraySarraySarray.isNull().boolChoice(se)) {
+        if (sarraySarraySarray.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         Sarray.SarraySarray sarraySarray0 = se.sarraySarray(se.concSint(2), Sbyte[].class, false); // byte[][]
@@ -3302,13 +3302,13 @@ public class ArrayChecks {
             throw Mulib.fail();
         }
         Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, true); // byte[]
-        if (sbyteSarray0.isNull().boolChoice(se)) {
+        if (sbyteSarray0.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
         sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
         Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), true); // byte[]
-        if (sbyteSarray1.isNull().boolChoice(se)) {
+        if (sbyteSarray1.__mulib__isNull().boolChoice(se)) {
             throw Mulib.fail();
         }
         sarraySarray0.store(se.concSint(1), sbyteSarray1, se);

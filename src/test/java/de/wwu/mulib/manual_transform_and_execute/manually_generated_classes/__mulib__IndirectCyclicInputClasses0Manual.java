@@ -80,22 +80,21 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
     }
 
     @Override
-    public Sint getId() {
+    public Sint __mulib__getId() {
         return null;
     }
 
     @Override
-    public void prepareToRepresentSymbolically(SymbolicExecution se) {
+    public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
 
     }
 
     @Override
-    public Sbool isNull() {
+    public Sbool __mulib__isNull() {
         throw new MulibIllegalStateException("Should not be entered");
     }
 
-    @Override
-    public void setIsNotNull() {
+    public void __mulib__setIsNotNull() {
         throw new MulibIllegalStateException("Should not be entered");
     }
 }

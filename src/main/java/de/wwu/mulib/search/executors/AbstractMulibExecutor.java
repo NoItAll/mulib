@@ -244,7 +244,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     getCalculationFactory(),
                     optionToBeEvaluated,
                     prototypicalExecutionBudgetManager,
-                    mulibValueTransformer.getNextSymSarrayId(),
+                    mulibValueTransformer.getNextIdentityHavingObjectNr(),
                     config
             ));
         } catch (Throwable t) {

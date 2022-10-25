@@ -41,7 +41,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index) {
-        sarray.nullCheck();
+        sarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
         } else {
@@ -51,7 +51,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value) {
-        sarray.nullCheck();
+        sarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayPrimitiveElements) {
             return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
         } else {
@@ -61,7 +61,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index) {
-        sarraySarray.nullCheck();
+        sarraySarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
         } else {
@@ -71,7 +71,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
-        sarraySarray.nullCheck();
+        sarraySarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
         } else {
@@ -81,7 +81,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
-        partnerClassSarray.nullCheck();
+        partnerClassSarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
         } else {
@@ -91,7 +91,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public final PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
-        partnerClassSarray.nullCheck();
+        partnerClassSarray.__mulib__nullCheck();
         if (useEagerIndexesForFreeArrayObjectElements) {
             return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
         } else {
@@ -187,16 +187,16 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // We will now add a constraint indicating to the solver that at position i a value can be found that previously
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
-        if (sarray.shouldBeRepresentedInSolver()) {
+        if (sarray.__mulib__shouldBeRepresentedInSolver()) {
             if (result instanceof Sarray) {
                 assert sarray instanceof Sarray.SarraySarray;
-                representArrayIfNeeded(se, (Sarray) result, sarray.getId());
+                representArrayIfNeeded(se, (Sarray) result, sarray.__mulib__getId());
             }
             if (!se.nextIsOnKnownPath()) {
                 result = getValueToBeRepresentedInSarray(result);
                 ArrayConstraint selectConstraint =
                         new ArrayAccessConstraint(
-                                (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                                 (Sint) tryGetSymFromSnumber.apply(index),
                                 result,
                                 ArrayAccessConstraint.Type.SELECT
@@ -212,8 +212,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         representArrayViaConstraintsIfNeeded(se, sarray, newIndex instanceof Sym);
     }
     private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, boolean additionalConstraintToPrepare) {
-        if (!sarray.shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
-            sarray.prepareToRepresentSymbolically(se);
+        if (!sarray.__mulib__shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
+            sarray.__mulib__prepareToRepresentSymbolically(se);
         }
         representArrayIfNeeded(se, sarray, null);
     }
@@ -224,7 +224,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             Sarray sarray,
             // null if sarray does not belong to a SarraySarray that is to be represented:
             Sint idOfContainingSarraySarray) {
-        if (!sarray.shouldBeRepresentedInSolver() || sarray.isRepresentedInSolver()) {
+        if (!sarray.__mulib__shouldBeRepresentedInSolver() || sarray.__mulib__isRepresentedInSolver()) {
             return;
         }
         Set<Sint> cachedIndices = sarray.getCachedIndices();
@@ -236,24 +236,24 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 if (entry == null) {
                     continue;
                 }
-                if (!entry.isRepresentedInSolver()) {
-                    assert !entry.shouldBeRepresentedInSolver();
-                    entry.prepareToRepresentSymbolically(se);
-                    representArrayIfNeeded(se, entry, ss.getId());
+                if (!entry.__mulib__isRepresentedInSolver()) {
+                    assert !entry.__mulib__shouldBeRepresentedInSolver(); //// TODO Might break in case of circular dependencies among objects that are to be represented symbolically
+                    entry.__mulib__prepareToRepresentSymbolically(se);
+                    representArrayIfNeeded(se, entry, ss.__mulib__getId());
                 }
             }
         }
 
         ArrayConstraint arrayInitializationConstraint;
         // Represent array in constraint solver, if needed
-        if (idOfContainingSarraySarray == null || sarray.getId() instanceof ConcSnumber) {
+        if (idOfContainingSarraySarray == null || sarray.__mulib__getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
-            if (!sarray.isRepresentedInSolver()) {
+            if (!sarray.__mulib__isRepresentedInSolver()) {
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                             (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromSbool.apply(sarray.isNull()),
+                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraints(sarray, se),
                             sarray.defaultIsSymbolic()
@@ -265,12 +265,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         } else {
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
             Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
-            if (!sarray.isRepresentedInSolver()) {
+            if (!sarray.__mulib__isRepresentedInSolver()) {
                 if (!se.nextIsOnKnownPath()) {
                     arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                             (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromSbool.apply(sarray.isNull()),
+                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
                             // Id reserved for this Sarray, if needed
                             nextNumberInitializedSymSarray,
                             (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
@@ -287,11 +287,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(SymbolicExecution se, IdentityHavingSubstitutedVar var) {
-        return se.getAvailableInformationOnIdentityHavingSubstitutedVar((Sint) tryGetSymFromSnumber.apply(var.getId()));
+        return se.getAvailableInformationOnIdentityHavingSubstitutedVar((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
     }
 
     protected ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
-        assert !se.nextIsOnKnownPath() && sarray.shouldBeRepresentedInSolver() && !sarray.isRepresentedInSolver();
+        assert !se.nextIsOnKnownPath() && sarray.__mulib__shouldBeRepresentedInSolver() && !sarray.__mulib__isRepresentedInSolver();
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
@@ -303,7 +303,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
             SubstitutedVar val = getValueToBeRepresentedInSarray(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
-                    (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                    (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                     (Sint) tryGetSymFromSnumber.apply(i),
                     val,
                     ArrayAccessConstraint.Type.SELECT
@@ -337,7 +337,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
-        if (sarray.shouldBeRepresentedInSolver()) {
+        if (sarray.__mulib__shouldBeRepresentedInSolver()) {
             // We must reset the cached elements, if a symbolic variable is present and store was used
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
@@ -348,7 +348,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 SubstitutedVar inner = getValueToBeRepresentedInSarray(value);
                 ArrayConstraint storeConstraint =
                         new ArrayAccessConstraint(
-                                (Sint) tryGetSymFromSnumber.apply(sarray.getId()),
+                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                                 (Sint) tryGetSymFromSnumber.apply(index),
                                 inner,
                                 ArrayAccessConstraint.Type.STORE
