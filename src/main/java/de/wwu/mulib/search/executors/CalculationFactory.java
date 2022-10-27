@@ -142,7 +142,7 @@ public interface CalculationFactory {
 
     PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
 
-    void representArrayIfNeeded(SymbolicExecution se, Sarray sarray, Sint idOfContainingSarraySarray);
+    void representIdentityHavingSubstitutedVarIfNeeded(SymbolicExecution se, IdentityHavingSubstitutedVar ihsr, Sint idOfContainingSarraySarray);
 
     IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(SymbolicExecution se, IdentityHavingSubstitutedVar var);
 

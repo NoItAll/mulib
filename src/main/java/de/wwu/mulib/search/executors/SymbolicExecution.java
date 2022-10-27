@@ -110,7 +110,7 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
-    public int getNextNumberInitializedSymSarray() {
+    public int getNextNumberInitializedSymObject() {
         int result = nextIdentitiyHavingObjectNr++;
         if (result == -1) { // Reserved for null-representation
             result = nextIdentitiyHavingObjectNr++;

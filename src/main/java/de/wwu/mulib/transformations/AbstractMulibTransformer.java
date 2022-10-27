@@ -257,7 +257,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // Method for setting static fields, if any
             generateOrEnhanceClinit(originalCn, result);
             // Method for generating the id-, representationState-, and isNull-field
-            decideOnGenerateIdAndStateAndIsNullField(originalCn, result);
+            decideOnGenerateIdAndStateAndIsNullFieldAndMethods(originalCn, result);
             // Replace GETFIELD and PUTFIELD with methods to add additional logic. Generate those methods here
             generateAccessorAndSetterMethodsForFields(originalCn, result);
         }
@@ -267,7 +267,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return result;
     }
 
-    protected abstract void decideOnGenerateIdAndStateAndIsNullField(T old, T result);
+    protected abstract void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(T old, T result);
 
     protected abstract void generateAccessorAndSetterMethodsForFields(T old, T result);
 

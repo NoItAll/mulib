@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -24,9 +25,7 @@ public class ArrayHistorySolverRepresentation {
             ArrayAccessConstraint[] initialSelects,
             Class<?> valueType) {
         SubstitutedVar defaultValue;
-        if (valueType.isArray()) {
-            defaultValue = Sint.ConcSint.MINUS_ONE;
-        } else if (Sbool.class.isAssignableFrom(valueType)) {
+         if (Sbool.class.isAssignableFrom(valueType)) {
             defaultValue = Sbool.ConcSbool.FALSE;
         } else if (Sbyte.class.isAssignableFrom(valueType)) {
             defaultValue = Sbyte.ConcSbyte.ZERO;
@@ -40,7 +39,9 @@ public class ArrayHistorySolverRepresentation {
             defaultValue = Sdouble.ConcSdouble.ZERO;
         } else if (Sfloat.class.isAssignableFrom(valueType)) {
             defaultValue = Sfloat.ConcSfloat.ZERO;
-        } else {
+        } else if (valueType.isArray() || PartnerClass.class.isAssignableFrom(valueType)) {
+             defaultValue = Sint.ConcSint.MINUS_ONE;
+         } else {
             throw new NotYetImplementedException();
         }
         this.defaultValue = defaultValue;

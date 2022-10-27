@@ -47,11 +47,29 @@ public interface IdentityHavingSubstitutedVar extends SubstitutedVar {
         }
     }
 
+    // TODO Not needed to be publically exposed, but simpler to implement __mulib__nullCheck() this way as a default method
     default void __mulib__setIsNull() {
         throw new MulibIllegalStateException("Must not occur");
     }
 
+    // TODO Not needed to be publically exposed, but simpler to implement __mulib__nullCheck() this way as a default method
     default void __mulib__setIsNotNull() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default boolean __mulib__defaultIsSymbolic() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default void __mulib__setAsRepresentedInSolver() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default boolean __mulib__cacheIsBlocked() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default void __mulib__blockCache() {
         throw new MulibIllegalStateException("Must not occur");
     }
 

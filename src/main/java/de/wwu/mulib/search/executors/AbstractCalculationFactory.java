@@ -4,12 +4,14 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.function.Function;
 
@@ -190,7 +192,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (sarray.__mulib__shouldBeRepresentedInSolver()) {
             if (result instanceof Sarray) {
                 assert sarray instanceof Sarray.SarraySarray;
-                representArrayIfNeeded(se, (Sarray) result, sarray.__mulib__getId());
+                representIdentityHavingSubstitutedVarIfNeeded(se, (Sarray) result, sarray.__mulib__getId());
             }
             if (!se.nextIsOnKnownPath()) {
                 result = getValueToBeRepresentedInSarray(result);
@@ -208,79 +210,94 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     protected abstract SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value);
 
-    private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, Sint newIndex) {
-        representArrayViaConstraintsIfNeeded(se, sarray, newIndex instanceof Sym);
+    private void representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(SymbolicExecution se, IdentityHavingSubstitutedVar ihsv, Sint newIndex) {
+        representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(se, ihsv, newIndex instanceof Sym);
     }
-    private void representArrayViaConstraintsIfNeeded(SymbolicExecution se, Sarray sarray, boolean additionalConstraintToPrepare) {
-        if (!sarray.__mulib__shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
-            sarray.__mulib__prepareToRepresentSymbolically(se);
+    private void representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(SymbolicExecution se, IdentityHavingSubstitutedVar ihsv, boolean additionalConstraintToPrepare) {
+        if (!ihsv.__mulib__shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
+            ihsv.__mulib__prepareToRepresentSymbolically(se);
         }
-        representArrayIfNeeded(se, sarray, null);
+        representIdentityHavingSubstitutedVarIfNeeded(se, ihsv, null);
     }
 
     @Override
-    public void representArrayIfNeeded(
+    public void representIdentityHavingSubstitutedVarIfNeeded(
             SymbolicExecution se,
-            Sarray sarray,
+            IdentityHavingSubstitutedVar ihsr,
             // null if sarray does not belong to a SarraySarray that is to be represented:
-            Sint idOfContainingSarraySarray) {
-        if (!sarray.__mulib__shouldBeRepresentedInSolver() || sarray.__mulib__isRepresentedInSolver()) {
+            Sint idOfContainingIdentityHavingSubstitutedVar) { //// TODO is this good? or should it only be used for sarrays?
+        if (!ihsr.__mulib__shouldBeRepresentedInSolver() || ihsr.__mulib__isRepresentedInSolver()) {
             return;
         }
-        Set<Sint> cachedIndices = sarray.getCachedIndices();
-        assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
+        assert !(ihsr instanceof Sarray) || ((Sarray) ihsr).getCachedIndices().stream().noneMatch(i -> i instanceof Sym)
+                : "The Sarray should have already been represented in the constraint system";
 
-        if (sarray instanceof Sarray.SarraySarray) {
-            Sarray.SarraySarray ss = (Sarray.SarraySarray) sarray;
-            for (Sarray entry : ss.getCachedElements()) {
-                if (entry == null) {
+        if (ihsr instanceof Sarray.SarraySarray || ihsr instanceof Sarray.PartnerClassSarray) {
+            for (Object objectEntry : ((Sarray) ihsr).getCachedElements()) {
+                if (objectEntry == null) {
                     continue;
                 }
+                IdentityHavingSubstitutedVar entry = (IdentityHavingSubstitutedVar) objectEntry;
                 if (!entry.__mulib__isRepresentedInSolver()) {
                     assert !entry.__mulib__shouldBeRepresentedInSolver(); //// TODO Might break in case of circular dependencies among objects that are to be represented symbolically
                     entry.__mulib__prepareToRepresentSymbolically(se);
-                    representArrayIfNeeded(se, entry, ss.__mulib__getId());
+                    representIdentityHavingSubstitutedVarIfNeeded(se, entry, ihsr.__mulib__getId());
                 }
             }
         }
 
         ArrayConstraint arrayInitializationConstraint;
-        // Represent array in constraint solver, if needed
-        if (idOfContainingSarraySarray == null || sarray.__mulib__getId() instanceof ConcSnumber) {
+        // Represent array OR partnerclass object in constraint solver, if needed
+        if (idOfContainingIdentityHavingSubstitutedVar == null || ihsr.__mulib__getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
-            if (!sarray.__mulib__isRepresentedInSolver()) {
+            if (!ihsr.__mulib__isRepresentedInSolver()) {
                 if (!se.nextIsOnKnownPath()) {
-                    arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
-                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
-                            sarray.getElementType(),
-                            collectInitialArrayAccessConstraints(sarray, se),
-                            sarray.defaultIsSymbolic()
-                    );
-                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                    if (ihsr instanceof Sarray) {
+                        Sarray sarray = (Sarray) ihsr;
+                        arrayInitializationConstraint = new ArrayInitializationConstraint(
+                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
+                                (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                                tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
+                                sarray.getElementType(),
+                                collectInitialArrayAccessConstraints(sarray, se),
+                                sarray.__mulib__defaultIsSymbolic()
+                        );
+                        se.addNewArrayConstraint(arrayInitializationConstraint);
+                    } else {
+                        assert ihsr instanceof PartnerClass;
+                        PartnerClass pc = (PartnerClass) ihsr;
+                        Map<String, SubstitutedVar> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar(); //// TODO Initialize
+
+                        throw new NotYetImplementedException();
+                    }
                 }
-                sarray.setAsRepresentedInSolver();
+                ihsr.__mulib__setAsRepresentedInSolver();
             }
         } else {
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
-            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymSarray());
-            if (!sarray.__mulib__isRepresentedInSolver()) {
+            Sint nextNumberInitializedSymSarray = se.concSint(se.getNextNumberInitializedSymObject());
+            if (!ihsr.__mulib__isRepresentedInSolver()) {
                 if (!se.nextIsOnKnownPath()) {
-                    arrayInitializationConstraint = new ArrayInitializationConstraint(
-                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
-                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
-                            // Id reserved for this Sarray, if needed
-                            nextNumberInitializedSymSarray,
-                            (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
-                            sarray.getElementType(),
-                            collectInitialArrayAccessConstraints(sarray, se),
-                            sarray.defaultIsSymbolic()
-                    );
-                    se.addNewArrayConstraint(arrayInitializationConstraint);
+                    if (ihsr instanceof Sarray) {
+                        Sarray sarray = (Sarray) ihsr;
+                        arrayInitializationConstraint = new ArrayInitializationConstraint(
+                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
+                                (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                                tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
+                                // Id reserved for this Sarray, if needed
+                                nextNumberInitializedSymSarray,
+                                (Sint) tryGetSymFromSnumber.apply(idOfContainingIdentityHavingSubstitutedVar),
+                                sarray.getElementType(),
+                                collectInitialArrayAccessConstraints(sarray, se),
+                                sarray.__mulib__defaultIsSymbolic()
+                        );
+                        se.addNewArrayConstraint(arrayInitializationConstraint);
+                    } else {
+                        assert ihsr instanceof PartnerClass;
+                        throw new NotYetImplementedException();
+                    }
                 }
-                sarray.setAsRepresentedInSolver();
+                ihsr.__mulib__setAsRepresentedInSolver();
             }
         }
     }
@@ -299,7 +316,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
             if (value instanceof Sarray<?>) {
-                representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
+                representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(se, (Sarray) value, true);
             }
             SubstitutedVar val = getValueToBeRepresentedInSarray(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
@@ -321,7 +338,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             return result;
         }
 
-        representArrayViaConstraintsIfNeeded(se, sarray, index);
+        representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
 
         result = sarray.getNewValueForSelect(se);
@@ -332,7 +349,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     private SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
-        representArrayViaConstraintsIfNeeded(se, sarray, index);
+        representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
@@ -342,7 +359,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
             if (value instanceof Sarray<?>) {
-                representArrayViaConstraintsIfNeeded(se, (Sarray) value, true);
+                representIdentityHavingSubstitutedVarViaConstraintsIfNeeded(se, (Sarray) value, true);
             }
             if (!se.nextIsOnKnownPath()) {
                 SubstitutedVar inner = getValueToBeRepresentedInSarray(value);

@@ -1325,30 +1325,363 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     @Override
-    protected void decideOnGenerateIdAndStateAndIsNullField(SootClass old, SootClass result) {
+    protected void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(SootClass old, SootClass result) {
         if (shouldBeTransformed(old.getSuperclass().getName())) {
             return;
         }
-        // Generate isNull and getter
-        String isNullName = _TRANSFORMATION_PREFIX + "isNull";
-        SootField isNull = new SootField(isNullName, v.TYPE_SBOOL, Modifier.PROTECTED);
-        result.addField(isNull);
-        generateAndSetSimpleGetter(isNullName, isNull);
-        generateAndSetOneValueIsNullSetter(isNull, true);
-        generateAndSetOneValueIsNullSetter(isNull, false);
+        // TODO Refactor
+        SootField representationState;
+        SootField id;
+        {
+            // Generate isNull and getter
+            String isNullName = _TRANSFORMATION_PREFIX + "isNull";
+            SootField isNull = new SootField(isNullName, v.TYPE_SBOOL, Modifier.PROTECTED);
+            result.addField(isNull);
+            generateAndSetSimpleGetter(isNullName, isNull);
+            generateAndSetOneValueIsNullSetter(isNull, true);
+            generateAndSetOneValueIsNullSetter(isNull, false);
 
-        // Generate id and getter
-        String idName = _TRANSFORMATION_PREFIX + "getId";
-        SootField id = new SootField(idName, v.TYPE_SINT, Modifier.PROTECTED);
-        result.addField(id);
-        generateAndSetSimpleGetter(idName, id);
+            // Generate id and getter
+            String idName = _TRANSFORMATION_PREFIX + "id";
+            id = new SootField(idName, v.TYPE_SINT, Modifier.PROTECTED);
+            result.addField(id);
+            generateAndSetSimpleGetter(_TRANSFORMATION_PREFIX + "getId", id);
 
-        // Generate representationState and respective getters and setters
-        String representationStateName = _TRANSFORMATION_PREFIX + "representationState";
-        SootField representationState = new SootField(representationStateName, v.TYPE_BYTE, Modifier.PROTECTED);
-        result.addField(representationState);
-        generateAndSetRepresentationStateGetter(representationState, true);
-        generateAndSetRepresentationStateGetter(representationState, false);
+            // Generate representationState and respective getters and setters
+            String representationStateName = _TRANSFORMATION_PREFIX + "representationState";
+            representationState = new SootField(representationStateName, v.TYPE_BYTE, Modifier.PROTECTED);
+            result.addField(representationState);
+            generateAndSetRepresentationStateGetter(representationState, true);
+            generateAndSetRepresentationStateGetter(representationState, false);
+        }
+        SootMethod _initializeId;
+        {
+            // Generate prepareToRepresentSymbolically(SE)
+            // For this, first generate _initializeId(Sint)
+            _initializeId =
+                    new SootMethod(_TRANSFORMATION_PREFIX + "_initializeId", List.of(v.TYPE_SINT), v.TYPE_VOID, Modifier.PROTECTED | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(_initializeId);
+            _initializeId.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt thisIdentityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(thisIdentityStmt);
+            Local sintLocal = localSpawner.spawnNewLocal(v.TYPE_SINT);
+            IdentityStmt sintIdentityStmt = Jimple.v().newIdentityStmt(sintLocal, Jimple.v().newParameterRef(v.TYPE_SINT, 0));
+            upc.add(sintIdentityStmt);
+
+            Local checkFieldIdNullLocal = localSpawner.spawnNewStackLocal(v.TYPE_SINT);
+            upc.add(Jimple.v().newAssignStmt(
+                    checkFieldIdNullLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, id.makeRef())
+            ));
+            Local storeShouldBeRepresentedInSolverStaticLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            AssignStmt storeShouldBeRepresentedInSolverStatic = Jimple.v().newAssignStmt(
+                    storeShouldBeRepresentedInSolverStaticLocal,
+                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER.makeRef())
+            );
+            upc.add(Jimple.v().newIfStmt(Jimple.v().newEqExpr(checkFieldIdNullLocal, NullConstant.v()), storeShouldBeRepresentedInSolverStatic));
+
+            Local errorMessageLocal = localSpawner.spawnNewStackLocal(v.TYPE_STRING);
+            upc.add(Jimple.v().newAssignStmt(
+                    errorMessageLocal,
+                    StringConstant.v("Must not set already set id")
+            ));
+            Local exceptionLocal = localSpawner.spawnNewStackLocal(v.TYPE_MULIB_RUNTIME_EXCEPTION);
+            upc.add(Jimple.v().newAssignStmt(
+                    exceptionLocal,
+                    Jimple.v().newNewExpr(v.TYPE_MULIB_RUNTIME_EXCEPTION)
+            ));
+            upc.add(Jimple.v().newInvokeStmt(
+                    Jimple.v().newSpecialInvokeExpr(
+                            exceptionLocal,
+                            Scene.v().makeConstructorRef(v.SC_MULIB_RUNTIME_EXCEPTION, List.of(v.TYPE_STRING)), errorMessageLocal)
+            ));
+
+            upc.add(Jimple.v().newThrowStmt(exceptionLocal));
+
+            upc.add(storeShouldBeRepresentedInSolverStatic);
+
+            Local storeRepresentationStateLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    storeRepresentationStateLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
+            ));
+
+            Local storeOrComputation = localSpawner.spawnNewStackLocal(v.TYPE_INT);
+            upc.add(Jimple.v().newAssignStmt(
+                    storeOrComputation,
+                    Jimple.v().newOrExpr(storeShouldBeRepresentedInSolverStaticLocal, storeRepresentationStateLocal)
+            ));
+
+            upc.add(Jimple.v().newAssignStmt(
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef()),
+                    storeOrComputation
+            ));
+
+            upc.add(Jimple.v().newAssignStmt(
+                    Jimple.v().newInstanceFieldRef(thisLocal, id.makeRef()),
+                    sintLocal
+            ));
+            upc.add(Jimple.v().newReturnVoidStmt());
+            _initializeId.setDeclaringClass(result);
+            result.addMethod(_initializeId);
+        }
+        SootMethod initializeId;
+        {
+            // Then, generate initializeId(SymbolicExecution)
+            initializeId =
+                    new SootMethod(_TRANSFORMATION_PREFIX + "initializeId", List.of(v.TYPE_SE), v.TYPE_VOID, Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(initializeId);
+            initializeId.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local seLocal = localSpawner.spawnNewLocal(v.TYPE_SE);
+            IdentityStmt seIdentity = Jimple.v().newIdentityStmt(seLocal, Jimple.v().newParameterRef(v.TYPE_SE, 0));
+            upc.add(seIdentity);
+            Local nextNumberInitializedSymObjectLocal = localSpawner.spawnNewStackLocal(v.TYPE_INT);
+            upc.add(Jimple.v().newAssignStmt(
+                    nextNumberInitializedSymObjectLocal,
+                    Jimple.v().newVirtualInvokeExpr(seLocal, v.SM_SE_GET_NEXT_NUMBER_INITIALIZED.makeRef())
+            ));
+            Local concLocal = localSpawner.spawnNewStackLocal(v.TYPE_SINT);
+            upc.add(Jimple.v().newAssignStmt(
+                    concLocal,
+                    Jimple.v().newVirtualInvokeExpr(seLocal, v.SM_SE_CONCSINT.makeRef(), nextNumberInitializedSymObjectLocal)
+            ));
+            upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, _initializeId.makeRef(), concLocal)));
+            upc.add(Jimple.v().newReturnVoidStmt());
+            initializeId.setDeclaringClass(result);
+            result.addMethod(initializeId);
+        }
+        {
+            SootMethod isCacheBlocked = new SootMethod(_TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), v.TYPE_BOOL, Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(isCacheBlocked);
+            isCacheBlocked.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local getFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
+            ));
+            Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    staticGetFieldLocal,
+                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED.makeRef())
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newAndExpr(getFieldLocal, staticGetFieldLocal)
+            ));
+            Local resultLocal = localSpawner.spawnNewStackLocal(v.TYPE_BOOL);
+            AssignStmt assignTrue = Jimple.v().newAssignStmt(resultLocal, IntConstant.v(1));
+            AssignStmt assignFalse = Jimple.v().newAssignStmt(resultLocal, IntConstant.v(0));
+            ReturnStmt returnTrue = Jimple.v().newReturnStmt(resultLocal);
+            ReturnStmt returnFalse = Jimple.v().newReturnStmt(resultLocal);
+            upc.add(Jimple.v().newIfStmt(Jimple.v().newEqExpr(getFieldLocal, IntConstant.v(0)), assignFalse));
+            upc.add(assignTrue);
+            upc.add(returnTrue);
+            upc.add(assignFalse);
+            upc.add(returnFalse);
+            isCacheBlocked.setDeclaringClass(result);
+            result.addMethod(isCacheBlocked);
+        }
+
+        SootMethod blockCache;
+        {
+            // Generate blockCache
+            blockCache = new SootMethod(_TRANSFORMATION_PREFIX + "blockCache", List.of(), v.TYPE_VOID, Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(blockCache);
+            blockCache.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local getFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
+            ));
+            Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    staticGetFieldLocal,
+                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED.makeRef())
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newOrExpr(getFieldLocal, staticGetFieldLocal)
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef()),
+                    getFieldLocal
+            ));
+            upc.add(Jimple.v().newReturnVoidStmt());
+            blockCache.setDeclaringClass(result);
+            result.addMethod(blockCache);
+        }
+
+        {
+            SootMethod setAsRepresentedInSolver = new SootMethod(_TRANSFORMATION_PREFIX + "setAsRepresentedInSolver", List.of(), v.TYPE_VOID,  Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(setAsRepresentedInSolver);
+            setAsRepresentedInSolver.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local getFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
+            ));
+            Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    staticGetFieldLocal,
+                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER.makeRef())
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newOrExpr(getFieldLocal, staticGetFieldLocal)
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef()),
+                    getFieldLocal
+            ));
+            upc.add(Jimple.v().newReturnVoidStmt());
+            setAsRepresentedInSolver.setDeclaringClass(result);
+            result.addMethod(setAsRepresentedInSolver);
+        }
+
+        {
+            SootMethod defaultIsSymbolic = new SootMethod(_TRANSFORMATION_PREFIX + "defaultIsSymbolic", List.of(), v.TYPE_BOOL, Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(defaultIsSymbolic);
+            defaultIsSymbolic.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local getFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
+            ));
+            Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
+            upc.add(Jimple.v().newAssignStmt(
+                    staticGetFieldLocal,
+                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC.makeRef())
+            ));
+            upc.add(Jimple.v().newAssignStmt(
+                    getFieldLocal,
+                    Jimple.v().newAndExpr(getFieldLocal, staticGetFieldLocal)
+            ));
+            Local resultLocal = localSpawner.spawnNewStackLocal(v.TYPE_BOOL);
+            AssignStmt assignTrue = Jimple.v().newAssignStmt(resultLocal, IntConstant.v(1));
+            AssignStmt assignFalse = Jimple.v().newAssignStmt(resultLocal, IntConstant.v(0));
+            ReturnStmt returnTrue = Jimple.v().newReturnStmt(resultLocal);
+            ReturnStmt returnFalse = Jimple.v().newReturnStmt(resultLocal);
+            upc.add(Jimple.v().newIfStmt(Jimple.v().newEqExpr(getFieldLocal, IntConstant.v(0)), assignFalse));
+            upc.add(assignTrue);
+            upc.add(returnTrue);
+            upc.add(assignFalse);
+            upc.add(returnFalse);
+            defaultIsSymbolic.setDeclaringClass(result);
+            result.addMethod(defaultIsSymbolic);
+        }
+
+        SootMethod blockCacheInPartnerClassFields;
+        {
+            blockCacheInPartnerClassFields = new SootMethod(_TRANSFORMATION_PREFIX + "blockCacheInPartnerClassFields", List.of(), v.TYPE_VOID,  Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(blockCacheInPartnerClassFields);
+            blockCacheInPartnerClassFields.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Collection<SootField> oldFields = old.getFields();
+            for (SootField sf : oldFields) {
+                SootField newField = getTransformedFieldForOldField(sf, result);
+                if (!fieldNeedsArtificialFieldAccess(old, newField, sf.getType(), newField.getType()) || !(sf.getType() instanceof RefLikeType)) {
+                    continue;
+                }
+                Local getFieldLocal = localSpawner.spawnNewStackLocal(newField.getType());
+                upc.add(Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef())));
+                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(getFieldLocal, v.SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE.makeRef())));
+            }
+
+
+            upc.add(Jimple.v().newReturnVoidStmt());
+            blockCacheInPartnerClassFields.setDeclaringClass(result);
+            result.addMethod(blockCacheInPartnerClassFields);
+        }
+        {
+            // Now generate prepareToRepresentSymbolically
+            SootMethod prepareToRepresentSymbolically =
+                    new SootMethod(_TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(v.TYPE_SE), v.TYPE_VOID, Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(prepareToRepresentSymbolically);
+            prepareToRepresentSymbolically.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local seLocal = localSpawner.spawnNewLocal(v.TYPE_SE);
+            IdentityStmt seIdentity = Jimple.v().newIdentityStmt(seLocal, Jimple.v().newParameterRef(v.TYPE_SE, 0));
+            upc.add(seIdentity);
+            upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, initializeId.makeRef(), seLocal)));
+            upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, blockCacheInPartnerClassFields.makeRef())));
+            upc.add(Jimple.v().newReturnVoidStmt());
+            prepareToRepresentSymbolically.setDeclaringClass(result);
+            result.addMethod(prepareToRepresentSymbolically);
+        }
+        {
+            // Generate getFieldNameToSubstitutedVar
+            SootMethod getFieldNameToSubstitutedVar =
+                    new SootMethod(_TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar" , List.of(), v.SC_MAP.getType(), Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(getFieldNameToSubstitutedVar);
+            getFieldNameToSubstitutedVar.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local mapLocal = localSpawner.spawnNewLocal(v.SC_MAP.getType());
+            NewExpr newExpr = Jimple.v().newNewExpr(v.SC_HASH_MAP.getType());
+            SpecialInvokeExpr invokeSpecialExpr =
+                    Jimple.v().newSpecialInvokeExpr(mapLocal, Scene.v().makeConstructorRef(v.SC_HASH_MAP, List.of()));
+            upc.add(Jimple.v().newAssignStmt(mapLocal, newExpr));
+            upc.add(Jimple.v().newInvokeStmt(invokeSpecialExpr));
+
+            Collection<SootField> oldFields = old.getFields();
+            for (SootField sf : oldFields) {
+                SootField newField = getTransformedFieldForOldField(sf, result);
+                if (!fieldNeedsArtificialFieldAccess(old, newField, sf.getType(), newField.getType())) {
+                    continue;
+                }
+                // Push name of field
+                Local nameOfFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_STRING);
+                upc.add(Jimple.v().newAssignStmt(nameOfFieldLocal, StringConstant.v(newField.getName())));
+                // Get field
+                Local getFieldLocal = localSpawner.spawnNewStackLocal(newField.getType());
+                upc.add(Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef())));
+                // Add field to Map
+                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(mapLocal, v.SM_MAP_PUT.makeRef(), nameOfFieldLocal, getFieldLocal)));
+            }
+
+            upc.add(Jimple.v().newReturnStmt(mapLocal));
+            getFieldNameToSubstitutedVar.setDeclaringClass(result);
+            result.addMethod(getFieldNameToSubstitutedVar);
+        }
     }
 
     private void generateAndSetRepresentationStateGetter(
