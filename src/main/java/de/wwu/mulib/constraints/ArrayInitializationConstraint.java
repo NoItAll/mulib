@@ -9,8 +9,23 @@ import java.util.Set;
 
 public final class ArrayInitializationConstraint implements ArrayConstraint {
 
+    /**
+     * Denotes the circumstances of initialization of the array.
+     */
     public enum Type {
-        SIMPLE_SARRAY, ALIASED_SARRAY, SARRAY_IN_SARRAY
+        /**
+         * The Sarray was created outside of potential aliasing.
+         */
+        SIMPLE_SARRAY,
+        /**
+         * The Sarray was created using aliasing. This can happen when creating a new
+         * Sarray with defaultIsSymbolic or when accessing a symbolic partner-classes field.
+         */
+        ALIASED_SARRAY,
+        /**
+         * The Sarray was initialized when accessing an element in a free array.
+         */
+        SARRAY_IN_SARRAY
     }
 
     private final Type type;

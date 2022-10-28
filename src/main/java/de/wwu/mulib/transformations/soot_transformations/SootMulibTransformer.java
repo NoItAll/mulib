@@ -1682,6 +1682,50 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             getFieldNameToSubstitutedVar.setDeclaringClass(result);
             result.addMethod(getFieldNameToSubstitutedVar);
         }
+        {
+            // Generate getFieldNameToType
+            SootMethod getFieldNameToSubstitutedVar =
+                    new SootMethod(_TRANSFORMATION_PREFIX + "getFieldNameToType" , List.of(), v.SC_MAP.getType(), Modifier.PUBLIC | Modifier.FINAL);
+            JimpleBody jb = Jimple.v().newBody(getFieldNameToSubstitutedVar);
+            getFieldNameToSubstitutedVar.setActiveBody(jb);
+            UnitPatchingChain upc = jb.getUnits();
+            LocalSpawner localSpawner = new LocalSpawner(jb);
+            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
+            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
+            upc.add(identityStmt);
+            Local mapLocal = localSpawner.spawnNewLocal(v.SC_MAP.getType());
+            NewExpr newExpr = Jimple.v().newNewExpr(v.SC_HASH_MAP.getType());
+            SpecialInvokeExpr invokeSpecialExpr =
+                    Jimple.v().newSpecialInvokeExpr(mapLocal, Scene.v().makeConstructorRef(v.SC_HASH_MAP, List.of()));
+            upc.add(Jimple.v().newAssignStmt(mapLocal, newExpr));
+            upc.add(Jimple.v().newInvokeStmt(invokeSpecialExpr));
+
+            Collection<SootField> oldFields = old.getFields();
+            for (SootField sf : oldFields) {
+                SootField newField = getTransformedFieldForOldField(sf, result);
+                if (!fieldNeedsArtificialFieldAccess(old, newField, sf.getType(), newField.getType())) {
+                    continue;
+                }
+                // Push name of field
+                Local nameOfFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_STRING);
+                upc.add(Jimple.v().newAssignStmt(nameOfFieldLocal, StringConstant.v(newField.getName())));
+                // Get field
+                Local getFieldTypeLocal = localSpawner.spawnNewStackLocal(v.TYPE_CLASS);
+                Type t;
+                if (sf.getType() instanceof ArrayType) {
+                    t = transformArrayType((ArrayType) sf.getType(), false);
+                } else {
+                    t = newField.getType();
+                }
+                upc.add(Jimple.v().newAssignStmt(getFieldTypeLocal, ClassConstant.fromType(t)));
+                // Add field to Map
+                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(mapLocal, v.SM_MAP_PUT.makeRef(), nameOfFieldLocal, getFieldTypeLocal)));
+            }
+
+            upc.add(Jimple.v().newReturnStmt(mapLocal));
+            getFieldNameToSubstitutedVar.setDeclaringClass(result);
+            result.addMethod(getFieldNameToSubstitutedVar);
+        }
     }
 
     private void generateAndSetRepresentationStateGetter(

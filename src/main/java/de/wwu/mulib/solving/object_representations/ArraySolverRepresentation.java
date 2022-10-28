@@ -26,7 +26,7 @@ public interface ArraySolverRepresentation {
         } else if (ac.getType() == ArrayInitializationConstraint.Type.SARRAY_IN_SARRAY) {
             ArraySolverRepresentation asr =
                     symbolicArrayStates
-                            .getArraySolverRepresentationForId(ac.getContainingSarraySarrayId())
+                            .getRepresentationForId(ac.getContainingSarraySarrayId())
                             .getNewestRepresentation();
             assert asr instanceof IArrayArraySolverRepresentation;
             IArrayArraySolverRepresentation aasr = (IArrayArraySolverRepresentation) asr;

@@ -17,4 +17,8 @@ public interface PartnerClass extends IdentityHavingSubstitutedVar {
     default Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
         throw new MulibIllegalStateException("Should not occur");
     }
+
+    default Map<String, Class<?>> __mulib__getFieldNameToType() {
+        throw new MulibIllegalStateException("Should not occur");
+    }
 }

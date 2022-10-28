@@ -18,11 +18,12 @@ import org.sosy_lab.java_smt.api.*;
 
 import java.math.BigInteger;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+@SuppressWarnings("rawtypes")
 public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, BooleanFormula, ArrayFormula> {
 
     private static final Object syncObject = new Object();
@@ -218,8 +219,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     }
 
     protected static final class JavaSMTMulibAdapter {
-        private final Map<NumericExpression, NumeralFormula> numericExpressionStore = new WeakHashMap<>();
-        private final Map<Object, BooleanFormula> booleanFormulaStore = new WeakHashMap<>();
+        private final Map<NumericExpression, NumeralFormula> numericExpressionStore = new HashMap<>();
+        private final Map<Object, BooleanFormula> booleanFormulaStore = new HashMap<>();
         private final BooleanFormulaManager booleanFormulaManager;
         private final IntegerFormulaManager integerFormulaManager;
         private final RationalFormulaManager rationalFormulaManager;
@@ -471,6 +472,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
+        @SuppressWarnings("unchecked")
         private ArrayFormula newArrayExprFromType(Sint arrayId, Class<?> type) {
             FormulaType arraySort;
             if (Sprimitive.class.isAssignableFrom(type)) {
@@ -506,6 +508,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
 
         public BooleanFormula transformSelectConstraint(ArrayFormula array, Sint index, SubstitutedVar var) {
+            @SuppressWarnings("unchecked")
             Formula selectExpr = arrayFormulaManager.select(array, transformSintegerNumber(index));
             Formula value = transformSubstitutedVar(var);
             BooleanFormula result;

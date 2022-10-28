@@ -103,7 +103,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         }
         IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
-        ArraySolverRepresentation asr = sas.getArraySolverRepresentationForId(id).getNewestRepresentation();
+        ArraySolverRepresentation asr = sas.getRepresentationForId(id).getNewestRepresentation();
         return new IdentityHavingSubstitutedVarInformation(sas, asr);
     }
 
@@ -123,9 +123,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     @Override
-    public final void addArrayConstraints(List<ArrayConstraint> acs) {
-        for (ArrayConstraint ac : acs) {
-            addArrayConstraint(ac);
+    public final void addIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs) {
+        for (IdentityHavingSubstitutedVarConstraint ac : acs) {
+            addIdentityHavingSubstitutedVarConstraint(ac);
         }
     }
 
@@ -133,7 +133,20 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     // https://github.com/wwu-pi/muggl/blob/53a2874cba2b193ec99d2aea8a454a88481656c7/muggl-solver-z3/src/main/java/de/wwu/muggl/solvers/z3/Z3MugglAdapter.java
     // It was also extended by an own alternative abstraction layer
     @Override
-    public final void addArrayConstraint(ArrayConstraint ac) {
+    public final void addIdentityHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
+        if (ic instanceof ArrayConstraint) {
+            addArrayConstraint((ArrayConstraint) ic);
+        } else {
+            assert ic instanceof PartnerClassObjectConstraint;
+            addPartnerClassObjectConstraint((PartnerClassObjectConstraint) ic);
+        }
+    }
+
+    private void addPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
+        throw new NotYetImplementedException(); //// TODO
+    }
+
+    private void addArrayConstraint(ArrayConstraint ac) {
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (ac instanceof ArrayAccessConstraint) {
                 _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
@@ -421,7 +434,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
-            if (incrementalSolverState.getSymbolicArrayStates().getArraySolverRepresentationForId(sarray.__mulib__getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
+            if (incrementalSolverState.getSymbolicArrayStates().getRepresentationForId(sarray.__mulib__getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
                 throw new NotYetImplementedException();
             }
             ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);

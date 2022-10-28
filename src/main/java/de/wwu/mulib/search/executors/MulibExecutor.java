@@ -1,7 +1,7 @@
 package de.wwu.mulib.search.executors;
 
-import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public interface MulibExecutor {
 
-    void addExistingArrayConstraints(List<ArrayConstraint> acs);
+    void addExistingIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs);
 
     Optional<PathSolution> getPathSolution();
 
@@ -41,7 +41,7 @@ public interface MulibExecutor {
 
     void addNewConstraint(Constraint c);
 
-    void addNewArrayConstraint(ArrayConstraint ac);
+    void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 

@@ -76,7 +76,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 continue;
             }
             IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar =
-                    symbolicArrayStates.getArraySolverRepresentationForId(id);
+                    symbolicArrayStates.getRepresentationForId(id);
             assert ar != null : "All Sarrays for aliasingPotentialIds must be not null!";
             aliasedArrays.add(ar);
             ArraySolverRepresentation asr = ar.getNewestRepresentation();

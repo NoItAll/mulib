@@ -18,7 +18,7 @@ public interface IdentityHavingSubstitutedVar extends SubstitutedVar {
     }
 
     default void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-        throw new MulibIllegalStateException("Must not occur"); //// TODO implement transformation
+        throw new MulibIllegalStateException("Must not occur");
     }
 
     default Sbool __mulib__isNull() {

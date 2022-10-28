@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -16,9 +17,9 @@ public interface SolverManager {
 
     void addConstraintAfterNewBacktrackingPoint(Constraint constraint);
 
-    void addArrayConstraint(ArrayConstraint ac);
+    void addIdentityHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ac);
 
-    void addArrayConstraints(List<ArrayConstraint> acs);
+    void addIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs);
 
     boolean checkWithNewConstraint(Constraint c);
 

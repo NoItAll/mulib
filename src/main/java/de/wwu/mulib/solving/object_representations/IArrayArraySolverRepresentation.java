@@ -20,7 +20,7 @@ public interface IArrayArraySolverRepresentation extends ArraySolverRepresentati
         }
         return relevantValues.stream()
                 .anyMatch(s -> {
-                    ArraySolverRepresentation asr = sas.getArraySolverRepresentationForId(s).getNewestRepresentation();
+                    ArraySolverRepresentation asr = sas.getRepresentationForId(s).getNewestRepresentation();
                     return asr.getIsNull() instanceof Sym;
                 });
     }

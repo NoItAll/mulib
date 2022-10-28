@@ -2,6 +2,7 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
 import de.wwu.mulib.exceptions.IllegalTreeAccessException;
 import de.wwu.mulib.exceptions.IllegalTreeModificationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -70,7 +71,7 @@ public final class Choice extends TreeNode {
         private Constraint optionConstraint;
         // Separate ArrayConstraints. These are added after the fact.
         @SuppressWarnings("unchecked")
-        private List<ArrayConstraint> arrayConstraints = Collections.EMPTY_LIST;
+        private List<IdentityHavingSubstitutedVarConstraint> identityHavingSubstitutedVarConstraints = Collections.EMPTY_LIST;
 
         // The possible child of this ChoiceOption is set after evaluating the option.
         private TreeNode child = null;
@@ -102,8 +103,8 @@ public final class Choice extends TreeNode {
             return optionConstraint;
         }
 
-        public List<ArrayConstraint> getArrayConstraints() {
-            return arrayConstraints;
+        public List<IdentityHavingSubstitutedVarConstraint> getIdentityHavingSubstitutedVarConstraints() {
+            return identityHavingSubstitutedVarConstraints;
         }
 
         private boolean isIllegalConstraintModification() {
@@ -118,15 +119,15 @@ public final class Choice extends TreeNode {
             this.optionConstraint = optionConstraint;
         }
 
-        public void addArrayConstraint(ArrayConstraint arrayConstraint) {
+        public void addIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The array constraint must not be added to already evaluated" +
                         " choice options");
             }
-            if (arrayConstraints == Collections.EMPTY_LIST) {
-                arrayConstraints = new ArrayList<>();
+            if (identityHavingSubstitutedVarConstraints == Collections.EMPTY_LIST) {
+                identityHavingSubstitutedVarConstraints = new ArrayList<>();
             }
-            arrayConstraints.add(arrayConstraint);
+            identityHavingSubstitutedVarConstraints.add(ic);
         }
 
         public TreeNode getChild() {
@@ -238,7 +239,7 @@ public final class Choice extends TreeNode {
             return "ChoiceOption{depth=" + depth
                     + ",number=" + choiceOptionNumber
                     + ",constraint=" + optionConstraint
-                    + ",arrayConstraints=" + arrayConstraints
+                    + ",arrayConstraints=" + identityHavingSubstitutedVarConstraints
                     + ",state="
                         + stateToString()
                     + "}";

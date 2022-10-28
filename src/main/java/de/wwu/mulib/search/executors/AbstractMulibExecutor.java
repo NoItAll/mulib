@@ -116,15 +116,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final void addExistingArrayConstraints(List<ArrayConstraint> acs) {
-        solverManager.addArrayConstraints(acs);
+    public final void addExistingIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> ics) {
+        solverManager.addIdentityHavingSubstitutedVarConstraints(ics);
     }
 
     @Override
-    public final void addNewArrayConstraint(ArrayConstraint ac) {
+    public final void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
-        solverManager.addArrayConstraint(ac);
-        currentChoiceOption.addArrayConstraint(ac);
+        solverManager.addIdentityHavingSubstitutedVarConstraint(ic);
+        currentChoiceOption.addIdentitiyHavingSubstitutedVarConstraint(ic);
     }
 
     @Override
@@ -323,7 +323,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private void _addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
         assert currentChoiceOption != choiceOption;
-        assert choiceOption.getArrayConstraints().isEmpty();
+        assert choiceOption.getIdentityHavingSubstitutedVarConstraints().isEmpty();
         solverManager.addConstraintAfterNewBacktrackingPoint(choiceOption.getOptionConstraint());
         addedAfterBacktrackingPoint++;
         currentChoiceOption = choiceOption;
@@ -366,7 +366,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
         for (Choice.ChoiceOption co : getPathBetween) {
             solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
-            addExistingArrayConstraints(co.getArrayConstraints());
+            addExistingIdentityHavingSubstitutedVarConstraints(co.getIdentityHavingSubstitutedVarConstraints());
             addedAfterBacktrackingPoint++;
         }
         currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
@@ -392,7 +392,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 && other.isUnsatisfiable()
                 && choiceOption.getParent().isEvaluated()
                 // We want to avoid that
-                && other.getArrayConstraints().isEmpty()) {
+                && other.getIdentityHavingSubstitutedVarConstraints().isEmpty()) {
             assert solverManager.isSatisfiable();
             // If the first choice option is not satisfiable, the choice is binary, and the parent
             // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation

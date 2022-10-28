@@ -389,6 +389,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE;
     public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
+    public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -745,6 +746,7 @@ public class SootMulibClassesAndMethods {
         SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE                          = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
         SM_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED                     = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
 
         SM_CONCSINT     = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_CONCSLONG    = SC_SLONG.getMethod("concSlong", List.of(TYPE_LONG), TYPE_SLONG);

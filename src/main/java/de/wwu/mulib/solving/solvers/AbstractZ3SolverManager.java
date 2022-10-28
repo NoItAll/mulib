@@ -11,8 +11,8 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.math.BigInteger;
+import java.util.HashMap;
 import java.util.Map;
-import java.util.WeakHashMap;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
@@ -185,10 +185,10 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
 
     protected static final class Z3MulibAdapter {
         final Context ctx;
-        private final Map<NumericExpression, Expr> numericExpressionsStore = new WeakHashMap<>();
+        private final Map<NumericExpression, Expr> numericExpressionsStore = new HashMap<>();
         // Constraint --> BoolExpr; if booleans are used in {0,1}-encoding (due to them appearing in arithmetic operations)
         // it can also be Expr --> BoolExpr, where Expr is the 0,1-encoding-integer.
-        private final Map<Object, BoolExpr> boolExprStore = new WeakHashMap<>();
+        private final Map<Object, BoolExpr> boolExprStore = new HashMap<>();
         private final boolean treatSboolsAsInts;
 
         Z3MulibAdapter(MulibConfig config, Context ctx) {

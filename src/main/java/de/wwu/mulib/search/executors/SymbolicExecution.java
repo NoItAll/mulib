@@ -1,8 +1,8 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -201,9 +201,9 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewConstraint(c);
     }
 
-    public void addNewArrayConstraint(ArrayConstraint ac) {
+    public void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
         assert !nextIsOnKnownPath();
-        mulibExecutor.addNewArrayConstraint(ac);
+        mulibExecutor.addNewIdentitiyHavingSubstitutedVarConstraint(ic);
     }
 
     /* FREE ARRAY OPERATIONS */
