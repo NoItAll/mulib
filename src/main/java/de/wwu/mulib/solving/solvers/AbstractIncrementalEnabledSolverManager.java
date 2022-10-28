@@ -33,7 +33,7 @@ import java.util.function.BiFunction;
  * @param <AR> Class representing array expressions in the solver
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
-public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implements SolverManager {
+public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> implements SolverManager {
 
     // Raw use in this abstract superclass so that sub-classes can overwrite with their specific array representations
     // while we can still use a own layer or high-level array theory
@@ -143,7 +143,20 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR> implemen
     }
 
     private void addPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
-        throw new NotYetImplementedException(); //// TODO
+        if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            if (pc instanceof PartnerClassObjectFieldAccessConstraint) {
+
+                throw new NotYetImplementedException(); //// TODO
+            } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
+                throw new NotYetImplementedException(); //// TODO
+            } else {
+                throw new NotYetImplementedException();
+            }
+        } else {
+            // TODO
+            throw new NotYetImplementedException("Currently, only the implementation of symbolic aliasing of objects with " +
+                    "the high-level array theory has been validated");
+        }
     }
 
     private void addArrayConstraint(ArrayConstraint ac) {

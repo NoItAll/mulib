@@ -6,7 +6,7 @@ import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;
 
-public class IncrementalSolverState<AR> {
+public class IncrementalSolverState<AR, PR> {
 
     // Each constraint represents one "scope" of a constraint here. That means tha a pop in a managed constraint solver
     // corresponds to a pop here.
@@ -21,8 +21,10 @@ public class IncrementalSolverState<AR> {
     private final List<List<PartnerClassObjectConstraint>> partnerClassObjectConstraints = new ArrayList<>();
 
     private final SymbolicArrayStates<AR> symbolicArrayStates;
+    private final SymbolicPartnerClassObjectStates<PR> symbolicPartnerClassObjectStates;
     private IncrementalSolverState(MulibConfig config) {
         this.symbolicArrayStates = new SymbolicArrayStates<>(config);
+        this.symbolicPartnerClassObjectStates = new SymbolicPartnerClassObjectStates<>(config);
     }
 
     public static abstract class SymbolicIdentityHavingSubstitutedVarStates<R extends IdentityHavingSubstitutedVarRepresentation> {
@@ -51,6 +53,10 @@ public class IncrementalSolverState<AR> {
         return symbolicArrayStates;
     }
 
+    public SymbolicPartnerClassObjectStates<PR> getSymbolicPartnerClassObjectStates() {
+        return symbolicPartnerClassObjectStates;
+    }
+
     void addConstraint(Constraint c) {
         // We conjoin the previous with the current constraint so that the uppermost constraint is still a valid
         // representation of the current constraint scope
@@ -66,6 +72,7 @@ public class IncrementalSolverState<AR> {
     void popConstraint() {
         // Check whether we need to update represented arrays
         popArrayConstraintForLevel();
+        popPartnerClassConstraintsForLevel();
         constraints.poll();
         level--;
     }
@@ -75,19 +82,42 @@ public class IncrementalSolverState<AR> {
         return ar == null ? null : ar.getNewestRepresentation();
     }
 
+    public PR getCurrentPartnerClassObjectRepresentation(Sint id) {
+        PartnerClassObjectRepresentation<PR> ar = _getPartnerClassObjectRepresentation(id);
+        return ar == null ? null : ar.getNewestRepresentation();
+    }
+
     public void addArrayConstraint(ArrayAccessConstraint ac) {
         assert _getArrayRepresentation(ac.getArrayId()) != null;
-        while (arrayConstraints.size() <= level) {
-            arrayConstraints.add(new ArrayList<>());
+        addIdentityHavingSubstitutedVarConstraint(level, ac, arrayConstraints);
+    }
+
+    public void addPartnerClassObjectConstraint(PartnerClassObjectFieldAccessConstraint pc) {
+        assert _getPartnerClassObjectRepresentation(pc.getPartnerClassObjectId()) != null;
+        addIdentityHavingSubstitutedVarConstraint(level, pc, partnerClassObjectConstraints);
+    }
+
+    private static <T> void addIdentityHavingSubstitutedVarConstraint(int level, T add, List<List<T>> addTo) {
+        while (addTo.size() <= level) {
+            addTo.add(new ArrayList<>());
         }
-        arrayConstraints.get(level).add(ac);
+        addTo.get(level).add(add);
     }
 
     public void initializeArrayRepresentation(ArrayInitializationConstraint constraint, AR initialRepresentation) {
-        assert _getArrayRepresentation(constraint.getArrayId()) == null || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null : "Array was already initialized!";
+        assert _getArrayRepresentation(constraint.getArrayId()) == null
+                || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null : "Array was already initialized!";
         ArrayRepresentation<AR> ar = new ArrayRepresentation<>(constraint.getArrayId());
         ar.addNewRepresentation(initialRepresentation, level);
         symbolicArrayStates.idToMostRecentRepresentation.put(constraint.getArrayId(), ar);
+    }
+
+    public void initializePartnerClassObjectRepresentation(PartnerClassObjectInitializationConstraint constraint, PR initialRepresentation) {
+        assert _getPartnerClassObjectRepresentation(constraint.getPartnerClassObjectId()) == null
+                || _getPartnerClassObjectRepresentation(constraint.getPartnerClassObjectId()).getNewestRepresentation() == null : "Partner class object was already initialized!";
+        PartnerClassObjectRepresentation<PR> pr = new PartnerClassObjectRepresentation<>(constraint.getPartnerClassObjectId());
+        pr.addNewRepresentation(initialRepresentation, level);
+        symbolicPartnerClassObjectStates.idToMostRecentRepresentation.put(constraint.getPartnerClassObjectId(), pr);
     }
 
     public void addNewRepresentationInitializingArrayConstraint(ArrayAccessConstraint constraint, AR newRepresentation) {
@@ -104,6 +134,14 @@ public class IncrementalSolverState<AR> {
     public List<ArrayConstraint> getArrayConstraints() {
         List<ArrayConstraint> result = new ArrayList<>();
         for (List<ArrayConstraint> acs : arrayConstraints) {
+            result.addAll(acs);
+        }
+        return result;
+    }
+
+    public List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints() {
+        List<PartnerClassObjectConstraint> result = new ArrayList<>();
+        for (List<PartnerClassObjectConstraint> acs : partnerClassObjectConstraints) {
             result.addAll(acs);
         }
         return result;
@@ -128,12 +166,26 @@ public class IncrementalSolverState<AR> {
         }
     }
 
+    private void popPartnerClassConstraintsForLevel() {
+        // Check if popped level contains array constraints
+        for (PartnerClassObjectRepresentation<PR> pr : symbolicPartnerClassObjectStates.idToMostRecentRepresentation.values()) {
+            pr.popRepresentationsOfLevel(level);
+        }
+        if (partnerClassObjectConstraints.size() > level) {
+            partnerClassObjectConstraints.get(level).clear();
+        }
+    }
+
     private ArrayRepresentation<AR> _getArrayRepresentation(Sint arrayId) {
         return symbolicArrayStates.idToMostRecentRepresentation.get(arrayId);
     }
 
+    private PartnerClassObjectRepresentation<PR> _getPartnerClassObjectRepresentation(Sint id) {
+        return symbolicPartnerClassObjectStates.idToMostRecentRepresentation.get(id);
+    }
 
-    public static class IdentityHavingSubstitutedVarRepresentation<R> {
+
+    public static abstract class IdentityHavingSubstitutedVarRepresentation<R> {
         // Array that is represented
         final Sint id;
         // Information for each level, including array constraints and the representation per level
@@ -154,7 +206,7 @@ public class IncrementalSolverState<AR> {
             assert representationsForLevels.isEmpty() || representationsForLevels.peek().depth <= level;
             IdentityHavingSubstitutedVarRepresentationForLevel<R> ar = representationsForLevels.peek();
             if (ar == null || ar.depth < level) {
-                representationsForLevels.push(new ArrayRepresentationForLevel<>(newRepresentation, level));
+                representationsForLevels.push(produceRepresentationForLevel(newRepresentation, level));
             } else {
                 ar.addRepresentation(newRepresentation);
             }
@@ -168,11 +220,18 @@ public class IncrementalSolverState<AR> {
             }
             assert representationsForLevels.isEmpty() || representationsForLevels.peek().depth < level;
         }
+
+        protected abstract IdentityHavingSubstitutedVarRepresentationForLevel<R> produceRepresentationForLevel(R newRepresentation, int level);
     }
 
     public static class PartnerClassObjectRepresentation<PR> extends IdentityHavingSubstitutedVarRepresentation<PR> {
         PartnerClassObjectRepresentation(Sint id) {
             super(id);
+        }
+
+        @Override
+        protected IdentityHavingSubstitutedVarRepresentationForLevel<PR> produceRepresentationForLevel(PR newRepresentation, int level) {
+            return new PartnerClassObjectRepresentationForLevel<>(newRepresentation, level);
         }
     }
 
@@ -180,10 +239,15 @@ public class IncrementalSolverState<AR> {
         ArrayRepresentation(Sint arrayId) {
             super(arrayId);
         }
+
+        @Override
+        protected IdentityHavingSubstitutedVarRepresentationForLevel<AR> produceRepresentationForLevel(AR newRepresentation, int level) {
+            return new ArrayRepresentationForLevel<>(newRepresentation, level);
+        }
     }
 
 
-    private static class IdentityHavingSubstitutedVarRepresentationForLevel<R> {
+    private static abstract class IdentityHavingSubstitutedVarRepresentationForLevel<R> {
         final int depth;
         final ArrayDeque<R> representationsOfLevel;
         IdentityHavingSubstitutedVarRepresentationForLevel(R representation, int depth) {

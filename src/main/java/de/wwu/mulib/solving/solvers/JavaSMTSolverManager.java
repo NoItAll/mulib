@@ -24,7 +24,7 @@ import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
 @SuppressWarnings("rawtypes")
-public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, BooleanFormula, ArrayFormula> {
+public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, BooleanFormula, ArrayFormula, Formula /* TODO better type */> {
 
     private static final Object syncObject = new Object();
     private final ProverEnvironment solver;

@@ -16,7 +16,7 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
-public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, BoolExpr, ArrayExpr> {
+public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, BoolExpr, ArrayExpr, DatatypeExpr /* TODO Validate*/> {
 
     private static final Object syncObject = new Object();
     protected final Solver solver;
