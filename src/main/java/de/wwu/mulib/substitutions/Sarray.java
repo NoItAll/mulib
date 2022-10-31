@@ -646,6 +646,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
                                   boolean defaultIsSymbolic, Sbool isNull) {
             super(clazz, len, se, defaultIsSymbolic, isNull);
+            assert !Sarray.class.isAssignableFrom(clazz);
         }
 
         /**
@@ -659,6 +660,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 Sbool isNull,
                 boolean initializeImmediately) {
             super(clazz, len, se, defaultIsSymbolic, isNull, initializeImmediately);
+            assert Sarray.class.isAssignableFrom(clazz);
         }
 
         /**
@@ -669,6 +671,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 Sarray<T> s,
                 Map<Sint, T> elements) {
             super(mvt, s, elements);
+            assert s instanceof SarraySarray;
         }
 
         /** Copy constructor */
