@@ -88,7 +88,7 @@ public class IncrementalSolverState<AR, PR> {
     }
 
     public void addArrayConstraint(ArrayAccessConstraint ac) {
-        assert _getArrayRepresentation(ac.getArrayId()) != null;
+        assert _getArrayRepresentation(ac.getPartnerClassObjectId()) != null;
         addIdentityHavingSubstitutedVarConstraint(level, ac, arrayConstraints);
     }
 
@@ -105,11 +105,11 @@ public class IncrementalSolverState<AR, PR> {
     }
 
     public void initializeArrayRepresentation(ArrayInitializationConstraint constraint, AR initialRepresentation) {
-        assert _getArrayRepresentation(constraint.getArrayId()) == null
-                || _getArrayRepresentation(constraint.getArrayId()).getNewestRepresentation() == null : "Array was already initialized!";
-        ArrayRepresentation<AR> ar = new ArrayRepresentation<>(constraint.getArrayId());
+        assert _getArrayRepresentation(constraint.getPartnerClassObjectId()) == null
+                || _getArrayRepresentation(constraint.getPartnerClassObjectId()).getNewestRepresentation() == null : "Array was already initialized!";
+        ArrayRepresentation<AR> ar = new ArrayRepresentation<>(constraint.getPartnerClassObjectId());
         ar.addNewRepresentation(initialRepresentation, level);
-        symbolicArrayStates.idToMostRecentRepresentation.put(constraint.getArrayId(), ar);
+        symbolicArrayStates.idToMostRecentRepresentation.put(constraint.getPartnerClassObjectId(), ar);
     }
 
     public void initializePartnerClassObjectRepresentation(PartnerClassObjectInitializationConstraint constraint, PR initialRepresentation) {
@@ -122,7 +122,7 @@ public class IncrementalSolverState<AR, PR> {
 
     public void addNewRepresentationInitializingArrayConstraint(ArrayAccessConstraint constraint, AR newRepresentation) {
         // Initialize/add new array representation
-        ArrayRepresentation<AR> ar = _getArrayRepresentation(constraint.getArrayId());
+        ArrayRepresentation<AR> ar = _getArrayRepresentation(constraint.getPartnerClassObjectId());
         assert ar != null : "Array representation was not initialized via an ArrayInitializationConstraint!";
         ar.addNewRepresentation(newRepresentation, level);
     }

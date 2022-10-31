@@ -9,9 +9,9 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.AliasingPrimitiveValuedArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
@@ -97,7 +97,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
-    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
         if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
@@ -105,7 +105,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
         ArraySolverRepresentation asr = sas.getRepresentationForId(id).getNewestRepresentation();
-        return new IdentityHavingSubstitutedVarInformation(sas, asr);
+        return new PartnerClassObjectInformation(sas, asr);
     }
 
     @Override
@@ -124,9 +124,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
-    public final void addIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs) {
-        for (IdentityHavingSubstitutedVarConstraint ac : acs) {
-            addIdentityHavingSubstitutedVarConstraint(ac);
+    public final void addPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> acs) {
+        for (PartnerClassObjectConstraint ac : acs) {
+            this.addPartnerClassObjectConstraint(ac);
         }
     }
 
@@ -134,16 +134,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     // https://github.com/wwu-pi/muggl/blob/53a2874cba2b193ec99d2aea8a454a88481656c7/muggl-solver-z3/src/main/java/de/wwu/muggl/solvers/z3/Z3MugglAdapter.java
     // It was also extended by an own alternative abstraction layer
     @Override
-    public final void addIdentityHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
+    public final void addPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
         if (ic instanceof ArrayConstraint) {
             addArrayConstraint((ArrayConstraint) ic);
         } else {
-            assert ic instanceof PartnerClassObjectConstraint;
-            addPartnerClassObjectConstraint((PartnerClassObjectConstraint) ic);
+            addNonArrayPartnerClassObjectConstraint(ic);
         }
     }
 
-    private void addPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
+    private void addNonArrayPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (pc instanceof PartnerClassObjectFieldAccessConstraint) {
 
@@ -217,7 +216,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private void _freeArrayCompatibilityLayerArrayConstraintTreatement(ArrayAccessConstraint ac) {
         ArraySolverRepresentation arrayRepresentation =
-                (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+                (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(ac.getPartnerClassObjectId());
         assert arrayRepresentation != null;
         if (arrayRepresentation.getLevel() != getLevel()) {
             arrayRepresentation = arrayRepresentation.copyForNewLevel(getLevel());
@@ -235,7 +234,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private void _solverSpecificArrayConstraintTreatment(ArrayAccessConstraint ac) {
-        AR arrayRepresentation = (AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getArrayId());
+        AR arrayRepresentation = (AR) incrementalSolverState.getCurrentArrayRepresentation(ac.getPartnerClassObjectId());
         assert arrayRepresentation != null;
         if (ac.getType() == ArrayAccessConstraint.Type.SELECT) {
             addArraySelectConstraint(arrayRepresentation, ac.getIndex(), ac.getValue());
@@ -479,7 +478,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private ArrayConstraint[] getArrayConstraintsForSarray(Sarray sarray) {
         return getArrayConstraints().stream()
-                .filter(ac -> ac.getArrayId().equals(sarray.__mulib__getId()))
+                .filter(ac -> ac.getPartnerClassObjectId().equals(sarray.__mulib__getId()))
                 .toArray(ArrayConstraint[]::new);
     }
 

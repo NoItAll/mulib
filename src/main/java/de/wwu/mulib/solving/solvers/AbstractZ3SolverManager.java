@@ -97,7 +97,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
 
     @Override
     protected final ArrayExpr createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac) {
-        return adapter.newArrayExprFromType(ac.getArrayId(), ac.getValueType());
+        return adapter.newArrayExprFromType(ac.getPartnerClassObjectId(), ac.getValueType());
     }
 
     @Override

@@ -79,7 +79,7 @@ public final class MulibContext {
         }
 
         // Find the next sarray-id if any of the arguments are sarrays
-        mulibValueTransformer.setNextIdentityHavingObjectNr(args);
+        mulibValueTransformer.setPartnerClassObjectNr(args);
 
         Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {

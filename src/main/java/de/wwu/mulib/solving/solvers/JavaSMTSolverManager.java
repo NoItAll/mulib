@@ -97,7 +97,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
 
     @Override
     protected ArrayFormula createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac) {
-        return adapter.newArrayExprFromType(ac.getArrayId(), ac.getValueType());
+        return adapter.newArrayExprFromType(ac.getPartnerClassObjectId(), ac.getValueType());
     }
 
     @Override

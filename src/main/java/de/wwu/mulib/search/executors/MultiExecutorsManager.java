@@ -88,8 +88,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                         );
                         finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
                                 observedTree.root.getOption(0).getOptionConstraint());
-                        finalNextExecutor.addExistingIdentityHavingSubstitutedVarConstraints(
-                                observedTree.root.getOption(0).getIdentityHavingSubstitutedVarConstraints());
+                        finalNextExecutor.addExistingPartnerClassObjectConstraints(
+                                observedTree.root.getOption(0).getPartnerClassObjectConstraints());
                         mulibExecutors.add(finalNextExecutor);
                         computePathSolutionsWithNonMainExecutor(finalNextExecutor);
                         idle.add(finalNextExecutor);

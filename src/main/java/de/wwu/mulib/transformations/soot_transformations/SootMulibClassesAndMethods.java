@@ -5,7 +5,6 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.IdentityHavingSubstitutedVar;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -52,7 +51,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSBYTE;
     public final SootClass SC_CONCSBOOL;
     public final SootClass SC_PARTNERCLASS;
-    public final SootClass SC_IDENTITY_HAVING_SUBSTITUTED_VAR;
+    public final SootClass SC_PARTNER_CLASS;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
     public final SootClass SC_SFLOATSARRAY;
@@ -128,10 +127,10 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_SBYTE_NEUTRAL;
     public final SootField SF_SBOOL_NEUTRAL;
     public final SootField SF_SBOOL_TRUE;
-    public final SootField SF_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER;
-    public final SootField SF_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER;
-    public final SootField SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED;
-    public final SootField SF_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC;
+    public final SootField SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER;
+    public final SootField SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
+    public final SootField SF_PARTNER_CLASS_CACHE_IS_BLOCKED;
+    public final SootField SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
 
     /* SPECIAL METHODS */
     // Unwrap methods
@@ -376,18 +375,18 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNERCLASSSARRAY_STORE;
     public final SootMethod SM_SARRAYSARRAY_SELECT;
     public final SootMethod SM_SARRAYSARRAY_STORE;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_GET_ID;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_PREPARE_TO_REPRESENT_SYMBOLICALLY;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_NULL;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_IS_NULL;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_IS_NOT_NULL;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_NULL_CHECK;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_AS_REPRESENTED_IN_SOLVER;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE;
-    public final SootMethod SM_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED;
+    public final SootMethod SM_PARTNER_CLASS_GET_ID;
+    public final SootMethod SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY;
+    public final SootMethod SM_PARTNER_CLASS_IS_NULL;
+    public final SootMethod SM_PARTNER_CLASS_SET_IS_NULL;
+    public final SootMethod SM_PARTNER_CLASS_SET_IS_NOT_NULL;
+    public final SootMethod SM_PARTNER_CLASS_NULL_CHECK;
+    public final SootMethod SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
+    public final SootMethod SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER;
+    public final SootMethod SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
+    public final SootMethod SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER;
+    public final SootMethod SM_PARTNER_CLASS_BLOCK_CACHE;
+    public final SootMethod SM_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
@@ -447,7 +446,7 @@ public class SootMulibClassesAndMethods {
         SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SUBSTITUTED_VAR = Scene.v().forceResolve(SubstitutedVar.class.getName(), SootClass.SIGNATURES);
-        SC_IDENTITY_HAVING_SUBSTITUTED_VAR = Scene.v().forceResolve(IdentityHavingSubstitutedVar.class.getName(), SootClass.SIGNATURES);
+        SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
         TYPE_MULIB_RUNTIME_EXCEPTION = SC_MULIB_RUNTIME_EXCEPTION.getType();
         TYPE_SINT = Scene.v().getRefType(Sint.class.getName());
@@ -504,10 +503,10 @@ public class SootMulibClassesAndMethods {
         SF_SBYTE_NEUTRAL    = SC_CONCSBYTE.getField("ZERO",     TYPE_CONCSBYTE);
         SF_SBOOL_NEUTRAL    = SC_CONCSBOOL.getField("FALSE",    TYPE_CONCSBOOL);
         SF_SBOOL_TRUE       = SC_CONCSBOOL.getField("TRUE",     TYPE_CONCSBOOL);
-        SF_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER  = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getField("SHOULD_BE_REPRESENTED_IN_SOLVER", TYPE_BYTE);
-        SF_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER         = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getField("IS_REPRESENTED_IN_SOLVER", TYPE_BYTE);
-        SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED                 = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getField("CACHE_IS_BLOCKED", TYPE_BYTE);
-        SF_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC              = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getField("DEFAULT_IS_SYMBOLIC", TYPE_BYTE);
+        SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER  = SC_PARTNER_CLASS.getField("SHOULD_BE_REPRESENTED_IN_SOLVER", TYPE_BYTE);
+        SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getField("IS_REPRESENTED_IN_SOLVER", TYPE_BYTE);
+        SF_PARTNER_CLASS_CACHE_IS_BLOCKED                 = SC_PARTNER_CLASS.getField("CACHE_IS_BLOCKED", TYPE_BYTE);
+        SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getField("DEFAULT_IS_SYMBOLIC", TYPE_BYTE);
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);
@@ -733,18 +732,18 @@ public class SootMulibClassesAndMethods {
         SM_SARRAYSARRAY_SELECT          = SC_SARRAYSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_SARRAY);
         SM_SARRAYSARRAY_STORE           = SC_SARRAYSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SARRAY, TYPE_SE), TYPE_VOID);
 
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_GET_ID                               = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getId", List.of(), TYPE_SINT);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_NULL                              = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isNull", List.of(), TYPE_SBOOL);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_IS_NULL                          = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNull", List.of(), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_IS_NOT_NULL                      = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNotNull", List.of(), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER             = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isRepresentedInSolver", List.of(), TYPE_BOOL);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_NULL_CHECK                           = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "nullCheck", List.of(), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC                  = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "defaultIsSymbolic", List.of(), TYPE_BOOL);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_SET_AS_REPRESENTED_IN_SOLVER         = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE                          = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
-        SM_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED                     = SC_IDENTITY_HAVING_SUBSTITUTED_VAR.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_GET_ID                               = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getId", List.of(), TYPE_SINT);
+        SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
+        SM_PARTNER_CLASS_IS_NULL                              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isNull", List.of(), TYPE_SBOOL);
+        SM_PARTNER_CLASS_SET_IS_NULL                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNull", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_SET_IS_NOT_NULL                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNotNull", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER             = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isRepresentedInSolver", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_NULL_CHECK                           = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "nullCheck", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC                  = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "defaultIsSymbolic", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
 

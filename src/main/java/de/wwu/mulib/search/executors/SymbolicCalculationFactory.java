@@ -3,7 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.*;
-import de.wwu.mulib.substitutions.IdentityHavingSubstitutedVar;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -505,8 +505,8 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
 
     @Override
     protected SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value) {
-        if (value instanceof IdentityHavingSubstitutedVar) {
-            return ((IdentityHavingSubstitutedVar) value).__mulib__getId();
+        if (value instanceof PartnerClass) {
+            return ((PartnerClass) value).__mulib__getId();
         }
         return value;
     }

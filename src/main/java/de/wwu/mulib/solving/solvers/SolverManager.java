@@ -2,9 +2,9 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
+import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.ArrayDeque;
@@ -17,9 +17,9 @@ public interface SolverManager {
 
     void addConstraintAfterNewBacktrackingPoint(Constraint constraint);
 
-    void addIdentityHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ac);
+    void addPartnerClassObjectConstraint(PartnerClassObjectConstraint ac);
 
-    void addIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs);
+    void addPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> acs);
 
     boolean checkWithNewConstraint(Constraint c);
 
@@ -52,5 +52,5 @@ public interface SolverManager {
 
     List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
 
-    IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id);
 }

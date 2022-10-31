@@ -4,7 +4,7 @@ import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
@@ -918,8 +918,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
             Sarray result;
             // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
             //  sarrays are allowed to be initialized to null
-            IdentityHavingSubstitutedVarInformation info =
-                    se.getCalculationFactory().getAvailableInformationOnIdentityHavingSubstitutedVar(se, this);
+            PartnerClassObjectInformation info =
+                    se.getCalculationFactory().getAvailableInformationOnPartnerClassObject(se, this);
             boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
@@ -940,7 +940,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
             }
 
             result.initializeForAliasingAndBlockCache(se);
-            se.getCalculationFactory().representIdentityHavingSubstitutedVarIfNeeded(se, result, __mulib__getId());
+            se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
             return result;
         }
 

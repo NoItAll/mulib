@@ -53,7 +53,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         assert potentialIds == null || containingSarraySarrayId == null;
         assert initialSelectConstraints != null;
         assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getType() == ArrayAccessConstraint.Type.SELECT);
-        assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getArrayId() == arrayId);
+        assert Arrays.stream(initialSelectConstraints).allMatch(isc -> isc.getPartnerClassObjectId() == arrayId);
         assert Arrays.stream(initialSelectConstraints).noneMatch(isc -> isc.getIndex() instanceof Sym);
         this.initialSelectConstraints = initialSelectConstraints;
         if (potentialIds == null && containingSarraySarrayId == null) {
@@ -119,7 +119,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
     }
 
     @Override
-    public Sint getArrayId() {
+    public Sint getPartnerClassObjectId() {
         return arrayId;
     }
 

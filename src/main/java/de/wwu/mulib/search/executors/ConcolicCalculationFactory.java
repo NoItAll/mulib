@@ -8,7 +8,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.substitutions.IdentityHavingSubstitutedVar;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -808,8 +808,8 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
             return tryGetSymFromConcolic((Sbool.SymSbool) value);
         } else if (value instanceof SymNumericExpressionSprimitive) {
             return tryGetSymFromConcolic((SymNumericExpressionSprimitive) value);
-        } else if (value instanceof IdentityHavingSubstitutedVar) {
-            return tryGetSymFromConcolic(((IdentityHavingSubstitutedVar) value).__mulib__getId());
+        } else if (value instanceof PartnerClass) {
+            return tryGetSymFromConcolic(((PartnerClass) value).__mulib__getId());
         }
         return value;
     }

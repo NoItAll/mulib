@@ -12,9 +12,9 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -88,8 +88,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
-        return solverManager.getAvailableInformationOnIdentityHavingSubstitutedVar(id);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
+        return solverManager.getAvailableInformationOnPartnerClassObject(id);
     }
 
     @Override
@@ -116,14 +116,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final void addExistingIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> ics) {
-        solverManager.addIdentityHavingSubstitutedVarConstraints(ics);
+    public final void addExistingPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> ics) {
+        solverManager.addPartnerClassObjectConstraints(ics);
     }
 
     @Override
-    public final void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
+    public final void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
-        solverManager.addIdentityHavingSubstitutedVarConstraint(ic);
+        solverManager.addPartnerClassObjectConstraint(ic);
         currentChoiceOption.addIdentitiyHavingSubstitutedVarConstraint(ic);
     }
 
@@ -244,7 +244,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     getCalculationFactory(),
                     optionToBeEvaluated,
                     prototypicalExecutionBudgetManager,
-                    mulibValueTransformer.getNextIdentityHavingObjectNr(),
+                    mulibValueTransformer.getNextPartnerClassObjectNr(),
                     config
             ));
         } catch (Throwable t) {
@@ -323,7 +323,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private void _addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {
         assert currentChoiceOption != choiceOption;
-        assert choiceOption.getIdentityHavingSubstitutedVarConstraints().isEmpty();
+        assert choiceOption.getPartnerClassObjectConstraints().isEmpty();
         solverManager.addConstraintAfterNewBacktrackingPoint(choiceOption.getOptionConstraint());
         addedAfterBacktrackingPoint++;
         currentChoiceOption = choiceOption;
@@ -366,7 +366,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
         for (Choice.ChoiceOption co : getPathBetween) {
             solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
-            addExistingIdentityHavingSubstitutedVarConstraints(co.getIdentityHavingSubstitutedVarConstraints());
+            addExistingPartnerClassObjectConstraints(co.getPartnerClassObjectConstraints());
             addedAfterBacktrackingPoint++;
         }
         currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
@@ -392,7 +392,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 && other.isUnsatisfiable()
                 && choiceOption.getParent().isEvaluated()
                 // We want to avoid that
-                && other.getIdentityHavingSubstitutedVarConstraints().isEmpty()) {
+                && other.getPartnerClassObjectConstraints().isEmpty()) {
             assert solverManager.isSatisfiable();
             // If the first choice option is not satisfiable, the choice is binary, and the parent
             // is satisfiable, then the other choice option must be satisfiable, assuming that it is the negation

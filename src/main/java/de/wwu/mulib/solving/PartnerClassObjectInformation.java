@@ -5,13 +5,13 @@ import de.wwu.mulib.solving.object_representations.IArrayArraySolverRepresentati
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
-public class IdentityHavingSubstitutedVarInformation {
+public class PartnerClassObjectInformation {
 
     public final Sbool isNull;
     public final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
     public final boolean canContainExplicitNull;
 
-    public IdentityHavingSubstitutedVarInformation(
+    public PartnerClassObjectInformation(
             IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas,
             ArraySolverRepresentation asr) {
         // z.B. RangeExpression-Objekt: private int lowerBound; privae int upperBound;

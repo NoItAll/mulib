@@ -1,11 +1,11 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
+import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.LinkedHashMap;
@@ -15,7 +15,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 public interface MulibExecutor {
 
-    void addExistingIdentityHavingSubstitutedVarConstraints(List<IdentityHavingSubstitutedVarConstraint> acs);
+    void addExistingPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> acs);
 
     Optional<PathSolution> getPathSolution();
 
@@ -41,11 +41,11 @@ public interface MulibExecutor {
 
     void addNewConstraint(Constraint c);
 
-    void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic);
+    void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 
     boolean isSatisfiable();
 
-    IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id);
 }

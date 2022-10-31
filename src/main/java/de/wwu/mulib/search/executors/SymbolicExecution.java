@@ -2,13 +2,13 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.IdentityHavingSubstitutedVarConstraint;
+import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -118,8 +118,8 @@ public final class SymbolicExecution {
         return result;
     }
 
-    public IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(Sint id) {
-        return mulibExecutor.getAvailableInformationOnIdentityHavingSubstitutedVar(id);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
+        return mulibExecutor.getAvailableInformationOnPartnerClassObject(id);
     }
 
     private void set() {
@@ -201,9 +201,9 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewConstraint(c);
     }
 
-    public void addNewIdentitiyHavingSubstitutedVarConstraint(IdentityHavingSubstitutedVarConstraint ic) {
+    public void addNewIdentitiyHavingSubstitutedVarConstraint(PartnerClassObjectConstraint ic) {
         assert !nextIsOnKnownPath();
-        mulibExecutor.addNewIdentitiyHavingSubstitutedVarConstraint(ic);
+        mulibExecutor.addNewPartnerClassObjectConstraint(ic);
     }
 
     /* FREE ARRAY OPERATIONS */

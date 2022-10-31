@@ -26,7 +26,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
             ArrayInitializationConstraint aic,
             int level) {
         this.config = config;
-        this.arrayId = aic.getArrayId();
+        this.arrayId = aic.getPartnerClassObjectId();
         this.length = aic.getArrayLength();
         this.isNull = aic.getIsNull();
         assert isNull != Sbool.ConcSbool.TRUE || arrayId == Sint.ConcSint.MINUS_ONE;

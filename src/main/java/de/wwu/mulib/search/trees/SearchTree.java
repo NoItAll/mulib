@@ -128,8 +128,8 @@ public final class SearchTree {
             for (Choice.ChoiceOption co : choice.getChoiceOptions()) {
                 sb.append(indentBy.repeat(currentNode.depth));
                 sb.append("- ChoiceOption(").append(choice.depth).append(")").append(co.getOptionConstraint());
-                if (!co.getIdentityHavingSubstitutedVarConstraints().isEmpty()) {
-                    sb.append(co.getIdentityHavingSubstitutedVarConstraints());
+                if (!co.getPartnerClassObjectConstraints().isEmpty()) {
+                    sb.append(co.getPartnerClassObjectConstraints());
                 }
                 sb.append("\r\n");
                 if (co.isEvaluated()) {

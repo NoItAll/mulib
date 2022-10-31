@@ -1,8 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
-import de.wwu.mulib.substitutions.IdentityHavingSubstitutedVar;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -142,9 +141,9 @@ public interface CalculationFactory {
 
     PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
 
-    void representIdentityHavingSubstitutedVarIfNeeded(SymbolicExecution se, IdentityHavingSubstitutedVar ihsr, Sint idOfContainingSarraySarray);
+    void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingSarraySarray);
 
-    IdentityHavingSubstitutedVarInformation getAvailableInformationOnIdentityHavingSubstitutedVar(SymbolicExecution se, IdentityHavingSubstitutedVar var);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var);
 
 
 }

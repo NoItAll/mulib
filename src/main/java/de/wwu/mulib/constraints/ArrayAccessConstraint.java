@@ -31,7 +31,7 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
     }
 
     @Override
-    public Sint getArrayId() {
+    public Sint getPartnerClassObjectId() {
         return arrayId;
     }
 

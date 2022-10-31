@@ -4,7 +4,6 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.substitutions.IdentityHavingSubstitutedVar;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -31,27 +30,27 @@ public final class MulibValueTransformer {
     // If the method at hand did not need to be transformed, we do not have to label or transform into the library-/
     // Partner-classes. This is useful for testing and for manually writing such classes.
     private final boolean transformationRequired;
-    private int nextIdentityHavingObjectNr = 0;
+    private int nextPartnerClassObjectNr = 0;
     public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer) {
         this.mulibTransformer = mulibTransformer;
         this.classesToTransformation = config.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
-    public void setNextIdentityHavingObjectNr(Object[] findHighestSarrayIdIn) {
+    public void setPartnerClassObjectNr(Object[] findHighestSarrayIdIn) {
         int currentHighestId = -1;
         for (Object o : findHighestSarrayIdIn) {
-            if (o instanceof IdentityHavingSubstitutedVar
-                    && ((IdentityHavingSubstitutedVar) o).__mulib__getId() instanceof ConcSnumber
-                    && currentHighestId < ((ConcSnumber) ((IdentityHavingSubstitutedVar) o).__mulib__getId()).intVal()) {
-                currentHighestId = ((ConcSnumber) ((IdentityHavingSubstitutedVar) o).__mulib__getId()).intVal();
+            if (o instanceof PartnerClass
+                    && ((PartnerClass) o).__mulib__getId() instanceof ConcSnumber
+                    && currentHighestId < ((ConcSnumber) ((PartnerClass) o).__mulib__getId()).intVal()) {
+                currentHighestId = ((ConcSnumber) ((PartnerClass) o).__mulib__getId()).intVal();
             }
         }
-        this.nextIdentityHavingObjectNr = currentHighestId + 1;
+        this.nextPartnerClassObjectNr = currentHighestId + 1;
     }
 
-    public int getNextIdentityHavingObjectNr() {
-        return nextIdentityHavingObjectNr;
+    public int getNextPartnerClassObjectNr() {
+        return nextPartnerClassObjectNr;
     }
 
     public void registerTransformedObject(Object original, Object transformed) {

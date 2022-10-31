@@ -8,6 +8,7 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.transform_and_execute.examples.CapacityAssignmentProblem;
+import de.wwu.mulib.transform_and_execute.examples.free_arrays.FreeArraysOfObjects;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort0;
 import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort1;
 import org.junit.jupiter.api.Test;
@@ -226,5 +227,34 @@ public class FreeArraysExec {
         }
 
         return result;
+    }
+
+    @Test
+    public void testFreeArraysOfObjects() {
+        TestUtility.getAllSolutions(
+                (mb) -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    List<Solution> result = TestUtility.getUpToNSolutions(
+                            1,
+                            "assignMaterials",
+                            FreeArraysOfObjects.class,
+                            mb,
+                            new Class[] { FreeArraysOfObjects.Truck[].class, FreeArraysOfObjects.Material[].class },
+                            new Object[] {
+                                    new FreeArraysOfObjects.Truck[] {
+                                            new FreeArraysOfObjects.Truck(5),
+                                            new FreeArraysOfObjects.Truck(3),
+                                            new FreeArraysOfObjects.Truck(2) },
+                                    new FreeArraysOfObjects.Material[] {
+                                            new FreeArraysOfObjects.Material("M0", 1),
+                                            new FreeArraysOfObjects.Material("M1", 4),
+                                            new FreeArraysOfObjects.Material("M2", 3),
+                                            new FreeArraysOfObjects.Material("M3", 1) }
+                            }
+                    );
+                    return result;
+                },
+                "FreeArraysOfObjects.assignMaterials"
+        );
     }
 }

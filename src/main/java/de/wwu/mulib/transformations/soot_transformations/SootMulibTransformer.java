@@ -1231,7 +1231,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         // Call nullCheck
         InvokeStmt nullCheckStmt = Jimple.v().newInvokeStmt(
-                Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_IDENTITY_HAVING_SUBSTITUTED_VAR_NULL_CHECK.makeRef())
+                Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_NULL_CHECK.makeRef())
         );
         upc.add(nullCheckStmt);
         //// TODO cacheIsBlocked-equivalent
@@ -1379,7 +1379,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local storeShouldBeRepresentedInSolverStaticLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
             AssignStmt storeShouldBeRepresentedInSolverStatic = Jimple.v().newAssignStmt(
                     storeShouldBeRepresentedInSolverStaticLocal,
-                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER.makeRef())
+                    Jimple.v().newStaticFieldRef(v.SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER.makeRef())
             );
             upc.add(Jimple.v().newIfStmt(Jimple.v().newEqExpr(checkFieldIdNullLocal, NullConstant.v()), storeShouldBeRepresentedInSolverStatic));
 
@@ -1475,7 +1475,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
             upc.add(Jimple.v().newAssignStmt(
                     staticGetFieldLocal,
-                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED.makeRef())
+                    Jimple.v().newStaticFieldRef(v.SF_PARTNER_CLASS_CACHE_IS_BLOCKED.makeRef())
             ));
             upc.add(Jimple.v().newAssignStmt(
                     getFieldLocal,
@@ -1514,7 +1514,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
             upc.add(Jimple.v().newAssignStmt(
                     staticGetFieldLocal,
-                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_CACHE_IS_BLOCKED.makeRef())
+                    Jimple.v().newStaticFieldRef(v.SF_PARTNER_CLASS_CACHE_IS_BLOCKED.makeRef())
             ));
             upc.add(Jimple.v().newAssignStmt(
                     getFieldLocal,
@@ -1546,7 +1546,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
             upc.add(Jimple.v().newAssignStmt(
                     staticGetFieldLocal,
-                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER.makeRef())
+                    Jimple.v().newStaticFieldRef(v.SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER.makeRef())
             ));
             upc.add(Jimple.v().newAssignStmt(
                     getFieldLocal,
@@ -1578,7 +1578,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
             upc.add(Jimple.v().newAssignStmt(
                     staticGetFieldLocal,
-                    Jimple.v().newStaticFieldRef(v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_DEFAULT_IS_SYMBOLIC.makeRef())
+                    Jimple.v().newStaticFieldRef(v.SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC.makeRef())
             ));
             upc.add(Jimple.v().newAssignStmt(
                     getFieldLocal,
@@ -1616,7 +1616,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 }
                 Local getFieldLocal = localSpawner.spawnNewStackLocal(newField.getType());
                 upc.add(Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef())));
-                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(getFieldLocal, v.SM_IDENTITY_HAVING_SUBSTITUTED_VAR_BLOCK_CACHE.makeRef())));
+                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(getFieldLocal, v.SM_PARTNER_CLASS_BLOCK_CACHE.makeRef())));
             }
 
 
@@ -1759,9 +1759,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Jimple.v().newStaticFieldRef(
                         (forShouldBeRepresentedInSolver
                                 ?
-                                v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_SHOULD_BE_REPRESENTED_IN_SOLVER
+                                v.SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER
                                 :
-                                v.SF_IDENTITY_HAVING_SUBSTITUTED_VAR_IS_REPRESENTED_IN_SOLVER
+                                v.SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER
                         ).makeRef()
                 )
         );
