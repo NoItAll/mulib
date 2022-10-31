@@ -14,7 +14,7 @@ public interface PartnerClassObjectSolverRepresentation {
     static PartnerClassObjectSolverRepresentation newInstance(
             MulibConfig mc,
             PartnerClassObjectInitializationConstraint pc,
-            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> symbolicPartnerClassObjectStates,
             int level) {
         PartnerClassObjectSolverRepresentation result;

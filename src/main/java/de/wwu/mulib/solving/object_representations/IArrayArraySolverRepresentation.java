@@ -13,7 +13,7 @@ public interface IArrayArraySolverRepresentation extends ArraySolverRepresentati
     @Override
     IArrayArraySolverRepresentation copyForNewLevel(int level);
 
-    default boolean canContainNull(IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas) {
+    default boolean canContainNull(IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas) {
         Set<Sint> relevantValues = getValuesKnownToPossiblyBeContainedInArray();
         if (relevantValues.stream().anyMatch(s -> s == Sint.ConcSint.MINUS_ONE)) {
             return true;

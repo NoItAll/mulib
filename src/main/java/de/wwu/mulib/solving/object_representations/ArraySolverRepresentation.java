@@ -15,7 +15,7 @@ public interface ArraySolverRepresentation {
     static ArraySolverRepresentation newInstance(
             MulibConfig config,
             ArrayInitializationConstraint ac,
-            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
             int level) {
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {

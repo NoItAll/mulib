@@ -102,10 +102,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
-        IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas =
+        IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
-        ArraySolverRepresentation asr = sas.getRepresentationForId(id).getNewestRepresentation();
-        return new PartnerClassObjectInformation(sas, asr);
+        IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> arep = sas.getRepresentationForId(id);
+        if (arep != null) {
+            return new PartnerClassObjectInformation(sas, arep.getNewestRepresentation());
+        } else {
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation>
+                    sps = incrementalSolverState.getSymbolicPartnerClassObjectStates();
+            IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>
+                    orep = sps.getRepresentationForId(id);
+            throw new NotYetImplementedException();
+        }
     }
 
     @Override
@@ -175,7 +183,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (ac instanceof ArrayAccessConstraint) {
                 _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
-                incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
                 // The addition of the initial elements is taken cae of in the instance of ArraySolverRepresentation
@@ -199,7 +207,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             if (ac instanceof ArrayAccessConstraint) {
                 // Solver specific treatment
                 _solverSpecificArrayConstraintTreatment((ArrayAccessConstraint) ac);
-                incrementalSolverState.addArrayConstraint((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
                 incrementalSolverState.initializeArrayRepresentation(

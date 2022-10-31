@@ -17,7 +17,7 @@ public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveVal
             ArrayInitializationConstraint aic,
             int level,
             Set<Sint> potentialIds,
-            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
             boolean containingSarrayIsCompletelyInitialized) {
         super(config, aic, level, potentialIds, symbolicArrayStates, containingSarrayIsCompletelyInitialized);
         assert aic.getValueType().isArray();
@@ -38,7 +38,7 @@ public class AliasingArrayArraySolverRepresentation extends AliasingPrimitiveVal
             result = new HashSet<>();
         }
 
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
+        for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             assert asr instanceof IArrayArraySolverRepresentation;
             result.addAll(((IArrayArraySolverRepresentation) asr).getValuesKnownToPossiblyBeContainedInArray());

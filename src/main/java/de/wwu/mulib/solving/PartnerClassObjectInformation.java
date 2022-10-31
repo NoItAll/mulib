@@ -12,9 +12,9 @@ public class PartnerClassObjectInformation {
     public final boolean canContainExplicitNull;
 
     public PartnerClassObjectInformation(
-            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> sas,
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas,
             ArraySolverRepresentation asr) {
-        // z.B. RangeExpression-Objekt: private int lowerBound; privae int upperBound;
+        //// TODO
         this.isNull = asr.getIsNull();
         this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault =
                 asr.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault();

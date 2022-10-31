@@ -18,7 +18,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
 
     protected final Sint reservedId;
     protected final Constraint metadataConstraintForPotentialIds;
-    protected final Set<IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation>> aliasedArrays;
+    protected final Set<IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation>> aliasedArrays;
     // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
     protected final boolean containingSarrayIsCompletelyInitialized;
 
@@ -27,7 +27,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             final ArrayInitializationConstraint aic,
             final int level,
             final Set<Sint> potentialIds,
-            final IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates,
+            final IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
             boolean containingSarrayIsCompletelyInitialized) {
         super(config, aic, level);
         this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
@@ -42,7 +42,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
 
     private Constraint getMetadataConstraintForPotentialIds(
             Set<Sint> potentialIds,
-            IncrementalSolverState.SymbolicArrayStates<ArraySolverRepresentation> symbolicArrayStates) {
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates) {
         Constraint metadataEqualsDependingOnId;
         boolean mustBeAbleToBeNull = false;
         if (containingSarrayIsCompletelyInitialized) {
@@ -73,7 +73,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 mustBeAbleToBeNull = true;
                 continue;
             }
-            IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar =
+            IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar =
                     symbolicArrayStates.getRepresentationForId(id);
             assert ar != null : "All Sarrays for aliasingPotentialIds must be not null!";
             aliasedArrays.add(ar);
@@ -117,7 +117,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         this.metadataConstraintForPotentialIds = apvasr.metadataConstraintForPotentialIds;
         this.containingSarrayIsCompletelyInitialized = apvasr.containingSarrayIsCompletelyInitialized;
         this.aliasedArrays = apvasr.aliasedArrays;
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : apvasr.aliasedArrays) {
+        for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : apvasr.aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             if (asr.getLevel() != level) {
                 ar.addNewRepresentation(asr.copyForNewLevel(level), level);
@@ -149,7 +149,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     );
             joinedSelectConstraint = ownConstraint;
         }
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
+        for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             Constraint partialSelectConstraint = asr.select(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, selectedValue);
             joinedSelectConstraint = And.newInstance(joinedSelectConstraint, partialSelectConstraint);
@@ -163,7 +163,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             return;
         }
 
-        for (IncrementalSolverState.ArrayRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
+        for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
