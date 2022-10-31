@@ -188,9 +188,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
         if (sarray.__mulib__shouldBeRepresentedInSolver()) {
-            if (result instanceof Sarray) {
-                assert sarray instanceof Sarray.SarraySarray;
-                representIdentityHavingSubstitutedVarIfNeeded(se, (Sarray) result, sarray.__mulib__getId());
+            if (result instanceof IdentityHavingSubstitutedVar) {
+                assert sarray instanceof Sarray.SarraySarray || sarray instanceof Sarray.PartnerClassSarray;
+                representIdentityHavingSubstitutedVarIfNeeded(se, (IdentityHavingSubstitutedVar) result, sarray.__mulib__getId());
             }
             if (!se.nextIsOnKnownPath()) {
                 result = getValueToBeRepresentedInSarray(result);
@@ -267,6 +267,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                         Map<String, Class<?>> fieldsToTypes = pc.__mulib__getFieldNameToType();
                         PartnerClassObjectInitializationConstraint c =
                                 new PartnerClassObjectInitializationConstraint(
+                                        pc.getClass(),
                                         (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId()),
                                         tryGetSymFromSbool.apply(pc.__mulib__isNull()),
                                         fieldsToTypes,
@@ -304,6 +305,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                         Map<String, Class<?>> fieldsToTypes = pc.__mulib__getFieldNameToType();
                         PartnerClassObjectInitializationConstraint c =
                                 new PartnerClassObjectInitializationConstraint(
+                                        pc.getClass(),
                                         (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId()),
                                         tryGetSymFromSbool.apply(pc.__mulib__isNull()),
                                         nextNumberInitializedSymObject,
@@ -425,6 +427,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return value;
     }
 
-    protected void additionalChecksAfterSelect(Sarray sarray, SymbolicExecution se) {};
+    protected void additionalChecksAfterSelect(Sarray sarray, SymbolicExecution se) {}
 
 }

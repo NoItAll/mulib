@@ -2072,7 +2072,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected void generateAndAddOriginalClassMethod(SootClass old, SootClass result) {
         // Create method
-        SootMethod originalClassMethod = new SootMethod("getOriginalClass", List.of(), v.TYPE_CLASS, Modifier.PUBLIC);
+        SootMethod originalClassMethod = new SootMethod(_TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), v.TYPE_CLASS, Modifier.PUBLIC);
         // Create body
         JimpleBody b = Jimple.v().newBody(originalClassMethod);
         originalClassMethod.setActiveBody(b);

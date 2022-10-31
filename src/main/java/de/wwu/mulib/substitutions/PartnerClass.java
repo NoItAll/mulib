@@ -12,7 +12,7 @@ public interface PartnerClass extends IdentityHavingSubstitutedVar {
 
     Object copy(MulibValueCopier mulibValueTransformer);
 
-    Class<?> getOriginalClass();
+    Class<?> __mulib__getOriginalClass();
 
     default Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
         throw new MulibIllegalStateException("Should not occur");

@@ -15,6 +15,7 @@ import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.AliasingPrimitiveValuedArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
+import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
@@ -148,7 +149,19 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
                 throw new NotYetImplementedException(); //// TODO
             } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
-                throw new NotYetImplementedException(); //// TODO
+                PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation =
+                        PartnerClassObjectSolverRepresentation.newInstance(
+                                config,
+                                (PartnerClassObjectInitializationConstraint) pc,
+                                incrementalSolverState.getSymbolicArrayStates(),
+                                incrementalSolverState.getSymbolicPartnerClassObjectStates(),
+                                getLevel()
+                        );
+                incrementalSolverState.initializePartnerClassObjectRepresentation(
+                        (PartnerClassObjectInitializationConstraint) pc,
+                        partnerClassObjectSolverRepresentation
+                );
+                throw new NotYetImplementedException();
             } else {
                 throw new NotYetImplementedException();
             }
@@ -472,7 +485,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     protected Object labelPartnerClassObject(PartnerClass object) {
         if (transformationRequired) {
-            Object emptyLabelObject = createEmptyLabelObject(object.getOriginalClass());
+            Object emptyLabelObject = createEmptyLabelObject(object.__mulib__getOriginalClass());
             searchSpaceRepresentationToLabelObject.put(object, emptyLabelObject);
             Object result = object.label(
                     emptyLabelObject,

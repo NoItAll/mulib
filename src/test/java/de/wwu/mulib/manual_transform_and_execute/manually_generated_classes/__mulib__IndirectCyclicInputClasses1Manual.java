@@ -39,7 +39,7 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
         return __mulib__originalObject;
     }
 
-    public Class getOriginalClass() {
+    public Class __mulib__getOriginalClass() {
         return IndirectCyclicInputClasses1Manual.class;
     }
 

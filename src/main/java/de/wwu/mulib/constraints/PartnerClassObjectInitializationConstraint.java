@@ -26,6 +26,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     }
 
     private final Type type;
+    private final Class<?> clazz;
     private final Sint partnerClassObjectId;
     private final Sint reservedId;
     // If is not null: Contains all those array-ids which arrayId can equal to
@@ -37,6 +38,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     private final boolean defaultIsSymbolic;
 
     private PartnerClassObjectInitializationConstraint(
+            Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
             Set<Sint> potentialIds,
@@ -46,9 +48,10 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         assert potentialIds == null || containingSarraySarrayId == null;
-        assert initialGetfields != null;
+        assert initialGetfields != null && clazz != null;
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getType() == PartnerClassObjectFieldAccessConstraint.Type.GETFIELD);
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getPartnerClassObjectId() == partnerClassObjectId);
+        this.clazz = clazz;
         this.initialGetfields = initialGetfields;
         if (potentialIds == null && containingSarraySarrayId == null) {
             this.type = Type.SIMPLE_PARTNER_CLASS_OBJECT;
@@ -67,22 +70,24 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     }
 
     /**
-     * Constructor for symbolically representing a usual array
+     * Constructor for symbolically representing a usual partner class object
      */
     public PartnerClassObjectInitializationConstraint(
+            Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(partnerClassObjectId, isNull, null, null, null, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, null, null, null, fieldTypes, initialGetfields,
                 defaultIsSymbolic);
     }
 
     /**
-     * Constructor for symbolically representing an array contained in an array of arrays
+     * Constructor for symbolically representing a partner class object contained in an array of partner class objects
      */
     public PartnerClassObjectInitializationConstraint(
+            Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
             Sint reservedId,
@@ -90,22 +95,27 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(partnerClassObjectId, isNull, null, reservedId, containingSarraySarrayId, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingSarraySarrayId, fieldTypes, initialGetfields,
                 defaultIsSymbolic);
     }
 
     /**
-     * Constructor for symbolically representing an array using aliasing
+     * Constructor for symbolically representing a partner class object using aliasing
      */
     public PartnerClassObjectInitializationConstraint(
+            Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
             Set<Sint> potentialIds,
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(partnerClassObjectId, isNull, potentialIds, null, null, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, potentialIds, null, null, fieldTypes, initialGetfields,
                 defaultIsSymbolic);
+    }
+
+    public Class<?> getClazz() {
+        return clazz;
     }
 
     public Type getType() {

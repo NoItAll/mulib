@@ -3,10 +3,7 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -36,8 +33,9 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
         this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
+        assert reservedId instanceof ConcSnumber;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
-        this.aliasedArrays = new HashSet<>();
+        this.aliasedArrays = new HashSet<>(); // Is filled in getMetadataConstraintForPotentialIds
         this.metadataConstraintForPotentialIds =
                 getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
     }
