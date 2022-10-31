@@ -68,7 +68,6 @@ public class MulibValueCopier {
 
         if (o instanceof Sarray) {
             result = ((Sarray<?>) o).copy(this);
-            registerCopy(o, result);
             return result;
         }
         BiFunction<MulibValueCopier, Object, Object> copier = classesToCopyFunction.get(o.getClass());
