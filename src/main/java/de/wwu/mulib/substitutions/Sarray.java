@@ -1,9 +1,11 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.IdentityHavingSubstitutedVarInformation;
+import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -13,7 +15,7 @@ import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class Sarray<T extends SubstitutedVar> implements IdentityHavingSubstitutedVar {
+public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
     // representationState encodes several states that are important when representing an Array as a constraint or
     // when interacting with the constraint solver. Each bit represents one possible state.
     private byte representationState;
@@ -245,6 +247,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         return isNull;
     }
 
+    @Override
+    public Object label(Object o, SolverManager solverManager) {
+        throw new MulibIllegalStateException("Should not occur");
+    }
+
     @SuppressWarnings("rawtypes")
     public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
         if (!(sarray instanceof Sarray.SarraySarray)) {
@@ -333,6 +340,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public SintSarray copy(MulibValueCopier mvt) {
             return new SintSarray(mvt, this);
         }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return int[].class;
+        }
     }
 
     public static class SdoubleSarray extends Sarray<Sdouble> {
@@ -375,6 +387,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         @Override
         public SdoubleSarray copy(MulibValueCopier mvt) {
             return new SdoubleSarray(mvt, this);
+        }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return double[].class;
         }
     }
 
@@ -419,6 +436,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public SfloatSarray copy(MulibValueCopier mvt) {
             return new SfloatSarray(mvt, this);
         }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return float[].class;
+        }
     }
 
     public static class SlongSarray extends Sarray<Slong> {
@@ -461,6 +483,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         @Override
         public SlongSarray copy(MulibValueCopier mvt) {
             return new SlongSarray(mvt, this);
+        }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return long[].class;
         }
     }
 
@@ -505,6 +532,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public SshortSarray copy(MulibValueCopier mvt) {
             return new SshortSarray(mvt, this);
         }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return short[].class;
+        }
     }
 
     public static class SbyteSarray extends Sarray<Sbyte> {
@@ -547,6 +579,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         @Override
         public SbyteSarray copy(MulibValueCopier mvt) {
             return new SbyteSarray(mvt, this);
+        }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return byte[].class;
         }
     }
 
@@ -591,6 +628,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public SboolSarray copy(MulibValueCopier mvt) {
             return new SboolSarray(mvt, this);
         }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return boolean[].class;
+        }
     }
 
     public static class PartnerClassSarray<T extends PartnerClass> extends Sarray<T> {
@@ -606,20 +648,43 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             super(clazz, len, se, defaultIsSymbolic, isNull);
         }
 
+        /**
+         * New instance constructor for SarraySarray
+         */
+        protected PartnerClassSarray(
+                Class<T> clazz,
+                Sint len,
+                SymbolicExecution se,
+                boolean defaultIsSymbolic,
+                Sbool isNull,
+                boolean initializeImmediately) {
+            super(clazz, len, se, defaultIsSymbolic, isNull, initializeImmediately);
+        }
+
+        /**
+         * Copy constructor for SarraySarray
+         */
+        protected PartnerClassSarray(
+                MulibValueCopier mvt,
+                Sarray<T> s,
+                Map<Sint, T> elements) {
+            super(mvt, s, elements);
+        }
+
         /** Copy constructor */
         public PartnerClassSarray(MulibValueCopier mvt, PartnerClassSarray<T> s) {
             super(mvt, s);
         }
 
         @Override
-        public final T select(Sint i, SymbolicExecution se) {
+        public T select(Sint i, SymbolicExecution se) {
             T result = (T) se.select(this, i);
             assert result == null || getClazz().isAssignableFrom(result.getClass());
             return result;
         }
 
         @Override
-        public final void store(Sint i, T val, SymbolicExecution se) {
+        public void store(Sint i, T val, SymbolicExecution se) {
             se.store(this, i, val);
         }
 
@@ -637,10 +702,15 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
         public PartnerClassSarray<T> copy(MulibValueCopier mvt) {
             return new PartnerClassSarray<>(mvt, this);
         }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            throw new NotYetImplementedException();
+        }
     }
 
     @SuppressWarnings("rawtypes")
-    public static class SarraySarray extends Sarray<Sarray> {
+    public static class SarraySarray extends PartnerClassSarray<Sarray> {
 
         private final int dim;
         // The type of element stored in the array, but represented as a real array, e.g.: Sint[], Sdouble[][], etc.
@@ -759,11 +829,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 );
             }
             assert lengths.length == 1;
-            return generateNonSarraySarray(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
+            return generateNonSarraySarrayWithDefaultIsNull(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
         }
 
         @SuppressWarnings("unchecked")
-        private static Sarray generateNonSarraySarray(boolean canBeNull, Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+        private static Sarray generateNonSarraySarrayWithDefaultIsNull(boolean canBeNull, Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
             assert !innermostType.isArray();
             assert Sprimitive.class.isAssignableFrom(innermostType)
                     || PartnerClass.class.isAssignableFrom(innermostType);
@@ -798,7 +868,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             }
         }
 
-        private static Sarray generateNonSarraySarray(Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+        private static Sarray generateNonSarraySarrayWithDefaultIsNull(Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
             assert !innermostType.isArray();
             assert Sprimitive.class.isAssignableFrom(innermostType)
                     || PartnerClass.class.isAssignableFrom(innermostType);
@@ -860,7 +930,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                         canBeNull
                 );
             } else {
-                result = generateNonSarraySarray(
+                result = generateNonSarraySarrayWithDefaultIsNull(
                         canBeNull,
                         se.symSint(),
                         elementType.getComponentType(),
@@ -882,7 +952,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
             if (elementsAreSarraySarrays()) {
                 result = se.sarraySarray(se.symSint(), elementType.getComponentType(), true);
             } else {
-                result = generateNonSarraySarray(se.symSint(), elementType.getComponentType(), true, se);
+                result = generateNonSarraySarrayWithDefaultIsNull(se.symSint(), elementType.getComponentType(), true, se);
             }
             return result;
         }
@@ -961,6 +1031,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements IdentityHaving
                 // Cache is cleared after representing each element in CalculationFactory. This is done in setAsRepresentedInSolver
                 val.__mulib__blockCache();
             }
+        }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            throw new NotYetImplementedException();
         }
     }
 

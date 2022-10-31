@@ -8,7 +8,6 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -107,7 +106,7 @@ public final class MulibContext {
                         }
                     } else {
                         // Is null, Sarray, or PartnerClass
-                        assert arg == null || arg instanceof PartnerClass || arg instanceof Sarray;
+                        assert arg == null || arg instanceof PartnerClass;
                         newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
                     }
                     replacedMap.put(arg, newArg);

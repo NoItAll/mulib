@@ -7,7 +7,6 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.AssignConcolicLabelEnabledValueFactory;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -55,10 +54,6 @@ public class MulibValueCopier {
     public Object copyNonSprimitive(Object o) {
         if (o == null) {
             return null;
-        } else if (o instanceof PartnerClass) {
-            // TODO Currently, we register copies in the copy-constructor to avoid reflection. This can be optimized
-            //  e.g. via a lambda with a constructor passed as an argument
-            return ((PartnerClass) o).copy(this);
         }
 
         Object result;
@@ -66,8 +61,8 @@ public class MulibValueCopier {
             return result;
         }
 
-        if (o instanceof Sarray) {
-            result = ((Sarray<?>) o).copy(this);
+        if (o instanceof PartnerClass) {
+            result = ((PartnerClass) o).copy(this);
             return result;
         }
         BiFunction<MulibValueCopier, Object, Object> copier = classesToCopyFunction.get(o.getClass());
