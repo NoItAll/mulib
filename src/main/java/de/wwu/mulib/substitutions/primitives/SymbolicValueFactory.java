@@ -2,10 +2,8 @@ package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.PartnerClass;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -40,11 +38,6 @@ public class SymbolicValueFactory extends AbstractValueFactory {
 
     public static SymbolicValueFactory getInstance(MulibConfig config) {
         return new SymbolicValueFactory(config);
-    }
-
-    @Override
-    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
-        throw new NotYetImplementedException();
     }
 
     @Override

@@ -131,6 +131,7 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
     public final SootField SF_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootField SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
+    public final SootField SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED;
 
     /* SPECIAL METHODS */
     // Unwrap methods
@@ -507,6 +508,7 @@ public class SootMulibClassesAndMethods {
         SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getField("IS_REPRESENTED_IN_SOLVER", TYPE_BYTE);
         SF_PARTNER_CLASS_CACHE_IS_BLOCKED                 = SC_PARTNER_CLASS.getField("CACHE_IS_BLOCKED", TYPE_BYTE);
         SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getField("DEFAULT_IS_SYMBOLIC", TYPE_BYTE);
+        SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED            = SC_PARTNER_CLASS.getField("IS_LAZILY_INITIALIZED", TYPE_BYTE);
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);

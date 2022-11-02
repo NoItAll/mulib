@@ -4,11 +4,9 @@ import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.PartnerClass;
 
 import java.util.function.Function;
 
@@ -266,10 +264,5 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 o -> concSfloat((Float) o),
                 Sfloat::newExpressionSymbolicSfloat
         );
-    }
-
-    @Override
-    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
-        throw new NotYetImplementedException();
     }
 }

@@ -204,7 +204,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                 result,
                                 ArrayAccessConstraint.Type.SELECT
                         );
-                se.addNewIdentitiyHavingSubstitutedVarConstraint(selectConstraint);
+                se.addNewPartnerClassObjectConstraint(selectConstraint);
             }
         }
     }
@@ -232,7 +232,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
         assert !(ihsr instanceof Sarray) || ((Sarray) ihsr).getCachedIndices().stream().noneMatch(i -> i instanceof Sym)
                 : "The Sarray should have already been represented in the constraint system";
-
+        // Already set this so that we do not have any issues with circular dependencies
+        ihsr.__mulib__setAsRepresentedInSolver();
         if (ihsr instanceof Sarray.PartnerClassSarray) {
             for (Object objectEntry : ((Sarray) ihsr).getCachedElements()) {
                 if (objectEntry == null) {
@@ -240,9 +241,13 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 }
                 PartnerClass entry = (PartnerClass) objectEntry;
                 if (!entry.__mulib__isRepresentedInSolver()) {
-                    assert !entry.__mulib__shouldBeRepresentedInSolver(); //// TODO Might break in case of circular dependencies among objects that are to be represented symbolically
+                    assert !entry.__mulib__shouldBeRepresentedInSolver();
                     entry.__mulib__prepareToRepresentSymbolically(se);
                     representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId());
+                }
+                if (entry instanceof Sarray) {
+                    assert entry.__mulib__cacheIsBlocked();
+                    ((Sarray<?>) entry).clearCache();
                 }
             }
         }
@@ -250,77 +255,67 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // Represent array OR partnerclass object in constraint solver, if needed
         if (idOfContainingSarraySarray == null || ihsr.__mulib__getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
-            if (!ihsr.__mulib__isRepresentedInSolver()) {
-                if (!se.nextIsOnKnownPath()) {
-                    if (ihsr instanceof Sarray) {
-                        Sarray sarray = (Sarray) ihsr;
-                        ArrayConstraint arrayInitializationConstraint = new ArrayInitializationConstraint(
-                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
-                                (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                                tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
-                                sarray.getElementType(),
-                                collectInitialArrayAccessConstraints(sarray, se),
-                                sarray.__mulib__defaultIsSymbolic()
-                        );
-                        se.addNewIdentitiyHavingSubstitutedVarConstraint(arrayInitializationConstraint);
-                    } else {
-                        assert ihsr instanceof PartnerClass;
-                        PartnerClass pc = (PartnerClass) ihsr;
-                        assert pc.__mulib__getId() != null;
-                        Map<String, Class<?>> fieldsToTypes = pc.__mulib__getFieldNameToType();
-                        PartnerClassObjectInitializationConstraint c =
-                                new PartnerClassObjectInitializationConstraint(
-                                        pc.getClass(),
-                                        (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId()),
-                                        tryGetSymFromSbool.apply(pc.__mulib__isNull()),
-                                        fieldsToTypes,
-                                        collectInitialPartnerClassObjectFieldConstraints(pc, se),
-                                        pc.__mulib__defaultIsSymbolic()
-                                );
-                        se.addNewIdentitiyHavingSubstitutedVarConstraint(c);
-                    }
+            if (!se.nextIsOnKnownPath()) {
+                if (ihsr instanceof Sarray) {
+                    Sarray sarray = (Sarray) ihsr;
+                    ArrayConstraint arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.__mulib__defaultIsSymbolic()
+                    );
+                    se.addNewPartnerClassObjectConstraint(arrayInitializationConstraint);
+                } else {
+                    assert ihsr.__mulib__getId() != null;
+                    Map<String, Class<?>> fieldsToTypes = ihsr.__mulib__getFieldNameToType();
+                    PartnerClassObjectInitializationConstraint c =
+                            new PartnerClassObjectInitializationConstraint(
+                                    ihsr.getClass(),
+                                    (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
+                                    tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
+                                    fieldsToTypes,
+                                    collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
+                                    ihsr.__mulib__defaultIsSymbolic()
+                            );
+                    se.addNewPartnerClassObjectConstraint(c);
                 }
-                ihsr.__mulib__setAsRepresentedInSolver();
             }
         } else {
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
             Sint nextNumberInitializedSymObject = se.concSint(se.getNextNumberInitializedSymObject());
-            if (!ihsr.__mulib__isRepresentedInSolver()) {
-                if (!se.nextIsOnKnownPath()) {
-                    if (ihsr instanceof Sarray) {
-                        Sarray sarray = (Sarray) ihsr;
-                        ArrayConstraint arrayInitializationConstraint = new ArrayInitializationConstraint(
-                                (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
-                                (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
-                                tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
-                                // Id reserved for this Sarray, if needed
-                                nextNumberInitializedSymObject,
-                                (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
-                                sarray.getElementType(),
-                                collectInitialArrayAccessConstraints(sarray, se),
-                                sarray.__mulib__defaultIsSymbolic()
-                        );
-                        se.addNewIdentitiyHavingSubstitutedVarConstraint(arrayInitializationConstraint);
-                    } else {
-                        assert ihsr instanceof PartnerClass;
-                        PartnerClass pc = (PartnerClass) ihsr;
-                        assert pc.__mulib__getId() != null;
-                        Map<String, Class<?>> fieldsToTypes = pc.__mulib__getFieldNameToType();
-                        PartnerClassObjectInitializationConstraint c =
-                                new PartnerClassObjectInitializationConstraint(
-                                        pc.getClass(),
-                                        (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId()),
-                                        tryGetSymFromSbool.apply(pc.__mulib__isNull()),
-                                        nextNumberInitializedSymObject,
-                                        (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
-                                        fieldsToTypes,
-                                        collectInitialPartnerClassObjectFieldConstraints(pc, se),
-                                        pc.__mulib__defaultIsSymbolic()
-                                );
-                        se.addNewIdentitiyHavingSubstitutedVarConstraint(c);
-                    }
+            if (!se.nextIsOnKnownPath()) {
+                if (ihsr instanceof Sarray) {
+                    Sarray sarray = (Sarray) ihsr;
+                    ArrayConstraint arrayInitializationConstraint = new ArrayInitializationConstraint(
+                            (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
+                            (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
+                            tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
+                            // Id reserved for this Sarray, if needed
+                            nextNumberInitializedSymObject,
+                            (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
+                            sarray.getElementType(),
+                            collectInitialArrayAccessConstraints(sarray, se),
+                            sarray.__mulib__defaultIsSymbolic()
+                    );
+                    se.addNewPartnerClassObjectConstraint(arrayInitializationConstraint);
+                } else {
+                    assert ihsr.__mulib__getId() != null;
+                    Map<String, Class<?>> fieldsToTypes = ihsr.__mulib__getFieldNameToType();
+                    PartnerClassObjectInitializationConstraint c =
+                            new PartnerClassObjectInitializationConstraint(
+                                    ihsr.getClass(),
+                                    (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
+                                    tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
+                                    nextNumberInitializedSymObject,
+                                    (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
+                                    fieldsToTypes,
+                                    collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
+                                    ihsr.__mulib__defaultIsSymbolic()
+                            );
+                    se.addNewPartnerClassObjectConstraint(c);
                 }
-                ihsr.__mulib__setAsRepresentedInSolver();
             }
         }
     }
@@ -360,7 +355,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     private ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
-        assert !se.nextIsOnKnownPath() && sarray.__mulib__shouldBeRepresentedInSolver() && !sarray.__mulib__isRepresentedInSolver();
+        assert !se.nextIsOnKnownPath() && sarray.__mulib__shouldBeRepresentedInSolver();
         Set<Sint> cachedIndices = sarray.getCachedIndices();
         assert cachedIndices.stream().noneMatch(i -> i instanceof Sym) : "The Sarray should have already been represented in the constraint system";
 
@@ -422,7 +417,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                 inner,
                                 ArrayAccessConstraint.Type.STORE
                         );
-                se.addNewIdentitiyHavingSubstitutedVarConstraint(storeConstraint);
+                se.addNewPartnerClassObjectConstraint(storeConstraint);
             }
         }
         sarray.setInCacheForIndexForStore(index, value);

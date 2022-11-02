@@ -11,9 +11,16 @@ import java.util.Map;
 
 public interface PartnerClass extends SubstitutedVar {
 
+    byte NOT_YET_REPRESENTED_IN_SOLVER = 0;
+    byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
+    byte IS_REPRESENTED_IN_SOLVER = 2;
+    byte CACHE_IS_BLOCKED = 4;
+    byte IS_LAZILY_INITIALIZED = 8;
+    byte DEFAULT_IS_SYMBOLIC = 16;
+
     Object label(Object originalContainer, SolverManager solverManager);
 
-    Object copy(MulibValueCopier mulibValueTransformer);
+    Object copy(MulibValueCopier mulibValueCopier);
 
     Class<?> __mulib__getOriginalClass();
 
@@ -24,12 +31,6 @@ public interface PartnerClass extends SubstitutedVar {
     default Map<String, Class<?>> __mulib__getFieldNameToType() {
         throw new MulibIllegalStateException("Should not occur");
     }
-
-    byte NOT_YET_REPRESENTED_IN_SOLVER = 0;
-    byte SHOULD_BE_REPRESENTED_IN_SOLVER = 1;
-    byte IS_REPRESENTED_IN_SOLVER = 2;
-    byte CACHE_IS_BLOCKED = 4;
-    byte DEFAULT_IS_SYMBOLIC = 16;
 
     default Sint __mulib__getId() {
         throw new MulibIllegalStateException("Must not occur");
@@ -90,4 +91,13 @@ public interface PartnerClass extends SubstitutedVar {
     default void __mulib__blockCache() {
         throw new MulibIllegalStateException("Must not occur");
     }
+
+    default boolean __mulib__isLazilyInitialized() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default void __mulib__setAsLazilyInitialized() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
 }

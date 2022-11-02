@@ -93,6 +93,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // Replace GETFIELD and PUTFIELD
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 replaceGetFieldsAndPutFieldsWithGeneratedMethods(getClassNodeForName(entry.getKey()), entry.getValue());
+                generateNullChecksForMethods(getClassNodeForName(entry.getKey()), entry.getValue());
             }
 
 
@@ -259,17 +260,19 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // Method for generating the id-, representationState-, and isNull-field
             decideOnGenerateIdAndStateAndIsNullFieldAndMethods(originalCn, result);
             // Replace GETFIELD and PUTFIELD with methods to add additional logic. Generate those methods here
-            generateAccessorAndSetterMethodsForFields(originalCn, result);
+            generateAccessorAndSetterMethodsForFieldsAndDiscardIsFinal(originalCn, result);
+            ensureInitializedLibraryTypeFieldsInConstructors(result);
         }
-        ensureInitializedLibraryTypeFieldsInConstructors(result);
 
 
         return result;
     }
 
+    protected abstract void generateNullChecksForMethods(T old, T result);
+
     protected abstract void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(T old, T result);
 
-    protected abstract void generateAccessorAndSetterMethodsForFields(T old, T result);
+    protected abstract void generateAccessorAndSetterMethodsForFieldsAndDiscardIsFinal(T old, T result);
 
     protected abstract void replaceGetFieldsAndPutFieldsWithGeneratedMethods(T old, T result);
 

@@ -22,7 +22,11 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         /**
          * The PartnerClassObject was initialized when accessing an element in a free array.
          */
-        PARTNER_CLASS_OBJECT_IN_SARRAY
+        PARTNER_CLASS_OBJECT_IN_SARRAY,
+        /**
+         * The PartnerClassObject was initialized when accessing a field of a free object
+         */
+        PARTNER_CLASS_OBJECT_IN_PARTNER_CLASS_OBJECT
     }
 
     private final Type type;
@@ -32,10 +36,13 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     // If is not null: Contains all those array-ids which arrayId can equal to
     private final Set<Sint> potentialIds;
     private final PartnerClassObjectFieldAccessConstraint[] initialGetfields;
-    private final Sint containingSarraySarrayId;
+    // Either the ID of the partner class object or the SarraySarray containing this
+    private final Sint containingPartnerClassObjectId;
     private final Sbool isNull;
     private final Map<String, Class<?>> fieldTypes;
     private final boolean defaultIsSymbolic;
+    // Only set if type == SARRAY_IN_PARTNER_CLASS_OBJECT
+    private final String fieldName;
 
     private PartnerClassObjectInitializationConstraint(
             Class<?> clazz,
@@ -43,17 +50,18 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sbool isNull,
             Set<Sint> potentialIds,
             Sint reservedId,
-            Sint containingSarraySarrayId,
+            Sint containingPartnerClassObjectId,
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
-            boolean defaultIsSymbolic) {
-        assert potentialIds == null || containingSarraySarrayId == null;
+            boolean defaultIsSymbolic,
+            String fieldName) {
+        assert potentialIds == null || containingPartnerClassObjectId == null;
         assert initialGetfields != null && clazz != null;
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getType() == PartnerClassObjectFieldAccessConstraint.Type.GETFIELD);
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getPartnerClassObjectId() == partnerClassObjectId);
         this.clazz = clazz;
         this.initialGetfields = initialGetfields;
-        if (potentialIds == null && containingSarraySarrayId == null) {
+        if (potentialIds == null && containingPartnerClassObjectId == null) {
             this.type = Type.SIMPLE_PARTNER_CLASS_OBJECT;
         } else if (potentialIds == null) {
             this.type = Type.PARTNER_CLASS_OBJECT_IN_SARRAY;
@@ -63,10 +71,11 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         this.partnerClassObjectId = partnerClassObjectId;
         this.reservedId = reservedId;
         this.potentialIds = potentialIds;
-        this.containingSarraySarrayId = containingSarraySarrayId;
+        this.containingPartnerClassObjectId = containingPartnerClassObjectId;
         this.isNull = isNull;
         this.fieldTypes = fieldTypes;
         this.defaultIsSymbolic = defaultIsSymbolic;
+        this.fieldName = fieldName;
     }
 
     /**
@@ -80,7 +89,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, null, null, null, fieldTypes, initialGetfields,
-                defaultIsSymbolic);
+                defaultIsSymbolic, null);
     }
 
     /**
@@ -91,12 +100,12 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint partnerClassObjectId,
             Sbool isNull,
             Sint reservedId,
-            Sint containingSarraySarrayId,
+            Sint containingPartnerClassObjectId,
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingSarraySarrayId, fieldTypes, initialGetfields,
-                defaultIsSymbolic);
+        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
+                defaultIsSymbolic, null);
     }
 
     /**
@@ -111,7 +120,30 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             PartnerClassObjectFieldAccessConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, potentialIds, null, null, fieldTypes, initialGetfields,
-                defaultIsSymbolic);
+                defaultIsSymbolic, null);
+    }
+
+    /**
+     * Constructor for symbolically representing an array symbolically generated by accessing a
+     * partner class object's field
+     */
+    public PartnerClassObjectInitializationConstraint(
+            Class<?> clazz,
+            Sint partnerClassObjectId,
+            Sbool isNull,
+            Sint reservedId,
+            Sint containingPartnerClassObjectId,
+            String fieldName,
+            Map<String, Class<?>> fieldTypes,
+            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            boolean defaultIsSymbolic) {
+        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
+                defaultIsSymbolic, null);
+    }
+
+
+    public String getFieldName() {
+        return fieldName;
     }
 
     public Class<?> getClazz() {
@@ -139,8 +171,8 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         return initialGetfields;
     }
 
-    public Sint getContainingSarraySarrayId() {
-        return containingSarraySarrayId;
+    public Sint getContainingPartnerClassObjectId() {
+        return containingPartnerClassObjectId;
     }
 
     public Sbool getIsNull() {

@@ -147,7 +147,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         representationState |= CACHE_IS_BLOCKED;
     }
 
-    protected boolean isCacheBlocked() {
+    @Override
+    public boolean __mulib__cacheIsBlocked() {
         return (representationState & CACHE_IS_BLOCKED) != 0;
     }
 
@@ -212,6 +213,16 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         this.isNull = Sbool.ConcSbool.FALSE;
     }
 
+    @Override
+    public boolean __mulib__isLazilyInitialized() {
+        return (representationState & IS_LAZILY_INITIALIZED) != 0;
+    }
+
+    @Override
+    public void __mulib__setAsLazilyInitialized() {
+        representationState |= IS_LAZILY_INITIALIZED;
+    }
+
     public final Sint getLength() {
         __mulib__nullCheck();
         return len;
@@ -226,13 +237,13 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
     }
 
     public void setInCacheForIndexForSelect(Sint index, T value) {
-        if (!isCacheBlocked()) {
+        if (!__mulib__cacheIsBlocked()) {
             cachedElements.put(index, value);
         }
     }
 
     public void setInCacheForIndexForStore(Sint index, T value) {
-        if (!isCacheBlocked()) {
+        if (!__mulib__cacheIsBlocked()) {
             cachedElements.put(index, value);
         }
     }
@@ -984,19 +995,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         }
 
         @Override
-        public void __mulib__setAsRepresentedInSolver() {
-            super.__mulib__setAsRepresentedInSolver();
-            for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
-                Sarray val = entry.getValue();
-                if (val == null) {
-                    continue;
-                }
-                assert val.__mulib__isRepresentedInSolver();
-                val.clearCache();
-            }
-        }
-
-        @Override
         public void clearCache() {
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();
@@ -1010,14 +1008,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
         @Override
         public void setInCacheForIndexForSelect(Sint index, Sarray value) {
-            if (!isCacheBlocked()) {
-                cachedElements.put(index, value);
-            }
-        }
-
-        @Override
-        public void setInCacheForIndexForStore(Sint index, Sarray value) {
-            if (!isCacheBlocked()) {
+            if (!__mulib__cacheIsBlocked()) {
                 cachedElements.put(index, value);
             }
         }

@@ -201,7 +201,7 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewConstraint(c);
     }
 
-    public void addNewIdentitiyHavingSubstitutedVarConstraint(PartnerClassObjectConstraint ic) {
+    public void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
         assert !nextIsOnKnownPath();
         mulibExecutor.addNewPartnerClassObjectConstraint(ic);
     }

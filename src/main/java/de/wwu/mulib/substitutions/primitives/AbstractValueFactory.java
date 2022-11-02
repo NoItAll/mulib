@@ -170,6 +170,12 @@ public abstract class AbstractValueFactory implements ValueFactory {
         return new Sarray.SarraySarray(lengths, se, clazz);
     }
 
+    @Override
+    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
+        // Completely free
+        return symObject(se, toGetInstanceOf, null, null);
+    }
+
     private void restrictLength(SymbolicExecution se, Sint len) {
         if (len instanceof ConcSnumber) {
             if (((ConcSnumber) len).intVal() < 0) {
