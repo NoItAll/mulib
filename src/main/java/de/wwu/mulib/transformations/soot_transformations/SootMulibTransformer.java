@@ -2694,7 +2694,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 // Is free object
                 Type transformedType = transformType(typeOfClass);
                 invokeArgs.add(ClassConstant.fromType(transformedType));
-                frameworkMethod = named ? v.SM_SE_SYM_OBJECT : v.SM_SE_NAMED_PARTNER_CLASSSARRAY;
+                frameworkMethod = named ? v.SM_SE_NAMED_SYM_OBJECT : v.SM_SE_SYM_OBJECT;
             }
             if (isSarray) {
                 invokeArgs.add(IntConstant.v(1)); // Default is symbolic!
@@ -3307,7 +3307,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             used = v.SM_SINT_I2B.makeRef();
                         } else if (isShortOrSshort(castTo)) {
                             used = v.SM_SINT_I2S.makeRef();
-                        } else if (isIntOrSint(castTo)) { // TODO Also see CMP, a byte is generated there...
+                        } else if (isIntOrSint(castTo)) {
                             // To preserve other units using var, we simply assign it
                             AssignStmt newAssignStmt = Jimple.v().newAssignStmt(var, ((CastExpr) value).getOp());
                             a.redirectJumpsToThisTo(newAssignStmt);

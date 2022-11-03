@@ -112,21 +112,7 @@ public class TaintAnalyzer {
         // Add taint of special Mulib-indicator methods
         for (Stmt s : methodCallsToPotentiallyTaint) {
             if (isSpecialMulibIndicatorMethod(s)) {
-                if (!(s.getInvokeExpr().getMethodRef().getReturnType() instanceof RefType)) {
-                    addTainted(s);
-                } else {
-                    Value classArg;
-                    if (s.getInvokeExpr().getMethodRef().getName().equals("freeObject")) {// && ((ClassConstant) s.getInvokeExpr().getArg(0)).toSootType() instanceof ArrayType) {
-                        classArg = s.getInvokeExpr().getArg(0);
-                    } else if (s.getInvokeExpr().getMethodRef().getName().equals("namedFreeObject")) {
-                        classArg = s.getInvokeExpr().getArg(1);
-                    } else {
-                        continue;
-                    }
-                    if (classArg instanceof ArrayType || valueHolderToClassConstantType.get(classArg) instanceof ArrayType) {
-                        addTainted(s);
-                    }
-                }
+                addTainted(s);
             } else if (isToTransformMethodCallStmt(s)) {
                 InvokeExpr invokeExpr;
                 if (s instanceof AssignStmt) {
