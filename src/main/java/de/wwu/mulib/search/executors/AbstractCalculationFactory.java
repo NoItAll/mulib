@@ -3,6 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -196,12 +197,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 representPartnerClassObjectIfNeeded(se, (PartnerClass) result, sarray.__mulib__getId());
             }
             if (!se.nextIsOnKnownPath()) {
-                result = getValueToBeRepresentedInSarray(result);
+                Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(result);
                 ArrayConstraint selectConstraint =
                         new ArrayAccessConstraint(
                                 (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                                 (Sint) tryGetSymFromSnumber.apply(index),
-                                result,
+                                val,
                                 ArrayAccessConstraint.Type.SELECT
                         );
                 se.addNewPartnerClassObjectConstraint(selectConstraint);
@@ -209,7 +210,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
     }
 
-    protected abstract SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value);
+    protected abstract Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value);
 
     private void representPartnerClassObjectViaConstraintsIfNeeded(SymbolicExecution se, PartnerClass ihsv, Sint newIndex) {
         representPartnerClassObjectViaConstraintsIfNeeded(se, ihsv, newIndex instanceof Sym);
@@ -222,9 +223,45 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
+    public SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field) {
+        assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
+        assert pco.__mulib__isRepresentedInSolver();
+        throw new NotYetImplementedException(); ///// TODO efficiently get value
+    }
+
+    @Override
+    public SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value) {
+        assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
+        assert pco.__mulib__isRepresentedInSolver();
+        assert !(pco instanceof Sarray);
+        if (!se.nextIsOnKnownPath()) {
+            if (value instanceof PartnerClass) {
+                if (!((PartnerClass) value).__mulib__shouldBeRepresentedInSolver()) {
+                    //// TODO if pco has symbolic index, this value should also have a symbolic index, else not
+                    throw new NotYetImplementedException();
+                }
+                representPartnerClassObjectIfNeeded(se, (PartnerClass) value, pco.__mulib__getId(), field);
+            }
+            Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
+            se.addNewPartnerClassObjectConstraint(
+                    new PartnerClassObjectFieldConstraint(
+                            (Sint) tryGetSymFromSnumber.apply(pco.__mulib__getId()),
+                            field,
+                            val,
+                            PartnerClassObjectFieldConstraint.Type.PUTFIELD
+                    )
+            );
+        }
+        return value;
+    }
+
+    @Override
     public void initializeLazyFields(SymbolicExecution se, PartnerClass pco) {
         assert pco.__mulib__defaultIsSymbolic();
         assert !pco.__mulib__isLazilyInitialized();
+        if (pco.__mulib__isRepresentedInSolver()) {
+            throw new NotYetImplementedException(); //// TODO
+        }
         pco.__mulib__initializeLazyFields(se);
         pco.__mulib__setAsLazilyInitialized();
     }
@@ -253,7 +290,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 if (!entry.__mulib__isRepresentedInSolver()) {
                     assert !entry.__mulib__shouldBeRepresentedInSolver();
                     entry.__mulib__prepareToRepresentSymbolically(se); // TODO For aliasing, check here
-                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), fieldName);
+                    // Is a Sarray, i.e., we do not have a field here
+                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), null);
                 }
                 if (entry instanceof Sarray) {
                     assert entry.__mulib__cacheIsBlocked();
@@ -262,7 +300,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
         } else if (!(ihsr instanceof Sarray)) {
             // We must not initialize the fields, if they have not already been initialized
-            if (!ihsr.__mulib__defaultIsSymbolic() || (ihsr.__mulib__defaultIsSymbolic() && ihsr.__mulib__isLazilyInitialized())) {
+            if (!ihsr.__mulib__defaultIsSymbolic() || (ihsr.__mulib__defaultIsSymbolic() && ihsr.__mulib__isLazilyInitialized())) { //// TODO own method for this? should probably also be called in putField etc.
                 Map<String, SubstitutedVar> fieldValues = ihsr.__mulib__getFieldNameToSubstitutedVar();
                 for (Map.Entry<String, SubstitutedVar> entry : fieldValues.entrySet()) {
                     SubstitutedVar val = entry.getValue();
@@ -276,7 +314,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     }
                     PartnerClass pc = (PartnerClass) val;
                     pc.__mulib__prepareToRepresentSymbolically(se); // TODO for aliasing, check here
-                    representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), fieldName);
+                    representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), entry.getKey());
                     //// TODO
                 }
             }
@@ -360,11 +398,17 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var) {
-        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field) {
+        assert !(var instanceof Sarray);
+        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()), field);
     }
 
-    private PartnerClassObjectFieldAccessConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
+    @Override
+    public ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray var) {
+        return se.getAvailableInformationOnArray((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
+    }
+
+    private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
         Map<String, SubstitutedVar> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar();
         return fieldsToValues.entrySet().stream().map(e -> {
             Sprimitive value;
@@ -384,13 +428,13 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             } else {
                 throw new NotYetImplementedException();
             }
-            return new PartnerClassObjectFieldAccessConstraint(
+            return new PartnerClassObjectFieldConstraint(
                     pc.__mulib__getId(),
                     e.getKey(),
                     value,
-                    PartnerClassObjectFieldAccessConstraint.Type.GETFIELD
+                    PartnerClassObjectFieldConstraint.Type.GETFIELD
             );
-        }).toArray(PartnerClassObjectFieldAccessConstraint[]::new);
+        }).toArray(PartnerClassObjectFieldConstraint[]::new);
     }
 
     private ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
@@ -404,7 +448,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             if (value instanceof Sarray<?>) {
                 representPartnerClassObjectViaConstraintsIfNeeded(se, (Sarray) value, true);
             }
-            SubstitutedVar val = getValueToBeRepresentedInSarray(value);
+            Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
                     (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                     (Sint) tryGetSymFromSnumber.apply(i),
@@ -430,6 +474,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         result = sarray.getNewValueForSelect(se);
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setInCacheForIndexForSelect(index, result);
+        // Needed for concolic execution
         additionalChecksAfterSelect(sarray, se);
         return result;
     }
@@ -448,12 +493,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 representPartnerClassObjectViaConstraintsIfNeeded(se, (Sarray) value, true);
             }
             if (!se.nextIsOnKnownPath()) {
-                SubstitutedVar inner = getValueToBeRepresentedInSarray(value);
+                Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
                 ArrayConstraint storeConstraint =
                         new ArrayAccessConstraint(
                                 (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                                 (Sint) tryGetSymFromSnumber.apply(index),
-                                inner,
+                                val,
                                 ArrayAccessConstraint.Type.STORE
                         );
                 se.addNewPartnerClassObjectConstraint(storeConstraint);

@@ -48,11 +48,6 @@ public class ArrayHistorySolverRepresentation {
         this.selects = new ArrayList<>();
         for (ArrayAccessConstraint ac : initialSelects) {
             Sprimitive value = ac.getValue();
-            if (value == null) {
-                // TODO Perhaps find more elegant, less hard-wired way
-                assert valueType.isArray();
-                value = Sint.ConcSint.MINUS_ONE;
-            }
             selects.add(new ArrayAccessSolverRepresentation(
                     Sbool.ConcSbool.TRUE,
                     ac.getIndex(),

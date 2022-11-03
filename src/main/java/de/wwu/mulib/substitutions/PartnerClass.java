@@ -24,6 +24,10 @@ public interface PartnerClass extends SubstitutedVar {
 
     Class<?> __mulib__getOriginalClass();
 
+    default void __mulib__setIsNull(Sbool isNull) {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
     default void __mulib__initializeLazyFields(SymbolicExecution se) {
         throw new MulibIllegalStateException("Should not occur");
     }

@@ -230,6 +230,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_CONCRETIZE;
     public final SootMethod SM_SE_GET_NEXT_NUMBER_INITIALIZED;
     public final SootMethod SM_SE_INITIALIZE_LAZY_FIELDS;
+    public final SootMethod SM_SE_GET_FIELD;
+    public final SootMethod SM_SE_PUT_FIELD;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_GET_TRANSFORMED_OBJECT;
@@ -592,6 +594,8 @@ public class SootMulibClassesAndMethods {
         SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_SE_GET_NEXT_NUMBER_INITIALIZED = SC_SE.getMethod("getNextNumberInitializedSymObject", List.of(), TYPE_INT);
         SM_SE_INITIALIZE_LAZY_FIELDS = SC_SE.getMethod("initializeLazyFields", List.of(TYPE_PARTNER_CLASS), TYPE_VOID);
+        SM_SE_GET_FIELD             = SC_SE.getMethod("getField", List.of(TYPE_PARTNER_CLASS, TYPE_STRING), TYPE_SUBSTITUTED_VAR);
+        SM_SE_PUT_FIELD             = SC_SE.getMethod("putField", List.of(TYPE_PARTNER_CLASS, TYPE_STRING, TYPE_SUBSTITUTED_VAR), TYPE_SUBSTITUTED_VAR);
 
         SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT      = SC_MULIB_VALUE_TRANSFORMER.getMethod("registerTransformedObject", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
         SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED              = SC_MULIB_VALUE_TRANSFORMER.getMethod("alreadyTransformed", List.of(TYPE_OBJECT), TYPE_BOOL);

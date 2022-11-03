@@ -4,7 +4,7 @@ import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
@@ -705,11 +705,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         }
 
         @Override
-        protected T symbolicDefault(SymbolicExecution se) {
-            throw new NotYetImplementedException(); /// TODO
-        }
-
-        @Override
         protected T nonSymbolicDefaultElement(SymbolicExecution se) {
             return null;
         }
@@ -723,11 +718,31 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         public Class<?> __mulib__getOriginalClass() {
             throw new NotYetImplementedException();
         }
+
+        @Override
+        protected T symbolicDefault(SymbolicExecution se) {
+            assert __mulib__defaultIsSymbolic() || __mulib__isRepresentedInSolver();
+            // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
+            //  sarrays are allowed to be initialized to null
+            ArrayInformation info =
+                    se.getCalculationFactory().getAvailableInformationOnArray(se, this);
+            boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+
+            T result = generateSymbolicDefault(se, info, canBeNull);
+
+            result.__mulib__prepareForAliasingAndBlockCache(se);
+            se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
+            return result;
+        }
+
+        protected T generateSymbolicDefault(SymbolicExecution se, ArrayInformation info, boolean canBeNull) {
+            T result = se.getValueFactory().symObject(se, this.getClazz(), canBeNull);
+            return result;
+        }
     }
 
     @SuppressWarnings("rawtypes")
     public static class SarraySarray extends PartnerClassSarray<Sarray> {
-
         private final int dim;
         // The type of element stored in the array, but represented as a real array, e.g.: Sint[], Sdouble[][], etc.
         // Sarray.clazz would represent them all as Sarray.
@@ -929,14 +944,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         }
 
         @Override
-        protected Sarray symbolicDefault(SymbolicExecution se) {
-            assert __mulib__defaultIsSymbolic() || __mulib__isRepresentedInSolver();
+        protected Sarray generateSymbolicDefault(SymbolicExecution se, ArrayInformation info, boolean canBeNull) {
             Sarray result;
-            // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
-            //  sarrays are allowed to be initialized to null
-            PartnerClassObjectInformation info =
-                    se.getCalculationFactory().getAvailableInformationOnPartnerClassObject(se, this);
-            boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
                 result = se.sarraySarray(
@@ -954,9 +963,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                         se
                 );
             }
-
-            result.__mulib__prepareForAliasingAndBlockCache(se);
-            se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
             return result;
         }
 
@@ -971,12 +977,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 result = generateNonSarraySarrayWithDefaultIsNull(se.symSint(), elementType.getComponentType(), true, se);
             }
             return result;
-        }
-
-
-        @Override
-        protected Sarray nonSymbolicDefaultElement(SymbolicExecution se) {
-            return null;
         }
 
         @Override

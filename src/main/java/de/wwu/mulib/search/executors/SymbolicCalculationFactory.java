@@ -504,11 +504,11 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
-    protected SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value) {
+    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
         if (value instanceof PartnerClass) {
             return ((PartnerClass) value).__mulib__getId();
         }
-        return value;
+        return (Sprimitive) value;
     }
 
     @Override

@@ -5,6 +5,7 @@ import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
@@ -47,5 +48,7 @@ public interface MulibExecutor {
 
     boolean isSatisfiable();
 
-    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
+
+    ArrayInformation getAvailableInformationOnArray(Sint id);
 }

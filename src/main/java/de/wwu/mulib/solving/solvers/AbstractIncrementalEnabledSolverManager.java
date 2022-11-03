@@ -9,6 +9,7 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
@@ -32,6 +33,7 @@ import java.util.function.BiFunction;
  * @param <M> Class representing a solver's model from which value assignments can be derived
  * @param <B> Class representing constraints in the solver
  * @param <AR> Class representing array expressions in the solver
+ * @param <PR> Class representing non-array partner class objects in the solver
  */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> implements SolverManager {
@@ -97,23 +99,25 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
+        if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+            // TODO Potentially implement for solver-internal array theories
+            throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
+        }
+        IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps =
+                incrementalSolverState.getSymbolicPartnerClassObjectStates();
+        return new PartnerClassObjectInformation(sps, sps.getRepresentationForId(id).getNewestRepresentation(), field);
+    }
+
+    @Override
+    public ArrayInformation getAvailableInformationOnArray(Sint id) {
         if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
         IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
-        IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> arep = sas.getRepresentationForId(id);
-        if (arep != null) {
-            return new PartnerClassObjectInformation(sas, arep.getNewestRepresentation());
-        } else {
-            IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation>
-                    sps = incrementalSolverState.getSymbolicPartnerClassObjectStates();
-            IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>
-                    orep = sps.getRepresentationForId(id);
-            throw new NotYetImplementedException();
-        }
+        return new ArrayInformation(sas, sas.getRepresentationForId(id).getNewestRepresentation());
     }
 
     @Override
@@ -152,8 +156,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private void addNonArrayPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
-            if (pc instanceof PartnerClassObjectFieldAccessConstraint) {
-
+            if (pc instanceof PartnerClassObjectFieldConstraint) {
                 throw new NotYetImplementedException(); //// TODO
             } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
                 PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation =

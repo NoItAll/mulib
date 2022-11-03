@@ -803,7 +803,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     }
 
     @Override
-    protected SubstitutedVar getValueToBeRepresentedInSarray(SubstitutedVar value) {
+    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
         if (value instanceof Sbool.SymSbool) {
             return tryGetSymFromConcolic((Sbool.SymSbool) value);
         } else if (value instanceof SymNumericExpressionSprimitive) {
@@ -811,7 +811,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         } else if (value instanceof PartnerClass) {
             return tryGetSymFromConcolic(((PartnerClass) value).__mulib__getId());
         }
-        return value;
+        return (Sprimitive) value;
     }
 
     private Slong toSlong(Snumber original, Slong sym) {

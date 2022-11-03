@@ -12,10 +12,7 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
-import de.wwu.mulib.solving.LabelUtility;
-import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.solving.Solvers;
+import de.wwu.mulib.solving.*;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -88,8 +85,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
-        return solverManager.getAvailableInformationOnPartnerClassObject(id);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
+        return solverManager.getAvailableInformationOnPartnerClassObject(id, field);
+    }
+
+    @Override
+    public ArrayInformation getAvailableInformationOnArray(Sint id) {
+        return solverManager.getAvailableInformationOnArray(id);
     }
 
     @Override

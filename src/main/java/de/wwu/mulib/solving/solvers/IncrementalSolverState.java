@@ -82,7 +82,7 @@ public class IncrementalSolverState<AR, PR> {
         addIdentityHavingSubstitutedVarConstraint(level, ac, arrayConstraints);
     }
 
-    public void addPartnerClassObjectFieldAccessConstraint(PartnerClassObjectFieldAccessConstraint pc) {
+    public void addPartnerClassObjectFieldAccessConstraint(PartnerClassObjectFieldConstraint pc) {
         assert _getPartnerClassObjectRepresentation(pc.getPartnerClassObjectId()) != null;
         addIdentityHavingSubstitutedVarConstraint(level, pc, partnerClassObjectConstraints);
     }

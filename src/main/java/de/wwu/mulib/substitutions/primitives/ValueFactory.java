@@ -57,6 +57,8 @@ public interface ValueFactory {
 
     <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf);
 
+    <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf, boolean canBeNull);
+
     Sint symSint(SymbolicExecution se);
 
     Sdouble symSdouble(SymbolicExecution se);

@@ -3,16 +3,16 @@ package de.wwu.mulib.constraints;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
-public final class PartnerClassObjectFieldAccessConstraint implements PartnerClassObjectConstraint {
+public final class PartnerClassObjectFieldConstraint implements PartnerClassObjectConstraint {
 
-    public enum Type { GETFIELD, STORE }
+    public enum Type { GETFIELD, PUTFIELD}
 
     private final Sint partnerClassObjectId;
     private final String fieldName;
     private final Sprimitive value;
     private final Type type;
 
-    public PartnerClassObjectFieldAccessConstraint(
+    public PartnerClassObjectFieldConstraint(
             Sint partnerClassObjectId,
             String fieldName,
             Sprimitive value,

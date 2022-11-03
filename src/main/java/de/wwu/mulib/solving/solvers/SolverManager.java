@@ -4,6 +4,7 @@ import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
@@ -52,5 +53,7 @@ public interface SolverManager {
 
     List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
 
-    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
+
+    ArrayInformation getAvailableInformationOnArray(Sint id);
 }

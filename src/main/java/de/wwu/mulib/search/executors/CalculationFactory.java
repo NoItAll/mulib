@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -129,6 +130,10 @@ public interface CalculationFactory {
 
     Sshort i2s(SymbolicExecution se, Sint i);
 
+    SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field);
+
+    SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);
+
     Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index);
 
     Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value);
@@ -147,7 +152,8 @@ public interface CalculationFactory {
 
     void initializeLazyFields(SymbolicExecution se, PartnerClass partnerClassObject);
 
-    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field);
 
+    ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray<?> var);
 
 }

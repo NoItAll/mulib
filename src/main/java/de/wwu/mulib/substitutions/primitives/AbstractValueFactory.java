@@ -1,9 +1,13 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
+
+import java.lang.reflect.Constructor;
+import java.lang.reflect.InvocationTargetException;
 
 public abstract class AbstractValueFactory implements ValueFactory {
     protected final boolean enableInitializeFreeArraysWithNull;
@@ -172,9 +176,17 @@ public abstract class AbstractValueFactory implements ValueFactory {
 
     @Override
     public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
+        // defaultIsSymbolic is assumed
+        return symObject(se, toGetInstanceOf, enableInitializeFreeObjectsWithNull);
+    }
+
+    @Override
+    public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf, boolean canBeNull) {
         try {
             Constructor<T> cons = toGetInstanceOf.getDeclaredConstructor(SymbolicExecution.class);
-            return cons.newInstance(se);
+            T result = cons.newInstance(se);
+            result.__mulib__setIsNull(canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+            return result;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
             throw new MulibIllegalStateException("The SymbolicExecution-constructor must be there!");

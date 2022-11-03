@@ -35,7 +35,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     private final Sint reservedId;
     // If is not null: Contains all those array-ids which arrayId can equal to
     private final Set<Sint> potentialIds;
-    private final PartnerClassObjectFieldAccessConstraint[] initialGetfields;
+    private final PartnerClassObjectFieldConstraint[] initialGetfields;
     // Either the ID of the partner class object or the SarraySarray containing this
     private final Sint containingPartnerClassObjectId;
     private final Sbool isNull;
@@ -52,12 +52,12 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint reservedId,
             Sint containingPartnerClassObjectId,
             Map<String, Class<?>> fieldTypes,
-            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic,
             String fieldName) {
         assert potentialIds == null || containingPartnerClassObjectId == null;
         assert initialGetfields != null && clazz != null;
-        assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getType() == PartnerClassObjectFieldAccessConstraint.Type.GETFIELD);
+        assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getType() == PartnerClassObjectFieldConstraint.Type.GETFIELD);
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getPartnerClassObjectId() == partnerClassObjectId);
         this.clazz = clazz;
         this.initialGetfields = initialGetfields;
@@ -86,7 +86,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint partnerClassObjectId,
             Sbool isNull,
             Map<String, Class<?>> fieldTypes,
-            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, null, null, null, fieldTypes, initialGetfields,
                 defaultIsSymbolic, null);
@@ -102,7 +102,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint reservedId,
             Sint containingPartnerClassObjectId,
             Map<String, Class<?>> fieldTypes,
-            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
                 defaultIsSymbolic, null);
@@ -117,7 +117,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sbool isNull,
             Set<Sint> potentialIds,
             Map<String, Class<?>> fieldTypes,
-            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, potentialIds, null, null, fieldTypes, initialGetfields,
                 defaultIsSymbolic, null);
@@ -135,7 +135,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint containingPartnerClassObjectId,
             String fieldName,
             Map<String, Class<?>> fieldTypes,
-            PartnerClassObjectFieldAccessConstraint[] initialGetfields,
+            PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
                 defaultIsSymbolic, null);
@@ -167,7 +167,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         return potentialIds;
     }
 
-    public PartnerClassObjectFieldAccessConstraint[] getInitialGetfields() {
+    public PartnerClassObjectFieldConstraint[] getInitialGetfields() {
         return initialGetfields;
     }
 

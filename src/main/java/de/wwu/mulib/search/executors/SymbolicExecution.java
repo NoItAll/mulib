@@ -8,6 +8,7 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -118,8 +119,12 @@ public final class SymbolicExecution {
         return result;
     }
 
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id) {
-        return mulibExecutor.getAvailableInformationOnPartnerClassObject(id);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
+        return mulibExecutor.getAvailableInformationOnPartnerClassObject(id, field);
+    }
+
+    public ArrayInformation getAvailableInformationOnArray(Sint id) {
+        return mulibExecutor.getAvailableInformationOnArray(id);
     }
 
     private void set() {
@@ -278,6 +283,14 @@ public final class SymbolicExecution {
 
     public Sarray store(Sarray.SarraySarray sarray, Sint index, Sarray value) {
         return calculationFactory.store(this, sarray, index, value);
+    }
+
+    public SubstitutedVar getField(PartnerClass partnerClassObject, String field) {
+        return calculationFactory.getField(this, partnerClassObject, field);
+    }
+
+    public SubstitutedVar putField(PartnerClass partnerClassObject, String field, SubstitutedVar value) {
+        return calculationFactory.putField(this, partnerClassObject, field, value);
     }
 
     /* SYMBOLIC VARIABLE CREATION */

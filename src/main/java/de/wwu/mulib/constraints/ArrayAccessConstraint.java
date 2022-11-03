@@ -1,7 +1,5 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
@@ -16,16 +14,14 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
     private final Sprimitive value;
     private final Type type;
 
-    public ArrayAccessConstraint(Sint arrayId, Sint index, SubstitutedVar value, Type type) {
+    public ArrayAccessConstraint(Sint arrayId, Sint index, Sprimitive value, Type type) {
         assert arrayId != null;
         this.arrayId = arrayId;
         this.index = index;
         if (value == null) {
-            this.value = null;
-        } else if (value instanceof Sprimitive) {
-            this.value = (Sprimitive) value;
+            this.value = Sint.ConcSint.MINUS_ONE;
         } else {
-            throw new NotYetImplementedException();
+            this.value = value;
         }
         this.type = type;
     }
