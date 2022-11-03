@@ -222,19 +222,29 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
+    public void initializeLazyFields(SymbolicExecution se, PartnerClass pco) {
+        assert pco.__mulib__defaultIsSymbolic();
+        assert !pco.__mulib__isLazilyInitialized();
+        pco.__mulib__initializeLazyFields(se);
+        pco.__mulib__setAsLazilyInitialized();
+    }
+
+    @Override
     public void representPartnerClassObjectIfNeeded(
             SymbolicExecution se,
             PartnerClass ihsr,
-            // null if sarray does not belong to a SarraySarray that is to be represented:
-            Sint idOfContainingSarraySarray) {
+            Sint idOfContainingPartnerClassObject,
+            String fieldName) {
         if (!ihsr.__mulib__shouldBeRepresentedInSolver() || ihsr.__mulib__isRepresentedInSolver()) {
             return;
         }
         assert !(ihsr instanceof Sarray) || ((Sarray) ihsr).getCachedIndices().stream().noneMatch(i -> i instanceof Sym)
                 : "The Sarray should have already been represented in the constraint system";
+        assert ihsr.__mulib__getId() != null;
         // Already set this so that we do not have any issues with circular dependencies
         ihsr.__mulib__setAsRepresentedInSolver();
         if (ihsr instanceof Sarray.PartnerClassSarray) {
+            // Includes SarraySarrays
             for (Object objectEntry : ((Sarray) ihsr).getCachedElements()) {
                 if (objectEntry == null) {
                     continue;
@@ -242,18 +252,38 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 PartnerClass entry = (PartnerClass) objectEntry;
                 if (!entry.__mulib__isRepresentedInSolver()) {
                     assert !entry.__mulib__shouldBeRepresentedInSolver();
-                    entry.__mulib__prepareToRepresentSymbolically(se);
-                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId());
+                    entry.__mulib__prepareToRepresentSymbolically(se); // TODO For aliasing, check here
+                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), fieldName);
                 }
                 if (entry instanceof Sarray) {
                     assert entry.__mulib__cacheIsBlocked();
                     ((Sarray<?>) entry).clearCache();
                 }
             }
+        } else if (!(ihsr instanceof Sarray)) {
+            // We must not initialize the fields, if they have not already been initialized
+            if (!ihsr.__mulib__defaultIsSymbolic() || (ihsr.__mulib__defaultIsSymbolic() && ihsr.__mulib__isLazilyInitialized())) {
+                Map<String, SubstitutedVar> fieldValues = ihsr.__mulib__getFieldNameToSubstitutedVar();
+                for (Map.Entry<String, SubstitutedVar> entry : fieldValues.entrySet()) {
+                    SubstitutedVar val = entry.getValue();
+                    if (!(val instanceof PartnerClass)) {
+                        continue;
+                    }
+                    if (val instanceof Sarray) {
+                        // TODO Only possible for special case: Object[]
+                        //  Should be implemented when implementing free objects
+                        throw new NotYetImplementedException();
+                    }
+                    PartnerClass pc = (PartnerClass) val;
+                    pc.__mulib__prepareToRepresentSymbolically(se); // TODO for aliasing, check here
+                    representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), fieldName);
+                    //// TODO
+                }
+            }
         }
 
         // Represent array OR partnerclass object in constraint solver, if needed
-        if (idOfContainingSarraySarray == null || ihsr.__mulib__getId() instanceof ConcSnumber) {
+        if (idOfContainingPartnerClassObject == null || ihsr.__mulib__getId() instanceof ConcSnumber) {
             // In this case the Sarray was not spawned from a select from a SarraySarray
             if (!se.nextIsOnKnownPath()) {
                 if (ihsr instanceof Sarray) {
@@ -294,7 +324,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                             tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
                             // Id reserved for this Sarray, if needed
                             nextNumberInitializedSymObject,
-                            (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
+                            (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraints(sarray, se),
                             sarray.__mulib__defaultIsSymbolic()
@@ -309,7 +339,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                     (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
                                     tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
                                     nextNumberInitializedSymObject,
-                                    (Sint) tryGetSymFromSnumber.apply(idOfContainingSarraySarray),
+                                    (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                                     fieldsToTypes,
                                     collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
                                     ihsr.__mulib__defaultIsSymbolic()
@@ -318,6 +348,15 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 }
             }
         }
+    }
+
+    @Override
+    public void representPartnerClassObjectIfNeeded(
+            SymbolicExecution se,
+            PartnerClass ihsr,
+            // null if sarray does not belong to a SarraySarray or PartnerClass object that is to be represented:
+            Sint idOfContainingSarraySarray) {
+        representPartnerClassObjectIfNeeded(se, ihsr, idOfContainingSarraySarray, null);
     }
 
     @Override

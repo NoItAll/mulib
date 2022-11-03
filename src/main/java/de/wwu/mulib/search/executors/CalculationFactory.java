@@ -143,6 +143,10 @@ public interface CalculationFactory {
 
     void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingSarraySarray);
 
+    void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingPartnerClassObject, String fieldName);
+
+    void initializeLazyFields(SymbolicExecution se, PartnerClass partnerClassObject);
+
     PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var);
 
 

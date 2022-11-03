@@ -44,7 +44,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
         this.clazz = clazz;
         if (defaultIsSymbolic) {
-            setDefaultIsSymbolic();
+            __mulib__setDefaultIsSymbolic();
         }
         this.len = len;
         this.isNull = isNull;
@@ -99,7 +99,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         _initializeId(se.concSint(se.getNextNumberInitializedSymObject()));
     }
 
-    public void initializeForAliasingAndBlockCache(SymbolicExecution se) {
+    @Override
+    public void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
         _initializeId(se.symSint());
         __mulib__blockCache();
     }
@@ -113,7 +114,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         this.id = id;
     }
 
-    private void setDefaultIsSymbolic() {
+    @Override
+    public void __mulib__setDefaultIsSymbolic() {
         this.representationState |= DEFAULT_IS_SYMBOLIC;
     }
 
@@ -953,7 +955,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 );
             }
 
-            result.initializeForAliasingAndBlockCache(se);
+            result.__mulib__prepareForAliasingAndBlockCache(se);
             se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
             return result;
         }

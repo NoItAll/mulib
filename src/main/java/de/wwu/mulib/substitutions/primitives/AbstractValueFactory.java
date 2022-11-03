@@ -172,8 +172,13 @@ public abstract class AbstractValueFactory implements ValueFactory {
 
     @Override
     public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
-        // Completely free
-        return symObject(se, toGetInstanceOf, null, null);
+        try {
+            Constructor<T> cons = toGetInstanceOf.getDeclaredConstructor(SymbolicExecution.class);
+            return cons.newInstance(se);
+        } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
+            e.printStackTrace();
+            throw new MulibIllegalStateException("The SymbolicExecution-constructor must be there!");
+        }
     }
 
     private void restrictLength(SymbolicExecution se, Sint len) {

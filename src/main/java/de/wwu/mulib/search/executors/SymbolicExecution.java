@@ -384,6 +384,10 @@ public final class SymbolicExecution {
         return valueFactory.symObject(this, clazz);
     }
 
+    public void initializeLazyFields(PartnerClass partnerClass) {
+        calculationFactory.initializeLazyFields(this, partnerClass);
+    }
+
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
         PartnerClass symObject = valueFactory.symObject(this, clazz);
         _getNamedVariables().put(identifier, symObject);

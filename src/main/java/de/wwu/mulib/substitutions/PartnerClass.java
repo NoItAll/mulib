@@ -24,6 +24,10 @@ public interface PartnerClass extends SubstitutedVar {
 
     Class<?> __mulib__getOriginalClass();
 
+    default void __mulib__initializeLazyFields(SymbolicExecution se) {
+        throw new MulibIllegalStateException("Should not occur");
+    }
+
     default Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
         throw new MulibIllegalStateException("Should not occur");
     }
@@ -37,6 +41,10 @@ public interface PartnerClass extends SubstitutedVar {
     }
 
     default void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
+    default void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
         throw new MulibIllegalStateException("Must not occur");
     }
 
@@ -80,6 +88,10 @@ public interface PartnerClass extends SubstitutedVar {
         throw new MulibIllegalStateException("Must not occur");
     }
 
+    default void __mulib__setDefaultIsSymbolic() {
+        throw new MulibIllegalStateException("Must not occur");
+    }
+
     default void __mulib__setAsRepresentedInSolver() {
         throw new MulibIllegalStateException("Must not occur");
     }
@@ -100,4 +112,7 @@ public interface PartnerClass extends SubstitutedVar {
         throw new MulibIllegalStateException("Must not occur");
     }
 
+    default boolean __mulib__isSymbolicAndNotYetInitialized() {
+        return __mulib__defaultIsSymbolic() && !__mulib__isLazilyInitialized();
+    }
 }

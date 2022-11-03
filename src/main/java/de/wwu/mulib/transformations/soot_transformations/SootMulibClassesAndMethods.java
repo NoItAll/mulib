@@ -50,7 +50,6 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSSHORT;
     public final SootClass SC_CONCSBYTE;
     public final SootClass SC_CONCSBOOL;
-    public final SootClass SC_PARTNERCLASS;
     public final SootClass SC_PARTNER_CLASS;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
@@ -61,7 +60,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SBOOLSARRAY;
     public final SootClass SC_SARRAYSARRAY;
     public final SootClass SC_SARRAY;
-    public final SootClass SC_PARTNERCLASSSARRAY;
+    public final SootClass SC_PARTNER_CLASSSARRAY;
     public final SootClass SC_SE;
     public final SootClass SC_MULIB_VALUE_TRANSFORMER;
     public final SootClass SC_MULIB_VALUE_COPIER;
@@ -86,7 +85,7 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_CONCSSHORT;
     public final RefType TYPE_CONCSBYTE;
     public final RefType TYPE_CONCSBOOL;
-    public final RefType TYPE_PARTNERCLASS;
+    public final RefType TYPE_PARTNER_CLASS;
     public final RefType TYPE_SARRAY;
     public final RefType TYPE_SARRAYSARRAY;
     public final RefType TYPE_SINTSARRAY;
@@ -96,7 +95,7 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_SSHORTSARRAY;
     public final RefType TYPE_SBYTESARRAY;
     public final RefType TYPE_SBOOLSARRAY;
-    public final RefType TYPE_PARTNERCLASSSARRAY;
+    public final RefType TYPE_PARTNER_CLASSSARRAY;
     public final RefType TYPE_SE;
     public final RefType TYPE_MULIB_VALUE_TRANSFORMER;
     public final RefType TYPE_MULIB_VALUE_COPIER;
@@ -132,6 +131,7 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootField SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
     public final SootField SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED;
+
 
     /* SPECIAL METHODS */
     // Unwrap methods
@@ -182,7 +182,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_SSHORTSARRAY;
     public final SootMethod SM_SE_SBYTESARRAY;
     public final SootMethod SM_SE_SBOOLSARRAY;
-    public final SootMethod SM_SE_PARTNERCLASSSARRAY;
+    public final SootMethod SM_SE_PARTNER_CLASSSARRAY;
     public final SootMethod SM_SE_SARRAYSARRAY;
     public final SootMethod SM_SE_MULTIDIM_SARRAYSARRAY;
     public final SootMethod SM_SE_NAMED_SINTSARRAY;
@@ -192,7 +192,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_NAMED_SSHORTSARRAY;
     public final SootMethod SM_SE_NAMED_SBYTESARRAY;
     public final SootMethod SM_SE_NAMED_SBOOLSARRAY;
-    public final SootMethod SM_SE_NAMED_PARTNERCLASSSARRAY;
+    public final SootMethod SM_SE_NAMED_PARTNER_CLASSSARRAY;
     public final SootMethod SM_SE_NAMED_SARRAYSARRAY;
     public final SootMethod SM_SE_SYM_OBJECT;
     public final SootMethod SM_SE_NAMED_SYM_OBJECT;
@@ -205,7 +205,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SSHORTSARRAY_COPY_CONSTR;
     public final SootMethod SM_SBYTESARRAY_COPY_CONSTR;
     public final SootMethod SM_SBOOLSARRAY_COPY_CONSTR;
-    public final SootMethod SM_PARTNERCLASSSARRAY_COPY_CONSTR;
+    public final SootMethod SM_PARTNER_CLASSSARRAY_COPY_CONSTR;
     public final SootMethod SM_SARRAYSARRAY_COPY_CONSTR;
 
     public final SootMethod SM_SINTSARRAY_TRANSFORMATION_CONSTR;
@@ -215,7 +215,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SSHORTSARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_SBYTESARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_SBOOLSARRAY_TRANSFORMATION_CONSTR;
-    public final SootMethod SM_PARTNERCLASSSARRAY_TRANSFORMATION_CONSTR;
+    public final SootMethod SM_PARTNER_CLASSSARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_SARRAYSARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_SE_CONCSINT;
     public final SootMethod SM_SE_CONCSDOUBLE;
@@ -229,6 +229,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_CAST_TO;
     public final SootMethod SM_SE_CONCRETIZE;
     public final SootMethod SM_SE_GET_NEXT_NUMBER_INITIALIZED;
+    public final SootMethod SM_SE_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED;
     public final SootMethod SM_MULIB_VALUE_TRANSFORMER_GET_TRANSFORMED_OBJECT;
@@ -372,8 +373,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SBOOLSARRAY_SELECT;
     public final SootMethod SM_SBOOLSARRAY_STORE;
     public final SootMethod SM_SARRAY_LENGTH;
-    public final SootMethod SM_PARTNERCLASSSARRAY_SELECT;
-    public final SootMethod SM_PARTNERCLASSSARRAY_STORE;
+    public final SootMethod SM_PARTNER_CLASSSARRAY_SELECT;
+    public final SootMethod SM_PARTNER_CLASSSARRAY_STORE;
     public final SootMethod SM_SARRAYSARRAY_SELECT;
     public final SootMethod SM_SARRAYSARRAY_STORE;
     public final SootMethod SM_PARTNER_CLASS_GET_ID;
@@ -385,11 +386,14 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
     public final SootMethod SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER;
     public final SootMethod SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
+    public final SootMethod SM_PARTNER_CLASS_SET_DEFAULT_IS_SYMBOLIC;
     public final SootMethod SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER;
     public final SootMethod SM_PARTNER_CLASS_BLOCK_CACHE;
     public final SootMethod SM_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE;
+    public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
+    public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -429,8 +433,8 @@ public class SootMulibClassesAndMethods {
         SC_CONCSSHORT   = Scene.v().forceResolve(Sshort.ConcSshort.class.getName(), SootClass.SIGNATURES);
         SC_CONCSBYTE    = Scene.v().forceResolve(Sbyte.ConcSbyte.class.getName(), SootClass.SIGNATURES);
         SC_CONCSBOOL    = Scene.v().forceResolve(Sbool.ConcSbool.class.getName(), SootClass.SIGNATURES);
-        SC_PARTNERCLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
-        SC_PARTNERCLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
+        SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
+        SC_PARTNER_CLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
         SC_SINTSARRAY           = Scene.v().forceResolve(Sarray.SintSarray.class.getName(), SootClass.SIGNATURES);
         SC_SDOUBLESARRAY        = Scene.v().forceResolve(Sarray.SdoubleSarray.class.getName(), SootClass.SIGNATURES);
         SC_SFLOATSARRAY         = Scene.v().forceResolve(Sarray.SfloatSarray.class.getName(), SootClass.SIGNATURES);
@@ -447,7 +451,6 @@ public class SootMulibClassesAndMethods {
         SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SUBSTITUTED_VAR = Scene.v().forceResolve(SubstitutedVar.class.getName(), SootClass.SIGNATURES);
-        SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
         TYPE_MULIB_RUNTIME_EXCEPTION = SC_MULIB_RUNTIME_EXCEPTION.getType();
         TYPE_SINT = Scene.v().getRefType(Sint.class.getName());
@@ -457,7 +460,7 @@ public class SootMulibClassesAndMethods {
         TYPE_SSHORT = Scene.v().getRefType(Sshort.class.getName());
         TYPE_SBYTE = Scene.v().getRefType(Sbyte.class.getName());
         TYPE_SBOOL = Scene.v().getRefType(Sbool.class.getName());
-        TYPE_PARTNERCLASS = Scene.v().getRefType(PartnerClass.class.getName());
+        TYPE_PARTNER_CLASS = Scene.v().getRefType(PartnerClass.class.getName());
         TYPE_SE = Scene.v().getRefType(SymbolicExecution.class.getName());
         TYPE_MULIB_VALUE_TRANSFORMER = SC_MULIB_VALUE_TRANSFORMER.getType();
         TYPE_MULIB_VALUE_COPIER = SC_MULIB_VALUE_COPIER.getType();
@@ -483,7 +486,7 @@ public class SootMulibClassesAndMethods {
         TYPE_SSHORTSARRAY           = SC_SSHORTSARRAY.getType();
         TYPE_SBYTESARRAY            = SC_SBYTESARRAY.getType();
         TYPE_SBOOLSARRAY            = SC_SBOOLSARRAY.getType();
-        TYPE_PARTNERCLASSSARRAY     = SC_PARTNERCLASSSARRAY.getType();
+        TYPE_PARTNER_CLASSSARRAY     = SC_PARTNER_CLASSSARRAY.getType();
         TYPE_SARRAY                 = SC_SARRAY.getType();
         TYPE_SPRIMITIVE             = SC_SPRIMITIVE.getType();
         TYPE_SYM_SPRIMITIVE         = SC_SYM_SPRIMITIVE.getType();
@@ -563,12 +566,12 @@ public class SootMulibClassesAndMethods {
         SM_SE_NAMED_SSHORTSARRAY    = SC_SE.getMethod("namedSshortSarray",  List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SSHORTSARRAY);
         SM_SE_NAMED_SBYTESARRAY     = SC_SE.getMethod("namedSbyteSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SBYTESARRAY);
         SM_SE_NAMED_SBOOLSARRAY     = SC_SE.getMethod("namedSboolSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SBOOLSARRAY);
-        SM_SE_PARTNERCLASSSARRAY        = SC_SE.getMethod("partnerClassSarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNERCLASSSARRAY);
+        SM_SE_PARTNER_CLASSSARRAY        = SC_SE.getMethod("partnerClassSarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNER_CLASSSARRAY);
         SM_SE_SARRAYSARRAY              = SC_SE.getMethod("sarraySarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
-        SM_SE_NAMED_PARTNERCLASSSARRAY  = SC_SE.getMethod("namedPartnerClassSarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNERCLASSSARRAY);
+        SM_SE_NAMED_PARTNER_CLASSSARRAY  = SC_SE.getMethod("namedPartnerClassSarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNER_CLASSSARRAY);
         SM_SE_NAMED_SARRAYSARRAY        = SC_SE.getMethod("namedSarraySarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
-        SM_SE_SYM_OBJECT = SC_SE.getMethod("symObject", List.of(TYPE_CLASS), TYPE_PARTNERCLASS);
-        SM_SE_NAMED_SYM_OBJECT = SC_SE.getMethod("namedSymObject", List.of(TYPE_STRING, TYPE_CLASS), TYPE_PARTNERCLASS);
+        SM_SE_SYM_OBJECT = SC_SE.getMethod("symObject", List.of(TYPE_CLASS), TYPE_PARTNER_CLASS);
+        SM_SE_NAMED_SYM_OBJECT = SC_SE.getMethod("namedSymObject", List.of(TYPE_STRING, TYPE_CLASS), TYPE_PARTNER_CLASS);
         SM_SE_MULTIDIM_SARRAYSARRAY = SC_SE.getMethod("sarraySarray", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_CLASS), TYPE_SARRAYSARRAY);
         SM_SE_PRIMITIVE_SARRAY_INITS = List.of(
                 SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY, SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY,
@@ -588,6 +591,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_CAST_TO = SC_SE.getMethod("castTo", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_OBJECT);
         SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_SE_GET_NEXT_NUMBER_INITIALIZED = SC_SE.getMethod("getNextNumberInitializedSymObject", List.of(), TYPE_INT);
+        SM_SE_INITIALIZE_LAZY_FIELDS = SC_SE.getMethod("initializeLazyFields", List.of(TYPE_PARTNER_CLASS), TYPE_VOID);
 
         SM_MULIB_VALUE_TRANSFORMER_REGISTER_TRANSFORMED_OBJECT      = SC_MULIB_VALUE_TRANSFORMER.getMethod("registerTransformedObject", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);
         SM_MULIB_VALUE_TRANSFORMER_ALREADY_TRANSFORMED              = SC_MULIB_VALUE_TRANSFORMER.getMethod("alreadyTransformed", List.of(TYPE_OBJECT), TYPE_BOOL);
@@ -729,8 +733,8 @@ public class SootMulibClassesAndMethods {
         SM_SBYTESARRAY_STORE    = SC_SBYTESARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SBYTE, TYPE_SE),     TYPE_VOID);
         SM_SBOOLSARRAY_SELECT   = SC_SBOOLSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE),                  TYPE_SBOOL);
         SM_SBOOLSARRAY_STORE    = SC_SBOOLSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SBOOL, TYPE_SE),     TYPE_VOID);
-        SM_PARTNERCLASSSARRAY_SELECT    = SC_PARTNERCLASSSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_PARTNERCLASS);
-        SM_PARTNERCLASSSARRAY_STORE     = SC_PARTNERCLASSSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_PARTNERCLASS, TYPE_SE), TYPE_VOID);
+        SM_PARTNER_CLASSSARRAY_SELECT    = SC_PARTNER_CLASSSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_PARTNER_CLASS);
+        SM_PARTNER_CLASSSARRAY_STORE     = SC_PARTNER_CLASSSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_PARTNER_CLASS, TYPE_SE), TYPE_VOID);
         SM_SARRAYSARRAY_SELECT          = SC_SARRAYSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_SARRAY);
         SM_SARRAYSARRAY_STORE           = SC_SARRAYSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SARRAY, TYPE_SE), TYPE_VOID);
 
@@ -743,11 +747,14 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_NULL_CHECK                           = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "nullCheck", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC                  = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "defaultIsSymbolic", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_SET_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setDefaultIsSymbolic", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
-        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNERCLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
+        SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
 
         SM_CONCSINT     = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_CONCSLONG    = SC_SLONG.getMethod("concSlong", List.of(TYPE_LONG), TYPE_SLONG);
@@ -771,7 +778,7 @@ public class SootMulibClassesAndMethods {
         SM_SSHORTSARRAY_COPY_CONSTR                 = SC_SSHORTSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SSHORTSARRAY), TYPE_VOID);
         SM_SBYTESARRAY_COPY_CONSTR                  = SC_SBYTESARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SBYTESARRAY), TYPE_VOID);
         SM_SBOOLSARRAY_COPY_CONSTR                  = SC_SBOOLSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SBOOLSARRAY), TYPE_VOID);
-        SM_PARTNERCLASSSARRAY_COPY_CONSTR           = SC_PARTNERCLASSSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_PARTNERCLASSSARRAY), TYPE_VOID);
+        SM_PARTNER_CLASSSARRAY_COPY_CONSTR           = SC_PARTNER_CLASSSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_PARTNER_CLASSSARRAY), TYPE_VOID);
         SM_SARRAYSARRAY_COPY_CONSTR                 = SC_SARRAYSARRAY.getMethod("<init>", List.of(TYPE_MULIB_VALUE_COPIER, TYPE_SARRAYSARRAY), TYPE_VOID);
 
         SM_SINTSARRAY_TRANSFORMATION_CONSTR         = SC_SINTSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
@@ -781,7 +788,7 @@ public class SootMulibClassesAndMethods {
         SM_SSHORTSARRAY_TRANSFORMATION_CONSTR       = SC_SSHORTSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SSHORT, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
         SM_SBYTESARRAY_TRANSFORMATION_CONSTR        = SC_SBYTESARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SBYTE, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
         SM_SBOOLSARRAY_TRANSFORMATION_CONSTR        = SC_SBOOLSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SBOOL, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
-        SM_PARTNERCLASSSARRAY_TRANSFORMATION_CONSTR = SC_PARTNERCLASSSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_PARTNERCLASS, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
+        SM_PARTNER_CLASSSARRAY_TRANSFORMATION_CONSTR = SC_PARTNER_CLASSSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_PARTNER_CLASS, 1), TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
         SM_SARRAYSARRAY_TRANSFORMATION_CONSTR       = SC_SARRAYSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SARRAY, 1), TYPE_CLASS, TYPE_MULIB_VALUE_TRANSFORMER), TYPE_VOID);
 
         SM_CLASS_GET_DECLARED_FIELD  = SC_CLASS.getMethod("getDeclaredField", List.of(TYPE_STRING), TYPE_FIELD);
