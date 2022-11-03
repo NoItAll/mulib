@@ -33,11 +33,11 @@ public class FreeArraysOfObjects {
     }
 
     public static class Material {
-        final String name;
+        final int number;
         final int weight;
 
-        public Material(String name, int weight) {
-            this.name = name;
+        public Material(int number, int weight) {
+            this.number = number;
             this.weight = weight;
         }
     }

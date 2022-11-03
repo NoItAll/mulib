@@ -246,10 +246,10 @@ public class FreeArraysExec {
                                             new FreeArraysOfObjects.Truck(3),
                                             new FreeArraysOfObjects.Truck(2) },
                                     new FreeArraysOfObjects.Material[] {
-                                            new FreeArraysOfObjects.Material("M0", 1),
-                                            new FreeArraysOfObjects.Material("M1", 4),
-                                            new FreeArraysOfObjects.Material("M2", 3),
-                                            new FreeArraysOfObjects.Material("M3", 1) }
+                                            new FreeArraysOfObjects.Material(0, 1),
+                                            new FreeArraysOfObjects.Material(1, 4),
+                                            new FreeArraysOfObjects.Material(2, 3),
+                                            new FreeArraysOfObjects.Material(3, 1) }
                             }
                     );
                     return result;
