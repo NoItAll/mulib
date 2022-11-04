@@ -319,10 +319,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 }
             }
         }
-
+        assert !(ihsr.__mulib__getId() instanceof Sym) || idOfContainingPartnerClassObject != null;
         // Represent array OR partnerclass object in constraint solver, if needed
-        if (idOfContainingPartnerClassObject == null || ihsr.__mulib__getId() instanceof ConcSnumber) {
-            // In this case the Sarray was not spawned from a select from a SarraySarray
+        if (ihsr.__mulib__getId() instanceof ConcSnumber) {
+            // In this case the PartnerClass object was not spawned from a select
+            // from a PartnerClassSarray or a PartnerClass object
             if (!se.nextIsOnKnownPath()) {
                 if (ihsr instanceof Sarray) {
                     Sarray sarray = (Sarray) ihsr;
