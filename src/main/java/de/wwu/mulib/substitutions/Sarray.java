@@ -860,11 +860,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 );
             }
             assert lengths.length == 1;
-            return generateNonSarraySarrayWithDefaultIsNull(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
+            return generateNonSarraySarrayWithSpecifiedIsNull(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
         }
 
         @SuppressWarnings("unchecked")
-        private static Sarray generateNonSarraySarrayWithDefaultIsNull(boolean canBeNull, Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
+        private static Sarray generateNonSarraySarrayWithSpecifiedIsNull(boolean canBeNull, Sint len, Class<?> innermostType, boolean defaultIsSymbolic, SymbolicExecution se) {
             assert !innermostType.isArray();
             assert Sprimitive.class.isAssignableFrom(innermostType)
                     || PartnerClass.class.isAssignableFrom(innermostType);
@@ -955,7 +955,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                         canBeNull
                 );
             } else {
-                result = generateNonSarraySarrayWithDefaultIsNull(
+                result = generateNonSarraySarrayWithSpecifiedIsNull(
                         canBeNull,
                         se.symSint(),
                         elementType.getComponentType(),

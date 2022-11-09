@@ -119,6 +119,38 @@ public final class SymbolicExecution {
         return result;
     }
 
+    public void setNextNumberInitializedAtomicSymSints(int i) {
+        nextNumberInitializedAtomicSymSints += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSdoubles(int i) {
+        nextNumberInitializedAtomicSymSdoubles += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSfloats(int i) {
+        nextNumberInitializedAtomicSymSfloats += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSbools(int i) {
+        nextNumberInitializedAtomicSymSbools += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSlongs(int i) {
+        nextNumberInitializedAtomicSymSlongs += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSbytes(int i) {
+        nextNumberInitializedAtomicSymSbytes += i;
+    }
+
+    public void addToNextNumberInitializedAtomicSymSshorts(int i) {
+        nextNumberInitializedAtomicSymSshorts += i;
+    }
+
+    public void addToNextNumberInitializedSymObject(int i) {
+        nextIdentitiyHavingObjectNr += i;
+    }
+
     public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
         return mulibExecutor.getAvailableInformationOnPartnerClassObject(id, field);
     }
@@ -285,8 +317,8 @@ public final class SymbolicExecution {
         return calculationFactory.store(this, sarray, index, value);
     }
 
-    public SubstitutedVar getField(PartnerClass partnerClassObject, String field) {
-        return calculationFactory.getField(this, partnerClassObject, field);
+    public SubstitutedVar getField(PartnerClass partnerClassObject, String field, Class<?> typeOfField) {
+        return calculationFactory.getField(this, partnerClassObject, field, typeOfField);
     }
 
     public SubstitutedVar putField(PartnerClass partnerClassObject, String field, SubstitutedVar value) {

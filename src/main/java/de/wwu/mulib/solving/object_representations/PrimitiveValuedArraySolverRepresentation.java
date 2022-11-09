@@ -3,6 +3,7 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
@@ -21,8 +22,25 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
         super(pvasr, level);
     }
 
+    /**
+     * Constructor for generating lazily
+     */
+    protected PrimitiveValuedArraySolverRepresentation(
+            MulibConfig config,
+            Sint id,
+            Sint length,
+            Sbool isNull,
+            Class<?> valueType,
+            boolean defaultIsSymbolic,
+            int level,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresenteDefaults) {
+        super(config, id, length, isNull, valueType, defaultIsSymbolic, isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresenteDefaults, level);
+    }
+
     @Override
     protected Constraint _select(Constraint guard, Sint index, Sprimitive selectedValue) {
+        // The metadata constraint of the selected sarray will already validly restrict the id values
         return currentRepresentation.select(
                 guard,
                 index,
@@ -30,10 +48,7 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 // If the array is completely initialized, we do not have to push this index-value combination since
                 // it is already represented
                 isCompletelyInitialized,
-                this instanceof IArrayArraySolverRepresentation && defaultIsSymbolic ?
-                        false // The metadata constraint of the selected sarray will already validly restrict the id values
-                        :
-                        canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+                (!(this instanceof PartnerClassArraySolverRepresentation) || !defaultIsSymbolic) && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
         );
     }
 

@@ -1,7 +1,7 @@
 package de.wwu.mulib.solving;
 
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
-import de.wwu.mulib.solving.object_representations.IArrayArraySolverRepresentation;
+import de.wwu.mulib.solving.object_representations.PartnerClassArraySolverRepresentation;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
@@ -18,7 +18,7 @@ public class ArrayInformation {
                 asr.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault();
 
         this.canContainExplicitNull =
-                asr instanceof IArrayArraySolverRepresentation
-                        && ((IArrayArraySolverRepresentation) asr).canContainNull(sas);
+                asr instanceof PartnerClassArraySolverRepresentation
+                        && ((PartnerClassArraySolverRepresentation) asr).canContainNull(sas);
     }
 }

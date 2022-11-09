@@ -1160,7 +1160,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (!fieldWasTransformedAndIsNonStatic(newField, sf.getType(), newField.getType())) {
                 continue;
             }
-            SootMethodRef accsessor = generateAndAddAccessorMethod(result, newField);
+            SootMethodRef accsessor = generateAndAddAccessorMethod(sf, result, newField);
             fieldAccessorMethods.put(newField, accsessor);
             if (sf.isFinal()) {
                 // Remove isFinal in preparation for enabling lazy initialization
@@ -1168,7 +1168,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 // Previously final methods do not need setters
                 continue;
             }
-            SootMethodRef setter = generateAndAddSetMethod(result, newField);
+            SootMethodRef setter = generateAndAddSetMethod(sf, result, newField);
             fieldSetterMethods.put(newField, setter);
         }
     }
@@ -1177,15 +1177,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return !newField.isStatic() && !oldFieldType.equals(newFieldType);
     }
 
-    private SootMethodRef generateAndAddAccessorMethod(SootClass addTo, SootField forField) {
-        return generateAndAddFieldMethod(addTo, forField, true);
+    private SootMethodRef generateAndAddAccessorMethod(SootField old, SootClass addTo, SootField forField) {
+        return generateAndAddFieldMethod(old, addTo, forField, true);
     }
 
-    private SootMethodRef generateAndAddSetMethod(SootClass addTo, SootField forField) {
-        return generateAndAddFieldMethod(addTo, forField, false);
+    private SootMethodRef generateAndAddSetMethod(SootField old, SootClass addTo, SootField forField) {
+        return generateAndAddFieldMethod(old, addTo, forField, false);
     }
 
-    private SootMethodRef generateAndAddFieldMethod(SootClass addTo, SootField forField, boolean forGetField) {
+    private SootMethodRef generateAndAddFieldMethod(SootField oldField, SootClass addTo, SootField forField, boolean forGetField) {
         // Create method
         SootMethod artificialFieldMethod;
         if (forGetField) {
@@ -1224,7 +1224,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         InvokeStmt nullCheckStmt = Jimple.v().newInvokeStmt(
                 Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_NULL_CHECK.makeRef())
         );
-        if (forGetField) {
+//        if (forGetField) { // TODO For simplicity, we currently also lazily initialize if a field is set.
+        {
             // Check if we still must lazily initialize. We only need to do this for gets
             Local mustBeLazilyInitialized = localSpawner.spawnNewStackLocal(v.TYPE_BOOL);
             upc.add(
@@ -1239,30 +1240,85 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(Jimple.v().newAssignStmt(seLocal, Jimple.v().newStaticInvokeExpr(v.SM_SE_GET.makeRef())));
             upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(seLocal, v.SM_SE_INITIALIZE_LAZY_FIELDS.makeRef(), thisLocal)));
         }
+//        }
         // Call nullCheck
         upc.add(nullCheckStmt);
 
-        //// TODO cacheIsBlocked-equivalent
-
-
+        // We do not add yet since we might need to jump
+        Stmt getOrSetField;
+        Stmt returnStmt;
         if (forGetField) {
             // We can directly access the field of this
             Local returnLocal = localSpawner.spawnNewStackLocal(forField.getType());
-            AssignStmt getField = Jimple.v().newAssignStmt(
+            getOrSetField = Jimple.v().newAssignStmt(
                     returnLocal,
                     Jimple.v().newInstanceFieldRef(thisLocal, forField.makeRef())
             );
-            upc.add(getField);
             // Return field
-            upc.add(Jimple.v().newReturnStmt(returnLocal));
+            returnStmt = Jimple.v().newReturnStmt(returnLocal);
         } else {
-            AssignStmt setField = Jimple.v().newAssignStmt(
+            getOrSetField = Jimple.v().newAssignStmt(
                     Jimple.v().newInstanceFieldRef(thisLocal, forField.makeRef()),
                     setParamLocal
             );
-            upc.add(setField);
+            returnStmt = Jimple.v().newReturnVoidStmt();
+        }
+
+        Local cacheIsBlockedLocal = localSpawner.spawnNewStackLocal(v.TYPE_BOOL);
+        upc.add(Jimple.v().newAssignStmt(
+                cacheIsBlockedLocal,
+                Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_CACHE_IS_BLOCKED.makeRef())
+        ));
+        // Before getting or setting we must check if the "cache", i.e., the fields, are blocked. In this case,
+        // we must ask the constraint solver for a new value or change the representation of this object in the
+        // constraint solver
+        upc.add(Jimple.v().newIfStmt(
+                Jimple.v().newEqExpr(cacheIsBlockedLocal, IntConstant.v(0)),
+                getOrSetField
+        ));
+        Local seLocal = localSpawner.spawnNewStackLocal(v.TYPE_SE);
+        // Get SymbolicExecution
+        upc.add(Jimple.v().newAssignStmt(
+                seLocal,
+                Jimple.v().newStaticInvokeExpr(v.SM_SE_GET.makeRef())
+        ));
+        // If the cache is blocked, we contact the solver via SymbolicExecution. We return before returning or setting
+        // the field's value
+        if (forGetField) {
+            Local retrievedValueLocal = localSpawner.spawnNewStackLocal(forField.getType());
+            upc.add(Jimple.v().newAssignStmt(
+                    retrievedValueLocal,
+                    Jimple.v().newVirtualInvokeExpr(
+                            seLocal, v.SM_SE_GET_FIELD.makeRef(),
+                            thisLocal,
+                            StringConstant.v(forField.getName()),
+                            // Preserve information on arrays
+                            ClassConstant.fromType(oldField.getType() instanceof ArrayType ?
+                                    transformArrayType((ArrayType) oldField.getType(), false)
+                                    :
+                                    transformType(oldField.getType())
+                            )
+                    )
+            ));
+            Local castedRetrievedValueLocal = localSpawner.spawnNewLocal(forField.getType());
+            upc.add(Jimple.v().newAssignStmt(
+                    castedRetrievedValueLocal,
+                    Jimple.v().newCastExpr(retrievedValueLocal, forField.getType())
+            ));
+            upc.add(Jimple.v().newReturnStmt(castedRetrievedValueLocal));
+        } else {
+            upc.add(Jimple.v().newInvokeStmt(
+                    Jimple.v().newVirtualInvokeExpr(
+                            seLocal, v.SM_SE_PUT_FIELD.makeRef(),
+                            thisLocal, StringConstant.v(forField.getName()), setParamLocal)
+            ));
             upc.add(Jimple.v().newReturnVoidStmt());
         }
+
+        // Set or get field
+        upc.add(getOrSetField);
+        // Return result or void
+        upc.add(returnStmt);
         artificialFieldMethod.setDeclaringClass(addTo);
         addTo.addMethod(artificialFieldMethod);
         return artificialFieldMethod.makeRef();

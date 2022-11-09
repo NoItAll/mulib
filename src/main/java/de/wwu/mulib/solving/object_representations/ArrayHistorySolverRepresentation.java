@@ -199,6 +199,11 @@ public class ArrayHistorySolverRepresentation {
         );
     }
 
+    public boolean isEmpty() {
+        return store == null && selects.isEmpty();
+    }
+
+    // Assumes eager initialization in case of free length
     public Set<? extends Sprimitive> getValuesKnownToPossiblyBeContainedInArray(boolean arrayHasFixedLength) {
         // In the case where the array has a fixed length, the array is fully initialized directly. We only have
         // to regard the initially selected values as well as the stored values

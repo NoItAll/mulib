@@ -155,6 +155,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private void addNonArrayPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
+        assert !(pc instanceof ArrayConstraint);
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (pc instanceof PartnerClassObjectFieldConstraint) {
                 throw new NotYetImplementedException(); //// TODO
@@ -195,6 +196,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                                 config,
                                 (ArrayInitializationConstraint) ac,
                                 incrementalSolverState.getSymbolicArrayStates(),
+                                incrementalSolverState.getSymbolicPartnerClassObjectStates(),
                                 getLevel()
                         );
                 incrementalSolverState.initializeArrayRepresentation(

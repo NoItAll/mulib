@@ -32,6 +32,12 @@ public class IncrementalSolverState<AR, PR> {
         SymbolicPartnerClassObjectStates(MulibConfig mc) {
         }
 
+        public void addRepresentationForId(Sint id, R r, int level) {
+            PartnerClassObjectRepresentation<R> pcor = new PartnerClassObjectRepresentation<>(id);
+            pcor.addNewRepresentation(r, level);
+            idToMostRecentRepresentation.put(id, pcor);
+        }
+
         public PartnerClassObjectRepresentation<R> getRepresentationForId(Sint id) {
             return idToMostRecentRepresentation.get(id);
         }

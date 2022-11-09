@@ -44,8 +44,9 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
                     // is treated differently from other sarrays and must be treated explicitly. Note that this is
                     // different from, e.g., SintSarray, where the default value ConcSint{0} can be assumed by SymSint as well
                     // without failing to illustrate special behavior.
-                    || (this instanceof IArrayArraySolverRepresentation && config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL);
+                    || (this instanceof PartnerClassArraySolverRepresentation && config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL);
         } else {
+            // Is eagerly initialized, thus there is no unrepresented non-symbolic default
             assert isCompletelyInitialized;
             this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = false;
         }
@@ -58,6 +59,35 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
                 || (arrayId instanceof ConcSnumber && !(this instanceof AliasingArraySolverRepresentation));
     }
 
+    /**
+     * Constructor for generating lazily
+     */
+    protected AbstractArraySolverRepresentation(
+            MulibConfig config,
+            Sint id,
+            Sint length,
+            Sbool isNull,
+            Class<?> valueType,
+            boolean defaultIsSymbolic,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault,
+            int level) {
+        this.length = length;
+        this.isCompletelyInitialized = isCompletelyInitialized;
+        this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault =
+                canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+        this.config = config;
+        this.arrayId = id;
+        this.isNull = isNull;
+        this.valueType = valueType;
+        this.defaultIsSymbolic = defaultIsSymbolic;
+        this.level = level;
+    }
+
+
+    /**
+     * Copy constructor
+     */
     protected AbstractArraySolverRepresentation(
             AbstractArraySolverRepresentation aasr,
             int level) {
@@ -78,12 +108,12 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     @Override
     public final Constraint select(Sint index, Sprimitive selectedValue) {
         assert selectedValue != null;
-        return select(Sbool.ConcSbool.TRUE, index, selectedValue);
+        return _select(Sbool.ConcSbool.TRUE, index, selectedValue);
     }
 
     @Override
     public final void store(Sint index, Sprimitive storedValue) {
-        store(Sbool.ConcSbool.TRUE, index, storedValue);
+        _store(Sbool.ConcSbool.TRUE, index, storedValue);
     }
 
     @Override

@@ -61,7 +61,9 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         assert Arrays.stream(initialGetfields).allMatch(isc -> isc.getPartnerClassObjectId() == partnerClassObjectId);
         this.clazz = clazz;
         this.initialGetfields = initialGetfields;
-        if (potentialIds == null && containingPartnerClassObjectId == null) {
+        if (fieldName != null) {
+            this.type = Type.PARTNER_CLASS_OBJECT_IN_PARTNER_CLASS_OBJECT;
+        } else if (potentialIds == null && containingPartnerClassObjectId == null) {
             this.type = Type.SIMPLE_PARTNER_CLASS_OBJECT;
         } else if (potentialIds == null) {
             this.type = Type.PARTNER_CLASS_OBJECT_IN_SARRAY;
@@ -175,7 +177,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         return containingPartnerClassObjectId;
     }
 
-    public Sbool getIsNull() {
+    public Sbool isNull() {
         return isNull;
     }
 

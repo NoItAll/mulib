@@ -20,7 +20,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
     protected final Constraint metadataConstraintForPotentialIds;
     protected final Set<IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation>> aliasedArrays;
     // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
-    protected final boolean containingSarrayIsCompletelyInitialized;
+    protected final boolean cannotBeNewInstance;
 
     public AliasingPrimitiveValuedArraySolverRepresentation(
             MulibConfig config,
@@ -28,9 +28,9 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             final int level,
             final Set<Sint> potentialIds,
             final IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
-            boolean containingSarrayIsCompletelyInitialized) {
+            boolean cannotBeNewInstance) {
         super(config, aic, level);
-        this.containingSarrayIsCompletelyInitialized = containingSarrayIsCompletelyInitialized;
+        this.cannotBeNewInstance = cannotBeNewInstance;
         this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert reservedId instanceof ConcSnumber;
@@ -40,12 +40,38 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
     }
 
+    /**
+     * Constructor for generating lazily
+     */
+    protected AliasingPrimitiveValuedArraySolverRepresentation(
+            MulibConfig config,
+            Sint id,
+            Sint length,
+            Sbool isNull,
+            Class<?> valueType,
+            boolean defaultIsSymbolic,
+            int level,
+            Sint reservedId,
+            IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
+            boolean cannotBeNewInstance,
+            boolean isCompletelyInitialized,
+            boolean canPotentiallyContainCurrentlyUnrepresentedDefaults,
+            Set<Sint> potentialIds) {
+        super(config, id, length, isNull, valueType, defaultIsSymbolic, isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedDefaults, level);
+        this.reservedId = reservedId;
+        this.aliasedArrays = new HashSet<>();
+        this.cannotBeNewInstance = cannotBeNewInstance;
+        this.metadataConstraintForPotentialIds =
+                getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
+
+    }
+
     private Constraint getMetadataConstraintForPotentialIds(
             Set<Sint> potentialIds,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates) {
         Constraint metadataEqualsDependingOnId;
-        boolean mustBeAbleToBeNull = false;
-        if (containingSarrayIsCompletelyInitialized) {
+        boolean canBeNull = false;
+        if (cannotBeNewInstance) {
             // If the array is completely initialized, we do not need to enforce any defaults
             // Everything is already represented, including null values
             metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
@@ -57,20 +83,20 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 // and will be initialized with isNull as an unrestricted SymSbool.
                 metadataEqualsDependingOnId = Eq.newInstance(arrayId, reservedId);
                 if (config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
-                    mustBeAbleToBeNull = true;
+                    canBeNull = true;
                 }
             } else {
                 // If the default is the Java-usual semantics, we must add that the ID can be null.
                 // In this case, the arrayId might be MINUS_ONE indicating that the array is null.
                 // We do this below
-                mustBeAbleToBeNull = true;
+                canBeNull = true;
                 metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
             }
         }
         for (Sint id : potentialIds) {
             if (id == Sint.ConcSint.MINUS_ONE) {
                 // We skip this case for now (there is no ArrayRepresentation of the null-array)
-                mustBeAbleToBeNull = true;
+                canBeNull = true;
                 continue;
             }
             IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar =
@@ -89,10 +115,11 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     isNullsEqual,
                     lengthsEqual
             );
+
             metadataEqualsDependingOnId = Or.newInstance(metadataEqualsDependingOnId, idEqualityImplies);
         }
 
-        if (mustBeAbleToBeNull) {
+        if (canBeNull) {
             // If the containing array can contain null, this is indicated by this array's ID being MINUS_ONE.
             // Thus, if the ID is MINUS_ONE, we imply isNull
             metadataEqualsDependingOnId =
@@ -115,7 +142,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         super(apvasr, level);
         this.reservedId = apvasr.reservedId;
         this.metadataConstraintForPotentialIds = apvasr.metadataConstraintForPotentialIds;
-        this.containingSarrayIsCompletelyInitialized = apvasr.containingSarrayIsCompletelyInitialized;
+        this.cannotBeNewInstance = apvasr.cannotBeNewInstance;
         this.aliasedArrays = apvasr.aliasedArrays;
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : apvasr.aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
@@ -131,23 +158,18 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             return Sbool.ConcSbool.TRUE;
         }
         Constraint joinedSelectConstraint;
-        if (containingSarrayIsCompletelyInitialized) {
+        if (cannotBeNewInstance) {
             joinedSelectConstraint = Sbool.ConcSbool.TRUE;
         } else {
             // currentRepresentation here is the representation for this.reservedId
-            @SuppressWarnings("redundant")
-            Constraint ownConstraint =
-                    this.currentRepresentation.select(
-                            And.newInstance(guard, Eq.newInstance(arrayId, reservedId)),
-                            index,
-                            selectedValue,
-                            isCompletelyInitialized,
-                            this instanceof IArrayArraySolverRepresentation && defaultIsSymbolic ?
-                                    false // The metadata constraint of the selected sarray will already validly restrict the id values
-                                    :
-                                    canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
-                    );
-            joinedSelectConstraint = ownConstraint;
+            // The metadata constraint of the selected sarray will already validly restrict the id values
+            joinedSelectConstraint = this.currentRepresentation.select(
+                    And.newInstance(guard, Eq.newInstance(arrayId, reservedId)),
+                    index,
+                    selectedValue,
+                    isCompletelyInitialized,
+                    (!(this instanceof PartnerClassArraySolverRepresentation) || !defaultIsSymbolic) && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+            );
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
@@ -162,12 +184,11 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return;
         }
-
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
             ArraySolverRepresentation asr = ar.getNewestRepresentation();
             asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
-        if (!containingSarrayIsCompletelyInitialized) {
+        if (!cannotBeNewInstance) {
             // currentRepresentation here is the representation for this.reservedId
             this.currentRepresentation = this.currentRepresentation.store(And.newInstance(guard, Eq.newInstance(arrayId, reservedId)), index, storedValue);
         }

@@ -130,7 +130,7 @@ public interface CalculationFactory {
 
     Sshort i2s(SymbolicExecution se, Sint i);
 
-    SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field);
+    SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);
 
     SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);
 
