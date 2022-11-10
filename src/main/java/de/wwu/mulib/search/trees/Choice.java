@@ -119,7 +119,7 @@ public final class Choice extends TreeNode {
             this.optionConstraint = optionConstraint;
         }
 
-        public void addIdentitiyHavingSubstitutedVarConstraint(PartnerClassObjectConstraint ic) {
+        public void addPartnerClassConstraintConstraint(PartnerClassObjectConstraint ic) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The array constraint must not be added to already evaluated" +
                         " choice options");

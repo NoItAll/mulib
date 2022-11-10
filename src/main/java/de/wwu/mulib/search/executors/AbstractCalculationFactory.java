@@ -272,12 +272,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return value;
     }
 
-    private void generateIdAndRepresentValueInSolverForPartnerClassObjectIfNeeded(
+    private void _generateIdIfNeeded(
             SymbolicExecution se,
             PartnerClass pco,
-            SubstitutedVar value,
-            String field) {
-        assert !(pco instanceof Sarray) && field != null;
+            SubstitutedVar value) {
+        assert !(pco instanceof Sarray);
         assert pco.__mulib__isRepresentedInSolver();
         if (value instanceof PartnerClass) {
             PartnerClass pcval = (PartnerClass) value;
@@ -289,7 +288,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     pcval.__mulib__blockCache();
                 }
             }
-            representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
         }
     }
 
@@ -343,10 +341,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     } else {
                         throw new NotYetImplementedException();
                     }
-                } else if (PartnerClass.class.isAssignableFrom(fieldClass)) {
+                } else if (PartnerClass.class.isAssignableFrom(fieldClass.getComponentType())) {
                     fieldValue = se.partnerClassSarray(
                             len,
-                            (Class<? extends PartnerClass>) fieldClass,
+                            (Class<? extends PartnerClass>) fieldClass.getComponentType(),
                             defaultIsSymbolic,
                             canBeNull
                     );
@@ -409,7 +407,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     continue;
                 }
                 PartnerClass pc = (PartnerClass) val;
-                generateIdAndRepresentValueInSolverForPartnerClassObjectIfNeeded(se, ihsr, pc, entry.getKey());
+                _generateIdIfNeeded(se, ihsr, pc);
                 representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), entry.getKey());
             }
         }

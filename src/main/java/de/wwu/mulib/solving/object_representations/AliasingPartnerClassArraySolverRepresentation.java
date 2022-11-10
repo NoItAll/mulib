@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -27,7 +28,7 @@ public class AliasingPartnerClassArraySolverRepresentation extends AliasingPrimi
         super(config, aic, level, potentialIds, asr, containingSarrayIsCompletelyInitialized);
         this.sps = sps;
         this.asr = asr;
-        assert aic.getValueType().isArray();
+        assert aic.getValueType().isArray() || PartnerClass.class.isAssignableFrom(aic.getValueType());
     }
 
     private AliasingPartnerClassArraySolverRepresentation(

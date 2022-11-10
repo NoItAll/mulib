@@ -13,10 +13,7 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
-import de.wwu.mulib.solving.object_representations.AliasingPrimitiveValuedArraySolverRepresentation;
-import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
-import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
+import de.wwu.mulib.solving.object_representations.*;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import sun.reflect.ReflectionFactory;
@@ -158,7 +155,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         assert !(pc instanceof ArrayConstraint);
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (pc instanceof PartnerClassObjectFieldConstraint) {
-                throw new NotYetImplementedException(); //// TODO
+                _objectCompatibilityLayerFieldAccessTreatment((PartnerClassObjectFieldConstraint) pc);
+                incrementalSolverState.addPartnerClassObjectFieldAccessConstraint((PartnerClassObjectFieldConstraint) pc);
             } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
                 PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation =
                         PartnerClassObjectSolverRepresentation.newInstance(
@@ -172,7 +170,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         (PartnerClassObjectInitializationConstraint) pc,
                         partnerClassObjectSolverRepresentation
                 );
-                throw new NotYetImplementedException();
+                if (partnerClassObjectSolverRepresentation instanceof AliasingPartnerClassObjectRepresentation) {
+                    addConstraint(((AliasingPartnerClassObjectRepresentation) partnerClassObjectSolverRepresentation).getMetadataConstraintForPotentialIds());
+                }
             } else {
                 throw new NotYetImplementedException();
             }
@@ -180,6 +180,24 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             // TODO
             throw new NotYetImplementedException("Currently, only the implementation of symbolic aliasing of objects with " +
                     "the high-level array theory has been validated");
+        }
+    }
+
+    private void _objectCompatibilityLayerFieldAccessTreatment(PartnerClassObjectFieldConstraint pc) {
+        PartnerClassObjectSolverRepresentation rep =
+                (PartnerClassObjectSolverRepresentation)
+                        incrementalSolverState.getCurrentPartnerClassObjectRepresentation(pc.getPartnerClassObjectId());
+        assert rep != null;
+        if (rep.getLevel() != getLevel()) {
+            rep = rep.copyForNewLevel(getLevel());
+            incrementalSolverState.addNewRepresentationInitializingPartnerClassFieldConstraint(pc, rep);
+        }
+        if (pc.getType() == PartnerClassObjectFieldConstraint.Type.GETFIELD) {
+            Constraint getFieldConstraint = rep.getField(pc.getFieldName(), pc.getValue());
+            addConstraint(getFieldConstraint);
+        } else {
+            assert pc.getType() == PartnerClassObjectFieldConstraint.Type.PUTFIELD;
+            rep.putField(pc.getFieldName(), pc.getValue());
         }
     }
 

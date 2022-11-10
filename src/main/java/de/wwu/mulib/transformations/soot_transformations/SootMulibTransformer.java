@@ -1164,7 +1164,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             fieldAccessorMethods.put(newField, accsessor);
             if (sf.isFinal()) {
                 // Remove isFinal in preparation for enabling lazy initialization
-                sf.setModifiers(sf.getModifiers() - Modifier.FINAL);
+                newField.setModifiers(newField.getModifiers() - Modifier.FINAL);
                 // Previously final methods do not need setters
                 continue;
             }
@@ -1461,7 +1461,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             _generateAndSetSimpleGetter(isNullName, isNull);
             _generateAndSetOneValueIsNullSetter(isNull, true);
             _generateAndSetOneValueIsNullSetter(isNull, false);
-            _generateAndSetSimpleSetter(v.TYPE_SBOOL, isNull, "setNull", result);
+            _generateAndSetSimpleSetter(v.TYPE_SBOOL, isNull, "setIsNull", result);
             // Generate id and getter
             String idName = _TRANSFORMATION_PREFIX + "id";
             id = new SootField(idName, v.TYPE_SINT, Modifier.PROTECTED);
@@ -1744,16 +1744,23 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
             upc.add(identityStmt);
             Collection<SootField> oldFields = old.getFields();
+            Stmt returnStmt = Jimple.v().newReturnVoidStmt();
+            upc.add(returnStmt);
+            Stmt next = returnStmt;
             for (SootField sf : oldFields) {
                 SootField newField = getTransformedFieldForOldField(sf, result);
                 if (!fieldWasTransformedAndIsNonStatic(newField, sf.getType(), newField.getType()) || !(sf.getType() instanceof RefLikeType)) {
                     continue;
                 }
                 Local getFieldLocal = localSpawner.spawnNewStackLocal(newField.getType());
-                upc.add(Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef())));
-                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(getFieldLocal, v.SM_PARTNER_CLASS_BLOCK_CACHE.makeRef())));
+                Stmt getFieldStmt = Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef()));
+                Stmt checkIsNull = Jimple.v().newIfStmt(Jimple.v().newEqExpr(NullConstant.v(), getFieldLocal), next);
+                Stmt blockCacheStmt = Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(getFieldLocal, v.SM_PARTNER_CLASS_BLOCK_CACHE.makeRef()));
+                upc.insertBeforeNoRedirect(getFieldStmt, next);
+                upc.insertBeforeNoRedirect(checkIsNull, next);
+                upc.insertBeforeNoRedirect(blockCacheStmt, next);
+                next = getFieldStmt;
             }
-            upc.add(Jimple.v().newReturnVoidStmt());
             blockCacheInPartnerClassFields.setDeclaringClass(result);
             result.addMethod(blockCacheInPartnerClassFields);
         }
@@ -2312,7 +2319,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected void ensureInitializedLibraryTypeFieldsInConstructors(SootClass result) {
         for (SootMethod sm : result.getMethods()) {
-            if (sm.getName().equals(init)) {
+            if (sm.getName().equals(init) && !(sm.getParameterCount() == 1 && sm.getParameterType(0).equals(v.TYPE_SE))) {
                 enhanceClinitOrInitWithNullConditionalDefaults(result, (JimpleBody) sm.retrieveActiveBody(), false);
             }
         }

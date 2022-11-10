@@ -13,6 +13,7 @@ public interface PartnerClassArraySolverRepresentation extends ArraySolverRepres
     @Override
     PartnerClassArraySolverRepresentation copyForNewLevel(int level);
 
+    @SuppressWarnings("rawuse")
     default boolean canContainNull(IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas) {
         Set<Sint> relevantValues = getValuesKnownToPossiblyBeContainedInArray();
         return relevantValues.stream()
@@ -20,8 +21,15 @@ public interface PartnerClassArraySolverRepresentation extends ArraySolverRepres
                     if (s == Sint.ConcSint.MINUS_ONE) {
                         return true;
                     }
-                    ArraySolverRepresentation asr = sas.getRepresentationForId(s).getNewestRepresentation();
-                    return asr.getIsNull() instanceof Sym;
+                    Class<?> type = getElementType();
+                    if (!type.isArray()) {
+                        PartnerClassObjectSolverRepresentation partnerClassObjectConstraint =
+                                (PartnerClassObjectSolverRepresentation) sas.getRepresentationForId(s).getNewestRepresentation();
+                        return partnerClassObjectConstraint.isNull() instanceof Sym;
+                    } else {
+                        ArraySolverRepresentation asr = sas.getRepresentationForId(s).getNewestRepresentation();
+                        return asr.getIsNull() instanceof Sym;
+                    }
                 });
     }
 }

@@ -126,7 +126,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public final void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
         solverManager.addPartnerClassObjectConstraint(ic);
-        currentChoiceOption.addIdentitiyHavingSubstitutedVarConstraint(ic);
+        currentChoiceOption.addPartnerClassConstraintConstraint(ic);
     }
 
     @Override

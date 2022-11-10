@@ -31,8 +31,8 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
         assert reservedId instanceof ConcSnumber;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedObjects = new ArrayList<>(); // Is filled in getMetadataConstraintForPotentialIds
-        this.metadataConstraintForPotentialIds = getMetadataConstraintForPotentialIds(potentialIds);
         this.cannotBeNewInstance = cannotBeNewInstance;
+        this.metadataConstraintForPotentialIds = getMetadataConstraintForPotentialIds(potentialIds);
     }
 
     /**
@@ -107,6 +107,12 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
         this.reservedId = apcor.reservedId;
         this.metadataConstraintForPotentialIds = apcor.metadataConstraintForPotentialIds;
         this.aliasedObjects = apcor.aliasedObjects;
+        for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : apcor.aliasedObjects) {
+            PartnerClassObjectSolverRepresentation psr = pr.getNewestRepresentation();
+            if (psr.getLevel() != level) {
+                pr.addNewRepresentation(psr.copyForNewLevel(level), level);
+            }
+        }
         this.cannotBeNewInstance = apcor.cannotBeNewInstance;
     }
 
@@ -163,7 +169,7 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                         sps,
                         asr,
                         level,
-                        Sint.ConcSint.ZERO,
+                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                         potentialIds
                 );
         return result;
@@ -186,7 +192,7 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                         typeOfField,
                         true,
                         level,
-                        Sint.ConcSint.ZERO, //// TODO
+                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                         sps,
                         asr,
                         true,
@@ -203,7 +209,7 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                         typeOfField,
                         true,
                         level,
-                        Sint.ConcSint.ZERO, //// TODO
+                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                         asr,
                         true,
                         false,
@@ -249,5 +255,9 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                     .get(fieldName)
                     .store(And.newInstance(guard, Eq.newInstance(id, reservedId)), Sint.ConcSint.ZERO, value);
         }
+    }
+
+    public Constraint getMetadataConstraintForPotentialIds() {
+        return metadataConstraintForPotentialIds;
     }
 }

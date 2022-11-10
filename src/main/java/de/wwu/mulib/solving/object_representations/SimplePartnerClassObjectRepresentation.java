@@ -43,7 +43,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
     protected PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field) {
         return new SimplePartnerClassObjectRepresentation(
                 config,
-                Sint.newInputSymbolicSint(), //// TODO
+                Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                 config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ?
                         Sbool.newInputSymbolicSbool()
                         :
@@ -64,7 +64,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
         return typeOfField.getComponentType().isArray() ?
                 new PrimitiveValuedArraySolverRepresentation(
                         config,
-                        Sint.newInputSymbolicSint(), //// TODO
+                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                         Sint.newInputSymbolicSint(),
                         config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()
@@ -79,7 +79,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
                 :
                 new SimplePartnerClassArraySolverRepresentation(
                         config,
-                        Sint.newInputSymbolicSint(), //// TODO
+                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
                         Sint.newInputSymbolicSint(),
                         config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()

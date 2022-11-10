@@ -34,6 +34,7 @@ public class IncrementalSolverState<AR, PR> {
 
         public void addRepresentationForId(Sint id, R r, int level) {
             PartnerClassObjectRepresentation<R> pcor = new PartnerClassObjectRepresentation<>(id);
+            assert r != null;
             pcor.addNewRepresentation(r, level);
             idToMostRecentRepresentation.put(id, pcor);
         }
@@ -123,6 +124,12 @@ public class IncrementalSolverState<AR, PR> {
         PartnerClassObjectRepresentation<AR> ar = _getArrayRepresentation(constraint.getPartnerClassObjectId());
         assert ar != null : "Array representation was not initialized via an ArrayInitializationConstraint!";
         ar.addNewRepresentation(newRepresentation, level);
+    }
+
+    public void addNewRepresentationInitializingPartnerClassFieldConstraint(PartnerClassObjectFieldConstraint c, PR newRepresentation) {
+        PartnerClassObjectRepresentation<PR> pr = _getPartnerClassObjectRepresentation(c.getPartnerClassObjectId());
+        assert pr != null : "Partner class object representation was not initialized via a PartnerClassObjectInitializationConstraint!";
+        pr.addNewRepresentation(newRepresentation, level);
     }
 
     public ArrayDeque<Constraint> getConstraints() {

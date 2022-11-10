@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -18,10 +19,13 @@ public interface ArraySolverRepresentation {
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> symbolicArrayStates,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> symbolicPartnerClassObjectStates,
             int level) {
-        assert Sprimitive.class.isAssignableFrom(ac.getValueType()) || ac.getValueType().isArray();
+        boolean isPrimitive = Sprimitive.class.isAssignableFrom(ac.getValueType());
+        boolean isArray = ac.getValueType().isArray();
+        boolean isPartnerClass = PartnerClass.class.isAssignableFrom(ac.getValueType());
+        assert isPrimitive || isArray || isPartnerClass;
         ArraySolverRepresentation result;
         if (ac.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY) {
-            result = ac.getValueType().isArray() ?
+            result = isArray || isPartnerClass ?
                     new SimplePartnerClassArraySolverRepresentation(
                             config,
                             ac,
@@ -40,7 +44,7 @@ public interface ArraySolverRepresentation {
             PartnerClassArraySolverRepresentation aasr = (PartnerClassArraySolverRepresentation) asr;
             Set<Sint> aliasedArrays = aasr.getValuesKnownToPossiblyBeContainedInArray();
             result =
-                    ac.getValueType().isArray() ?
+                    isArray || isPartnerClass ?
                             new AliasingPartnerClassArraySolverRepresentation(
                                     config,
                                     ac,
@@ -62,7 +66,7 @@ public interface ArraySolverRepresentation {
                             );
         } else if (ac.getType() == ArrayInitializationConstraint.Type.ALIASED_SARRAY) {
             result =
-                    ac.getValueType().isArray() ?
+                    isArray || isPartnerClass ?
                             new AliasingPartnerClassArraySolverRepresentation(
                                     config,
                                     ac,
@@ -88,7 +92,7 @@ public interface ArraySolverRepresentation {
                             .getRepresentationForId(ac.getContainingPartnerClassObjectId())
                             .getNewestRepresentation();
             Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(ac.getFieldName());
-            result = ac.getValueType().isArray() ?
+            result = isArray || isPartnerClass ?
                     new AliasingPartnerClassArraySolverRepresentation(
                             config,
                             ac,

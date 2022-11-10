@@ -19,6 +19,9 @@ import java.util.Map;
 import java.util.Set;
 
 public abstract class AbstractPartnerClassObjectRepresentation implements PartnerClassObjectSolverRepresentation {
+    // TODO Find more elegant solution. For instance, for PartnerClassObjectConstraints (GETFIELD and initialization)
+    //  store the delta in SymbolicExecution
+    public static int NEXT_UNTRACKED_RESERVED_ID = -2;
 
     protected final MulibConfig config;
     // To reuse all functionality, we simply model a field to be an array with one element of the respective type
@@ -69,7 +72,7 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
         this.config = config;
         this.id = id;
         this.isNull = isNull;
-        assert isNull != Sbool.ConcSbool.FALSE || id == Sint.ConcSint.MINUS_ONE;
+        assert isNull != Sbool.ConcSbool.TRUE || id == Sint.ConcSint.MINUS_ONE;
         this.level = level;
         this.clazz = clazz;
         this.defaultIsSymbolic = defaultIsSymbolic;
@@ -156,7 +159,10 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
         this.level = level;
         this.clazz = apcor.clazz;
         this.defaultIsSymbolic = apcor.defaultIsSymbolic;
-        this.fieldToRepresentation = new HashMap<>(apcor.fieldToRepresentation);
+        this.fieldToRepresentation = new HashMap<>();
+        for (Map.Entry<String, ArrayHistorySolverRepresentation> entry : apcor.fieldToRepresentation.entrySet()) {
+            this.fieldToRepresentation.put(entry.getKey(), entry.getValue().copy());
+        }
         this.fieldToType = new HashMap<>(apcor.fieldToType);
         this.isAliasing = apcor.isAliasing;
         this.sps = apcor.sps;
@@ -201,6 +207,7 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
                 );
             }
         }
+        assert !fieldToRepresentation.get(fieldName).isEmpty();
     }
 
     protected abstract PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field);
@@ -242,14 +249,25 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
 
     @Override
     public boolean partnerClassFieldCanContainNull(String field) {
+        Class<?> typeOfField = fieldToType.get(field);
         Set<Sint> relevantValues = getPartnerClassIdsKnownToBePossiblyContainedInField(field);
         return relevantValues.stream()
                 .anyMatch(s -> {
                     if (s == Sint.ConcSint.MINUS_ONE) {
                         return true;
                     }
-                    PartnerClassObjectSolverRepresentation psr = sps.getRepresentationForId(s).getNewestRepresentation();
-                    return psr.isNull() instanceof Sym;
+                    IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>
+                            pcosr = sps.getRepresentationForId(s);
+                    if (!typeOfField.isArray()
+                    && !Sarray.class.isAssignableFrom(typeOfField) // TODO Fix derivision from PartnerClass to be more expressive
+                    ) {
+                        PartnerClassObjectSolverRepresentation partnerClassObjectConstraint =
+                                pcosr.getNewestRepresentation();
+                        return partnerClassObjectConstraint.isNull() instanceof Sym;
+                    } else {
+                        ArraySolverRepresentation asr = (ArraySolverRepresentation) pcosr.getNewestRepresentation();
+                        return asr.getIsNull() instanceof Sym;
+                    }
                 });
     }
 
