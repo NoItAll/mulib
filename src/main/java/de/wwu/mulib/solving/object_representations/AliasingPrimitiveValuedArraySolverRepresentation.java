@@ -143,13 +143,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         this.reservedId = apvasr.reservedId;
         this.metadataConstraintForPotentialIds = apvasr.metadataConstraintForPotentialIds;
         this.cannotBeNewInstance = apvasr.cannotBeNewInstance;
-        this.aliasedArrays = apvasr.aliasedArrays;
-        for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : apvasr.aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            if (asr.getLevel() != level) {
-                ar.addNewRepresentation(asr.copyForNewLevel(level), level);
-            }
-        }
+        this.aliasedArrays = new HashSet<>(apvasr.aliasedArrays);
     }
 
     @Override
@@ -172,7 +166,8 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             );
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            ArraySolverRepresentation asr = getAliasLevelSafe(ar);
+            assert level <= asr.getLevel();
             Constraint partialSelectConstraint = asr.select(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, selectedValue);
             joinedSelectConstraint = And.newInstance(joinedSelectConstraint, partialSelectConstraint);
         }
@@ -185,7 +180,8 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             return;
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
+            ArraySolverRepresentation asr = getAliasLevelSafe(ar);
+            assert level <= asr.getLevel();
             asr.store(And.newInstance(guard, Eq.newInstance(arrayId, asr.getArrayId())), index, storedValue);
         }
         if (!cannotBeNewInstance) {
@@ -205,5 +201,17 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
     @Override
     public Constraint getMetadataConstraintForPotentialIds() {
         return metadataConstraintForPotentialIds;
+    }
+
+    protected final ArraySolverRepresentation getAliasLevelSafe(
+            IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar) {
+        ArraySolverRepresentation result = ar.getNewestRepresentation();
+        if (result.getLevel() < level) {
+            // We allow larger levels. This can happen for safe operations, such as getting the values known
+            // to be contained in the array
+            result = result.copyForNewLevel(level);
+            ar.addNewRepresentation(result, level);
+        }
+        return result;
     }
 }

@@ -11,13 +11,13 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerClassObjectRepresentation {
+public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPartnerClassObjectSolverRepresentation {
     protected final Sint reservedId;
     protected final Constraint metadataConstraintForPotentialIds;
     protected final List<IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>> aliasedObjects;
     protected final boolean cannotBeNewInstance;
 
-    protected AliasingPartnerClassObjectRepresentation(
+    protected AliasingPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
@@ -38,7 +38,7 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
     /**
      * Constructor for generating an AliasingPartnerClassObject lazily
      */
-    protected AliasingPartnerClassObjectRepresentation(
+    protected AliasingPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             Sint id,
             Sbool isNull,
@@ -102,23 +102,17 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
         return metadataEqualsDependingOnId;
     }
 
-    protected AliasingPartnerClassObjectRepresentation(AliasingPartnerClassObjectRepresentation apcor, int level) {
+    protected AliasingPartnerClassObjectSolverRepresentation(AliasingPartnerClassObjectSolverRepresentation apcor, int level) {
         super(apcor, level);
         this.reservedId = apcor.reservedId;
         this.metadataConstraintForPotentialIds = apcor.metadataConstraintForPotentialIds;
-        this.aliasedObjects = apcor.aliasedObjects;
-        for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : apcor.aliasedObjects) {
-            PartnerClassObjectSolverRepresentation psr = pr.getNewestRepresentation();
-            if (psr.getLevel() != level) {
-                pr.addNewRepresentation(psr.copyForNewLevel(level), level);
-            }
-        }
+        this.aliasedObjects = new ArrayList<>(apcor.aliasedObjects);
         this.cannotBeNewInstance = apcor.cannotBeNewInstance;
     }
 
     @Override
     public PartnerClassObjectSolverRepresentation copyForNewLevel(int level) {
-        return new AliasingPartnerClassObjectRepresentation(this, level);
+        return new AliasingPartnerClassObjectSolverRepresentation(this, level);
     }
 
     @Override
@@ -157,10 +151,11 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
     @Override
     protected PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field) {
         Set<Sint> potentialIds = _getPartnerClassIdsKnownToBePossiblyContainedInField(field, false);
+        Sint id = Sint.newInputSymbolicSint();
         PartnerClassObjectSolverRepresentation result =
-                new AliasingPartnerClassObjectRepresentation(
+                new AliasingPartnerClassObjectSolverRepresentation(
                         config,
-                        Sint.newInputSymbolicSint(),
+                        id,
                         partnerClassFieldCanContainNull(field) ?
                                 Sbool.newInputSymbolicSbool()
                                 :
@@ -169,30 +164,32 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                         sps,
                         asr,
                         level,
-                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                        Sint.concSint(getNextUntrackedReservedId()),
                         potentialIds
                 );
+        sps.addRepresentationForId(id, result, level);
         return result;
     }
 
     @Override
     protected ArraySolverRepresentation lazilyGenerateArrayForField(String field) {
         Class<?> typeOfField = fieldToType.get(field);
+        Sint id = Sint.newInputSymbolicSint();
         Set<Sint> potentialIds = _getPartnerClassIdsKnownToBePossiblyContainedInField(field, false);
         Sbool isNull = partnerClassFieldCanContainNull(field) ?
                 Sbool.newInputSymbolicSbool()
                 :
                 Sbool.ConcSbool.FALSE;
-        return typeOfField.getComponentType().isArray() ?
+        ArraySolverRepresentation result = typeOfField.getComponentType().isArray() ?
                 new AliasingPartnerClassArraySolverRepresentation(
                         config,
-                        Sint.newInputSymbolicSint(),
+                        id,
                         Sint.newInputSymbolicSint(),
                         isNull,
                         typeOfField,
                         true,
                         level,
-                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                        Sint.concSint(getNextUntrackedReservedId()),
                         sps,
                         asr,
                         true,
@@ -203,19 +200,22 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
                 :
                 new AliasingPrimitiveValuedArraySolverRepresentation(
                         config,
-                        Sint.newInputSymbolicSint(),
+                        id,
                         Sint.newInputSymbolicSint(),
                         isNull,
                         typeOfField,
                         true,
                         level,
-                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                        Sint.concSint(getNextUntrackedReservedId()),
                         asr,
                         true,
                         false,
                         false,
                         potentialIds
                 );
+
+        asr.addRepresentationForId(id, result, level);
+        return result;
     }
 
     @Override
@@ -225,7 +225,8 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
         }
         Constraint joinedGetfieldConstraint = Sbool.ConcSbool.TRUE;
         for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : aliasedObjects) {
-            PartnerClassObjectSolverRepresentation psr = pr.getNewestRepresentation();
+            PartnerClassObjectSolverRepresentation psr = getAliasLevelSafe(pr);
+            assert psr.getLevel() >= level;
             Constraint partialConstraint = psr.getField(And.newInstance(guard, Eq.newInstance(id, psr.getId())), fieldName, value);
             joinedGetfieldConstraint = And.newInstance(joinedGetfieldConstraint, partialConstraint);
         }
@@ -246,7 +247,8 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
             return;
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : aliasedObjects) {
-            PartnerClassObjectSolverRepresentation psr = pr.getNewestRepresentation();
+            PartnerClassObjectSolverRepresentation psr = getAliasLevelSafe(pr);
+            assert psr.getLevel() >= level;
             psr.putField(And.newInstance(guard, Eq.newInstance(id, psr.getId())), fieldName, value);
         }
         if (!cannotBeNewInstance) {
@@ -259,5 +261,17 @@ public class AliasingPartnerClassObjectRepresentation extends AbstractPartnerCla
 
     public Constraint getMetadataConstraintForPotentialIds() {
         return metadataConstraintForPotentialIds;
+    }
+
+    private PartnerClassObjectSolverRepresentation getAliasLevelSafe(
+            IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr) {
+        PartnerClassObjectSolverRepresentation result = pr.getNewestRepresentation();
+        if (result.getLevel() < level) {
+            // We allow larger levels. This can happen for safe operations, such as getting the values known
+            // to be contained in the array
+            result = result.copyForNewLevel(level);
+            pr.addNewRepresentation(result, level);
+        }
+        return result;
     }
 }

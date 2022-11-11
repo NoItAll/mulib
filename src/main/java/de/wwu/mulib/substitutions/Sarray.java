@@ -211,6 +211,11 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
     }
 
     @Override
+    public final void __mulib__setIsNull(Sbool b) {
+        this.isNull = b;
+    }
+
+    @Override
     public final void __mulib__setIsNotNull() {
         this.isNull = Sbool.ConcSbool.FALSE;
     }

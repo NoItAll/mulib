@@ -158,20 +158,22 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 _objectCompatibilityLayerFieldAccessTreatment((PartnerClassObjectFieldConstraint) pc);
                 incrementalSolverState.addPartnerClassObjectFieldAccessConstraint((PartnerClassObjectFieldConstraint) pc);
             } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
+                PartnerClassObjectInitializationConstraint pic = (PartnerClassObjectInitializationConstraint) pc;
                 PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation =
                         PartnerClassObjectSolverRepresentation.newInstance(
                                 config,
-                                (PartnerClassObjectInitializationConstraint) pc,
+                                pic,
                                 incrementalSolverState.getSymbolicArrayStates(),
                                 incrementalSolverState.getSymbolicPartnerClassObjectStates(),
                                 getLevel()
                         );
                 incrementalSolverState.initializePartnerClassObjectRepresentation(
-                        (PartnerClassObjectInitializationConstraint) pc,
+                        pic,
                         partnerClassObjectSolverRepresentation
                 );
-                if (partnerClassObjectSolverRepresentation instanceof AliasingPartnerClassObjectRepresentation) {
-                    addConstraint(((AliasingPartnerClassObjectRepresentation) partnerClassObjectSolverRepresentation).getMetadataConstraintForPotentialIds());
+                Arrays.stream(pic.getInitialGetfields()).forEach(incrementalSolverState::addPartnerClassObjectFieldAccessConstraint);
+                if (partnerClassObjectSolverRepresentation instanceof AliasingPartnerClassObjectSolverRepresentation) {
+                    addConstraint(((AliasingPartnerClassObjectSolverRepresentation) partnerClassObjectSolverRepresentation).getMetadataConstraintForPotentialIds());
                 }
             } else {
                 throw new NotYetImplementedException();
@@ -208,19 +210,21 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
+                ArrayInitializationConstraint aic = (ArrayInitializationConstraint) ac;
                 // The addition of the initial elements is taken cae of in the instance of ArraySolverRepresentation
                 ArraySolverRepresentation arraySolverRepresentation =
                         ArraySolverRepresentation.newInstance(
                                 config,
-                                (ArrayInitializationConstraint) ac,
+                                aic,
                                 incrementalSolverState.getSymbolicArrayStates(),
                                 incrementalSolverState.getSymbolicPartnerClassObjectStates(),
                                 getLevel()
                         );
                 incrementalSolverState.initializeArrayRepresentation(
-                        (ArrayInitializationConstraint) ac,
+                        aic,
                         arraySolverRepresentation
                 );
+                Arrays.stream(aic.getInitialSelectConstraints()).forEach(incrementalSolverState::addArrayAccessConstraint);
                 if (arraySolverRepresentation instanceof AliasingArraySolverRepresentation) {
                     // Restrict length, isNull, and id of aliasing array
                     addConstraint(((AliasingArraySolverRepresentation) arraySolverRepresentation).getMetadataConstraintForPotentialIds());
@@ -233,12 +237,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
+                ArrayInitializationConstraint aic = (ArrayInitializationConstraint) ac;
                 incrementalSolverState.initializeArrayRepresentation(
-                        (ArrayInitializationConstraint) ac,
-                        createCompletelyNewArrayRepresentation((ArrayInitializationConstraint) ac)
+                        aic,
+                        createCompletelyNewArrayRepresentation(aic)
                 );
+                Arrays.stream(aic.getInitialSelectConstraints()).forEach(incrementalSolverState::addArrayAccessConstraint);
                 // Initialize the initial content of the sarray
-                for (ArrayAccessConstraint aac : ((ArrayInitializationConstraint) ac).getInitialSelectConstraints()) {
+                for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
                     _solverSpecificArrayConstraintTreatment(aac);
                 }
             }

@@ -73,8 +73,6 @@ public class ArrayHistorySolverRepresentation {
         assert store != null && beforeStore != null;
         this.selects = new ArrayList<>();
         this.store = store;
-        // We do not directly reference the old object to keep it unmodified by the selects of other
-        // alternative choice options
         this.beforeStore = beforeStore;
         this.defaultValue = beforeStore.defaultValue;
     }

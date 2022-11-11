@@ -506,6 +506,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
         if (value instanceof PartnerClass) {
+            assert ((PartnerClass) value).__mulib__isRepresentedInSolver();
             return ((PartnerClass) value).__mulib__getId();
         }
         return (Sprimitive) value;

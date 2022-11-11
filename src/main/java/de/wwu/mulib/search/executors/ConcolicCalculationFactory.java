@@ -733,8 +733,8 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
 
     private static Constraint getEqOfConcolic(SubstitutedVar e, SymbolicExecution se) {
         Sbool eq;
-        if (e instanceof Sarray) {
-            e = ((Sarray<?>) e).__mulib__getId();
+        if (e instanceof PartnerClass) {
+            e = ((PartnerClass) e).__mulib__getId();
         }
 
         if (e instanceof Sbool) {
@@ -768,7 +768,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         if (se.nextIsOnKnownPath() || !s.__mulib__shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
             return;
         }
-        assert StreamSupport.stream(s.getCachedElements().spliterator(), false).allMatch(e -> e instanceof Snumber || e instanceof Sarray || e == null) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
+        assert StreamSupport.stream(s.getCachedElements().spliterator(), false).allMatch(e -> e instanceof Snumber || e instanceof PartnerClass || e == null) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
         Iterable<SubstitutedVar> symbolicValues = (Iterable<SubstitutedVar>) s.getCachedElements();
         List<Constraint> currentConcolicMapping = new ArrayList<>();
         for (SubstitutedVar e : symbolicValues) {
@@ -809,6 +809,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         } else if (value instanceof SymNumericExpressionSprimitive) {
             return tryGetSymFromConcolic((SymNumericExpressionSprimitive) value);
         } else if (value instanceof PartnerClass) {
+            assert ((PartnerClass) value).__mulib__isRepresentedInSolver();
             return tryGetSymFromConcolic(((PartnerClass) value).__mulib__getId());
         }
         return (Sprimitive) value;

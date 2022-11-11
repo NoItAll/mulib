@@ -73,8 +73,8 @@ public class AliasingPartnerClassArraySolverRepresentation extends AliasingPrimi
         }
 
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {
-            ArraySolverRepresentation asr = ar.getNewestRepresentation();
-            assert asr instanceof PartnerClassArraySolverRepresentation;
+            ArraySolverRepresentation asr = getAliasLevelSafe(ar);
+            assert asr instanceof PartnerClassArraySolverRepresentation && asr.getLevel() >= level;
             result.addAll(((PartnerClassArraySolverRepresentation) asr).getValuesKnownToPossiblyBeContainedInArray());
         }
 

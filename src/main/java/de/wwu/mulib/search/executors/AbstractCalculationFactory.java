@@ -527,18 +527,21 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
         assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver();
         Map<String, SubstitutedVar> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar();
-        return fieldsToValues.entrySet().stream().map(e -> {
+        List<PartnerClassObjectFieldConstraint> result = new ArrayList<>();
+        for (Map.Entry<String, SubstitutedVar> e : fieldsToValues.entrySet()) {
             Sprimitive value = getValueToBeUsedForPartnerClassObjectConstraint(e.getValue());
-            if (e.getValue() instanceof PartnerClass) {
-                representPartnerClassObjectViaConstraintsIfNeeded(se, (PartnerClass) e.getValue(), true);
+            assert !(e.getValue() instanceof PartnerClass) || ((PartnerClass) e.getValue()).__mulib__isRepresentedInSolver();
+            if (e.getValue() == null && pc.__mulib__isSymbolicAndNotYetInitialized()) {
+                continue;
             }
-            return new PartnerClassObjectFieldConstraint(
+            result.add(new PartnerClassObjectFieldConstraint(
                     pc.__mulib__getId(),
                     e.getKey(),
                     value,
                     PartnerClassObjectFieldConstraint.Type.GETFIELD
-            );
-        }).toArray(PartnerClassObjectFieldConstraint[]::new);
+            ));
+        }
+        return result.toArray(PartnerClassObjectFieldConstraint[]::new);
     }
 
     private ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {
@@ -549,9 +552,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
-            if (value instanceof Sarray<?>) {
-                representPartnerClassObjectViaConstraintsIfNeeded(se, (Sarray) value, true);
-            }
+            assert !(value instanceof PartnerClass) || ((PartnerClass) value).__mulib__isRepresentedInSolver();
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
                     (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
@@ -593,8 +594,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // We must reset the cached elements, if a symbolic variable is present and store was used
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
-            if (value instanceof Sarray<?>) {
-                representPartnerClassObjectViaConstraintsIfNeeded(se, (Sarray) value, true);
+            if (value instanceof PartnerClass) {
+                representPartnerClassObjectViaConstraintsIfNeeded(se, (PartnerClass) value, true);
             }
             if (!se.nextIsOnKnownPath()) {
                 Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);

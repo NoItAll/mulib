@@ -170,11 +170,11 @@ public class IncrementalSolverState<AR, PR> {
 
     @SuppressWarnings({"unchecked", "rawtypes"})
     private void popPartnerClassConstraintsForLevel() {
-        // Check if popped level contains array constraints
         for (PartnerClassObjectRepresentation<?> pr :
                 (Collection<PartnerClassObjectRepresentation>) symbolicPartnerClassObjectStates.idToMostRecentRepresentation.values()) {
             pr.popRepresentationsOfLevel(level);
         }
+        // Check if popped level contains partner class object constraints
         if (partnerClassObjectConstraints.size() > level) {
             partnerClassObjectConstraints.get(level).clear();
         }

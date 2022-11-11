@@ -11,9 +11,9 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.Set;
 
-public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClassObjectRepresentation {
+public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartnerClassObjectSolverRepresentation {
 
-    protected SimplePartnerClassObjectRepresentation(
+    protected SimplePartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
@@ -22,7 +22,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
         super(config, sps, asr, pic, level);
     }
 
-    protected SimplePartnerClassObjectRepresentation(
+    protected SimplePartnerClassObjectSolverRepresentation(
             MulibConfig config,
             Sint id,
             Sbool isNull,
@@ -35,15 +35,16 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
         super(config, id, isNull, clazz, defaultIsSymbolic, isAliasing, sps, asr, level);
     }
 
-    protected SimplePartnerClassObjectRepresentation(SimplePartnerClassObjectRepresentation apcor, int level) {
+    protected SimplePartnerClassObjectSolverRepresentation(SimplePartnerClassObjectSolverRepresentation apcor, int level) {
         super(apcor, level);
     }
 
     @Override
     protected PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field) {
-        return new SimplePartnerClassObjectRepresentation(
+        Sint id = Sint.concSint(getNextUntrackedReservedId());
+        PartnerClassObjectSolverRepresentation result = new SimplePartnerClassObjectSolverRepresentation(
                 config,
-                Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                id,
                 config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ?
                         Sbool.newInputSymbolicSbool()
                         :
@@ -55,16 +56,19 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
                 asr,
                 level
         );
+        sps.addRepresentationForId(id, result, level);
+        return result;
     }
 
     @Override
     protected ArraySolverRepresentation lazilyGenerateArrayForField(String field) {
         Class<?> typeOfField = fieldToType.get(field);
         assert typeOfField.isArray();
-        return typeOfField.getComponentType().isArray() ?
+        Sint id = Sint.concSint(getNextUntrackedReservedId());
+        ArraySolverRepresentation result = typeOfField.getComponentType().isArray() ?
                 new PrimitiveValuedArraySolverRepresentation(
                         config,
-                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                        id,
                         Sint.newInputSymbolicSint(),
                         config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()
@@ -79,7 +83,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
                 :
                 new SimplePartnerClassArraySolverRepresentation(
                         config,
-                        Sint.concSint(NEXT_UNTRACKED_RESERVED_ID--),
+                        id,
                         Sint.newInputSymbolicSint(),
                         config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()
@@ -93,6 +97,8 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
                         sps,
                         asr
                 );
+        asr.addRepresentationForId(id, result, level);
+        return result;
     }
 
     @Override
@@ -118,7 +124,7 @@ public class SimplePartnerClassObjectRepresentation extends AbstractPartnerClass
 
     @Override
     public PartnerClassObjectSolverRepresentation copyForNewLevel(int level) {
-        return new SimplePartnerClassObjectRepresentation(this, level);
+        return new SimplePartnerClassObjectSolverRepresentation(this, level);
     }
 
     @Override

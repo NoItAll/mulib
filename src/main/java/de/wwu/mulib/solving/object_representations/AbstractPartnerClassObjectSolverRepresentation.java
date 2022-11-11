@@ -18,10 +18,14 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
-public abstract class AbstractPartnerClassObjectRepresentation implements PartnerClassObjectSolverRepresentation {
+public abstract class AbstractPartnerClassObjectSolverRepresentation implements PartnerClassObjectSolverRepresentation {
     // TODO Find more elegant solution. For instance, for PartnerClassObjectConstraints (GETFIELD and initialization)
     //  store the delta in SymbolicExecution
-    public static int NEXT_UNTRACKED_RESERVED_ID = -2;
+    private static int NEXT_UNTRACKED_RESERVED_ID = -2;
+
+    public static int getNextUntrackedReservedId() {
+        return NEXT_UNTRACKED_RESERVED_ID--;
+    }
 
     protected final MulibConfig config;
     // To reuse all functionality, we simply model a field to be an array with one element of the respective type
@@ -35,7 +39,7 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
     protected final Class<?> clazz;
     protected final boolean defaultIsSymbolic;
     protected final boolean isAliasing;
-    protected AbstractPartnerClassObjectRepresentation(
+    protected AbstractPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
@@ -52,14 +56,14 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
                 asr,
                 level
         );
-        assert !(id instanceof Sym) || this instanceof AliasingPartnerClassObjectRepresentation;
-        initializeFields(pic.getInitialGetfields(), pic.getFieldTypes());
+        assert !(id instanceof Sym) || this instanceof AliasingPartnerClassObjectSolverRepresentation;
+        initializeFields(pic.getInitialGetfields(), fieldToType);
     }
 
     /**
      * Constructor for generating lazily
      */
-    protected AbstractPartnerClassObjectRepresentation(
+    protected AbstractPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             Sint id,
             Sbool isNull,
@@ -96,7 +100,8 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
         for (Map.Entry<String, Class<?>> entry : fieldTypes.entrySet()) {
             ArrayAccessConstraint aac = arraySelects.get(entry.getKey());
             if (aac == null) {
-                if (!PartnerClass.class.isAssignableFrom(entry.getValue())) {
+                if (!PartnerClass.class.isAssignableFrom(entry.getValue()) && !entry.getValue().isArray() // TODO Unify; - should be Sarray OR Java array
+                ) {
                     // We generate an arbitrary primitive symbolic value
                     aac = generateSymForSprimitive(id, entry.getValue());
                 } else {
@@ -152,7 +157,7 @@ public abstract class AbstractPartnerClassObjectRepresentation implements Partne
         return result;
     }
 
-    protected AbstractPartnerClassObjectRepresentation(AbstractPartnerClassObjectRepresentation apcor, int level) {
+    protected AbstractPartnerClassObjectSolverRepresentation(AbstractPartnerClassObjectSolverRepresentation apcor, int level) {
         this.config = apcor.config;
         this.id = apcor.id;
         this.isNull = apcor.isNull;

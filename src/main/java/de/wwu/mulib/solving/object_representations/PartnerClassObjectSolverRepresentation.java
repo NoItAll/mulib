@@ -20,7 +20,7 @@ public interface PartnerClassObjectSolverRepresentation {
             int level) {
         PartnerClassObjectSolverRepresentation result;
         if (pc.getType() == PartnerClassObjectInitializationConstraint.Type.SIMPLE_PARTNER_CLASS_OBJECT) {
-            result = new SimplePartnerClassObjectRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level);
+            result = new SimplePartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level);
         } else if (pc.getType() == PartnerClassObjectInitializationConstraint.Type.PARTNER_CLASS_OBJECT_IN_SARRAY) {
             ArraySolverRepresentation asr =
                     symbolicArrayStates
@@ -29,9 +29,9 @@ public interface PartnerClassObjectSolverRepresentation {
             assert asr instanceof PartnerClassArraySolverRepresentation;
             PartnerClassArraySolverRepresentation pasr = (PartnerClassArraySolverRepresentation) asr;
             Set<Sint> aliasedPcos = pasr.getValuesKnownToPossiblyBeContainedInArray();
-            result = new AliasingPartnerClassObjectRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, aliasedPcos, asr.isCompletelyInitialized());
+            result = new AliasingPartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, aliasedPcos, asr.isCompletelyInitialized());
         } else if (pc.getType() == PartnerClassObjectInitializationConstraint.Type.ALIASED_PARTNER_CLASS_OBJECT) {
-            result = new AliasingPartnerClassObjectRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, pc.getPotentialIds(), false);
+            result = new AliasingPartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, pc.getPotentialIds(), false);
         } else {
             assert pc.getType() == PartnerClassObjectInitializationConstraint.Type.PARTNER_CLASS_OBJECT_IN_PARTNER_CLASS_OBJECT;
             PartnerClassObjectSolverRepresentation psr =
@@ -39,7 +39,7 @@ public interface PartnerClassObjectSolverRepresentation {
                             .getRepresentationForId(pc.getContainingPartnerClassObjectId())
                             .getNewestRepresentation();
             Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(pc.getFieldName());
-            result = new AliasingPartnerClassObjectRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, ids, true);
+            result = new AliasingPartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, ids, true);
         }
         return result;
     }
