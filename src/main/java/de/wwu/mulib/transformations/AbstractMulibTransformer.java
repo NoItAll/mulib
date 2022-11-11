@@ -214,6 +214,11 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     public Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation) {
         Class<?> result = transformedClasses.get(beforeTransformation.getName());
         if (result == null) {
+            try {
+                result = Class.forName(addPrefixToName(beforeTransformation.getName()));
+                transformedClasses.put(beforeTransformation.getName(), result);
+                return result;
+            } catch (Exception e) {}
             return beforeTransformation;
         }
         return result;

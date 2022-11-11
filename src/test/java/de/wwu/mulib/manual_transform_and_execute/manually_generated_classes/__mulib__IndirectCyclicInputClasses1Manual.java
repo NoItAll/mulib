@@ -66,4 +66,9 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
     }
     @Override
     public void __mulib__setIsNull(Sbool b) {}
+
+    @Override
+    public boolean __mulib__shouldBeRepresentedInSolver() {
+        return false;
+    }
 }

@@ -5,16 +5,16 @@ import de.wwu.mulib.Mulib;
 public class FreeArraysOfObjects {
 
     public static class Truck {
-        int loadedWeight = 0;
-        final int capacity;
-        Material[] loadedMaterials = new Material[0];
+        public int loadedWeight = 0;
+        public final int capacity;
+        public Material[] loadedMaterials = new Material[0];
 
         public Truck(int capacity) {
             this.capacity = capacity;
         }
 
         boolean canLoad(Material m) {
-            return capacity < loadedWeight + m.weight;
+            return capacity >= loadedWeight + m.weight;
         }
 
         void load(Material m) {
@@ -33,8 +33,8 @@ public class FreeArraysOfObjects {
     }
 
     public static class Material {
-        final int number;
-        final int weight;
+        public final int number;
+        public final int weight;
 
         public Material(int number, int weight) {
             this.number = number;

@@ -233,7 +233,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         SubstitutedVar fieldValue = getValueForFieldInPartnerClass(se, pco, field, fieldClass);
         if (fieldValue instanceof PartnerClass && ((PartnerClass) fieldValue).__mulib__getId() == null) {
             PartnerClass pcval = (PartnerClass) fieldValue;
-            pcval.__mulib__prepareForAliasingAndBlockCache(se);
+            pcval.__mulib__prepareForAliasingAndBlockCache(se); // No concrete index since this might be accessed multiple times
             representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
         }
         if (!se.nextIsOnKnownPath()) {
@@ -255,8 +255,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
         assert pco.__mulib__isRepresentedInSolver();
         assert !(pco instanceof Sarray);
-        if (value instanceof PartnerClass) {
-            representPartnerClassObjectViaConstraintsIfNeeded(se, (PartnerClass) value, true);
+        if (value instanceof PartnerClass && ((PartnerClass) value).__mulib__getId() == null) {
+            PartnerClass pcval = (PartnerClass) value;
+            pcval.__mulib__prepareToRepresentSymbolically(se);
+            representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
         }
         if (!se.nextIsOnKnownPath()) {
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);

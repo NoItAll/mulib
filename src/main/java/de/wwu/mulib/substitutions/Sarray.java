@@ -85,7 +85,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
     }
 
     /** Copy constructor for SarraySarrays */
-    private Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
+    protected Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
         mvt.registerCopy(s, this);
         this.id = s.__mulib__getId();
         this.representationState = s.representationState;
@@ -682,19 +682,27 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         }
 
         /**
-         * Copy constructor for SarraySarray
+         * Copy constructor for PartnerClassSarray
          */
         protected PartnerClassSarray(
                 MulibValueCopier mvt,
                 Sarray<T> s,
                 Map<Sint, T> elements) {
             super(mvt, s, elements);
-            assert s instanceof SarraySarray;
+            assert s instanceof PartnerClassSarray;
         }
 
         /** Copy constructor */
-        public PartnerClassSarray(MulibValueCopier mvt, PartnerClassSarray<T> s) {
-            super(mvt, s);
+        public PartnerClassSarray(MulibValueCopier mvt, PartnerClassSarray s) {
+            this(mvt, s, copyArrayElements(mvt, s.cachedElements));
+        }
+
+        private static Map<Sint, PartnerClass> copyArrayElements(MulibValueCopier mvt, Map<Sint, PartnerClass> elementCache) {
+            Map<Sint, PartnerClass> elements = new HashMap<>();
+            for (Sint i : elementCache.keySet()) {
+                elements.put(i, (PartnerClass) elementCache.get(i).copy(mvt));
+            }
+            return elements;
         }
 
         @Override

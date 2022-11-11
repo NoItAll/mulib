@@ -13,13 +13,18 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.LabelUtility;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.solving.object_representations.*;
+import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
+import de.wwu.mulib.solving.object_representations.AliasingPartnerClassObjectSolverRepresentation;
+import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
+import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.StringConstants;
 import sun.reflect.ReflectionFactory;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Constructor;
+import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -46,7 +51,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private final Map<Class<?>, BiFunction<SolverManager, Object, Object>> classesToLabelFunction;
     // Label cache
-    private final Map<Object, Object> searchSpaceRepresentationToLabelObject = new IdentityHashMap<>();
+    private final Map<Object, Object> _searchSpaceRepresentationToLabelObject = new IdentityHashMap<>();
 
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
@@ -57,12 +62,23 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     @Override
     public void registerLabelPair(Object searchRegionRepresentation, Object labeled) {
-        searchSpaceRepresentationToLabelObject.put(searchRegionRepresentation, labeled);
+        if (searchRegionRepresentation instanceof PartnerClass && ((PartnerClass) searchRegionRepresentation).__mulib__getId() != null) {
+            searchRegionRepresentation = ((PartnerClass) searchRegionRepresentation).__mulib__getId();
+        }
+        assert !_searchSpaceRepresentationToLabelObject.containsKey(searchRegionRepresentation);
+        _searchSpaceRepresentationToLabelObject.put(searchRegionRepresentation, labeled);
     }
 
     @Override
     public void resetLabels() {
-        searchSpaceRepresentationToLabelObject.clear();
+        _searchSpaceRepresentationToLabelObject.clear();
+    }
+
+    private Object checkForAlreadyLabeledRepresentation(Object toLabel) {
+        if (toLabel instanceof PartnerClass && ((PartnerClass) toLabel).__mulib__getId() != null) {
+            ((PartnerClass) toLabel).__mulib__getId();
+        }
+        return _searchSpaceRepresentationToLabelObject.get(toLabel);
     }
 
     @Override
@@ -118,8 +134,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
-    public final List<ArrayConstraint> getArrayConstraints() {
+    public final List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints() {
+        List<PartnerClassObjectConstraint> result = _getNonArrayPartnerClassObjectConstraints();
+        result.addAll(_getArrayConstraints());
+        return result;
+    }
+
+    private List<ArrayConstraint> _getArrayConstraints() {
         return incrementalSolverState.getArrayConstraints();
+    }
+
+    private List<PartnerClassObjectConstraint> _getNonArrayPartnerClassObjectConstraints() {
+        return incrementalSolverState.getNonArrayPartnerClassObjectConstraints();
     }
 
     @Override
@@ -156,7 +182,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (pc instanceof PartnerClassObjectFieldConstraint) {
                 _objectCompatibilityLayerFieldAccessTreatment((PartnerClassObjectFieldConstraint) pc);
-                incrementalSolverState.addPartnerClassObjectFieldAccessConstraint((PartnerClassObjectFieldConstraint) pc);
+                incrementalSolverState.addPartnerClassObjectConstraint(pc);
             } else if (pc instanceof PartnerClassObjectInitializationConstraint) {
                 PartnerClassObjectInitializationConstraint pic = (PartnerClassObjectInitializationConstraint) pc;
                 PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation =
@@ -171,7 +197,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         pic,
                         partnerClassObjectSolverRepresentation
                 );
-                Arrays.stream(pic.getInitialGetfields()).forEach(incrementalSolverState::addPartnerClassObjectFieldAccessConstraint);
+                incrementalSolverState.addPartnerClassObjectConstraint(pic);
                 if (partnerClassObjectSolverRepresentation instanceof AliasingPartnerClassObjectSolverRepresentation) {
                     addConstraint(((AliasingPartnerClassObjectSolverRepresentation) partnerClassObjectSolverRepresentation).getMetadataConstraintForPotentialIds());
                 }
@@ -207,7 +233,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             if (ac instanceof ArrayAccessConstraint) {
                 _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
-                incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayConstraint(ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
                 ArrayInitializationConstraint aic = (ArrayInitializationConstraint) ac;
@@ -224,7 +250,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         aic,
                         arraySolverRepresentation
                 );
-                Arrays.stream(aic.getInitialSelectConstraints()).forEach(incrementalSolverState::addArrayAccessConstraint);
+                incrementalSolverState.addArrayConstraint(aic);
                 if (arraySolverRepresentation instanceof AliasingArraySolverRepresentation) {
                     // Restrict length, isNull, and id of aliasing array
                     addConstraint(((AliasingArraySolverRepresentation) arraySolverRepresentation).getMetadataConstraintForPotentialIds());
@@ -234,7 +260,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             if (ac instanceof ArrayAccessConstraint) {
                 // Solver specific treatment
                 _solverSpecificArrayConstraintTreatment((ArrayAccessConstraint) ac);
-                incrementalSolverState.addArrayAccessConstraint((ArrayAccessConstraint) ac);
+                incrementalSolverState.addArrayConstraint(ac);
             } else {
                 assert ac instanceof ArrayInitializationConstraint;
                 ArrayInitializationConstraint aic = (ArrayInitializationConstraint) ac;
@@ -242,7 +268,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         aic,
                         createCompletelyNewArrayRepresentation(aic)
                 );
-                Arrays.stream(aic.getInitialSelectConstraints()).forEach(incrementalSolverState::addArrayAccessConstraint);
+                incrementalSolverState.addArrayConstraint(aic);
                 // Initialize the initial content of the sarray
                 for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
                     _solverSpecificArrayConstraintTreatment(aac);
@@ -396,12 +422,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 continue;
             }
             Constraint disjunctionConstraint;
-            if (sv instanceof Sprimitive || sv instanceof Sarray) {
+            if (sv instanceof Sprimitive || sv instanceof PartnerClass) {
                 Object label = givenLabels.getLabelForNamedSubstitutedVar(sv);
                 disjunctionConstraint = getNeq(sv, label);
                 disjunctionConstraints.add(disjunctionConstraint);
             } else {
-                throw new NotYetImplementedException(); // TODO implement, also in getNeq
+                throw new NotYetImplementedException();
             }
         }
         return disjunctionConstraints;
@@ -419,7 +445,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 return labelSprimitive((Sprimitive) var);
             }
             Object result;
-            if ((result = searchSpaceRepresentationToLabelObject.get(var)) != null) {
+            if ((result = checkForAlreadyLabeledRepresentation(var)) != null) {
                 return result;
             }
 
@@ -482,53 +508,225 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     protected abstract Object labelSymSprimitive(SymSprimitive symSprimitive);
 
     protected Object labelSarray(Sarray<?> sarray) {
-        int length = ((Number) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull())).intValue();
-        Object[] result = new Object[length];
-        searchSpaceRepresentationToLabelObject.put(sarray, result);
+        Object result;
         if (!sarray.__mulib__shouldBeRepresentedInSolver()) {
+            int length = ((Number) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull())).intValue();
+            Object[] array = new Object[length];
+            registerLabelPair(sarray, array);
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 int labeledIndex = ((Number) labelSprimitive(index)).intValue();
                 SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
                 Object labeledValue = getLabel(cachedValue);
-                result[labeledIndex] = labeledValue;
+                array[labeledIndex] = labeledValue;
             }
+            result = array;
         } else {
             // In this case, the constraints were propagated to the constraint solver and accurately describe the
             // state changes of the array
-            if (incrementalSolverState.getSymbolicArrayStates().getRepresentationForId(sarray.__mulib__getId()).getNewestRepresentation() instanceof AliasingPrimitiveValuedArraySolverRepresentation) {
-                throw new NotYetImplementedException();
-            }
-            ArrayConstraint[] arrayConstraints = getArrayConstraintsForSarray(sarray);
-            for (ArrayConstraint ac : arrayConstraints) {
-                if (ac instanceof ArrayInitializationConstraint) {
-                    continue; // TODO Perhaps initialize array with that
-                }
-                ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
-                int labeledIndex = ((Number) labelSprimitive(aac.getIndex())).intValue();
-                Object labeledValue = getLabel(aac.getValue());
-                result[labeledIndex] = labeledValue;
-            }
+            assert sarray.__mulib__getId() != null;
+            result = labelRepresentedArray(sarray.__mulib__getId());
         }
         return result;
     }
 
-    private ArrayConstraint[] getArrayConstraintsForSarray(Sarray sarray) {
-        return getArrayConstraints().stream()
-                .filter(ac -> ac.getPartnerClassObjectId().equals(sarray.__mulib__getId()))
+    private Object labelRepresentedArray(Sint arrayId) {
+        assert arrayId != null;
+        if (((Number) labelSprimitive(arrayId)).intValue() == -1) {
+            return null;
+        }
+        Object array;
+        if ((array = checkForAlreadyLabeledRepresentation(arrayId)) != null) {
+            return array;
+        }
+        ArrayConstraint[] constraints = getArrayConstraintsForSarray(arrayId);
+        assert constraints.length > 0;
+        assert constraints[0] instanceof ArrayInitializationConstraint;
+        ArrayInitializationConstraint aic = (ArrayInitializationConstraint) constraints[0];
+        // Determine type of array
+        Class<?> type = aic.getValueType();
+        Class<?> originalType = transformNonSarrayMulibTypeToJavaType(type);
+        int length = ((Number) labelSprimitive(aic.getArrayLength())).intValue();
+        // Create array of suiting type
+        array = Array.newInstance(originalType, length);
+        boolean isNestedArray = type.isArray();
+        registerLabelPair(arrayId, array);
+        ArrayAccessConstraint[] initialSelects = aic.getInitialSelectConstraints();
+        for (ArrayAccessConstraint s : initialSelects) {
+            setInArray(array, s, type, isNestedArray);
+        }
+        for (int i = 1; i < constraints.length; i++) {
+            if (constraints[i] instanceof ArrayInitializationConstraint) {
+                continue; // Can happen during aliasing; - we just take the first initialization constraint in this case
+            }
+            assert constraints[i] instanceof ArrayAccessConstraint;
+            ArrayAccessConstraint s = (ArrayAccessConstraint) constraints[i];
+            setInArray(array, s, type, isNestedArray);
+        }
+        return array;
+    }
+
+    private void setInArray(Object array, ArrayAccessConstraint s, Class<?> type, boolean isNestedArray) {
+        int index = ((Number) labelSprimitive(s.getIndex())).intValue();
+        Object val;
+        if (isNestedArray) {
+            // Array values are arrays themselves
+            val = labelRepresentedArray((Sint) s.getValue());
+        } else {
+            if (Sprimitive.class.isAssignableFrom(type)) {
+                val = labelSprimitive(s.getValue());
+            } else {
+                assert PartnerClass.class.isAssignableFrom(type);
+                val = labelPartnerClassObject((Sint) s.getValue());
+            }
+        }
+        Array.set(array, index, val);
+    }
+
+    private Object labelPartnerClassObject(Sint partnerClassObjectId) {
+        assert partnerClassObjectId != null;
+        if (((Number) labelSprimitive(partnerClassObjectId)).intValue() == -1) {
+            return null;
+        }
+        Object object;
+        if ((object = checkForAlreadyLabeledRepresentation(partnerClassObjectId)) != null) {
+            return object;
+        }
+        PartnerClassObjectConstraint[] constraints = getConstraintsForPartnerClassObject(partnerClassObjectId);
+        assert constraints.length > 0;
+        assert constraints[0] instanceof PartnerClassObjectInitializationConstraint;
+        PartnerClassObjectInitializationConstraint pic = (PartnerClassObjectInitializationConstraint) constraints[0];
+        Class<?> originalType = transformNonArrayPartnerClassTypeToJavaType(pic.getClazz());
+        object = createEmptyLabelObject(originalType);
+        registerLabelPair(partnerClassObjectId, object);
+        Field[] fields = originalType.getDeclaredFields(); // TODO Merge into label-method
+        Arrays.stream(fields).forEach(f -> f.setAccessible(true));
+        for (PartnerClassObjectFieldConstraint g : pic.getInitialGetfields()) {
+            setFieldInLabelObject(object, fields, g);
+        }
+        for (int i = 1; i < constraints.length; i++) {
+            if (constraints[i] instanceof PartnerClassObjectInitializationConstraint) {
+                continue; // Can happen during aliasing; - we just take the first initialization constraint in this case
+            }
+            assert constraints[i] instanceof PartnerClassObjectFieldConstraint;
+            PartnerClassObjectFieldConstraint g = (PartnerClassObjectFieldConstraint) constraints[i];
+            setFieldInLabelObject(object, fields, g);
+        }
+        return object;
+    }
+
+
+    private Class<?> transformNonSarrayMulibTypeToJavaType(Class<?> c) {
+        assert !Sarray.class.isAssignableFrom(c);
+        if (c.isArray()) {
+            Class<?> innermostType = c.getComponentType();
+            int numberDims = 1;
+            while (innermostType.isArray()) {
+                innermostType = innermostType.getComponentType();
+                numberDims++;
+            }
+            Class<?> innermostOriginalType = transformNonSarrayMulibTypeToJavaType(innermostType);
+            Class<?> result = innermostOriginalType;
+            while (numberDims != 0) {
+                result = Array.newInstance(result, 0).getClass();
+                numberDims--;
+            }
+            return result;
+        } else if (Sint.class.isAssignableFrom(c)) {
+            if (Sbool.class.isAssignableFrom(c)) {
+                return boolean.class;
+            } else if (Sshort.class.isAssignableFrom(c)) {
+                return short.class;
+            } else if (Sbyte.class.isAssignableFrom(c)) {
+                return byte.class;
+            } else {
+                assert Sint.class == c;
+                return int.class;
+            }
+        } else if (Sdouble.class.isAssignableFrom(c)) {
+            return double.class;
+        } else if (Slong.class.isAssignableFrom(c)) {
+            return long.class;
+        } else if (Sfloat.class.isAssignableFrom(c)) {
+            return float.class;
+        } else {
+            return transformNonArrayPartnerClassTypeToJavaType(c);
+        }
+    }
+
+    private void setFieldInLabelObject(Object object, Field[] fields, PartnerClassObjectFieldConstraint g) {
+        Field f = null;
+        for (Field fo : fields) {
+            if (fo.getName().equals(g.getFieldName())) {
+                f = fo;
+                break;
+            }
+        }
+        if (f == null) {
+            throw new LabelingNotPossibleException("Field for field constraint not found: " + g.getFieldName());
+        }
+        Object val;
+        if (f.getType().isArray()) {
+            assert g.getValue() instanceof Sint;
+            val = labelRepresentedArray((Sint) g.getValue());
+        } else if (f.getType().isPrimitive()) {
+            val = labelSprimitive(g.getValue());
+        } else {
+            assert g.getValue() instanceof Sint;
+            val = labelPartnerClassObject((Sint) g.getValue());
+        }
+        try {
+            f.set(object, val);
+        } catch (Exception e) {
+            e.printStackTrace();
+            throw new LabelingNotPossibleException("Setting value failed");
+        }
+    }
+
+    private Class<?> transformNonArrayPartnerClassTypeToJavaType(Class<?> c) {
+        assert !Sarray.class.isAssignableFrom(c) && PartnerClass.class.isAssignableFrom(c);
+        String className = c.getName();
+        try {
+            Class<?> originalClass = Class.forName(className.replace(StringConstants._TRANSFORMATION_PREFIX, ""));
+            return originalClass;
+        } catch (Exception e) {
+            throw new LabelingNotPossibleException("Original class for Mulib class of type " + className + " not found.");
+        }
+    }
+
+
+    private ArrayConstraint[] getArrayConstraintsForSarray(Sint id) {
+        int concId = _labelSintToInt(id); // TODO more performant way?
+        return _getArrayConstraints().stream()
+                .filter(ac -> _labelSintToInt(ac.getPartnerClassObjectId()) == concId)
                 .toArray(ArrayConstraint[]::new);
+    }
+
+    private int _labelSintToInt(Sint i) {
+        return ((Number) labelSprimitive(i)).intValue();
+    }
+
+    private PartnerClassObjectConstraint[] getConstraintsForPartnerClassObject(Sint id) {
+        int concId = _labelSintToInt(id); // TODO more performant way?
+        return _getNonArrayPartnerClassObjectConstraints().stream()
+                .filter(pc -> _labelSintToInt(pc.getPartnerClassObjectId()) == concId)
+                .toArray(PartnerClassObjectConstraint[]::new);
     }
 
     protected Object labelPartnerClassObject(PartnerClass object) {
         if (transformationRequired) {
-            Object emptyLabelObject = createEmptyLabelObject(object.__mulib__getOriginalClass());
-            searchSpaceRepresentationToLabelObject.put(object, emptyLabelObject);
-            Object result = object.label(
-                    emptyLabelObject,
-                    this
-            );
-            assert emptyLabelObject == result;
-            return result;
+            if (!object.__mulib__shouldBeRepresentedInSolver()) {
+                Object emptyLabelObject = createEmptyLabelObject(object.__mulib__getOriginalClass());
+                registerLabelPair(object, emptyLabelObject);
+                Object result = object.label(
+                        emptyLabelObject,
+                        this
+                );
+                assert emptyLabelObject == result;
+                return result;
+            } else {
+                return labelPartnerClassObject(object.__mulib__getId());
+            }
         } else {
             return object;
         }
@@ -537,7 +735,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     protected Object labelArray(Object array) {
         int length = Array.getLength(array);
         Object[] result = new Object[length];
-        searchSpaceRepresentationToLabelObject.put(array, result);
+        registerLabelPair(array, result);
         for (int i = 0; i < length; i++) {
             result[i] = getLabel(Array.get(array, i));
         }
@@ -548,11 +746,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         BiFunction<SolverManager, Object, Object> labelMethod =
                 this.classesToLabelFunction.get(o.getClass());
         if (labelMethod == null) {
-            searchSpaceRepresentationToLabelObject.put(o, o);
+            registerLabelPair(o, o);
             return o;
         } else {
             Object result = labelMethod.apply(this, o);
-            searchSpaceRepresentationToLabelObject.put(o, result);
+            registerLabelPair(o, result);
             return result;
         }
     }
@@ -613,6 +811,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             Sbool bvv = Sbool.concSbool((boolean) value);
             return Xor.newInstance(bv, bvv);
         }
+
         if (sv instanceof Snumber) {
             Snumber wrappedPreviousValue;
             if (value instanceof Integer) {
@@ -644,7 +843,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                     result = Or.newInstance(result, disjunctionConstraint);
                 }
             } else {
-                ArrayConstraint[] acs = getArrayConstraintsForSarray((Sarray) sv);
+                ArrayConstraint[] acs = getArrayConstraintsForSarray(((Sarray) sv).__mulib__getId());
                 for (ArrayConstraint ac : acs) {
                     if (ac instanceof ArrayInitializationConstraint) {
                         continue;

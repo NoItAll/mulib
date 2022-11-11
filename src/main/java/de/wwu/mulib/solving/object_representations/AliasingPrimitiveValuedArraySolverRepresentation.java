@@ -5,8 +5,10 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.*;
 
+import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 /**
  * Represents an array with Sint --> Sprimitive. Is also used to symbolically represent an array of arrays
@@ -213,5 +215,10 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             ar.addNewRepresentation(result, level);
         }
         return result;
+    }
+
+    @Override
+    public Collection<Sint> getAliasedIds() {
+        return aliasedArrays.stream().map(a -> a.getNewestRepresentation().getArrayId()).collect(Collectors.toList());
     }
 }

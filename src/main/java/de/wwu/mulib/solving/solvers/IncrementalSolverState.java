@@ -84,12 +84,12 @@ public class IncrementalSolverState<AR, PR> {
         return ar == null ? null : ar.getNewestRepresentation();
     }
 
-    public void addArrayAccessConstraint(ArrayAccessConstraint ac) {
+    public void addArrayConstraint(ArrayConstraint ac) {
         assert _getArrayRepresentation(ac.getPartnerClassObjectId()) != null;
         addIdentityHavingSubstitutedVarConstraint(level, ac, arrayConstraints);
     }
 
-    public void addPartnerClassObjectFieldAccessConstraint(PartnerClassObjectFieldConstraint pc) {
+    public void addPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
         assert _getPartnerClassObjectRepresentation(pc.getPartnerClassObjectId()) != null;
         addIdentityHavingSubstitutedVarConstraint(level, pc, partnerClassObjectConstraints);
     }
@@ -144,7 +144,7 @@ public class IncrementalSolverState<AR, PR> {
         return result;
     }
 
-    public List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints() {
+    public List<PartnerClassObjectConstraint> getNonArrayPartnerClassObjectConstraints() {
         List<PartnerClassObjectConstraint> result = new ArrayList<>();
         for (List<PartnerClassObjectConstraint> acs : partnerClassObjectConstraints) {
             result.addAll(acs);

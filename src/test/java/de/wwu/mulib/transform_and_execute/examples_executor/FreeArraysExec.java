@@ -16,8 +16,7 @@ import org.junit.jupiter.api.Test;
 import java.util.List;
 import java.util.Optional;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class FreeArraysExec {
     @Test
@@ -36,7 +35,7 @@ public class FreeArraysExec {
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
                     PathSolution pathSolution = result.get();
                     Solution s = pathSolution.getSolution();
-                    Object[] values = (Object[]) s.returnValue;
+                    int[] values = (int[]) s.returnValue;
                     assertEquals(-81, values[0]);
                     assertEquals(0, values[1]);
                     assertEquals(1, values[2]);
@@ -65,7 +64,7 @@ public class FreeArraysExec {
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution), mb.build().toString());
                     PathSolution pathSolution = result.get();
                     Solution s = pathSolution.getSolution();
-                    Object[] values = (Object[]) s.returnValue;
+                    int[] values = (int[]) s.returnValue;
                     assertEquals(1, values[0], mb.build().toString());
                     assertEquals(1, values[1], mb.build().toString());
                     assertEquals(5, values[2], mb.build().toString());
@@ -235,7 +234,7 @@ public class FreeArraysExec {
                 (mb) -> {
                     mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
                     List<Solution> result = TestUtility.getUpToNSolutions(
-                            1,
+                            5,
                             "assignMaterials",
                             FreeArraysOfObjects.class,
                             mb,
@@ -246,12 +245,86 @@ public class FreeArraysExec {
                                             new FreeArraysOfObjects.Truck(3),
                                             new FreeArraysOfObjects.Truck(2) },
                                     new FreeArraysOfObjects.Material[] {
+                                            new FreeArraysOfObjects.Material(1, 4), // exchanged Material 0 and 1 for test case order (see below)
                                             new FreeArraysOfObjects.Material(0, 1),
-                                            new FreeArraysOfObjects.Material(1, 4),
                                             new FreeArraysOfObjects.Material(2, 3),
                                             new FreeArraysOfObjects.Material(3, 1) }
                             }
                     );
+                    assertEquals(3, result.size());
+                    // All three solutions must be sound
+                    boolean seenFirst = false;
+                    boolean seenSecond = false;
+                    boolean seenThird = false;
+                    for (Solution s : result) {
+                        boolean seenFirstTruck = false;
+                        boolean seenSecondTruck = false;
+                        boolean seenThirdTruck = false;
+                        FreeArraysOfObjects.Truck[] trucks = (FreeArraysOfObjects.Truck[]) s.returnValue;
+                        byte currentSolution = -1;
+                        for (FreeArraysOfObjects.Truck t : trucks) {
+                            if (t.capacity == 5) {
+                                seenFirstTruck = true;
+                                assertTrue(t.loadedWeight == 4 || t.loadedWeight == 5);
+                                // Implications:
+                                assertTrue(t.loadedWeight != 4 || t.loadedMaterials.length == 1);
+                                assertTrue(t.loadedWeight != 5 || t.loadedMaterials.length == 2);
+                                assertEquals(1, t.loadedMaterials[0].number);
+                                assertEquals(4, t.loadedMaterials[0].weight);
+                                if (t.loadedWeight == 5) {
+                                    // Two solutions
+                                    if (t.loadedMaterials[1].number == 0) {
+                                        assertEquals(1, t.loadedMaterials[1].weight);
+                                        assertEquals(-1, currentSolution);
+                                        currentSolution = 1;
+                                        seenFirst = true;
+                                    } else {
+                                        assertEquals(3, t.loadedMaterials[1].number);
+                                        assertEquals(1, t.loadedMaterials[1].weight);
+                                        assertEquals(-1, currentSolution);
+                                        currentSolution = 2;
+                                        seenSecond = true;
+                                    }
+                                } else {
+                                    assertEquals(4, t.loadedWeight);
+                                    assertEquals(-1, currentSolution);
+                                    currentSolution = 3;
+                                    seenThird = true;
+                                }
+                            } else if (t.capacity == 3) {
+                                seenSecondTruck = true;
+                                assertEquals(3, t.loadedWeight);
+                                assertEquals(1, t.loadedMaterials.length);
+                                assertEquals(3, t.loadedMaterials[0].weight);
+                                assertEquals(2, t.loadedMaterials[0].number);
+                            } else if (t.capacity == 2) {
+                                seenThirdTruck = true;
+                                assertTrue(t.loadedWeight == 1 || t.loadedWeight == 2);
+                                if (t.loadedWeight == 1) {
+                                    assertEquals(1, t.loadedMaterials.length);
+                                    assertEquals(1, t.loadedMaterials[0].weight);
+                                    if (t.loadedMaterials[0].number == 0) {
+                                        assertEquals(2, currentSolution);
+                                    } else {
+                                        assertEquals(3, t.loadedMaterials[0].number);
+                                        assertEquals(1, currentSolution);
+                                    }
+                                } else {
+                                    assertEquals(2, t.loadedMaterials.length);
+                                    assertEquals(3, currentSolution);
+                                    assertEquals(0, t.loadedMaterials[0].number);
+                                    assertEquals(1, t.loadedMaterials[0].weight);
+                                    assertEquals(3, t.loadedMaterials[1].number);
+                                    assertEquals(1, t.loadedMaterials[1].weight);
+                                }
+                            } else {
+                                fail();
+                            }
+                        }
+                        assertTrue(currentSolution > 0);
+                        assertTrue(seenFirstTruck && seenSecondTruck && seenThirdTruck);
+                    }
+                    assertTrue(seenFirst && seenSecond && seenThird);
                     return result;
                 },
                 "FreeArraysOfObjects.assignMaterials"

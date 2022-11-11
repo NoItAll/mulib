@@ -6,10 +6,8 @@ import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+import java.util.stream.Collectors;
 
 public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPartnerClassObjectSolverRepresentation {
     protected final Sint reservedId;
@@ -273,5 +271,9 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
             pr.addNewRepresentation(result, level);
         }
         return result;
+    }
+
+    public Collection<Sint> getAliasedObjects() {
+        return aliasedObjects.stream().map(o -> o.getNewestRepresentation().getId()).collect(Collectors.toList());
     }
 }

@@ -1,6 +1,5 @@
 package de.wwu.mulib.search.trees;
 
-import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.exceptions.IllegalTreeAccessException;
@@ -154,14 +153,14 @@ public final class Choice extends TreeNode {
             return result;
         }
 
-        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints, ArrayConstraint[] arrayConstraints) {
+        public PathSolution setSolution(Object value, Labels l, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
-            return new PathSolution(this, value, l, constraints, arrayConstraints);
+            return new PathSolution(this, value, l, constraints, partnerClassObjectConstraints);
         }
 
-        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints, ArrayConstraint[] arrayConstraints) {
+        public ExceptionPathSolution setExceptionSolution(Throwable throwable, Labels labels, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
-            return new ExceptionPathSolution(this, throwable, labels, constraints, arrayConstraints);
+            return new ExceptionPathSolution(this, throwable, labels, constraints, partnerClassObjectConstraints);
         }
 
         public ExceededBudget setBudgetExceeded(Budget budget) {

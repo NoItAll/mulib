@@ -861,12 +861,12 @@ public class ArrayChecks {
             boolean seen13 = false;
             for (Solution s : solutions) {
                 assertTrue(s.returnValue.getClass().isArray());
-                Object[] sArray = (Object[]) s.returnValue;
+                int[] sArray = (int[]) s.returnValue;
                 assertEquals(1, (int) ((Integer) sArray[1]));
-                if ((Integer) sArray[0] == 13) {
+                if (sArray[0] == 13) {
                     assertFalse(seen13);
                     seen13 = true;
-                } else if ((Integer) sArray[0] == 14) {
+                } else if (sArray[0] == 14) {
                     assertFalse(seen14);
                     seen14 = true;
                 } else {

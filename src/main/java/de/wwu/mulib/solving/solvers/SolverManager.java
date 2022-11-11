@@ -1,6 +1,5 @@
 package de.wwu.mulib.solving.solvers;
 
-import de.wwu.mulib.constraints.ArrayConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Solution;
@@ -47,7 +46,7 @@ public interface SolverManager {
 
     ArrayDeque<Constraint> getConstraints();
 
-    List<ArrayConstraint> getArrayConstraints();
+    List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints();
 
     int getLevel();
 
