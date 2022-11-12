@@ -323,35 +323,36 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // TODO refactor with SarraySarray
             if (fieldClass.isArray()) {
                 Sint len = se.symSint();
+                Class<?> fieldClassComponentType = fieldClass.getComponentType();
                 if (fieldClass.getComponentType().isArray()) {
-                    fieldValue = se.sarraySarray(len, fieldClass.getComponentType(), defaultIsSymbolic, canBeNull);
-                } else if (Sprimitive.class.isAssignableFrom(fieldClass)) {
-                    if (fieldClass == Sint.class) {
+                    fieldValue = se.sarraySarray(len, fieldClassComponentType, defaultIsSymbolic, canBeNull);
+                } else if (Sprimitive.class.isAssignableFrom(fieldClassComponentType)) {
+                    if (fieldClassComponentType == Sint.class) {
                         fieldValue = se.sintSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Slong.class) {
+                    } else if (fieldClassComponentType == Slong.class) {
                         fieldValue = se.slongSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Sdouble.class) {
+                    } else if (fieldClassComponentType == Sdouble.class) {
                         fieldValue = se.sdoubleSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Sfloat.class) {
+                    } else if (fieldClassComponentType == Sfloat.class) {
                         fieldValue = se.sfloatSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Sshort.class) {
+                    } else if (fieldClassComponentType == Sshort.class) {
                         fieldValue = se.sshortSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Sbyte.class) {
+                    } else if (fieldClassComponentType == Sbyte.class) {
                         fieldValue = se.sbyteSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClass == Sbool.class) {
+                    } else if (fieldClassComponentType == Sbool.class) {
                         fieldValue = se.sboolSarray(len, defaultIsSymbolic, canBeNull);
                     } else {
                         throw new NotYetImplementedException();
                     }
-                } else if (PartnerClass.class.isAssignableFrom(fieldClass.getComponentType())) {
+                } else if (PartnerClass.class.isAssignableFrom(fieldClassComponentType)) {
                     fieldValue = se.partnerClassSarray(
                             len,
-                            (Class<? extends PartnerClass>) fieldClass.getComponentType(),
+                            (Class<? extends PartnerClass>) fieldClassComponentType,
                             defaultIsSymbolic,
                             canBeNull
                     );
                 } else {
-                    throw new NotYetImplementedException();
+                    throw new NotYetImplementedException(fieldClass.getTypeName());
                 }
             } else {
                 fieldValue = se.symObject((Class<PartnerClass>) fieldClass);
