@@ -1044,13 +1044,13 @@ public class ArrayChecks {
                     assertEquals(1, solutions.size());
 
                     Solution singleSolution = solutions.get(0);
-                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    int[][] returnValue = (int[][]) singleSolution.returnValue;
                     assertEquals(2, returnValue.length);
-                    Object[] innerReturnValue = (Object[]) returnValue[0];
+                    int[] innerReturnValue = returnValue[0];
                     assertEquals(2, innerReturnValue.length);
                     assertEquals(0, innerReturnValue[0]);
                     assertEquals(0, innerReturnValue[1]);
-                    innerReturnValue = (Object[]) returnValue[1];
+                    innerReturnValue = returnValue[1];
                     assertEquals(1, innerReturnValue.length);
                     assertEquals(0, innerReturnValue[0]);
                     solutions = TestUtility.getUpToNSolutions(
@@ -1205,14 +1205,14 @@ public class ArrayChecks {
                     boolean seenOne = false;
                     boolean seenZero = false;
                     for (Solution s : solutions) {
-                        Object[] valuesOfTwoPeriods = (Object[]) s.returnValue;
+                        int[][] valuesOfTwoPeriods = (int[][]) s.returnValue;
                         assertEquals(2, valuesOfTwoPeriods.length);
-                        Object[] firstPeriod = (Object[]) valuesOfTwoPeriods[0];
+                        int[] firstPeriod = valuesOfTwoPeriods[0];
                         assertEquals(1, firstPeriod[0]);
                         assertEquals(0, firstPeriod[1]);
-                        Object[] secondPeriod = (Object[]) valuesOfTwoPeriods[1];
+                        int[] secondPeriod = valuesOfTwoPeriods[1];
                         assertEquals(0, secondPeriod[0]);
-                        if (((Integer) secondPeriod[1]) == 1) {
+                        if ((secondPeriod[1]) == 1) {
                             seenOne = true;
                         } else {
                             assertEquals(0, secondPeriod[1]);

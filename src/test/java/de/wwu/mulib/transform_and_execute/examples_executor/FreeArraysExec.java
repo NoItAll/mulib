@@ -99,7 +99,7 @@ public class FreeArraysExec {
                     assertEquals(0, workload2AssignedTo);
                     assertEquals(2, workload1AssignedTo);
                     assertEquals(1, workload3AssignedTo);
-                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    int[] returnValue = (int[]) singleSolution.returnValue;
                     assertEquals(0, returnValue[0]);
                     assertEquals(2, returnValue[1]);
                     assertEquals(0, returnValue[2]);
@@ -124,15 +124,15 @@ public class FreeArraysExec {
                     );
                     assertEquals(1, result.size());
                     Solution singleSolution = result.get(0);
-                    Object[] returnValue = (Object[]) singleSolution.returnValue;
+                    int[][] returnValue = (int[][]) singleSolution.returnValue;
                     assertEquals(2, returnValue.length);
-                    Object[] innerReturnValue = (Object[]) returnValue[0];
+                    int[] innerReturnValue = returnValue[0];
                     assertEquals(4, innerReturnValue.length);
                     assertEquals(0, innerReturnValue[0]);
                     assertEquals(2, innerReturnValue[1]);
                     assertEquals(0, innerReturnValue[2]);
                     assertEquals(1, innerReturnValue[3]);
-                    innerReturnValue = (Object[]) returnValue[1];
+                    innerReturnValue = returnValue[1];
                     assertEquals(3, innerReturnValue.length);
                     assertEquals(0, innerReturnValue[0]);
                     assertEquals(2, innerReturnValue[1]);

@@ -160,6 +160,17 @@ public abstract class MulibExecutorManager {
                 b.append(linebreak);
             }
         }
+        if (config.ENLIST_LEAVES) {
+            b.append(linebreak)
+                    .append(indent)
+                    .append(", numberPathSolutions: ")
+                    .append(observedTree.getPathSolutionsList().size())
+                    .append(", numberFails: ")
+                    .append(observedTree.getFailsList().size())
+                    .append(", numberExceededBudget: ")
+                    .append(observedTree.getExceededBudgetList().size());
+
+        }
         Mulib.log.log(Level.INFO, b.toString());
     }
 

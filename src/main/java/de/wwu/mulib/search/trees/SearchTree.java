@@ -166,6 +166,14 @@ public final class SearchTree {
         return solutionsList;
     }
 
+    public List<Fail> getFailsList() {
+        return failsList;
+    }
+
+    public List<ExceededBudget> getExceededBudgetList() {
+        return exceededBudgetList;
+    }
+
     public void addToFails(Fail fail) {
         if (enlistLeaves) this.failsList.add(fail);
     }

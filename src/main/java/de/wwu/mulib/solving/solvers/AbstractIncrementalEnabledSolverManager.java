@@ -510,15 +510,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     protected Object labelSarray(Sarray<?> sarray) {
         Object result;
         if (!sarray.__mulib__shouldBeRepresentedInSolver()) {
-            int length = ((Number) labelSprimitive(sarray._getLengthWithoutCheckingForIsNull())).intValue();
-            Object[] array = new Object[length];
+            int length = _labelSintToInt(sarray._getLengthWithoutCheckingForIsNull());
+            Object array = Array.newInstance(transformNonSarrayMulibTypeToJavaType(sarray.getElementType()), length);
             registerLabelPair(sarray, array);
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
-                int labeledIndex = ((Number) labelSprimitive(index)).intValue();
+                int labeledIndex = _labelSintToInt(index);
                 SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
                 Object labeledValue = getLabel(cachedValue);
-                array[labeledIndex] = labeledValue;
+                Array.set(array, labeledIndex, labeledValue);
             }
             result = array;
         } else {
@@ -532,7 +532,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private Object labelRepresentedArray(Sint arrayId) {
         assert arrayId != null;
-        if (((Number) labelSprimitive(arrayId)).intValue() == -1) {
+        if (_labelSintToInt(arrayId) == -1) {
             return null;
         }
         Object array;
@@ -546,7 +546,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         // Determine type of array
         Class<?> type = aic.getValueType();
         Class<?> originalType = transformNonSarrayMulibTypeToJavaType(type);
-        int length = ((Number) labelSprimitive(aic.getArrayLength())).intValue();
+        int length = _labelSintToInt(aic.getArrayLength());
         // Create array of suiting type
         array = Array.newInstance(originalType, length);
         boolean isNestedArray = type.isArray();
@@ -567,7 +567,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private void setInArray(Object array, ArrayAccessConstraint s, Class<?> type, boolean isNestedArray) {
-        int index = ((Number) labelSprimitive(s.getIndex())).intValue();
+        int index = _labelSintToInt(s.getIndex());
         Object val;
         if (isNestedArray) {
             // Array values are arrays themselves
@@ -585,7 +585,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private Object labelPartnerClassObject(Sint partnerClassObjectId) {
         assert partnerClassObjectId != null;
-        if (((Number) labelSprimitive(partnerClassObjectId)).intValue() == -1) {
+        if (_labelSintToInt(partnerClassObjectId) == -1) {
             return null;
         }
         Object object;
@@ -684,7 +684,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private Class<?> transformNonArrayPartnerClassTypeToJavaType(Class<?> c) {
-        assert !Sarray.class.isAssignableFrom(c) && PartnerClass.class.isAssignableFrom(c);
+        assert !Sarray.class.isAssignableFrom(c) && (PartnerClass.class.isAssignableFrom(c) || !c.getName().contains(StringConstants._TRANSFORMATION_PREFIX));
         String className = c.getName();
         try {
             Class<?> originalClass = Class.forName(className.replace(StringConstants._TRANSFORMATION_PREFIX, ""));
@@ -734,10 +734,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     protected Object labelArray(Object array) {
         int length = Array.getLength(array);
-        Object[] result = new Object[length];
+        Object result = Array.newInstance(transformNonSarrayMulibTypeToJavaType(array.getClass().getComponentType()), length);
         registerLabelPair(array, result);
         for (int i = 0; i < length; i++) {
-            result[i] = getLabel(Array.get(array, i));
+            Array.set(result, i, getLabel(Array.get(array, i)));
         }
         return result;
     }
