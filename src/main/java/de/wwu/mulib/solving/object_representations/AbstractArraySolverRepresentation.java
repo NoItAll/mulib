@@ -16,7 +16,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     protected final Sint length;
     protected final Sbool isNull;
     protected final int level;
-    protected final boolean isCompletelyInitialized;
+    protected boolean isCompletelyInitialized;
     protected final Class<?> valueType;
     protected final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
     protected final boolean defaultIsSymbolic;

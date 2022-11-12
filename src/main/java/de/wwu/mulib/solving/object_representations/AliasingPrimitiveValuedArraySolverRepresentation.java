@@ -40,6 +40,20 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         this.aliasedArrays = new HashSet<>(); // Is filled in getMetadataConstraintForPotentialIds
         this.metadataConstraintForPotentialIds =
                 getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
+        if (cannotBeNewInstance) {
+            // Set by superclass:
+            assert !isCompletelyInitialized;
+            // If this is a pure alias, this array is completely initialized, if its potential aliases are
+            boolean result = true;
+            for (Sint i : potentialIds) {
+                ArraySolverRepresentation asr = symbolicArrayStates.getRepresentationForId(i).getNewestRepresentation();
+                if (!asr.isCompletelyInitialized()) {
+                    result = false;
+                    break;
+                }
+            }
+            isCompletelyInitialized = result;
+        }
     }
 
     /**
