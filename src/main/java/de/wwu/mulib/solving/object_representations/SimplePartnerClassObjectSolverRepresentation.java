@@ -110,7 +110,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                 Sint.ConcSint.ZERO,
                 value,
                 true,
-                !defaultIsSymbolic
+                false
         );
     }
 

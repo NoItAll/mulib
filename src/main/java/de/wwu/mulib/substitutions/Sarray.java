@@ -798,7 +798,8 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
             while (i.ltChoice(getLength(), se)) {
                 Sint[] nextLengths = new Sint[lengths.length-1];
                 System.arraycopy(lengths, 1, nextLengths, 0, nextLengths.length);
-                se.store(this, i,
+                se.store(this,
+                        i,
                         generateNonSymbolicSarrayDependingOnStateForMultiANewArray(
                                 nextLengths,
                                 (Class<? extends SubstitutedVar>) elementType.getComponentType(),
@@ -806,7 +807,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                         )
                 );
                 i = i.add(Sint.ConcSint.ONE, se);
-                lengths = nextLengths;
             }
             assert !(_getLengthWithoutCheckingForIsNull() instanceof ConcSnumber) || ((ConcSnumber) _getLengthWithoutCheckingForIsNull()).intVal() == getCachedIndices().size();
         }
@@ -873,7 +873,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
                 );
             }
             assert lengths.length == 1;
-            return generateNonSarraySarrayWithSpecifiedIsNull(false, lengths[0], nextInnerElementsType.getComponentType(), false, se);
+            return generateNonSarraySarrayWithSpecifiedIsNull(false, lengths[0], nextInnerElementsType, false, se);
         }
 
         @SuppressWarnings("unchecked")
