@@ -117,7 +117,7 @@ public class ArrayHistorySolverRepresentation {
             indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
             Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
             indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
-            resultForSelectOperations = beforeStore._select(guard, index, value, false, false);
+            resultForSelectOperations = beforeStore._select(Sbool.ConcSbool.TRUE, index, value, false, false);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
