@@ -92,25 +92,45 @@ public class ArrayHistorySolverRepresentation {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
         }
-        Constraint selectConstraint= _select(
-                guard,
-                index,
-                value,
-                !arrayIsCompletelyInitialized,
-                // We do not have to enforce that, if index is unseen, value is a default value, if
-                // there are not unseen indices
-                defaultValueForUnknownsShouldBeEnforced
-        );
+        Constraint selectConstraint = _select(index, value);
+        // We do not have to enforce that, if index is unseen, value is a default value, if
+        // there are not unseen indices
+        if (defaultValueForUnknownsShouldBeEnforced) {
+            // If we have to enforce a default value, for instance 0 for int arrays or -1 for array-arrays, for unknown values, we
+            // have to gather all guarded index-equals-constraints to use later
+            Constraint indexEqualsToAnyPreviousIndexWithGuard =
+                    getFromHistory(h -> h.indexIsValid.apply(index))
+                            .stream()
+                            .reduce(Sbool.ConcSbool.FALSE, Or::newInstance);
+
+            // If the default value is used for unset values, we must check if it is a currently unrepresented index and
+            // in this case, imply that the default value is used. E.g. 0 for int-arrays
+            // For objects, -1 is used to signal null
+            // If the defaultValue is not enforced for unknown index-value pairs, defaultValueForUnknownPossible is
+            // false and 'value' is unrestricted
+            selectConstraint =
+                    And.newInstance(
+                            // selectConstraint must hold
+                            selectConstraint,
+                            // Furthermore, it must hold that if neither the index-equals constraints for the store or selects
+                            // hold, the value must equal to the default value
+                            implies(
+                                    Not.newInstance(indexEqualsToAnyPreviousIndexWithGuard),
+                                    elementsEqualConstraint(value, defaultValue)
+                            )
+                    );
+        }
+
+        if (!arrayIsCompletelyInitialized) {
+            selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
+        }
 
         return implies(guard, selectConstraint);
     }
 
     private Constraint _select(
-            Constraint guard,
             Sint index,
-            Sprimitive value,
-            boolean pushSelect,
-            boolean defaultValueForUnknownsShouldBeEnforced) {
+            Sprimitive value) {
         Constraint indexEqualsToStoreIndexWithGuard;
         Constraint indexEqualsToStoreCase;
         Constraint resultForSelectOperations;
@@ -119,13 +139,12 @@ public class ArrayHistorySolverRepresentation {
             assert beforeStore != null;
             indexEqualsToStoreIndexWithGuard = store.indexIsValid.apply(index);
             indexEqualsToStoreCase = elementsEqualConstraint(store.value, value);
-            resultForSelectOperations = beforeStore._select(Sbool.ConcSbool.TRUE, index, value, false, false);
+            resultForSelectOperations = beforeStore._select(index, value);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreCase = Sbool.ConcSbool.TRUE;
             resultForSelectOperations = Sbool.ConcSbool.TRUE;
         }
-
 
         // If it is not clear that the value must stem from the store operation, we check all previous selected values
         for (ArrayAccessSolverRepresentation s : selects) {
@@ -150,39 +169,7 @@ public class ArrayHistorySolverRepresentation {
             );
         }
 
-        Constraint bothCasesImplications =
-                ite(indexEqualsToStoreIndexWithGuard, indexEqualsToStoreCase, resultForSelectOperations);
-
-        if (defaultValueForUnknownsShouldBeEnforced) {
-            // If we have to enforce a default value, for instance 0 for int arrays or -1 for array-arrays, for unknown values, we
-            // have to gather all guarded index-equals-constraints to use later
-            Constraint indexEqualsToAnyPreviousIndexWithGuard =
-                    getFromHistory(h -> h.indexIsValid.apply(index))
-                            .stream()
-                            .reduce(Sbool.ConcSbool.FALSE, Or::newInstance);
-
-            // If the default value is used for unset values, we must check if it is a currently unrepresented index and
-            // in this case, imply that the default value is used. E.g. 0 for int-arrays
-            // For objects, -1 is used to signal null
-            // If the defaultValue is not enforced for unknown index-value pairs, defaultValueForUnknownPossible is
-            // false and 'value' is unrestricted
-            bothCasesImplications =
-                    And.newInstance(
-                            // bothCasesImplications must hold
-                            bothCasesImplications,
-                            // Furthermore, it must hold that if neither the index-equals constraints for the store or selects
-                            // hold, the value must equal to the default value
-                            implies(
-                                    Not.newInstance(indexEqualsToAnyPreviousIndexWithGuard),
-                                    elementsEqualConstraint(value, defaultValue)
-                            )
-                    );
-        }
-
-        if (pushSelect) {
-            selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
-        }
-        return bothCasesImplications;
+        return ite(indexEqualsToStoreIndexWithGuard, indexEqualsToStoreCase, resultForSelectOperations);
     }
 
     public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
@@ -251,7 +238,7 @@ public class ArrayHistorySolverRepresentation {
     }
 
     private static Constraint implies(Constraint c0, Constraint c1) {
-        return Or.newInstance(Not.newInstance(c0), c1);
+        return Implication.newInstance(c0, c1);
     }
 
     private static Constraint ite(Constraint c, Constraint ifCase, Constraint elseCase) {
