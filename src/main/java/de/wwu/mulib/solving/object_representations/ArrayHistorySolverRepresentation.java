@@ -56,7 +56,7 @@ public class ArrayHistorySolverRepresentation {
             ));
         }
 //        {
-//            final Map<Sprimitive, List<Sint>> sameValToIndices = new HashMap<>();
+//            final Map<Sprimitive, List<Sint>> sameValToIndices = new HashMap<>(); // TODO Much worse performance for some benchmarking examples
 //            Arrays.stream(initialSelects).sequential().forEach(s -> {
 //                List<Sint> indices = sameValToIndices.computeIfAbsent(s.getValue(), k -> new ArrayList<>());
 //                indices.add(s.getIndex());
@@ -353,7 +353,7 @@ public class ArrayHistorySolverRepresentation {
             this.guard = guard;
             this.indexIsValid = i -> Eq.newInstance(index, i);
             this.value = value;
-            this.isConcrete = index instanceof ConcSnumber;
+            this.isConcrete = guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isTrue() && index instanceof ConcSnumber;
         }
 
         ArrayAccessSolverRepresentation(Constraint guard, Function<Sint, Constraint> indexIsValid, Sprimitive value) {
