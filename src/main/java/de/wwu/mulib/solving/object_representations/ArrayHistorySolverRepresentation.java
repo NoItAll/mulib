@@ -8,6 +8,7 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.*;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
@@ -80,7 +81,7 @@ public class ArrayHistorySolverRepresentation {
 //                        ConcSnumber to = (ConcSnumber) range[1];
 //                        aasr = new ArrayAccessSolverRepresentation(
 //                                Sbool.ConcSbool.TRUE,
-//                                (i) -> And.newInstance(Lte.newInstance(from, i), Lte.newInstance(i, to)),
+//                                (i, g) -> And.newInstance(Lte.newInstance(from, i), Lte.newInstance(i, to), g),
 //                                val
 //                        );
 //                    }
@@ -198,7 +199,7 @@ public class ArrayHistorySolverRepresentation {
         // If we stored, we prioritize the stored index-value pair
         if (store != null) {
             assert beforeStore != null;
-            indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, store.indexIsValid.apply(index));
+            indexEqualsToStoreIndexWithGuard = store.indexIsValid.apply(index);
             indexEqualsToStoreCase = elementsEqualConstraint(store.value, value);
             resultForSelectOperations = beforeStore._select(Sbool.ConcSbool.TRUE, index, value, false, false);
         } else {
@@ -217,15 +218,14 @@ public class ArrayHistorySolverRepresentation {
                 if (!doEqual) {
                     // We can simply skip this index
                     continue;
-                } else if (s.guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) s.guard).isTrue()) {
+                } else {
                     resultForSelectOperations = elementsEqualConstraint(s.value, value);
                     break;
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
-            Constraint indexEqualsToSelectIndexWithGuard = And.newInstance(s.guard, indexEqualsToSelectIndex);
             Constraint indexEqualsToSelectIndexImplication =
-                    implies(indexEqualsToSelectIndexWithGuard, valuesEqual);
+                    implies(indexEqualsToSelectIndex, valuesEqual);
             resultForSelectOperations = And.newInstance(
                     indexEqualsToSelectIndexImplication,
                     resultForSelectOperations
@@ -239,7 +239,7 @@ public class ArrayHistorySolverRepresentation {
             // If we have to enforce a default value, for instance 0 for int arrays or -1 for array-arrays, for unknown values, we
             // have to gather all guarded index-equals-constraints to use later
             Constraint indexEqualsToAnyPreviousIndexWithGuard =
-                    getFromHistory(h -> And.newInstance(h.guard, h.indexIsValid.apply(index)))
+                    getFromHistory(h -> h.indexIsValid.apply(index))
                             .stream()
                             .reduce(Sbool.ConcSbool.FALSE, Or::newInstance);
 
@@ -351,15 +351,15 @@ public class ArrayHistorySolverRepresentation {
         ArrayAccessSolverRepresentation(Constraint guard, Sint index, Sprimitive value) {
             assert guard != null && index != null && value != null;
             this.guard = guard;
-            this.indexIsValid = i -> Eq.newInstance(index, i);
+            this.indexIsValid = i -> And.newInstance(guard, Eq.newInstance(index, i));
             this.value = value;
             this.isConcrete = guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isTrue() && index instanceof ConcSnumber;
         }
 
-        ArrayAccessSolverRepresentation(Constraint guard, Function<Sint, Constraint> indexIsValid, Sprimitive value) {
+        ArrayAccessSolverRepresentation(Constraint guard, BiFunction<Sint, Constraint, Constraint> indexIsValid, Sprimitive value) {
             assert guard != null && indexIsValid != null && value != null;
             this.guard = guard;
-            this.indexIsValid = indexIsValid;
+            this.indexIsValid = (i) -> indexIsValid.apply(i, guard);
             this.value = value;
             this.isConcrete = true;
         }
