@@ -33,7 +33,6 @@ public final class ExamplesExecutor {
 
     public static void main(String[] args) {
         Mulib.log.log(Level.INFO, "Starting...");
-        args = new String[] {"PCAP", "DFS", "35", "HL"};
         String chosenMethod = args[0];
         String chosenConfig = args[1];
         int numberIterations = args.length > 2 ? Integer.parseInt(args[2]) : 35;
@@ -155,13 +154,7 @@ public final class ExamplesExecutor {
 
     private static List<PathSolution> runPrimitiveEncodingCapacityAssignment(MulibConfig.MulibConfigBuilder builder) {
         builder.setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
-        int[] machines = new int[] {
-                5, 5, 5,
-                5, 5, 5,
-                3, 3, 3,
-                3, 3, 3,
-                2, 2, 2,
-                2, 2, 2 };
+        int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3 };
         List<PathSolution> ps = Mulib.executeMulib(
                 "assign",
