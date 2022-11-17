@@ -3,6 +3,8 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.BoolIte;
+import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericIte;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -48,47 +50,47 @@ public class ArrayHistorySolverRepresentation {
         this.beforeStore = null;
         this.defaultValue = defaultValue;
         this.selects = new ArrayList<>();
-        for (ArrayAccessConstraint ac : initialSelects) {
-            Sprimitive value = ac.getValue();
-            selects.add(new ArrayAccessSolverRepresentation(
-                    Sbool.ConcSbool.TRUE,
-                    ac.getIndex(),
-                    value
-            ));
-        }
-//        {
-//            final Map<Sprimitive, List<Sint>> sameValToIndices = new HashMap<>(); // TODO Much worse performance for some benchmarking examples
-//            Arrays.stream(initialSelects).sequential().forEach(s -> {
-//                List<Sint> indices = sameValToIndices.computeIfAbsent(s.getValue(), k -> new ArrayList<>());
-//                indices.add(s.getIndex());
-//            });
-//            final Map<Sprimitive, List<Sint[]>> sameValToRanges = new HashMap<>();
-//            sameValToIndices.forEach((key, value) -> {
-//                List<Sint[]> ranges = getRangesWithoutNull(value);
-//                sameValToRanges.put(key, ranges);
-//            });
-//
-//            for (Map.Entry<Sprimitive, List<Sint[]>> rangesForVal : sameValToRanges.entrySet()) {
-//                Sprimitive val = rangesForVal.getKey();
-//                for (Sint[] range : rangesForVal.getValue()) {
-//                    ArrayAccessSolverRepresentation aasr;
-//                    if (range.length == 1) {
-//                        aasr = new ArrayAccessSolverRepresentation(Sbool.ConcSbool.TRUE, range[0], val);
-//                    } else {
-//                        assert range.length == 2;
-//                        assert range[0] instanceof ConcSnumber && range[1] instanceof ConcSnumber;
-//                        ConcSnumber from = (ConcSnumber) range[0];
-//                        ConcSnumber to = (ConcSnumber) range[1];
-//                        aasr = new ArrayAccessSolverRepresentation(
-//                                Sbool.ConcSbool.TRUE,
-//                                (i, g) -> And.newInstance(Lte.newInstance(from, i), Lte.newInstance(i, to), g),
-//                                val
-//                        );
-//                    }
-//                    selects.add(aasr);
-//                }
-//            }
+//        for (ArrayAccessConstraint ac : initialSelects) {
+//            Sprimitive value = ac.getValue();
+//            selects.add(new ArrayAccessSolverRepresentation(
+//                    Sbool.ConcSbool.TRUE,
+//                    ac.getIndex(),
+//                    value
+//            ));
 //        }
+        {
+            final Map<Sprimitive, List<Sint>> sameValToIndices = new HashMap<>(); // TODO Much worse performance for some benchmarking examples
+            Arrays.stream(initialSelects).sequential().forEach(s -> {
+                List<Sint> indices = sameValToIndices.computeIfAbsent(s.getValue(), k -> new ArrayList<>());
+                indices.add(s.getIndex());
+            });
+            final Map<Sprimitive, List<Sint[]>> sameValToRanges = new HashMap<>();
+            sameValToIndices.forEach((key, value) -> {
+                List<Sint[]> ranges = getRangesWithoutNull(value);
+                sameValToRanges.put(key, ranges);
+            });
+
+            for (Map.Entry<Sprimitive, List<Sint[]>> rangesForVal : sameValToRanges.entrySet()) {
+                Sprimitive val = rangesForVal.getKey();
+                for (Sint[] range : rangesForVal.getValue()) {
+                    ArrayAccessSolverRepresentation aasr;
+                    if (range.length == 1) {
+                        aasr = new ArrayAccessSolverRepresentation(Sbool.ConcSbool.TRUE, range[0], val);
+                    } else {
+                        assert range.length == 2;
+                        assert range[0] instanceof ConcSnumber && range[1] instanceof ConcSnumber;
+                        ConcSnumber from = (ConcSnumber) range[0];
+                        ConcSnumber to = (ConcSnumber) range[1];
+                        aasr = new ArrayAccessSolverRepresentation(
+                                Sbool.ConcSbool.TRUE,
+                                (i, g) -> And.newInstance(Lte.newInstance(from, i), Lte.newInstance(i, to), g),
+                                val
+                        );
+                    }
+                    selects.add(aasr);
+                }
+            }
+        }
     }
 
     public static List<Sint[]> getRangesWithoutNull(Collection<Sint> is) {
@@ -176,15 +178,55 @@ public class ArrayHistorySolverRepresentation {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
         }
-        return _select(
-                guard,
-                index,
-                value,
-                !arrayIsCompletelyInitialized,
-                // We do not have to enforce that, if index is unseen, value is a default value, if
-                // there are not unseen indices
-                defaultValueForUnknownsShouldBeEnforced
-        );
+//        Constraint selectConstraint= _select(
+//                guard,
+//                index,
+//                value,
+//                !arrayIsCompletelyInitialized,
+//                // We do not have to enforce that, if index is unseen, value is a default value, if
+//                // there are not unseen indices
+//                defaultValueForUnknownsShouldBeEnforced
+//        );
+//
+//        Constraint result = implies(guard, selectConstraint);
+        NumericExpression numericExpression = _selectNumeric(guard, index, (Snumber) value, !arrayIsCompletelyInitialized);
+        Constraint result = implies(guard, Eq.newInstance((Snumber) value, numericExpression));
+        return result;
+    }
+
+    private NumericExpression _selectNumeric(
+            Constraint guard,
+            Sint index,
+            Snumber value,
+            boolean pushSelect) {
+        NumericExpression result;
+        if (beforeStore != null) {
+            result = beforeStore._selectNumeric(Sbool.ConcSbool.TRUE, index, value, false);
+        } else {
+            result = value;
+        }
+        for (ArrayAccessSolverRepresentation s : selects) {
+            Constraint indexEqualsToSelectIndex = s.indexIsValid.apply(index);
+            if (indexEqualsToSelectIndex instanceof Sbool.ConcSbool) {
+                if (!((Sbool.ConcSbool) indexEqualsToSelectIndex).isTrue()) {
+                    continue;
+                } else {
+                    result = (NumericExpression) s.value;
+                    break;
+                }
+            }
+            result = NumericIte.newInstance(indexEqualsToSelectIndex, (NumericExpression) s.value, result);
+        }
+
+        if (store != null) {
+            assert beforeStore != null;
+            result = NumericIte.newInstance(store.indexIsValid.apply(index), (NumericExpression) store.value, result);
+        }
+
+        if (pushSelect) {
+            selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
+        }
+        return result;
     }
 
     private Constraint _select(
@@ -261,11 +303,10 @@ public class ArrayHistorySolverRepresentation {
                     );
         }
 
-        Constraint result = implies(guard, bothCasesImplications);
         if (pushSelect) {
             selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
         }
-        return result;
+        return bothCasesImplications;
     }
 
     public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
