@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
@@ -236,7 +237,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
         }
 
-        Formula getFormulaForNumericExpression(NumericExpression numericExpression) {
+        NumeralFormula getFormulaForNumericExpression(NumericExpression numericExpression) {
             return numericExpressionStore.get(numericExpression);
         }
 
@@ -255,7 +256,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
 
         private NumeralFormula transformSnumber(Snumber n) {
-            NumeralFormula result = numericExpressionStore.get(n);
+            NumeralFormula result = getFormulaForNumericExpression(n);
             if (result != null) {
                 return result;
             }
@@ -295,12 +296,18 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
 
         private BooleanFormula transformAbstractTwoSidedConstraint(AbstractTwoSidedConstraint c) {
+            BooleanFormula lhs = transformConstraint(c.getLhs());
+            BooleanFormula rhs = transformConstraint(c.getRhs());
             if (c instanceof And) {
-                return booleanFormulaManager.and(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return booleanFormulaManager.and(lhs, rhs);
             } else if (c instanceof Or) {
-                return booleanFormulaManager.or(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return booleanFormulaManager.or(lhs, rhs);
             } else if (c instanceof Xor) {
-                return booleanFormulaManager.xor(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return booleanFormulaManager.xor(lhs, rhs);
+            } else if (c instanceof Implication) {
+                return booleanFormulaManager.implication(lhs, rhs);
+            } else if (c instanceof Equivalence) {
+                return booleanFormulaManager.equivalence(lhs, rhs);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -354,10 +361,20 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 } else if (n instanceof Sub) {
                     fpCase = rationalFormulaManager::subtract;
                     integerCase = integerFormulaManager::subtract;
+                } else if (n instanceof Div) {
+                    fpCase = rationalFormulaManager::divide;
+                    integerCase = integerFormulaManager::divide;
+                } else if (n instanceof Mod) {
+                    if (n.isFp()) {
+                        throw new MulibIllegalStateException("Modulo to be calculated on FP number");
+                    }
+                    fpCase = null;
+                    integerCase = integerFormulaManager::modulo;
                 } else {
                     throw new NotYetImplementedException();
                 }
                 if (n.isFp()) {
+                    assert fpCase != null;
                     result = fpCase.apply(elhs, erhs);
                 } else {
                     result = integerCase.apply((NumeralFormula.IntegerFormula) elhs, (NumeralFormula.IntegerFormula) erhs);
@@ -372,6 +389,12 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 } else {
                     throw new NotYetImplementedException();
                 }
+            } else if (n instanceof IfThenElse) {
+                IfThenElse ite = (IfThenElse) n;
+                BooleanFormula condition = transformConstraint(ite.getCondition());
+                NumeralFormula ifCase = transformNumeral(ite.getIfCase());
+                NumeralFormula elseCase = transformNumeral(ite.getElseCase());
+                result = booleanFormulaManager.ifThenElse(condition, ifCase, elseCase);
             } else {
                 result = transformSnumber((Snumber) n);
             }
@@ -401,7 +424,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
 
         private NumeralFormula transformSfpnumber(Sfpnumber f) {
-            NumeralFormula result = numericExpressionStore.get(f);
+            NumeralFormula result = getFormulaForNumericExpression(f);
             if (result != null) {
                 return result;
             }

@@ -6,11 +6,6 @@ public abstract class AbstractSnumber implements Snumber {
 
     protected AbstractSnumber() {}
 
-    @Override
-    public final boolean isPrimitive() {
-        return true;
-    }
-
     /**
      * Implementation for ConcSnumbers
      * @param o

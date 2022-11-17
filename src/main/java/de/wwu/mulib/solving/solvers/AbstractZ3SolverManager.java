@@ -235,12 +235,18 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         }
 
         private BoolExpr transformAbstractTwoSidedConstraint(AbstractTwoSidedConstraint c) {
+            BoolExpr lhs = transformConstraint(c.getLhs());
+            BoolExpr rhs = transformConstraint(c.getRhs());
             if (c instanceof And) {
-                return ctx.mkAnd(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return ctx.mkAnd(lhs, rhs);
             } else if (c instanceof Or) {
-                return ctx.mkOr(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return ctx.mkOr(lhs, rhs);
             } else if (c instanceof Xor) {
-                return ctx.mkXor(transformConstraint(c.getLhs()), transformConstraint(c.getRhs()));
+                return ctx.mkXor(lhs, rhs);
+            } else if (c instanceof Implication) {
+                return ctx.mkImplies(lhs, rhs);
+            } else if (c instanceof Equivalence) {
+                return ctx.mkIff(lhs, rhs);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -283,6 +289,10 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     result = ctx.mkMul((ArithExpr) elhs, (ArithExpr) erhs);
                 } else if (n instanceof Sub) {
                     result = ctx.mkSub((ArithExpr) elhs, (ArithExpr) erhs);
+                } else if (n instanceof Div) {
+                    result = ctx.mkDiv((ArithExpr) elhs, (ArithExpr) erhs);
+                } else if (n instanceof Mod) {
+                    result = ctx.mkMod((IntExpr) elhs, (IntExpr) erhs);
                 } else {
                     throw new NotYetImplementedException();
                 }
@@ -293,8 +303,16 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 } else {
                     throw new NotYetImplementedException();
                 }
-            }
-            else if (n instanceof Snumber) {
+                numericExpressionsStore.put(n, result);
+            } else if (n instanceof IfThenElse) {
+                IfThenElse ite = (IfThenElse) n;
+                result = ctx.mkITE(
+                        transformConstraint(ite.getCondition()),
+                        transformNumericExpr(ite.getIfCase()),
+                        transformNumericExpr(ite.getElseCase())
+                );
+                numericExpressionsStore.put(n, result);
+            } else if (n instanceof Snumber) {
                 result = transformSnumber((Snumber) n);
             } else {
                 throw new NotYetImplementedException();
