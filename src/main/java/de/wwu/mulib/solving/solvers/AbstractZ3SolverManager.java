@@ -217,6 +217,13 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 result = transformAbstractNumericTwoSidedConstraint((AbstractTwoSidedNumericConstraint) c);
             } else if (c instanceof AbstractTwoSidedConstraint) {
                 result = transformAbstractTwoSidedConstraint((AbstractTwoSidedConstraint) c);
+            } else if (c instanceof BoolIte) {
+                BoolIte ite = (BoolIte) c;
+                result = (BoolExpr) ctx.mkITE(
+                        transformConstraint(ite.getCondition()),
+                        transformConstraint(ite.getIfCase()),
+                        transformConstraint(ite.getElseCase())
+                );
             } else {
                 throw new NotYetImplementedException(c.toString());
             }
@@ -304,8 +311,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     throw new NotYetImplementedException();
                 }
                 numericExpressionsStore.put(n, result);
-            } else if (n instanceof IfThenElse) {
-                IfThenElse ite = (IfThenElse) n;
+            } else if (n instanceof NumericIte) {
+                NumericIte ite = (NumericIte) n;
                 result = ctx.mkITE(
                         transformConstraint(ite.getCondition()),
                         transformNumericExpr(ite.getIfCase()),

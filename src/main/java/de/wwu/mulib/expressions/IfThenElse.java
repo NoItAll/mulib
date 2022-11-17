@@ -1,15 +1,13 @@
 package de.wwu.mulib.expressions;
 
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.substitutions.primitives.Sbool;
 
-public class IfThenElse implements NumericExpression {
+public class IfThenElse<T> {
     protected final Constraint condition;
-    protected final NumericExpression ifCase;
-    protected final NumericExpression elseCase;
+    protected final T ifCase;
+    protected final T elseCase;
 
-    protected IfThenElse(Constraint condition, NumericExpression ifCase, NumericExpression elseCase) {
-        assert ifCase.isFp() == elseCase.isFp();
+    protected IfThenElse(Constraint condition, T ifCase, T elseCase) {
         this.condition = condition;
         this.ifCase = ifCase;
         this.elseCase = elseCase;
@@ -19,27 +17,15 @@ public class IfThenElse implements NumericExpression {
         return condition;
     }
 
-    public NumericExpression getIfCase() {
+    public T getIfCase() {
         return ifCase;
     }
 
-    public NumericExpression getElseCase() {
+    public T getElseCase() {
         return elseCase;
     }
 
-    public static NumericExpression newInstance(Constraint condition, NumericExpression ifCase, NumericExpression elseCase) {
-        if (condition instanceof Sbool.ConcSbool) {
-            return ((Sbool.ConcSbool) condition).isTrue() ? ifCase : elseCase;
-        }
-        return new IfThenElse(condition, ifCase, elseCase);
-    }
-
-    @Override
-    public boolean isFp() {
-        return ifCase.isFp();
-    }
-
-    @Override
+    @Override @SuppressWarnings("rawtypes")
     public boolean equals(Object o) {
         if (!(o instanceof IfThenElse)) {
             return false;
@@ -48,8 +34,7 @@ public class IfThenElse implements NumericExpression {
         if (ite.hashCode() != hashCode()) {
             return false;
         }
-        return isFp() == ite.isFp()
-                && condition.equals(ite.condition)
+        return condition.equals(ite.condition)
                 && ifCase.equals(ite.ifCase)
                 && elseCase.equals(ite.elseCase);
     }

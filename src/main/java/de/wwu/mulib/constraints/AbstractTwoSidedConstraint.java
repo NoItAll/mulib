@@ -51,7 +51,7 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
         if (!this.getClass().equals(o.getClass())) {
             return false;
         }
-        if (hashCode != o.hashCode()) {
+        if (hashCode() != o.hashCode()) {
             return false;
         }
         AbstractTwoSidedConstraint oc = (AbstractTwoSidedConstraint) o;

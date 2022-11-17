@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.expressions.BoolIte;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -264,7 +265,7 @@ public class ArrayHistorySolverRepresentation {
     }
 
     private static Constraint ite(Constraint c, Constraint ifCase, Constraint elseCase) {
-        return And.newInstance(implies(c, ifCase), implies(Not.newInstance(c), elseCase));
+        return BoolIte.newInstance(c, ifCase, elseCase);
     }
 
     private static class ArrayAccessSolverRepresentation {

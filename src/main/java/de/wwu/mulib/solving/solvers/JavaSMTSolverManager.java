@@ -289,6 +289,14 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 result = transformAbstractNumericTwoSidedConstraint((AbstractTwoSidedNumericConstraint) c);
             } else if (c instanceof AbstractTwoSidedConstraint) {
                 result = transformAbstractTwoSidedConstraint((AbstractTwoSidedConstraint) c);
+            } else if (c instanceof BoolIte) {
+                BoolIte ite = (BoolIte) c;
+                result = booleanFormulaManager.ifThenElse(transformConstraint(
+                        ite.getCondition()),
+                        transformConstraint(ite.getIfCase()),
+                        transformConstraint(ite.getElseCase())
+                );
+                booleanFormulaStore.put(c, result);
             } else {
                 throw new NotYetImplementedException();
             }
@@ -389,8 +397,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 } else {
                     throw new NotYetImplementedException();
                 }
-            } else if (n instanceof IfThenElse) {
-                IfThenElse ite = (IfThenElse) n;
+            } else if (n instanceof NumericIte) {
+                NumericIte ite = (NumericIte) n;
                 BooleanFormula condition = transformConstraint(ite.getCondition());
                 NumeralFormula ifCase = transformNumeral(ite.getIfCase());
                 NumeralFormula elseCase = transformNumeral(ite.getElseCase());
