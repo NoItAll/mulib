@@ -3,16 +3,16 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.BoolIte;
-import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.expressions.NumericIte;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
-import java.util.stream.Collectors;
 
 /**
  * Contains the select for an array. A store yields a nested structure of ArrayHistorySolverRepresentations
@@ -50,100 +50,14 @@ public class ArrayHistorySolverRepresentation {
         this.beforeStore = null;
         this.defaultValue = defaultValue;
         this.selects = new ArrayList<>();
-//        for (ArrayAccessConstraint ac : initialSelects) {
-//            Sprimitive value = ac.getValue();
-//            selects.add(new ArrayAccessSolverRepresentation(
-//                    Sbool.ConcSbool.TRUE,
-//                    ac.getIndex(),
-//                    value
-//            ));
-//        }
-        {
-            final Map<Sprimitive, List<Sint>> sameValToIndices = new HashMap<>(); // TODO Much worse performance for some benchmarking examples
-            Arrays.stream(initialSelects).sequential().forEach(s -> {
-                List<Sint> indices = sameValToIndices.computeIfAbsent(s.getValue(), k -> new ArrayList<>());
-                indices.add(s.getIndex());
-            });
-            final Map<Sprimitive, List<Sint[]>> sameValToRanges = new HashMap<>();
-            sameValToIndices.forEach((key, value) -> {
-                List<Sint[]> ranges = getRangesWithoutNull(value);
-                sameValToRanges.put(key, ranges);
-            });
-
-            for (Map.Entry<Sprimitive, List<Sint[]>> rangesForVal : sameValToRanges.entrySet()) {
-                Sprimitive val = rangesForVal.getKey();
-                for (Sint[] range : rangesForVal.getValue()) {
-                    ArrayAccessSolverRepresentation aasr;
-                    if (range.length == 1) {
-                        aasr = new ArrayAccessSolverRepresentation(Sbool.ConcSbool.TRUE, range[0], val);
-                    } else {
-                        assert range.length == 2;
-                        assert range[0] instanceof ConcSnumber && range[1] instanceof ConcSnumber;
-                        ConcSnumber from = (ConcSnumber) range[0];
-                        ConcSnumber to = (ConcSnumber) range[1];
-                        aasr = new ArrayAccessSolverRepresentation(
-                                Sbool.ConcSbool.TRUE,
-                                (i, g) -> And.newInstance(Lte.newInstance(from, i), Lte.newInstance(i, to), g),
-                                val
-                        );
-                    }
-                    selects.add(aasr);
-                }
-            }
+        for (ArrayAccessConstraint ac : initialSelects) {
+            Sprimitive value = ac.getValue();
+            selects.add(new ArrayAccessSolverRepresentation(
+                    Sbool.ConcSbool.TRUE,
+                    ac.getIndex(),
+                    value
+            ));
         }
-    }
-
-    public static List<Sint[]> getRangesWithoutNull(Collection<Sint> is) {
-        ConcSnumber[] concSnumbers = is.stream()
-                .filter(i -> i instanceof ConcSnumber && i != Sint.ConcSint.MINUS_ONE)
-                .sorted((i0, i1) -> {
-                    ConcSnumber c0 = (ConcSnumber) i0;
-                    ConcSnumber c1 = (ConcSnumber) i1;
-                    if (c0.intVal() < c1.intVal()) {
-                        return -1;
-                    } else if (c0.intVal() == c1.intVal()) {
-                        return 0;
-                    } else {
-                        return 1;
-                    }
-                }).toArray(ConcSnumber[]::new);
-        List<Sint[]> concs = new ArrayList<>();
-        ConcSnumber currentRangeStartingFrom = null;
-        for (int i = 0; i < concSnumbers.length; i++) {
-            if (i < concSnumbers.length-1) {
-                ConcSnumber i0 = concSnumbers[i];
-                ConcSnumber i1 = concSnumbers[i+1];
-                if (i0.intVal() + 1 == i1.intVal()) {
-                    if (currentRangeStartingFrom == null) {
-                        currentRangeStartingFrom = i0;
-                    }
-                } else {
-                    if (currentRangeStartingFrom == null) {
-                        concs.add(new Sint[] { (Sint) i0 });
-                    } else {
-                        concs.add(new Sint[] { (Sint) currentRangeStartingFrom, (Sint) i0 });
-                        currentRangeStartingFrom = null;
-                    }
-                }
-            } else {
-                if (currentRangeStartingFrom == null) {
-                    concs.add(new Sint[]{(Sint) concSnumbers[i]});
-                } else if (concSnumbers[i-1].intVal() + 1 == concSnumbers[i].intVal()) {
-                    concs.add(new Sint[] { (Sint) currentRangeStartingFrom, (Sint) concSnumbers[i] });
-                } else {
-                    concs.add(new Sint[] { (Sint) currentRangeStartingFrom });
-                    concs.add(new Sint[]{ (Sint) concSnumbers[i] });
-                }
-            }
-        }
-
-        List<Sint[]> syms = is.stream()
-                .filter(i -> i instanceof SymNumericExpressionSprimitive)
-                .map(i -> new Sint[] { i })
-                .collect(Collectors.toList());
-        concs.addAll(syms);
-
-        return concs;
     }
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
@@ -178,55 +92,17 @@ public class ArrayHistorySolverRepresentation {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
         }
-//        Constraint selectConstraint= _select(
-//                guard,
-//                index,
-//                value,
-//                !arrayIsCompletelyInitialized,
-//                // We do not have to enforce that, if index is unseen, value is a default value, if
-//                // there are not unseen indices
-//                defaultValueForUnknownsShouldBeEnforced
-//        );
-//
-//        Constraint result = implies(guard, selectConstraint);
-        NumericExpression numericExpression = _selectNumeric(guard, index, (Snumber) value, !arrayIsCompletelyInitialized);
-        Constraint result = implies(guard, Eq.newInstance((Snumber) value, numericExpression));
-        return result;
-    }
+        Constraint selectConstraint= _select(
+                guard,
+                index,
+                value,
+                !arrayIsCompletelyInitialized,
+                // We do not have to enforce that, if index is unseen, value is a default value, if
+                // there are not unseen indices
+                defaultValueForUnknownsShouldBeEnforced
+        );
 
-    private NumericExpression _selectNumeric(
-            Constraint guard,
-            Sint index,
-            Snumber value,
-            boolean pushSelect) {
-        NumericExpression result;
-        if (beforeStore != null) {
-            result = beforeStore._selectNumeric(Sbool.ConcSbool.TRUE, index, value, false);
-        } else {
-            result = value;
-        }
-        for (ArrayAccessSolverRepresentation s : selects) {
-            Constraint indexEqualsToSelectIndex = s.indexIsValid.apply(index);
-            if (indexEqualsToSelectIndex instanceof Sbool.ConcSbool) {
-                if (!((Sbool.ConcSbool) indexEqualsToSelectIndex).isTrue()) {
-                    continue;
-                } else {
-                    result = (NumericExpression) s.value;
-                    break;
-                }
-            }
-            result = NumericIte.newInstance(indexEqualsToSelectIndex, (NumericExpression) s.value, result);
-        }
-
-        if (store != null) {
-            assert beforeStore != null;
-            result = NumericIte.newInstance(store.indexIsValid.apply(index), (NumericExpression) store.value, result);
-        }
-
-        if (pushSelect) {
-            selects.add(new ArrayAccessSolverRepresentation(guard, index, value));
-        }
-        return result;
+        return implies(guard, selectConstraint);
     }
 
     private Constraint _select(
