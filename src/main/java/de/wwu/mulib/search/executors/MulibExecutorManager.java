@@ -93,7 +93,15 @@ public abstract class MulibExecutorManager {
         // We constantly poll with the mainExecutor.
         while (!checkForShutdown()) {
             checkForFailure();
+            long start = 0L;
+            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
+                start = System.nanoTime();
+            }
             mainExecutor.getPathSolution();
+            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
+                long end = System.nanoTime();
+                Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to get a path solution");
+            }
         }
         printStatistics();
         return observedTree.getPathSolutionsList();

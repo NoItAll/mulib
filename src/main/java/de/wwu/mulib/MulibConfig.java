@@ -30,6 +30,7 @@ public class MulibConfig {
     public final Optional<Long> ACTIVATE_PARALLEL_FOR;
     public final boolean CONCOLIC;
     public final boolean ALLOW_EXCEPTIONS;
+    public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -109,6 +110,7 @@ public class MulibConfig {
     }
 
     public final static class MulibConfigBuilder {
+        private boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
         private boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         private boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         private boolean ALIASING_FOR_FREE_ARRAYS;
@@ -169,6 +171,7 @@ public class MulibConfig {
 
         private MulibConfigBuilder() {
             // Defaults
+            this.LOG_TIME_FOR_EACH_PATH_SOLUTION = false;
             this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
             this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
             this.ALIASING_FOR_FREE_ARRAYS = false;
@@ -558,6 +561,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setLOG_TIME_FOR_EACH_PATH_SOLUTION(boolean LOG_TIME_FOR_EACH_PATH_SOLUTION) {
+            this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -647,7 +655,8 @@ public class MulibConfig {
                     ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
                     ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                     ALIASING_FOR_FREE_ARRAYS,
-                    ALIASING_FOR_FREE_OBJECS
+                    ALIASING_FOR_FREE_OBJECS,
+                    LOG_TIME_FOR_EACH_PATH_SOLUTION
             );
         }
     }
@@ -707,7 +716,8 @@ public class MulibConfig {
                         boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
                         boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                         boolean ALIASING_FOR_FREE_ARRAYS,
-                        boolean ALIASING_FOR_FREE_OBJECTS
+                        boolean ALIASING_FOR_FREE_OBJECTS,
+                        boolean LOG_TIME_FOR_EACH_PATH_SOLUTION
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -765,28 +775,29 @@ public class MulibConfig {
         this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
         this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
+        this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
     }
 
     @Override
     public String toString() {
         return "MulibConfig{"
                 + "GLOBAL_SEARCH_STRATEGY=" + GLOBAL_SEARCH_STRATEGY
-                + (ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ? "" : ", ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES)
+                + (ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ? "" : "ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES)
                 + ",GLOBAL_SOLVER_TYPE=" + GLOBAL_SOLVER_TYPE
                 + ",HIGH_LEVEL_FREE_ARRAY_THEORY=" + HIGH_LEVEL_FREE_ARRAY_THEORY
                 + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS=" + USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS
                 + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS=" + USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS
-                + (!SOLVER_ARGS.isEmpty() ? ", SOLVER_ARGS=" + SOLVER_ARGS : "")
-                + ", CONCOLIC=" + CONCOLIC
-//                + (GLOBAL_AVOID_SAT_CHECKS ? ", GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
-                + (ENLIST_LEAVES ? ", ENLIST_LEAVES=" + true : "")
-                + FIXED_ACTUAL_CP_BUDGET.map(v -> ", FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + INCR_ACTUAL_CP_BUDGET.map(v -> ", INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + NANOSECONDS_PER_INVOCATION.map(v -> ", SECONDS_PER_INVOCATION=" + v).orElse("")
-                + MAX_FAILS.map(v -> ", MAX_FAILS=" + v).orElse("")
-                + MAX_PATH_SOLUTIONS.map(v -> ", MAX_PATH_SOLUTIONS=" + v).orElse("")
-                + MAX_EXCEEDED_BUDGETS.map(v -> ", MAX_EXCEEDED_BUDGETS=" + v).orElse("")
-                + ", TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER=" + TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER
+                + (!SOLVER_ARGS.isEmpty() ? "SOLVER_ARGS=" + SOLVER_ARGS : "")
+                + ",CONCOLIC=" + CONCOLIC
+//                + (GLOBAL_AVOID_SAT_CHECKS ? "GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
+                + (ENLIST_LEAVES ? "ENLIST_LEAVES=" + true : "")
+                + FIXED_ACTUAL_CP_BUDGET.map(v -> "FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
+                + INCR_ACTUAL_CP_BUDGET.map(v -> "INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
+                + NANOSECONDS_PER_INVOCATION.map(v -> "SECONDS_PER_INVOCATION=" + v).orElse("")
+                + MAX_FAILS.map(v -> "MAX_FAILS=" + v).orElse("")
+                + MAX_PATH_SOLUTIONS.map(v -> "MAX_PATH_SOLUTIONS=" + v).orElse("")
+                + MAX_EXCEEDED_BUDGETS.map(v -> "MAX_EXCEEDED_BUDGETS=" + v).orElse("")
+                + "TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER=" + TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER
                 + "}";
     }
 }
