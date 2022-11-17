@@ -38,4 +38,24 @@ public class IfThenElse implements NumericExpression {
     public boolean isFp() {
         return ifCase.isFp();
     }
+
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof IfThenElse)) {
+            return false;
+        }
+        IfThenElse ite = (IfThenElse) o;
+        if (ite.hashCode() != hashCode()) {
+            return false;
+        }
+        return isFp() == ite.isFp()
+                && condition.equals(ite.condition)
+                && ifCase.equals(ite.ifCase)
+                && elseCase.equals(ite.elseCase);
+    }
+
+    @Override
+    public int hashCode() {
+        return condition.hashCode();
+    }
 }

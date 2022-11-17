@@ -109,18 +109,17 @@ public class ArrayHistorySolverRepresentation {
             return Sbool.ConcSbool.TRUE;
         }
         Constraint indexEqualsToStoreIndexWithGuard;
-        Constraint indexEqualsToStoreImplication;
+        Constraint indexEqualsToStoreCase;
         Constraint resultForSelectOperations;
         // If we stored, we prioritize the stored index-value pair
         if (store != null) {
             assert beforeStore != null;
             indexEqualsToStoreIndexWithGuard = And.newInstance(store.guard, Eq.newInstance(store.index, index));
-            Constraint constraintForStoreOperation = elementsEqualConstraint(store.value, value);
-            indexEqualsToStoreImplication = implies(indexEqualsToStoreIndexWithGuard, constraintForStoreOperation);
+            indexEqualsToStoreCase = elementsEqualConstraint(store.value, value);
             resultForSelectOperations = beforeStore._select(Sbool.ConcSbool.TRUE, index, value, false, false);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
-            indexEqualsToStoreImplication = Sbool.ConcSbool.TRUE;
+            indexEqualsToStoreCase = Sbool.ConcSbool.TRUE;
             resultForSelectOperations = Sbool.ConcSbool.TRUE;
         }
 
@@ -149,10 +148,8 @@ public class ArrayHistorySolverRepresentation {
             );
         }
 
-        Constraint indexDoesNotEqualToStoreImplication =
-                implies(Not.newInstance(indexEqualsToStoreIndexWithGuard), resultForSelectOperations);
         Constraint bothCasesImplications =
-                And.newInstance(indexEqualsToStoreImplication, indexDoesNotEqualToStoreImplication);
+                ite(indexEqualsToStoreIndexWithGuard, indexEqualsToStoreCase, resultForSelectOperations);
 
         if (defaultValueForUnknownsShouldBeEnforced) {
             // If we have to enforce a default value, for instance 0 for int arrays or -1 for array-arrays, for unknown values, we
@@ -254,10 +251,7 @@ public class ArrayHistorySolverRepresentation {
 
     private static Constraint elementsEqualConstraint(SubstitutedVar s0, SubstitutedVar s1) {
         if (s0 instanceof Sbool && s1 instanceof Sbool) {
-            return Or.newInstance(
-                    And.newInstance((Sbool) s0, (Sbool) s1),
-                    Not.newInstance(Or.newInstance((Sbool) s0, (Sbool) s1))
-            );
+            return Equivalence.newInstance((Sbool) s0, (Sbool) s1);
         } else if (s0 instanceof Snumber) {
             return Eq.newInstance((Snumber) s0, (Snumber) s1);
         } else {
@@ -267,6 +261,10 @@ public class ArrayHistorySolverRepresentation {
 
     private static Constraint implies(Constraint c0, Constraint c1) {
         return Or.newInstance(Not.newInstance(c0), c1);
+    }
+
+    private static Constraint ite(Constraint c, Constraint ifCase, Constraint elseCase) {
+        return And.newInstance(implies(c, ifCase), implies(Not.newInstance(c), elseCase));
     }
 
     private static class ArrayAccessSolverRepresentation {
