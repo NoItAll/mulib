@@ -44,18 +44,23 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
             // Set by superclass:
             assert !isCompletelyInitialized;
             // If this is a pure alias, this array is completely initialized, if its potential aliases are
-            boolean result = true;
+            boolean ici = true;
+            boolean unsd = false;
             for (Sint i : potentialIds) {
                 if (i == Sint.ConcSint.MINUS_ONE) {
                     continue;
                 }
                 ArraySolverRepresentation asr = symbolicArrayStates.getRepresentationForId(i).getNewestRepresentation();
                 if (!asr.isCompletelyInitialized()) {
-                    result = false;
-                    break;
+                    ici = false;
+                }
+                if (asr.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault()) {
+                    unsd = true;
                 }
             }
-            isCompletelyInitialized = result;
+
+            isCompletelyInitialized = ici;
+            canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = unsd;
         }
     }
 

@@ -20,7 +20,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
     protected final int level;
     protected boolean isCompletelyInitialized;
     protected final Class<?> valueType;
-    protected final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+    protected boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
     protected final boolean defaultIsSymbolic;
 
     protected AbstractArraySolverRepresentation(
