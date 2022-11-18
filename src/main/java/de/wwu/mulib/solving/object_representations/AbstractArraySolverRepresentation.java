@@ -3,6 +3,8 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -39,12 +41,20 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
             // We should track index accesses so that unset indices are forced to be the default value only if the
             // default is not symbolic (any value can be returned then) and if the length is symbolic.
             // If the length is not symbolic, we pre-initialize all values.
-            this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic
-                    // If the value is an array there is special behavior: It can be symbolically initialized be null which
-                    // is treated differently from other sarrays and must be treated explicitly. Note that this is
-                    // different from, e.g., SintSarray, where the default value ConcSint{0} can be assumed by SymSint as well
-                    // without failing to illustrate special behavior.
-                    || (this instanceof PartnerClassArraySolverRepresentation && config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL);
+
+            // If the value is an array or an object there is special behavior: It can be symbolically initialized to
+            // be null which is treated differently from other sarrays and must be treated explicitly. Note that this is
+            // different from, e.g., SintSarray, where the default value ConcSint{0} can be assumed by SymSint as well
+            // without failing to illustrate special behavior.
+            if (valueType.isArray()) {
+                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+            } else if (PartnerClass.class.isAssignableFrom(valueType)) {
+                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+            } else if (Sprimitive.class.isAssignableFrom(valueType)) {
+                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic;
+            } else {
+                throw new NotYetImplementedException();
+            }
         } else {
             // Is eagerly initialized, thus there is no unrepresented non-symbolic default
             assert isCompletelyInitialized;

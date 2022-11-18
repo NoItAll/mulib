@@ -181,7 +181,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     index,
                     selectedValue,
                     isCompletelyInitialized,
-                    (!(this instanceof PartnerClassArraySolverRepresentation) || !defaultIsSymbolic) && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+                    !defaultIsSymbolic && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
             );
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar : aliasedArrays) {

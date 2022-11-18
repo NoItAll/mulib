@@ -48,7 +48,9 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 // If the array is completely initialized, we do not have to push this index-value combination since
                 // it is already represented
                 isCompletelyInitialized,
-                (!(this instanceof PartnerClassArraySolverRepresentation) || !defaultIsSymbolic) && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
+                // We only must enforce the default for unknown values if !defaultIsSymbolic
+                // Otherwise, we would enforce that defaultIsSymbolic-objects are always initialized to null
+                !defaultIsSymbolic && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
         );
     }
 
