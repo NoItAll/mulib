@@ -7,8 +7,10 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.*;
-import java.util.function.BiFunction;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.function.Function;
 
 /**
@@ -47,28 +49,14 @@ public class ArrayHistorySolverRepresentation {
         this.beforeStore = null;
         this.defaultValue = defaultValue;
         this.selects = new ArrayList<>();
-        Map<Sprimitive, List<Sint>> valuesToContainingSints = new HashMap<>();
-        Arrays.stream(initialSelects).forEach(s -> {
-            List<Sint> is = valuesToContainingSints.computeIfAbsent(s.getValue(), (k) -> new ArrayList<>());
-            is.add(s.getIndex());
-        });
-        for (Map.Entry<Sprimitive, List<Sint>> vals : valuesToContainingSints.entrySet()) {
-            ArrayAccessSolverRepresentation aasr =
-                    new ArrayAccessSolverRepresentation(
-                            Sbool.ConcSbool.TRUE,
-                            (i, g) -> And.newInstance(In.newInstance(i, vals.getValue()), g),
-                            vals.getKey()
-                    );
-            selects.add(aasr);
+        for (ArrayAccessConstraint ac : initialSelects) {
+            Sprimitive value = ac.getValue();
+            selects.add(new ArrayAccessSolverRepresentation(
+                    Sbool.ConcSbool.TRUE,
+                    ac.getIndex(),
+                    value
+            ));
         }
-//        for (ArrayAccessConstraint ac : initialSelects) {
-//            Sprimitive value = ac.getValue();
-//            selects.add(new ArrayAccessSolverRepresentation(
-//                    Sbool.ConcSbool.TRUE,
-//                    ac.getIndex(),
-//                    value
-//            ));
-//        }
     }
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
@@ -271,10 +259,10 @@ public class ArrayHistorySolverRepresentation {
             this.isConcrete = guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isTrue() && index instanceof ConcSnumber;
         }
 
-        ArrayAccessSolverRepresentation(Constraint guard, BiFunction<Sint, Constraint, Constraint> indexIsValid, Sprimitive value) {
+        ArrayAccessSolverRepresentation(Constraint guard, Function<Sint, Constraint> indexIsValid, Sprimitive value) {
             assert guard != null && indexIsValid != null && value != null;
             this.guard = guard;
-            this.indexIsValid = (i) -> indexIsValid.apply(i, guard);
+            this.indexIsValid = indexIsValid;
             this.value = value;
             this.isConcrete = true;
         }
