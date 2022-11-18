@@ -314,7 +314,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 numericExpressionsStore.put(n, result);
             } else if (n instanceof AbstractExpressionWrappingExpression) {
                 if (n instanceof Neg) {
-                    result = ctx.mkMul((ArithExpr) transformNumericExpr(((Neg) n).getWrapped()), ctx.mkInt(-1));
+                    result = ctx.mkUnaryMinus((ArithExpr) transformNumericExpr(((Neg) n).getWrapped()));
                 } else {
                     throw new NotYetImplementedException();
                 }
