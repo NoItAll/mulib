@@ -7,10 +7,7 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
@@ -50,14 +47,28 @@ public class ArrayHistorySolverRepresentation {
         this.beforeStore = null;
         this.defaultValue = defaultValue;
         this.selects = new ArrayList<>();
-        for (ArrayAccessConstraint ac : initialSelects) {
-            Sprimitive value = ac.getValue();
-            selects.add(new ArrayAccessSolverRepresentation(
-                    Sbool.ConcSbool.TRUE,
-                    ac.getIndex(),
-                    value
-            ));
+        Map<Sprimitive, List<Sint>> valuesToContainingSints = new HashMap<>();
+        Arrays.stream(initialSelects).forEach(s -> {
+            List<Sint> is = valuesToContainingSints.computeIfAbsent(s.getValue(), (k) -> new ArrayList<>());
+            is.add(s.getIndex());
+        });
+        for (Map.Entry<Sprimitive, List<Sint>> vals : valuesToContainingSints.entrySet()) {
+            ArrayAccessSolverRepresentation aasr =
+                    new ArrayAccessSolverRepresentation(
+                            Sbool.ConcSbool.TRUE,
+                            (i, g) -> And.newInstance(In.newInstance(i, vals.getValue()), g),
+                            vals.getKey()
+                    );
+            selects.add(aasr);
         }
+//        for (ArrayAccessConstraint ac : initialSelects) {
+//            Sprimitive value = ac.getValue();
+//            selects.add(new ArrayAccessSolverRepresentation(
+//                    Sbool.ConcSbool.TRUE,
+//                    ac.getIndex(),
+//                    value
+//            ));
+//        }
     }
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation

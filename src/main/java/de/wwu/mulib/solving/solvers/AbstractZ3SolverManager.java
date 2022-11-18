@@ -11,6 +11,7 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.math.BigInteger;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.function.Function;
@@ -224,6 +225,13 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                         transformConstraint(ite.getIfCase()),
                         transformConstraint(ite.getElseCase())
                 );
+            } else if (c instanceof In) {
+                In in = (In) c;
+                Expr eExpr = transformSubstitutedVar(in.getElement());
+                result =
+                        (BoolExpr) Arrays.stream(in.getSet())
+                                .map(this::transformSubstitutedVar)
+                                .reduce(ctx.mkBool(false), (d, e) -> ctx.mkOr((BoolExpr) d, ctx.mkEq(eExpr, e)));
             } else {
                 throw new NotYetImplementedException(c.toString());
             }

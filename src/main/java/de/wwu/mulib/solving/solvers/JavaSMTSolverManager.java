@@ -297,6 +297,19 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         transformConstraint(ite.getElseCase())
                 );
                 booleanFormulaStore.put(c, result);
+            } else if (c instanceof In) {
+                In in = (In) c;
+                Constraint constraint = Sbool.ConcSbool.FALSE;
+                for (Sprimitive setElement : in.getSet()) {
+                    if (in.isNumber()) {
+                        constraint = Or.newInstance(constraint, Eq.newInstance((Snumber) setElement, (Snumber) in.getElement()));
+                    } else {
+                        assert in.isBool();
+                        constraint = Or.newInstance(constraint, Equivalence.newInstance((Sbool) setElement, (Sbool) in.getElement()));
+                    }
+                }
+                result = transformConstraint(constraint);
+                booleanFormulaStore.put(c, result);
             } else {
                 throw new NotYetImplementedException();
             }
