@@ -1,9 +1,11 @@
 package de.wwu.mulib.search.executors;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
+import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -12,6 +14,7 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 
 public class MultiExecutorsManager extends MulibExecutorManager {
     private final SimpleSyncedQueue<SearchStrategy> nextStrategiesToInitialize;
@@ -145,8 +148,16 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     private void computePathSolutionsWithNonMainExecutor(MulibExecutor mulibExecutor) {
+        long start = 0L;
         while (!checkForPause()) {
-            mulibExecutor.getPathSolution();
+            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
+                start = System.nanoTime();
+            }
+            Optional<PathSolution> ps = mulibExecutor.getPathSolution();
+            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION && ps.isPresent()) {
+                long end = System.nanoTime();
+                Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to get a path solution");
+            }
         }
     }
 }
