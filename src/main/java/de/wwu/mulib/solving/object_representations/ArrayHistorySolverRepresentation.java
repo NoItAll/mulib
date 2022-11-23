@@ -2,7 +2,6 @@ package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.expressions.BoolIte;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;

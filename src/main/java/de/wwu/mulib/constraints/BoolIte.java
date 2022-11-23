@@ -1,6 +1,6 @@
-package de.wwu.mulib.expressions;
+package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.expressions.IfThenElse;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
 public class BoolIte extends IfThenElse<Constraint> implements Constraint {
