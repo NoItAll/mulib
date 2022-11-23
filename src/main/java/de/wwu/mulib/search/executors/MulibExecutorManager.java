@@ -91,14 +91,14 @@ public abstract class MulibExecutorManager {
     public synchronized List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         // We constantly poll with the mainExecutor.
+        long start = 0L;
         while (!checkForShutdown()) {
             checkForFailure();
-            long start = 0L;
             if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
                 start = System.nanoTime();
             }
-            mainExecutor.getPathSolution();
-            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
+            Optional<PathSolution> ps = mainExecutor.getPathSolution();
+            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION && ps.isPresent()) {
                 long end = System.nanoTime();
                 Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to get a path solution");
             }
