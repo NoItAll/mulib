@@ -148,15 +148,11 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     private void computePathSolutionsWithNonMainExecutor(MulibExecutor mulibExecutor) {
-        long start = 0L;
         while (!checkForPause()) {
-            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
-                start = System.nanoTime();
-            }
             Optional<PathSolution> ps = mulibExecutor.getPathSolution();
             if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION && ps.isPresent()) {
                 long end = System.nanoTime();
-                Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to get a path solution");
+                Mulib.log.log(Level.INFO, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
             }
         }
     }

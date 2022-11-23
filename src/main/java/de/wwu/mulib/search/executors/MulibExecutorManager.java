@@ -30,6 +30,8 @@ public abstract class MulibExecutorManager {
     private AtomicInteger numberRequestedSolutions;
     protected final List<Solution> solutions;
 
+    protected final long startTime;
+
     protected MulibExecutorManager(
             MulibConfig config,
             List<MulibExecutor> mulibExecutorsList,
@@ -61,6 +63,7 @@ public abstract class MulibExecutorManager {
                         :
                         Collections.synchronizedList(new ArrayList<>());
         this.numberRequestedSolutions = null;
+        this.startTime = config.LOG_TIME_FOR_EACH_PATH_SOLUTION ? System.nanoTime() : 0L;
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {
@@ -91,16 +94,12 @@ public abstract class MulibExecutorManager {
     public synchronized List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         // We constantly poll with the mainExecutor.
-        long start = 0L;
         while (!checkForShutdown()) {
             checkForFailure();
-            if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION) {
-                start = System.nanoTime();
-            }
             Optional<PathSolution> ps = mainExecutor.getPathSolution();
             if (config.LOG_TIME_FOR_EACH_PATH_SOLUTION && ps.isPresent()) {
                 long end = System.nanoTime();
-                Mulib.log.log(Level.INFO, "Took " + ((end - start) / 1e6) + "ms for " + config + " to get a path solution");
+                Mulib.log.log(Level.INFO, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
             }
         }
         printStatistics();
