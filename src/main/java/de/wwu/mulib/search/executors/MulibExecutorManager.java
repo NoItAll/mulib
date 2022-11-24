@@ -30,7 +30,7 @@ public abstract class MulibExecutorManager {
     private AtomicInteger numberRequestedSolutions;
     protected final List<Solution> solutions;
 
-    protected boolean seenFirstSolution = false;
+    protected volatile boolean seenFirstPathSolution = false;
     protected final long startTime;
 
     protected MulibExecutorManager(
@@ -98,11 +98,11 @@ public abstract class MulibExecutorManager {
         while (!checkForShutdown()) {
             checkForFailure();
             Optional<PathSolution> ps = mainExecutor.getPathSolution();
-            if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstSolution))
+            if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstPathSolution))
                     && ps.isPresent()) {
                 long end = System.nanoTime();
                 Mulib.log.log(Level.INFO, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
-                seenFirstSolution = true;
+                seenFirstPathSolution = true;
             }
         }
         printStatistics();
