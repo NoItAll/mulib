@@ -31,6 +31,7 @@ public class MulibConfig {
     public final boolean CONCOLIC;
     public final boolean ALLOW_EXCEPTIONS;
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
+    public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -168,6 +169,7 @@ public class MulibConfig {
         private boolean THROW_EXCEPTION_ON_OOB;
         private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
+        private boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
 
         private MulibConfigBuilder() {
             // Defaults
@@ -239,6 +241,7 @@ public class MulibConfig {
             this.THROW_EXCEPTION_ON_OOB = false;
             this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
+            this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = false;
         }
 
         public MulibConfigBuilder setENLIST_LEAVES(boolean ENLIST_LEAVES) {
@@ -566,6 +569,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setLOG_TIME_FOR_FIRST_PATH_SOLUTION(boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION) {
+            this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -656,7 +664,8 @@ public class MulibConfig {
                     ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                     ALIASING_FOR_FREE_ARRAYS,
                     ALIASING_FOR_FREE_OBJECS,
-                    LOG_TIME_FOR_EACH_PATH_SOLUTION
+                    LOG_TIME_FOR_EACH_PATH_SOLUTION,
+                    LOG_TIME_FOR_FIRST_PATH_SOLUTION
             );
         }
     }
@@ -717,7 +726,8 @@ public class MulibConfig {
                         boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                         boolean ALIASING_FOR_FREE_ARRAYS,
                         boolean ALIASING_FOR_FREE_OBJECTS,
-                        boolean LOG_TIME_FOR_EACH_PATH_SOLUTION
+                        boolean LOG_TIME_FOR_EACH_PATH_SOLUTION,
+                        boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
@@ -776,6 +786,7 @@ public class MulibConfig {
         this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
         this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
+        this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
     }
 
     @Override
