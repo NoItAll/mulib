@@ -29,7 +29,7 @@ import static de.wwu.mulib.search.executors.SearchStrategy.DSAS;
 public final class ExamplesExecutor {
     private ExamplesExecutor(){}
 
-    private static boolean runChecks = false;
+    private static boolean runChecks = true;
 
     public static void main(String[] args) {
         Mulib.log.log(Level.INFO, "Starting...");
@@ -95,12 +95,20 @@ public final class ExamplesExecutor {
                     pathSolutions = runMachineContainerEncodingCapacityAssignment(
                             args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false));
                     break;
+                case "MCAP_REDUCED":
+                    pathSolutions = runMachineContainerEncodingCapacityAssignmentReduced(
+                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false));
+                    break;
                 case "MPCAP":
                     pathSolutions = runMultiPeriodCapacityAssignment(
                             args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false));
                     break;
                 case "MPMCAP":
                     pathSolutions = runMultiPeriodMachineContainerCapacityAssignment(
+                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false));
+                    break;
+                case "MPMCAP_REDUCED":
+                    pathSolutions = runMultiPeriodMachineContainerCapacityAssignmentReduced(
                             args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false));
                     break;
                 case "DLSPV":
@@ -153,7 +161,7 @@ public final class ExamplesExecutor {
     }
 
     private static List<PathSolution> runPrimitiveEncodingCapacityAssignment(MulibConfig.MulibConfigBuilder builder) {
-        builder.setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3 };
         List<PathSolution> ps = Mulib.executeMulib(
@@ -185,7 +193,7 @@ public final class ExamplesExecutor {
 
     @SuppressWarnings({"DuplicatedCode"})
     private static List<PathSolution> runMachineContainerEncodingCapacityAssignment(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -203,26 +211,70 @@ public final class ExamplesExecutor {
                 workloads
         );
 
-        if (ps.size() != 1 || ps.get(0) instanceof ExceptionPathSolution) {
+        if (ps.size() < 1) {
             throw new MulibIllegalStateException();
         }
         if (runChecks) {
-            int[] result = (int[]) ps.get(0).getSolution().returnValue;
-            Mulib.log.log(Level.INFO,Arrays.toString(result));
-            for (int i = 0; i < result.length; i++) {
-                machines[result[i]].i = machines[result[i]].i - workloads[i];
-                if (machines[result[i]].i < 0) {
+            for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
                     throw new MulibIllegalStateException();
                 }
+                int[] result = (int[]) p.getSolution().returnValue;
+                Mulib.log.log(Level.INFO, Arrays.toString(result));
+                for (int i = 0; i < result.length; i++) {
+                    machines[result[i]].i = machines[result[i]].i - workloads[i];
+                    if (machines[result[i]].i < 0) {
+                        throw new MulibIllegalStateException();
+                    }
+                }
+                Mulib.log.log(Level.INFO, Arrays.stream(machines).map(m -> m.i).collect(Collectors.toList()).toString());
             }
-            Mulib.log.log(Level.INFO, Arrays.stream(machines).map(m -> m.i).collect(Collectors.toList()).toString());
+        }
+        return ps;
+    }
+
+    @SuppressWarnings({"DuplicatedCode"})
+    private static List<PathSolution> runMachineContainerEncodingCapacityAssignmentReduced(MulibConfig.MulibConfigBuilder builder) {
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
+        Machine[] machines = new Machine[] {
+                new Machine(5), new Machine(3), new Machine(2),
+                new Machine(5), new Machine(3), new Machine(2),
+                new Machine(5), new Machine(3)
+        };
+        int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 4, 3 };
+        List<PathSolution> ps = Mulib.executeMulib(
+                "assign",
+                MachineCAP.class,
+                builder,
+                machines,
+                workloads
+        );
+
+        if (ps.size() < 1) {
+            throw new MulibIllegalStateException();
+        }
+        if (runChecks) {
+            for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
+                    throw new MulibIllegalStateException();
+                }
+                int[] result = (int[]) p.getSolution().returnValue;
+                Mulib.log.log(Level.INFO, Arrays.toString(result));
+                for (int i = 0; i < result.length; i++) {
+                    machines[result[i]].i = machines[result[i]].i - workloads[i];
+                    if (machines[result[i]].i < 0) {
+                        throw new MulibIllegalStateException();
+                    }
+                }
+                Mulib.log.log(Level.INFO, Arrays.stream(machines).map(m -> m.i).collect(Collectors.toList()).toString());
+            }
         }
         return ps;
     }
 
     @SuppressWarnings({"DuplicatedCode"})
     private static List<PathSolution> runMachineContainerEncodingCapacityAssignmentMutateFieldValues(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -240,26 +292,31 @@ public final class ExamplesExecutor {
                 workloads
         );
 
-        if (ps.size() != 1 || ps.get(0) instanceof ExceptionPathSolution) {
+        if (ps.size() < 1) {
             throw new MulibIllegalStateException();
         }
         if (runChecks) {
-            int[] result = (int[]) ps.get(0).getSolution().returnValue;
-            Mulib.log.log(Level.INFO,Arrays.toString(result));
-            for (int i = 0; i < result.length; i++) {
-                machines[result[i]].i = machines[result[i]].i - workloads[i];
-                if (machines[result[i]].i < 0) {
+            for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
                     throw new MulibIllegalStateException();
                 }
+                int[] result = (int[]) p.getSolution().returnValue;
+                Mulib.log.log(Level.INFO, Arrays.toString(result));
+                for (int i = 0; i < result.length; i++) {
+                    machines[result[i]].i = machines[result[i]].i - workloads[i];
+                    if (machines[result[i]].i < 0) {
+                        throw new MulibIllegalStateException();
+                    }
+                }
+                Mulib.log.log(Level.INFO, Arrays.stream(machines).map(m -> m.i).collect(Collectors.toList()).toString());
             }
-            Mulib.log.log(Level.INFO, Arrays.stream(machines).map(m -> m.i).collect(Collectors.toList()).toString());
         }
         return ps;
     }
 
     @SuppressWarnings({"DuplicatedCode"})
     private static List<PathSolution> runMultiPeriodCapacityAssignment(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[][] twoPeriodsWorkloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
         List<PathSolution> ps = Mulib.executeMulib(
@@ -269,11 +326,14 @@ public final class ExamplesExecutor {
                 machines,
                 twoPeriodsWorkloads
         );
-        if (ps.size() < 1 || ps.get(0) instanceof ExceptionPathSolution) {
+        if (ps.size() < 1) {
             throw new MulibIllegalStateException();
         }
         if (runChecks) {
             for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
+                    throw new MulibIllegalStateException();
+                }
                 int[][][] result = (int[][][]) p.getSolution().returnValue;
                 Mulib.log.log(
                         Level.INFO,
@@ -314,13 +374,14 @@ public final class ExamplesExecutor {
 
     @SuppressWarnings({"DuplicatedCode"})
     private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignment(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2)
         };
         int[][] workloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
+
         List<PathSolution> ps = Mulib.executeMulib(
                 "assignWithPreproduction",
                 MachineCAP.class,
@@ -328,11 +389,75 @@ public final class ExamplesExecutor {
                 machines,
                 workloads
         );
-        if (ps.size() < 1 || ps.get(0) instanceof ExceptionPathSolution) {
+        if (ps.size() < 1) {
             throw new MulibIllegalStateException();
         }
         if (runChecks) {
             for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
+                    throw new MulibIllegalStateException();
+                }
+                int[][][] result = (int[][][]) p.getSolution().returnValue;
+                Mulib.log.log(
+                        Level.INFO,
+                        Arrays.stream(result).map(iis ->
+                                        Arrays.stream(iis)
+                                                .map(Arrays::toString)
+                                                .reduce((s0, s1) -> s0 + "," + s1))
+                                .collect(Collectors.toList()).toString()
+                );
+                // Generate array of machines for both periods;
+                Machine[][] machinesForTwoPeriods = new Machine[workloads.length][];
+                for (int i = 0; i < workloads.length; i++) {
+                    machinesForTwoPeriods[i] = new Machine[machines.length];
+                    for (int j = 0; j < machines.length; j++) {
+                        machinesForTwoPeriods[i][j] = new Machine(machines[j].i);
+                    }
+                }
+                for (int i = 0; i < workloads.length; i++) {
+                    for (int j = 0; j < workloads[i].length; j++) {
+                        int workload = workloads[i][j];
+                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                        if (machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0) {
+                            throw new MulibIllegalStateException();
+                        }
+                    }
+                }
+                Mulib.log.log(
+                        Level.INFO,
+                        Arrays.stream(machinesForTwoPeriods)
+                                .map(m -> Arrays.toString(Arrays.stream(m).map(e -> e.i).toArray(Integer[]::new)))
+                                .collect(Collectors.toList()).toString()
+                );
+            }
+        }
+        return ps;
+    }
+
+    @SuppressWarnings({"DuplicatedCode"})
+    private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignmentReduced(MulibConfig.MulibConfigBuilder builder) {
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
+        Machine[] machines = new Machine[] {
+                new Machine(5), new Machine(3), new Machine(2),
+                new Machine(5), new Machine(3), new Machine(2)
+        };
+        int[][] workloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1 }, { 1, 5, 2, 3, 1, 5, 2, 3 } };
+        List<PathSolution> ps = Mulib.executeMulib(
+                "assignWithPreproduction",
+                MachineCAP.class,
+                builder,
+                machines,
+                workloads
+        );
+        if (ps.size() < 1) {
+            throw new MulibIllegalStateException();
+        }
+        if (runChecks) {
+            for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
+                    throw new MulibIllegalStateException();
+                }
                 int[][][] result = (int[][][]) p.getSolution().returnValue;
                 Mulib.log.log(
                         Level.INFO,
@@ -373,7 +498,7 @@ public final class ExamplesExecutor {
 
     @SuppressWarnings({"DuplicatedCode"})
     private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignmenMutateFieldValues(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -387,11 +512,14 @@ public final class ExamplesExecutor {
                 machines,
                 workloads
         );
-        if (ps.size() < 1 || ps.get(0) instanceof ExceptionPathSolution) {
+        if (ps.size() < 1) {
             throw new MulibIllegalStateException();
         }
         if (runChecks) {
             for (PathSolution p : ps) {
+                if (p instanceof ExceptionPathSolution) {
+                    throw new MulibIllegalStateException();
+                }
                 int[][][] result = (int[][][]) p.getSolution().returnValue;
                 Mulib.log.log(
                         Level.INFO,
@@ -432,7 +560,7 @@ public final class ExamplesExecutor {
 
     @SuppressWarnings({"DuplicatedCode"})
     public static List<PathSolution> runDlspVariant(MulibConfig.MulibConfigBuilder builder) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_EACH_PATH_SOLUTION(true);
+        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
         DlspVariant.Machine[] machines = new DlspVariant.Machine[] {
                 new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
                 new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
