@@ -8,11 +8,10 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.transform_and_execute.examples.CapacityAssignmentProblem;
-import de.wwu.mulib.transform_and_execute.examples.free_arrays.FreeArraysOfObjects;
-import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort0;
-import de.wwu.mulib.transform_and_execute.examples.free_arrays.SimpleSort1;
+import de.wwu.mulib.transform_and_execute.examples.free_arrays.*;
 import org.junit.jupiter.api.Test;
 
+import java.util.Arrays;
 import java.util.List;
 import java.util.Optional;
 
@@ -330,4 +329,947 @@ public class FreeArraysExec {
                 "FreeArraysOfObjects.assignMaterials"
         );
     }
+
+    @Test
+    public void testMachineContainerEncoding() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    List<PathSolution> ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(1, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[] result = (int[]) p.getSolution().returnValue;
+                        for (int i = 0; i < result.length; i++) {
+                            machines[result[i]].i = machines[result[i]].i - workloads[i];
+                            if (machines[result[i]].i < 0) {
+                                fail();
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    List<Solution> sols = Mulib.getMulibContext(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(5, machines, workloads);
+                    assertEquals(5, sols.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(7), new MachineCAP.Machine(8)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
+                    sols = Mulib.getMulibContext(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(10, machines, workloads);
+                    assertEquals(2, sols.size());
+
+                    // NOW FOR EAGER
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setMAX_PATH_SOLUTIONS(10);
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertTrue(ps.size() >= 10);
+                    for (PathSolution p : ps) {
+                        MachineCAP.Machine[] _machines = MachineCAP.copy(machines);
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[] result = (int[]) p.getSolution().returnValue;
+                        for (int i = 0; i < result.length; i++) {
+                            _machines[result[i]].i = _machines[result[i]].i - workloads[i];
+                            if (_machines[result[i]].i < 0) {
+                                fail();
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    sols = Mulib.getMulibContext(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(5, machines, workloads);
+                    assertEquals(5, sols.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(7), new MachineCAP.Machine(8)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
+                    sols = Mulib.getMulibContext(
+                            "assign",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(10, machines, workloads);
+                    assertEquals(2, sols.size());
+
+                    return ps;
+                },
+                "assign"
+        );
+    }
+
+    @Test
+    public void testMachineContainerEncodingMutateField() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    List<PathSolution> ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(1, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[] result = (int[]) p.getSolution().returnValue;
+                        for (int i = 0; i < result.length; i++) {
+                            machines[result[i]].i = machines[result[i]].i - workloads[i];
+                            if (machines[result[i]].i < 0) {
+                                fail();
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
+                    ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    List<Solution> sols = Mulib.getMulibContext(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(5, machines, workloads);
+                    assertEquals(5, sols.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(7), new MachineCAP.Machine(8)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
+                    sols = Mulib.getMulibContext(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(10, machines, workloads);
+                    assertEquals(2, sols.size());
+
+                    // NOW FOR EAGER
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setMAX_PATH_SOLUTIONS(10);
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertTrue(ps.size() >= 10);
+                    for (PathSolution p : ps) {
+                        MachineCAP.Machine[] _machines = MachineCAP.copy(machines);
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[] result = (int[]) p.getSolution().returnValue;
+                        for (int i = 0; i < result.length; i++) {
+                            _machines[result[i]].i = _machines[result[i]].i - workloads[i];
+                            if (_machines[result[i]].i < 0) {
+                                fail();
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
+                    ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    ps = Mulib.executeMulib(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
+                    sols = Mulib.getMulibContext(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(5, machines, workloads);
+                    assertEquals(5, sols.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(7), new MachineCAP.Machine(8)
+                    };
+                    workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
+                    sols = Mulib.getMulibContext(
+                            "assignMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    ).getUpToNSolutions(10, machines, workloads);
+                    assertEquals(2, sols.size());
+
+                    return ps;
+                },
+                "assignMutateFieldValue"
+        );
+    }
+
+    @Test
+    public void testMultiPeriodMachineContainerEncoding() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    List<PathSolution> ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(1, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[][][] result = (int[][][]) p.getSolution().returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    MulibContext mc = Mulib.getMulibContext("assignWithPreproduction", MachineCAP.class, mb, machines, workloads);
+
+                    List<Solution> sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(3, sols.size());
+
+                    for (Solution p : sols) {
+                        int[][][] result = (int[][][]) p.returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(0, sols.size());
+
+                    // NOW EAGER
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(3, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[][][] result = (int[][][]) p.getSolution().returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproduction",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    mc = Mulib.getMulibContext("assignWithPreproduction", MachineCAP.class, mb, machines, workloads);
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(3, sols.size());
+
+                    for (Solution p : sols) {
+                        int[][][] result = (int[][][]) p.returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(0, sols.size());
+
+                    return ps;
+                },
+                "assignWithPreproduction"
+        );
+    }
+
+    @Test
+    public void testMultiPeriodMachineContainerEncodingMutateField() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    List<PathSolution> ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(1, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[][][] result = (int[][][]) p.getSolution().returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    MulibContext mc = Mulib.getMulibContext("assignWithPreproductionMutateFieldValue", MachineCAP.class, mb, machines, workloads);
+
+                    List<Solution> sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(3, sols.size());
+
+                    for (Solution p : sols) {
+                        int[][][] result = (int[][][]) p.returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(0, sols.size());
+
+                    // NOW EAGER
+                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+
+                    assertEquals(3, ps.size());
+                    for (PathSolution p : ps) {
+                        assertFalse(p instanceof ExceptionPathSolution);
+                        int[][][] result = (int[][][]) p.getSolution().returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    ps = Mulib.executeMulib(
+                            "assignWithPreproductionMutateFieldValue",
+                            MachineCAP.class,
+                            mb,
+                            machines,
+                            workloads
+                    );
+                    assertEquals(0, ps.size());
+
+                    machines = new MachineCAP.Machine[] {
+                            new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
+                    };
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
+                    mc = Mulib.getMulibContext("assignWithPreproductionMutateFieldValue", MachineCAP.class, mb, machines, workloads);
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(3, sols.size());
+
+                    for (Solution p : sols) {
+                        int[][][] result = (int[][][]) p.returnValue;
+                        // Generate array of machines for both periods;
+                        MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
+                        for (int i = 0; i < workloads.length; i++) {
+                            machinesForTwoPeriods[i] = new MachineCAP.Machine[machines.length];
+                            for (int j = 0; j < machines.length; j++) {
+                                machinesForTwoPeriods[i][j] = new MachineCAP.Machine(machines[j].i);
+                            }
+                        }
+                        for (int i = 0; i < workloads.length; i++) {
+                            for (int j = 0; j < workloads[i].length; j++) {
+                                int workload = workloads[i][j];
+                                machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i =
+                                        machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i - workload;
+                                assertFalse(machinesForTwoPeriods[result[i][j][0]][result[i][j][1]].i < 0);
+                            }
+                        }
+                    }
+
+                    workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
+
+                    sols = mc.getUpToNSolutions(10, machines, workloads);
+                    assertEquals(0, sols.size());
+
+                    return ps;
+                },
+                "assignWithPreproductionMutateFieldValue"
+        );
+    }
+    
+    @Test
+    public void testDlspVariant() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    DlspVariant.Machine[] machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 1, 3, 5 }),
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+                    DlspVariant.Product[][] products = new DlspVariant.Product[][]{
+                            {new DlspVariant.Product(1, 1), new DlspVariant.Product(1, 2), new DlspVariant.Product(4, 4), new DlspVariant.Product(3, 2), new DlspVariant.Product(1, 5),
+                                    new DlspVariant.Product(4, 9), new DlspVariant.Product(1, 3), new DlspVariant.Product(2, 5), new DlspVariant.Product(1, 4),},
+                            {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
+                                    new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
+                    };
+                    List<PathSolution> ps = Mulib.executeMulib(
+                            "assign",
+                            DlspVariant.class,
+                            mb,
+                            machines,
+                            products
+                    );
+                    assertEquals(1, ps.size());
+
+                    DlspVariant.Product[][] result = (DlspVariant.Product[][]) ps.get(0).getSolution().returnValue;
+                    for (DlspVariant.Product[] prodsForPeriod : result) {
+                        boolean[] seen = new boolean[prodsForPeriod.length + 1];
+                        for (DlspVariant.Product p : prodsForPeriod) {
+                            DlspVariant.Machine prod = p.producedBy;
+                            assertNotEquals(0, prod.number);
+                            assertFalse(prod.productionCapacity < p.requiredCapacity);
+                            assertFalse(Arrays.stream(prod.producibleProductTypes).noneMatch(type -> type == p.type));
+                            assertFalse(seen[prod.number]);
+                            seen[prod.number] = true;
+                        }
+                        for (int j = 1; j < seen.length; j++) {
+                            assertTrue(seen[j]);
+                        }
+                    }
+
+                    machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 3, 5 }), // Removed '1'
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+                    products = new DlspVariant.Product[][]{
+                            {new DlspVariant.Product(1, 1), new DlspVariant.Product(1, 2), new DlspVariant.Product(4, 4), new DlspVariant.Product(3, 2), new DlspVariant.Product(1, 5),
+                                    new DlspVariant.Product(4, 9), new DlspVariant.Product(1, 3), new DlspVariant.Product(2, 5), new DlspVariant.Product(1, 4),},
+                            {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
+                                    new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
+                    };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            DlspVariant.class,
+                            mb,
+                            machines,
+                            products
+                    );
+                    assertEquals(0, ps.size());
+
+                    MulibContext mc = Mulib.getMulibContext("assign", DlspVariant.class, mb, machines, products);
+
+                    List<Solution> sols = mc.getUpToNSolutions(10, machines, products);
+                    assertEquals(0, sols.size());
+
+                    machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 1, 3, 5 }), // Re-added '1'
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+
+                    sols = mc.getUpToNSolutions(10, machines, products);
+                    assertEquals(1, sols.size());
+
+                    // NOW EAGER
+                    machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 1, 3, 5 }),
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+                    products = new DlspVariant.Product[][]{
+                            {new DlspVariant.Product(1, 1), new DlspVariant.Product(1, 2), new DlspVariant.Product(4, 4), new DlspVariant.Product(3, 2), new DlspVariant.Product(1, 5),
+                                    new DlspVariant.Product(4, 9), new DlspVariant.Product(1, 3), new DlspVariant.Product(2, 5), new DlspVariant.Product(1, 4),},
+                            {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
+                                    new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
+                    };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            DlspVariant.class,
+                            mb,
+                            machines,
+                            products
+                    );
+                    assertEquals(1, ps.size());
+
+                    result = (DlspVariant.Product[][]) ps.get(0).getSolution().returnValue;
+                    for (DlspVariant.Product[] prodsForPeriod : result) {
+                        boolean[] seen = new boolean[prodsForPeriod.length + 1];
+                        for (DlspVariant.Product p : prodsForPeriod) {
+                            DlspVariant.Machine prod = p.producedBy;
+                            assertNotEquals(0, prod.number);
+                            assertFalse(prod.productionCapacity < p.requiredCapacity);
+                            assertFalse(Arrays.stream(prod.producibleProductTypes).noneMatch(type -> type == p.type));
+                            assertFalse(seen[prod.number]);
+                            seen[prod.number] = true;
+                        }
+                        for (int j = 1; j < seen.length; j++) {
+                            assertTrue(seen[j]);
+                        }
+                    }
+
+                    machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 3, 5 }), // Removed '1'
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+                    products = new DlspVariant.Product[][]{
+                            {new DlspVariant.Product(1, 1), new DlspVariant.Product(1, 2), new DlspVariant.Product(4, 4), new DlspVariant.Product(3, 2), new DlspVariant.Product(1, 5),
+                                    new DlspVariant.Product(4, 9), new DlspVariant.Product(1, 3), new DlspVariant.Product(2, 5), new DlspVariant.Product(1, 4),},
+                            {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
+                                    new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
+                    };
+                    ps = Mulib.executeMulib(
+                            "assign",
+                            DlspVariant.class,
+                            mb,
+                            machines,
+                            products
+                    );
+                    assertEquals(0, ps.size());
+
+                    mc = Mulib.getMulibContext("assign", DlspVariant.class, mb, machines, products);
+
+                    sols = mc.getUpToNSolutions(10, machines, products);
+                    assertEquals(0, sols.size());
+
+                    machines = new DlspVariant.Machine[] {
+                            new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
+                            new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
+                            new DlspVariant.Machine(3, 10, new int[] { 4, 5 }),
+                            new DlspVariant.Machine(4, 3, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(5, 2, new int[] { 1, 3, 5 }), // Re-added '1'
+                            new DlspVariant.Machine(6, 4, new int[] { 2, 4 }),
+                            new DlspVariant.Machine(7, 1, new int[] { 1, 2, 3, 4, 5 }),
+                            new DlspVariant.Machine(8, 2, new int[] { 3 }),
+                            new DlspVariant.Machine(9, 6, new int[] { 2, 5 })
+                    };
+
+                    sols = mc.getUpToNSolutions(10, machines, products);
+                    assertEquals(1, sols.size());
+
+                    return ps;
+                },
+                "assign"
+        );
+    }
+
 }
