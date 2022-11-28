@@ -42,7 +42,6 @@ public class FreeArraysExec {
                     assertEquals(9, values[4]);
                     assertEquals(42, values[5]);
                     assertEquals(78, values[6]);
-                    return result;
                 }
         );
     }
@@ -71,7 +70,7 @@ public class FreeArraysExec {
                     assertEquals(39, values[4], mb.build().toString());
                     assertEquals(42, values[5], mb.build().toString());
                     assertEquals(56, values[6], mb.build().toString());
-                    return result;
+                    
                 }
         );
     }
@@ -103,7 +102,7 @@ public class FreeArraysExec {
                     assertEquals(2, returnValue[1]);
                     assertEquals(0, returnValue[2]);
                     assertEquals(1, returnValue[3]);
-                    return result;
+                    
                 },
                 "CapacityAssignmentProblem.assign"
         );
@@ -136,7 +135,7 @@ public class FreeArraysExec {
                     assertEquals(0, innerReturnValue[0]);
                     assertEquals(2, innerReturnValue[1]);
                     assertEquals(1, innerReturnValue[2]);
-                    return result;
+                    
                 },
                 "CapacityAssignmentProblem.assign"
         );
@@ -156,7 +155,7 @@ public class FreeArraysExec {
                             new Object[] { new int[] { 5, 3, 2 }, new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } } }
                     );
                     assertEquals(1, result.size(), "Result size is: " + result.size() + ", with config: " + mb.build());
-                    return result;
+                    
                 },
                 "CapacityAssignmentProblem.assignWithPreproduction"
         );
@@ -178,7 +177,7 @@ public class FreeArraysExec {
         );
     }
 
-    private static List<Solution> withPreproduction(boolean eagerArrayIndices, MulibConfig.MulibConfigBuilder mb) {
+    private static void withPreproduction(boolean eagerArrayIndices, MulibConfig.MulibConfigBuilder mb) {
         mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
         mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(eagerArrayIndices);
         List<Solution> result;
@@ -223,8 +222,6 @@ public class FreeArraysExec {
             // several copies of the valid solutions { [[0], [0,1,2]], [[0], [0,1,1]] }
             assertEquals(2, result.size());
         }
-
-        return result;
     }
 
     @Test
@@ -324,7 +321,7 @@ public class FreeArraysExec {
                         assertTrue(seenFirstTruck && seenSecondTruck && seenThirdTruck);
                     }
                     assertTrue(seenFirst && seenSecond && seenThird);
-                    return result;
+                    
                 },
                 "FreeArraysOfObjects.assignMaterials"
         );
@@ -499,8 +496,6 @@ public class FreeArraysExec {
                             workloads
                     ).getUpToNSolutions(10, machines, workloads);
                     assertEquals(2, sols.size());
-
-                    return ps;
                 },
                 "assign"
         );
@@ -675,8 +670,6 @@ public class FreeArraysExec {
                             workloads
                     ).getUpToNSolutions(10, machines, workloads);
                     assertEquals(2, sols.size());
-
-                    return ps;
                 },
                 "assignMutateFieldValue"
         );
@@ -876,8 +869,6 @@ public class FreeArraysExec {
 
                     sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(0, sols.size());
-
-                    return ps;
                 },
                 "assignWithPreproduction"
         );
@@ -1077,8 +1068,6 @@ public class FreeArraysExec {
 
                     sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(0, sols.size());
-
-                    return ps;
                 },
                 "assignWithPreproductionMutateFieldValue"
         );
@@ -1265,8 +1254,6 @@ public class FreeArraysExec {
 
                     sols = mc.getUpToNSolutions(10, machines, products);
                     assertEquals(1, sols.size());
-
-                    return ps;
                 },
                 "assign"
         );

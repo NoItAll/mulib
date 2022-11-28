@@ -33,7 +33,6 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
                 },
                 "testHasNoClinit"
         );
@@ -58,7 +57,6 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
                 },
                 "testHasNoClinit"
         );
@@ -83,7 +81,6 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
                 },
                 "testHasNoClinit"
         );
@@ -108,7 +105,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+
                 },
                 "testHasNoClinit"
         );
@@ -133,7 +130,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasNoClinit"
         );
@@ -158,7 +155,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasNoClinit"
         );
@@ -183,7 +180,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasNoClinit"
         );
@@ -208,7 +205,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -233,7 +230,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -258,7 +255,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -283,7 +280,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -308,7 +305,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -333,7 +330,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -358,7 +355,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitInitialized"
         );
@@ -383,7 +380,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -408,7 +405,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -433,7 +430,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -458,7 +455,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -483,7 +480,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -508,7 +505,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -533,7 +530,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testHasClinitUninitialized"
         );
@@ -557,7 +554,7 @@ public class GeneratedMethodsCheckExec {
                     assertEquals(84, (cic.getS()));
                     assertSame(cic.getCyclic().getCyclic().getCyclic(), cic.getCyclic());
                     assertSame(cic.getCyclic().getCyclic(), cic.getCyclic().getCyclic().getCyclic().getCyclic());
-                    return result;
+                    
                 },
                 "testCyclicInputClasses"
         );
@@ -575,7 +572,7 @@ public class GeneratedMethodsCheckExec {
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
                     assertEquals(3, result.get(0).getSolution().returnValue);
-                    return result;
+                    
                 },
                 "testIndirectCyclicInputClassesCalc0"
         );
@@ -592,7 +589,7 @@ public class GeneratedMethodsCheckExec {
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
                     assertEquals(3, result.get(0).getSolution().returnValue);
-                    return result;
+                    
                 },
                 "testIndirectCyclicInputClassesCalc1"
         );
@@ -608,7 +605,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testNeedsToPreinitializeFieldsCalc0"
         );
@@ -649,7 +646,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testNeedsToPreinitializeFieldsCalc1"
         );
@@ -665,7 +662,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testNeedsToPreinitializeFieldsCalc2"
         );
@@ -681,7 +678,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testNeedsToPreinitializeFieldsCalc3"
         );
@@ -697,7 +694,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testNeedsToPreinitializeFieldsCalc4"
         );

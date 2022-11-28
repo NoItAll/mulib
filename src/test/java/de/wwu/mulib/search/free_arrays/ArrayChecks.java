@@ -41,8 +41,6 @@ public class ArrayChecks {
             );
             assertEquals(1, result.size());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-
-            return result;
         }, "checkConcreteArraySelect");
     }
 
@@ -105,7 +103,6 @@ public class ArrayChecks {
             );
             assertEquals(1, result.size());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-            return result;
         }, "checkConcreteArrayStore");
     }
 
@@ -202,7 +199,6 @@ public class ArrayChecks {
             );
             assertEquals(2, result.size());
             assertTrue(result.stream().allMatch(ps -> ps instanceof ExceptionPathSolution));
-            return result;
         }, "checkConcreteIllegalAccessWithOOB");
     }
 
@@ -248,7 +244,6 @@ public class ArrayChecks {
             );
             assertEquals(1, result.size());
             assertTrue(result.stream().allMatch(ps -> ps instanceof ExceptionPathSolution));
-            return result;
         }, "checkConcreteIllegalAccess");
     }
 
@@ -292,7 +287,6 @@ public class ArrayChecks {
             );
             assertTrue(result.stream().anyMatch(r -> ((Boolean) r.getSolution().returnValue)));
             assertTrue(result.stream().anyMatch(r -> !((Boolean) r.getSolution().returnValue)));
-            return result;
         }, "checkValueDominanceDueToCaching");
 
         TestUtility.getAllSolutions((mb) -> {
@@ -303,7 +297,6 @@ public class ArrayChecks {
                     false
             );
             assertTrue(result.size() > 0);
-            return result;
         }, "checkValueDominanceDueToCaching");
     }
 
@@ -411,7 +404,6 @@ public class ArrayChecks {
             );
             assertEquals(2, result.size());
             assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
-            return result;
         }, "checkSymArraySelect");
     }
 
@@ -538,8 +530,6 @@ public class ArrayChecks {
             assertEquals(2, result.size());
             assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
             assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
-
-            return result;
         }, "checkSymArrayStore");
     }
 
@@ -647,9 +637,6 @@ public class ArrayChecks {
             assertEquals(12, result.size());
             assertEquals(7, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
             assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
-
-            return result;
-
         }, "checkMultipleArrays");
     }
 
@@ -745,7 +732,6 @@ public class ArrayChecks {
             assertEquals(39, values[4]);
             assertEquals(42, values[5]);
             assertEquals(56, values[6]);
-            return result;
         });
     }
 
@@ -770,7 +756,6 @@ public class ArrayChecks {
             assertEquals(9, values[4]);
             assertEquals(42, values[5]);
             assertEquals(78, values[6]);
-            return result;
         });
     }
 
@@ -873,7 +858,6 @@ public class ArrayChecks {
                     fail();
                 }
             }
-            return solutions;
         }, "arrayLabeling");
     }
 
@@ -934,7 +918,6 @@ public class ArrayChecks {
                     );
                     assertEquals(1, solutions.size());
                     assertEquals(9, solutions.get(0).returnValue);
-                    return solutions;
                 },
                 "arrayArraySimpleSumWithNonEagerIndices"
         );
@@ -1064,7 +1047,6 @@ public class ArrayChecks {
                     );
 
                     assertEquals(0, solutions.size());
-                    return solutions;
                 },
                 "testAssignWithPreproduction0"
         );
@@ -1221,8 +1203,6 @@ public class ArrayChecks {
                     }
                     assertTrue(seenOne);
                     assertTrue(seenZero);
-
-                    return solutions;
                 },
                 "testAssignWithPreproductionMoreComplex"
         );
@@ -1322,7 +1302,6 @@ public class ArrayChecks {
                     assertEquals(2, solutions.size());
                     assertTrue(solutions.stream().anyMatch(s -> s instanceof ExceptionPathSolution && s.getSolution().returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> !(s instanceof ExceptionPathSolution) && ((Integer) s.getSolution().returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithNulls"
         );
@@ -1358,7 +1337,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls"
         );
@@ -1397,7 +1375,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls1"
         );
@@ -1437,7 +1414,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls2"
         );
@@ -1477,7 +1453,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls3"
         );
@@ -1521,7 +1496,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3)); // for sintSarray0
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 0)); // for sintSarray1
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls4"
         );
@@ -1566,7 +1540,6 @@ public class ArrayChecks {
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 4));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 5));
-                    return solutions;
                 },
                 "sarraySarraySarrayCache"
         );
@@ -1620,7 +1593,6 @@ public class ArrayChecks {
                     assertEquals(2, solutions.size());
                     assertTrue(solutions.stream().anyMatch(s -> s instanceof ExceptionPathSolution && s.getSolution().returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> !(s instanceof ExceptionPathSolution) && ((Integer) s.getSolution().returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithNulls"
         );
@@ -1661,7 +1633,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNullsWithSymbolicLength"
         );
@@ -1705,7 +1676,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls1WithSymbolicLength"
         );
@@ -1750,7 +1720,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls2WithSymbolicLength"
         );
@@ -1799,7 +1768,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == -1));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 2));
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls3WithSymbolicLength"
         );
@@ -1848,7 +1816,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3)); // for sintSarray0
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 0)); // for sintSarray1
-                    return solutions;
                 },
                 "sarraySarraysWithoutNulls4WithSymbolicLength"
         );
@@ -1906,7 +1873,6 @@ public class ArrayChecks {
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 3));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 4));
                     assertTrue(solutions.stream().anyMatch(s -> ((Integer) s.returnValue) == 5));
-                    return solutions;
                 },
                 "sarraySarraySarrayCacheWithSymbolicLength"
         );
@@ -1968,7 +1934,6 @@ public class ArrayChecks {
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Byte) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> ((Byte) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues0"
         );
@@ -2028,7 +1993,6 @@ public class ArrayChecks {
                     assertEquals(2, solutions.size());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Short) && ((Short) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues1"
         );
@@ -2088,7 +2052,6 @@ public class ArrayChecks {
                     assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Long) && ((Long) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Long) && ((Long) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues2"
         );
@@ -2153,7 +2116,6 @@ public class ArrayChecks {
                     long numberNpes = solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count();
                     assertTrue(numberNpes <= 1);
                     assertEquals(5 - numberNpes, solutions.stream().filter(s -> (s.returnValue instanceof Double) && ((Double) s.returnValue) <= 3 && ((Double) s.returnValue) >= 2).count());
-                    return solutions;
                 },
                 "sarrayWithDefaultValues3"
         );
@@ -2220,7 +2182,6 @@ public class ArrayChecks {
                     assertEquals(3, solutions.size());
                     assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Float) && ((Float) s.returnValue) == 2.1f));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues4"
         );
@@ -2288,7 +2249,6 @@ public class ArrayChecks {
                     assertEquals(3, solutions.size());
                     assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Boolean) && ((Boolean) s.returnValue)));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues5"
         );
@@ -2362,7 +2322,6 @@ public class ArrayChecks {
                     assertTrue(solutions.stream().noneMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 42));
                     assertTrue(solutions.stream().anyMatch(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 0));
-                    return solutions;
                 },
                 "sarrayWithDefaultValues6"
         );
@@ -2402,7 +2361,6 @@ public class ArrayChecks {
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 1).count());
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 2).count());
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 3).count());
-                    return solutions;
                 },
                 "sarrayWithDefaultValues7"
         );
@@ -2450,7 +2408,6 @@ public class ArrayChecks {
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 1).count());
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 2).count());
                     assertEquals(1, solutions.stream().filter(s -> (s.returnValue instanceof Integer) && ((Integer) s.returnValue) == 3).count());
-                    return solutions;
                 },
                 "sarrayWithDefaultValues8"
         );
@@ -2493,7 +2450,6 @@ public class ArrayChecks {
 
                     assertEquals(1, solutions.size());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls0"
         );
@@ -2562,7 +2518,6 @@ public class ArrayChecks {
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls1"
         );
@@ -2635,7 +2590,6 @@ public class ArrayChecks {
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 3));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 4));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 5));
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls2"
         );
@@ -2711,7 +2665,6 @@ public class ArrayChecks {
 
                     assertEquals(1, solutions.size());
                     assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls3"
         );
@@ -2793,7 +2746,6 @@ public class ArrayChecks {
                     assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 2));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte && ((Byte) s.returnValue) == 3));
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls4"
         );
@@ -2865,7 +2817,6 @@ public class ArrayChecks {
 
                     assertEquals(2, solutions.size());
                     assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls5"
         );
@@ -2942,7 +2893,6 @@ public class ArrayChecks {
 
                     assertEquals(1, solutions.size());
                     assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls6"
         );
@@ -3014,7 +2964,6 @@ public class ArrayChecks {
 
                     assertEquals(1, solutions.size());
                     assertEquals(1, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
-                    return solutions;
                 },
                 "sarrayWithInsertedNulls7"
         );
@@ -3091,7 +3040,6 @@ public class ArrayChecks {
                     assertEquals(1, solutions.size());
                     assertFalse(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException));
                     assertTrue(solutions.stream().anyMatch(s -> ((Byte) s.returnValue) == 0));
-                    return solutions;
                 },
                 "sarrayWithOverwrittenNulls0"
         );
@@ -3184,7 +3132,6 @@ public class ArrayChecks {
                     assertEquals(4, solutions.size());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof NullPointerException), mb.build().toString());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte));
-                    return solutions;
                 },
                 "sarrayWithOverwrittenNulls1"
         );
@@ -3284,7 +3231,6 @@ public class ArrayChecks {
                     assertEquals(2, solutions.stream().filter(s -> s.returnValue instanceof NullPointerException).count());
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte  && ((Byte) s.returnValue) == 8));
                     assertTrue(solutions.stream().anyMatch(s -> s.returnValue instanceof Byte  && ((Byte) s.returnValue) == 6));
-                    return solutions;
                 },
                 "sarrayWithOverwrittenNulls2"
         );

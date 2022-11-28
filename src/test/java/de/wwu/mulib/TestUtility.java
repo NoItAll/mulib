@@ -9,6 +9,7 @@ import de.wwu.mulib.solving.Solvers;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 import static de.wwu.mulib.search.executors.SearchStrategy.*;
@@ -206,14 +207,14 @@ public final class TestUtility {
     }
 
     public static void getAllSolutions(
-            Function<MulibConfig.MulibConfigBuilder, ?> mbToList,
+            Consumer<MulibConfig.MulibConfigBuilder> mbToList,
             String testedMethodName) {
         getAllSolutions(b -> b, mbToList, testedMethodName);
     }
 
     public static void getAllSolutions(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig.MulibConfigBuilder, ?> mulibConfigToList,
+            Consumer<MulibConfig.MulibConfigBuilder> mulibConfigToList,
             String testedMethodName) {
         if (quickCheck) {
             executeTestConfigsBatched(quickCheck(), adjustment, mulibConfigToList, testedMethodName, 1);
@@ -232,7 +233,7 @@ public final class TestUtility {
     private static void executeTestConfigsBatched(
             List<MulibConfig.MulibConfigBuilder> executeTestsWith,
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig.MulibConfigBuilder, ?> mulibConfigToList,
+            Consumer<MulibConfig.MulibConfigBuilder> mulibConfigToList,
             String testedMethodName,
             int batchSize) {
         int currentFirstElementOfNextList = 0;
@@ -247,28 +248,26 @@ public final class TestUtility {
                 MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
                 mb.setTRANSF_VALIDATE_TRANSFORMATION(true);
                 Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
-                mulibConfigToList.apply(mb);
+                mulibConfigToList.accept(mb);
                 Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
             });
             currentFirstElementOfNextList = nextEndpoint;
         }
     }
 
-    public static List<Optional<PathSolution>> getSolution(
-            Function<MulibConfig.MulibConfigBuilder, Optional<PathSolution>> mulibConfigToPossibleSolution) {
-        return getSolution(b -> b, mulibConfigToPossibleSolution);
+    public static void getSolution(
+            Consumer<MulibConfig.MulibConfigBuilder> mulibConfigToPossibleSolution) {
+        getSolution(b -> b, mulibConfigToPossibleSolution);
     }
 
-    public static List<Optional<PathSolution>> getSolution(
+    public static void getSolution(
             Function<MulibConfig.MulibConfigBuilder, MulibConfig.MulibConfigBuilder> adjustment,
-            Function<MulibConfig.MulibConfigBuilder, Optional<PathSolution>> mulibConfigToPossibleSolution) {
+            Consumer<MulibConfig.MulibConfigBuilder> mulibConfigToPossibleSolution) {
         final List<MulibConfig.MulibConfigBuilder> executeTestsWith = initBuilders();
-        List<Optional<PathSolution>> result = new ArrayList<>();
         for (MulibConfig.MulibConfigBuilder mulibConfigBuilder : executeTestsWith) {
             MulibConfig.MulibConfigBuilder config = adjustment.apply(mulibConfigBuilder);
-            result.add(mulibConfigToPossibleSolution.apply(config));
+            mulibConfigToPossibleSolution.accept(config);
         }
-        return result;
     }
 
     public static List<PathSolution> executeMulib(

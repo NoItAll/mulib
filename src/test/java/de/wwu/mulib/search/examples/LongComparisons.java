@@ -23,7 +23,7 @@ public class LongComparisons {
                     List<PathSolution> result = TestUtility.executeMulib("abs0", LongComparisons.class, mb, false);
                     assertEquals(3, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testAbs0"
         );
@@ -36,7 +36,7 @@ public class LongComparisons {
                     List<PathSolution> result = TestUtility.executeMulib("abs1", LongComparisons.class, mb, false);
                     assertEquals(2, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    return result;
+                    
                 },
                 "testAbs1"
         );
