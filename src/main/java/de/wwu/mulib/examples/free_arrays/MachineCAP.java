@@ -45,7 +45,7 @@ public class MachineCAP {
         return assignment;
     }
 
-    private static Machine[] copy(Machine[] toCopy) {
+    public static Machine[] copy(Machine[] toCopy) {
         Machine[] copied = new Machine[toCopy.length];
         for (int i = 0; i < copied.length; i++) {
             copied[i] = new Machine(toCopy[i].i);
