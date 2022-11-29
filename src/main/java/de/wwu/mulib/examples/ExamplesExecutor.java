@@ -31,7 +31,7 @@ import static de.wwu.mulib.search.executors.SearchStrategy.DSAS;
 public final class ExamplesExecutor {
     private ExamplesExecutor(){}
 
-    private static boolean runChecks = true;
+    private static final boolean runChecks = false;
 
     public static void main(String[] args) {
         Mulib.setLogLevel(Level.FINE);
