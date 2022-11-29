@@ -64,8 +64,8 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
         super.notifyNewChoice(depth, choiceOptions);
         // Additional functionality compared to SingleExecutorManager: Start new executor if there are choices
-        while ((!nextStrategiesToInitialize.isEmpty()
-                || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor) {
+        while (!globalBudgetExceeded() && ((!nextStrategiesToInitialize.isEmpty()
+                || !idle.isEmpty()) && observedTree.getChoiceOptionDeque().size() >= activateParallelFor)) {
             // Case 1: An existing MulibExecutor is idle, use this
             MulibExecutor nextExecutor = idle.poll();
             if (nextExecutor != null) {

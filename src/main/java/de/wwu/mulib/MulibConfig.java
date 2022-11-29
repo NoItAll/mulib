@@ -804,7 +804,7 @@ public class MulibConfig {
                 + (ENLIST_LEAVES ? ",ENLIST_LEAVES=" + true : "")
                 + FIXED_ACTUAL_CP_BUDGET.map(v -> ",FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
                 + INCR_ACTUAL_CP_BUDGET.map(v -> ",INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + NANOSECONDS_PER_INVOCATION.map(v -> ",SECONDS_PER_INVOCATION=" + v).orElse("")
+                + NANOSECONDS_PER_INVOCATION.map(v -> ",NANOSECONDS_PER_INVOCATION=" + v).orElse("")
                 + MAX_FAILS.map(v -> ",MAX_FAILS=" + v).orElse("")
                 + MAX_PATH_SOLUTIONS.map(v -> ",MAX_PATH_SOLUTIONS=" + v).orElse("")
                 + MAX_EXCEEDED_BUDGETS.map(v -> ",MAX_EXCEEDED_BUDGETS=" + v).orElse("")
