@@ -3009,9 +3009,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Special treatment of method calls
         if (!args.isTainted() && a.containsInvokeExpr()) {
             adjustSignatureIfNeeded(a, a.getInvokeExpr(), args);
-            if (args.isToWrap()) {
-                throw new NotYetImplementedException(); /// TODO
-            }
+            assert !args.isToWrap();
             args.addUnit(a);
             return;
         }

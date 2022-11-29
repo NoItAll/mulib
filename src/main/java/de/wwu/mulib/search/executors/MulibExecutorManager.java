@@ -101,7 +101,7 @@ public abstract class MulibExecutorManager {
             if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstPathSolution))
                     && ps.isPresent()) {
                 long end = System.nanoTime();
-                Mulib.log.log(Level.INFO, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
+                Mulib.log.log(Level.FINE, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
                 seenFirstPathSolution = true;
             }
         }
@@ -181,7 +181,7 @@ public abstract class MulibExecutorManager {
                     .append(observedTree.getExceededBudgetList().size());
 
         }
-        Mulib.log.log(Level.INFO, b.toString());
+        Mulib.log.log(Level.FINE, b.toString());
     }
 
     protected boolean checkForPause() {
