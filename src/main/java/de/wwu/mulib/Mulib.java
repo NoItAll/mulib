@@ -7,11 +7,27 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
+import java.util.logging.ConsoleHandler;
+import java.util.logging.Handler;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 public final class Mulib {
 
     public static final Logger log = Logger.getLogger("mulib");
+
+    static {
+        assert log.getHandlers().length == 0;
+        log.setUseParentHandlers(false);
+        Handler h = new ConsoleHandler();
+        log.addHandler(h);
+    }
+
+    public synchronized static void setLogLevel(Level newLevel) {
+        log.setLevel(newLevel);
+        assert log.getHandlers().length == 1;
+        log.getHandlers()[0].setLevel(newLevel);
+    }
 
     private Mulib() {}
 

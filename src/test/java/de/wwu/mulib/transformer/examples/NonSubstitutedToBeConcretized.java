@@ -2,13 +2,11 @@ package de.wwu.mulib.transformer.examples;
 
 import de.wwu.mulib.Mulib;
 
-import java.util.logging.Level;
-
 public class NonSubstitutedToBeConcretized {
 
     void check0(double d0, int i, double d1) {
 
-        Mulib.log.log(Level.INFO, "check" + d0);
+        Mulib.log.info("check" + d0);
 
     }
 

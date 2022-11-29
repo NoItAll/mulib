@@ -17,7 +17,6 @@ import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
-import java.util.logging.Level;
 
 public final class MulibContext {
     private final MulibConfig config;
@@ -52,7 +51,7 @@ public final class MulibContext {
             transformedArgTypes = untransformedArgTypes;
         }
         long end = System.nanoTime();
-        Mulib.log.log(Level.FINER, "Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibContext");
+        Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibContext");
     }
 
     private void _throwExceptionOnArgumentMismatch(Object[] providedArgs) {
@@ -144,7 +143,7 @@ public final class MulibContext {
                         mulibValueTransformer
                 );
         long end = System.nanoTime();
-        Mulib.log.log(Level.FINER, "Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");
+        Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");
         return result;
     }
 
@@ -153,7 +152,7 @@ public final class MulibContext {
         long start = System.nanoTime();
         T result = argsToResult.apply(args);
         long end = System.nanoTime();
-        Mulib.log.log(Level.FINE, "Took " + ((end - start) / 1e6) + "ms for " + config + " to retrieve the solution(s)");
+        Mulib.log.fine("Took " + ((end - start) / 1e6) + "ms for " + config + " to retrieve the solution(s)");
         return result;
     }
 

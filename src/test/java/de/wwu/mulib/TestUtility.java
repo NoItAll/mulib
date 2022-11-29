@@ -247,9 +247,9 @@ public final class TestUtility {
             currentBatch.parallelStream().forEach(mcb -> {
                 MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
                 mb.setTRANSF_VALIDATE_TRANSFORMATION(true);
-                Mulib.log.log(java.util.logging.Level.INFO, "Started '" + testedMethodName + "' with config " + mb.build());
+                Mulib.log.info("Started '" + testedMethodName + "' with config " + mb.build());
                 mulibConfigToList.accept(mb);
-                Mulib.log.log(java.util.logging.Level.INFO, "Returns for '" + testedMethodName + "' with config " + mb.build());
+                Mulib.log.info("Returns for '" + testedMethodName + "' with config " + mb.build());
             });
             currentFirstElementOfNextList = nextEndpoint;
         }

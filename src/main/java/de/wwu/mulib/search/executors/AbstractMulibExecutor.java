@@ -23,7 +23,6 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected SymbolicExecution currentSymbolicExecution;
@@ -191,7 +190,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                             symbolicExecution.getCurrentChoiceOption().setBudgetExceeded(be.getExceededBudget());
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                 } catch (MulibException e) {
-                    Mulib.log.log(Level.WARNING, config.toString());
+                    Mulib.log.warning(config.toString());
                     throw e;
                 } catch (Throwable e) {
                     if (!solverManager.isSatisfiable()) {
@@ -203,7 +202,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
                         return Optional.of(solution);
                     } else {
-                        Mulib.log.log(Level.WARNING, config.toString());
+                        Mulib.log.warning(config.toString());
                         e.printStackTrace();
                         throw new MulibRuntimeException("Exception was thrown but not expected, config: " + config, e);
                     }

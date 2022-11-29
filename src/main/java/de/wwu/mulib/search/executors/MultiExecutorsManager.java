@@ -14,7 +14,6 @@ import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Level;
 
 public class MultiExecutorsManager extends MulibExecutorManager {
     private final SimpleSyncedQueue<SearchStrategy> nextStrategiesToInitialize;
@@ -153,7 +152,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstPathSolution))
                     && ps.isPresent()) {
                 long end = System.nanoTime();
-                Mulib.log.log(Level.INFO, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
+                Mulib.log.info("Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
                 seenFirstPathSolution = true;
             }
         }

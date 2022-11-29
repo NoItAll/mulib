@@ -14,7 +14,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.logging.Level;
 
 public abstract class MulibExecutorManager {
 
@@ -101,7 +100,7 @@ public abstract class MulibExecutorManager {
             if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstPathSolution))
                     && ps.isPresent()) {
                 long end = System.nanoTime();
-                Mulib.log.log(Level.FINE, "Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
+                Mulib.log.fine("Took " + ((end - startTime) / 1e6) + "ms for " + config + " to get a path solution");
                 seenFirstPathSolution = true;
             }
         }
@@ -181,7 +180,7 @@ public abstract class MulibExecutorManager {
                     .append(observedTree.getExceededBudgetList().size());
 
         }
-        Mulib.log.log(Level.FINE, b.toString());
+        Mulib.log.fine(b.toString());
     }
 
     protected boolean checkForPause() {

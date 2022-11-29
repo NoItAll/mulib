@@ -8,7 +8,6 @@ import soot.jimple.*;
 
 import java.lang.invoke.StringConcatFactory;
 import java.util.*;
-import java.util.logging.Level;
 import java.util.stream.Collectors;
 
 public class TaintAnalyzer {
@@ -142,7 +141,7 @@ public class TaintAnalyzer {
                         && !declaringClassName.equals(String.class.getName())
                         && !declaringClassName.equals(StringConcatFactory.class.getName())
                         && s.getInvokeExpr().getMethodRef().getParameterTypes().size() > 0) { // TODO Free Strings
-                    Mulib.log.log(Level.INFO, "Behavior for treating untransformed method in Stmt " + s + " is not " +
+                    Mulib.log.info("Behavior for treating untransformed method in Stmt " + s + " is not " +
                             "defined. The generalized signature is used as a default");
                     generalizeSignature.add(s);
                 }
@@ -198,7 +197,7 @@ public class TaintAnalyzer {
                 .filter(tv -> tv instanceof ArrayRef).map(ArrayRef.class::cast)
                 .noneMatch(ar -> ar.getType() instanceof RefType && mulibTransformer.shouldBeTransformed(((RefType) ar.getType()).getClassName()));
         long endTime = System.nanoTime();
-        Mulib.log.log(Level.FINEST, "Duration of taint analysis: " + ((endTime - startTime) / 1e6) + "ms with " + iterations + " iterations");
+        Mulib.log.finest("Duration of taint analysis: " + ((endTime - startTime) / 1e6) + "ms with " + iterations + " iterations");
         return new TaintAnalysis(originalJimpleBody, originalMethodSource, taintedValues,
                 tainted, toWrap, unchangedStmts, concretizeInputs, generalizeSignature, valueHolderToClassConstantType);
     }
