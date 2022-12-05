@@ -199,7 +199,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
                 throw new NegativeArraySizeException();
             }
         } else if (throwExceptionOnOOB) {
-            Sbool outOfBounds = se.gte(Sint.ConcSint.ZERO, len);
+            Sbool outOfBounds = se.gt(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();
             }

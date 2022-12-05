@@ -167,7 +167,7 @@ public class ArrayChecks {
                     mb,
                     false
             );
-            assertEquals(3, result.size());
+            assertEquals(4, result.size());
             assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
             assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
 
