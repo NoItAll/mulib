@@ -76,9 +76,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private Object checkForAlreadyLabeledRepresentation(Object toLabel) {
         if (toLabel instanceof PartnerClass && ((PartnerClass) toLabel).__mulib__getId() != null) {
-            ((PartnerClass) toLabel).__mulib__getId();
+           toLabel =  ((PartnerClass) toLabel).__mulib__getId();
         }
-        return _searchSpaceRepresentationToLabelObject.get(toLabel);
+        Object result = _searchSpaceRepresentationToLabelObject.get(toLabel);
+        if (result == null && toLabel instanceof Sint.SymSint) {
+            result = _searchSpaceRepresentationToLabelObject.get(Sint.concSint(_labelSintToInt((Sint) toLabel)));
+        }
+        return result;
     }
 
     @Override
@@ -551,6 +555,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         array = Array.newInstance(originalType, length);
         boolean isNestedArray = type.isArray();
         registerLabelPair(arrayId, array);
+        if (arrayId instanceof Sint.SymSint) {
+            registerLabelPair(Sint.concSint(_labelSintToInt(arrayId)), array);
+        }
         ArrayAccessConstraint[] initialSelects = aic.getInitialSelectConstraints();
         for (ArrayAccessConstraint s : initialSelects) {
             setInArray(array, s, type, isNestedArray);
@@ -599,6 +606,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         Class<?> originalType = transformNonArrayPartnerClassTypeToJavaType(pic.getClazz());
         object = createEmptyLabelObject(originalType);
         registerLabelPair(partnerClassObjectId, object);
+        if (partnerClassObjectId instanceof Sint.SymSint) {
+            registerLabelPair(Sint.concSint(_labelSintToInt(partnerClassObjectId)), object);
+        }
         Field[] fields = originalType.getDeclaredFields(); // TODO Merge into label-method
         Arrays.stream(fields).forEach(f -> f.setAccessible(true));
         for (PartnerClassObjectFieldConstraint g : pic.getInitialGetfields()) {
