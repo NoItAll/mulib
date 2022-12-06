@@ -75,10 +75,8 @@ public class MulibConfig {
     public final Optional<Long> MAX_EXCEEDED_BUDGETS;
 
     /* Aliasing and Initialization */
-    //// TODO Implement
     public final boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
     public final boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-    public final boolean ALIASING_FOR_FREE_ARRAYS;
     public final boolean ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
@@ -114,8 +112,7 @@ public class MulibConfig {
         private boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
         private boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         private boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        private boolean ALIASING_FOR_FREE_ARRAYS;
-        private boolean ALIASING_FOR_FREE_OBJECS;
+        private boolean ALIASING_FOR_FREE_OBJECTS;
         private String TREE_INDENTATION;
         private boolean LABEL_RESULT_VALUE;
         private boolean ENLIST_LEAVES;
@@ -176,8 +173,7 @@ public class MulibConfig {
             this.LOG_TIME_FOR_EACH_PATH_SOLUTION = false;
             this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
             this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
-            this.ALIASING_FOR_FREE_ARRAYS = false;
-            this.ALIASING_FOR_FREE_OBJECS = false;
+            this.ALIASING_FOR_FREE_OBJECTS = false;
             this.CONCRETIZE_IF_NEEDED = true;
             this.LABEL_RESULT_VALUE = true;
             this.ENLIST_LEAVES = false;
@@ -544,13 +540,8 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setALIASING_FOR_FREE_ARRAYS(boolean ALIASING_FOR_FREE_ARRAYS) {
-            this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
-            return this;
-        }
-
-        public MulibConfigBuilder setALIASING_FOR_FREE_OBJECS(boolean ALIASING_FOR_FREE_OBJECS) {
-            this.ALIASING_FOR_FREE_OBJECS = ALIASING_FOR_FREE_OBJECS;
+        public MulibConfigBuilder setALIASING_FOR_FREE_OBJECTS(boolean ALIASING_FOR_FREE_OBJECTS) {
+            this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
             return this;
         }
 
@@ -662,8 +653,7 @@ public class MulibConfig {
                     ALLOW_EXCEPTIONS,
                     ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
                     ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
-                    ALIASING_FOR_FREE_ARRAYS,
-                    ALIASING_FOR_FREE_OBJECS,
+                    ALIASING_FOR_FREE_OBJECTS,
                     LOG_TIME_FOR_EACH_PATH_SOLUTION,
                     LOG_TIME_FOR_FIRST_PATH_SOLUTION
             );
@@ -724,7 +714,6 @@ public class MulibConfig {
                         boolean ALLOW_EXCEPTIONS,
                         boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
                         boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
-                        boolean ALIASING_FOR_FREE_ARRAYS,
                         boolean ALIASING_FOR_FREE_OBJECTS,
                         boolean LOG_TIME_FOR_EACH_PATH_SOLUTION,
                         boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION
@@ -783,7 +772,6 @@ public class MulibConfig {
         this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
         this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        this.ALIASING_FOR_FREE_ARRAYS = ALIASING_FOR_FREE_ARRAYS;
         this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;

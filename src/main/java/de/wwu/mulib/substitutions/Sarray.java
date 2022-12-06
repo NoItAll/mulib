@@ -10,6 +10,7 @@ import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -197,7 +198,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         return cachedElements.keySet();
     }
 
-    public final Iterable<T> getCachedElements() {
+    public final Collection<T> getCachedElements() {
         return cachedElements.values();
     }
 
@@ -743,7 +744,10 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
             T result = generateSymbolicDefault(se, info, canBeNull);
 
-            result.__mulib__prepareForAliasingAndBlockCache(se);
+            if (!result.__mulib__isRepresentedInSolver()) {
+                // This can happen if we allow for aliasing
+                result.__mulib__prepareForAliasingAndBlockCache(se);
+            }
             se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
             return result;
         }

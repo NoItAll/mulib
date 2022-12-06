@@ -1,30 +1,43 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.search.executors.AliasingInformation;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.Set;
+import java.util.function.Function;
 
 public abstract class AbstractValueFactory implements ValueFactory {
     protected final boolean enableInitializeFreeArraysWithNull;
     protected final boolean enableInitializeFreeObjectsWithNull;
-    protected final boolean aliasingForFreeArrays;
     protected final boolean aliasingForFreeObjects;
     protected final boolean throwExceptionOnOOB;
+    protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
+    protected final Function<Sbool, Sbool> tryGetSymFromSbool;
+
 
     protected final MulibConfig config;
 
     public AbstractValueFactory(MulibConfig config) {
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        this.aliasingForFreeArrays = config.ALIASING_FOR_FREE_ARRAYS;
         this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECTS;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
         this.config = config;
+        if (config.CONCOLIC) {
+            tryGetSymFromSnumber = ConcolicNumericContainer::tryGetSymFromConcolic;
+            tryGetSymFromSbool = ConcolicConstraintContainer::tryGetSymFromConcolic;
+        } else {
+            tryGetSymFromSnumber = s -> s;
+            tryGetSymFromSbool = s -> s;
+        }
     }
 
     @Override
@@ -117,60 +130,79 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public final Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SintSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SintSarray result = new Sarray.SintSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sint[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SdoubleSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SdoubleSarray result = new Sarray.SdoubleSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sdouble[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SfloatSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SfloatSarray result = new Sarray.SfloatSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sfloat[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SlongSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SlongSarray result = new Sarray.SlongSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Slong[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SshortSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SshortSarray result = new Sarray.SshortSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sshort[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SbyteSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SbyteSarray result = new Sarray.SbyteSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sbyte[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SboolSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SboolSarray result = new Sarray.SboolSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Sbool[].class, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.PartnerClassSarray(clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.PartnerClassSarray result = new Sarray.PartnerClassSarray(clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(clazz, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        return new Sarray.SarraySarray(len, se, defaultIsSymbolic, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SarraySarray result = new Sarray.SarraySarray(len, se, defaultIsSymbolic, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(clazz, result, se);
+        return result;
     }
 
     @Override
     public final Sarray.SarraySarray sarrarySarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz) {
         restrictLength(se, lengths[0]);
+        // Never is part of aliasing
         return new Sarray.SarraySarray(lengths, se, clazz);
     }
 
@@ -186,10 +218,74 @@ public abstract class AbstractValueFactory implements ValueFactory {
             Constructor<T> cons = toGetInstanceOf.getDeclaredConstructor(SymbolicExecution.class);
             T result = cons.newInstance(se);
             result.__mulib__setIsNull(canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+            decideOnAddToAliasingAndRepresentation(toGetInstanceOf, result, se);
             return result;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
             e.printStackTrace();
             throw new MulibIllegalStateException("The SymbolicExecution-constructor must be there!");
+        }
+    }
+
+    private void decideOnAddToAliasingAndRepresentation(Class<?> c, PartnerClass pc, SymbolicExecution se) {
+        if (config.ALIASING_FOR_FREE_OBJECTS && pc.__mulib__defaultIsSymbolic()) {
+            pc.__mulib__prepareForAliasingAndBlockCache(se);
+            Sint reservedId = se.concSint(se.getNextNumberInitializedSymObject());
+            pc.__mulib__setAsRepresentedInSolver();
+
+            if (!se.nextIsOnKnownPath()) {
+                Set<Sint> potentialIds = AliasingInformation.getAliasingTargetIdsForClass(c, config.CONCOLIC);
+                Sint id = (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId());
+                Sbool isNull = tryGetSymFromSbool.apply(pc.__mulib__isNull());
+                PartnerClassObjectConstraint pcoc;
+                if (pc instanceof Sarray) {
+                    Sint length = (Sint) tryGetSymFromSnumber.apply(((Sarray<?>) pc).getLength());
+                    if (potentialIds.isEmpty()) {
+                        pcoc = new ArrayInitializationConstraint(
+                                id,
+                                length,
+                                isNull,
+                                c,
+                                new ArrayAccessConstraint[0],
+                                true
+                        );
+                    } else {
+                        pcoc = new ArrayInitializationConstraint(
+                                id,
+                                length,
+                                isNull,
+                                reservedId,
+                                potentialIds,
+                                c,
+                                new ArrayAccessConstraint[0],
+                                true
+                        );
+                    }
+                } else {
+                    if (potentialIds.isEmpty()) {
+                        pcoc = new PartnerClassObjectInitializationConstraint(
+                                c,
+                                id,
+                                isNull,
+                                pc.__mulib__getFieldNameToType(),
+                                new PartnerClassObjectFieldConstraint[0],
+                                true
+                        );
+                    } else {
+                        pcoc = new PartnerClassObjectInitializationConstraint(
+                                c,
+                                id,
+                                isNull,
+                                reservedId,
+                                potentialIds,
+                                pc.__mulib__getFieldNameToType(),
+                                new PartnerClassObjectFieldConstraint[0],
+                                true
+                        );
+                    }
+                }
+                se.addNewPartnerClassObjectConstraint(pcoc);
+            }
+            AliasingInformation.addAliasingTarget(c, pc);
         }
     }
 

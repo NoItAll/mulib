@@ -2701,7 +2701,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private InvokeExpr getInvokeExprIfIndicatorMethodExprElseNull(Stmt containingStmt, InvokeExpr invokeExpr, TcArgs args) {
         String methodName = invokeExpr.getMethodRef().getName();
         InvokeExpr result = null;
-        if (methodName.equals("freeObject") || methodName.equals("namedFreeObject")) {
+        if (methodName.equals(v.SM_MULIB_FREE_OBJECT.getName())
+                || methodName.equals(v.SM_MULIB_NAMED_FREE_OBJECT.getName())) {
             List<Value> invokeArgs = new ArrayList<>();
             // Class constant of class to be initialized
             Value potentiallyUsedClassConstant;
@@ -2763,6 +2764,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 invokeArgs.add(IntConstant.v(1)); // Default is symbolic!
             }
             result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeArgs);
+        } else if (methodName.equals(v.SM_MULIB_FREE_ALIASING_OBJECT_OF.getName())) {
+            assert invokeExpr.getArgCount() == 1;
+            Value arg = invokeExpr.getArg(0);
+            if (arg.getType() instanceof ArrayType) {
+                result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY.makeRef(), arg);
+            } else {
+                result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY.makeRef(), arg);
+            }
         } else if (v.isIndicatorMethodName(methodName)) {
             SootMethod frameworkMethod = v.getTransformedMethodForIndicatorMethodName(methodName);
             if (v.SM_SE_PRIMITIVE_SARRAY_INITS.contains(frameworkMethod)) {
@@ -2825,13 +2834,47 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private void transform(IfStmt i, TcArgs args) {
         assert !args.isToWrap();
+        ValueBox conditionBox = i.getConditionBox();
+        ConditionExpr conditionExpr = (ConditionExpr) conditionBox.getValue();
+        // Check if we have a null comparison or two references that are compared
+        if ((conditionExpr.getOp1() instanceof Local
+                && !isPrimitiveOrSprimitive(conditionExpr.getOp1().getType())
+                && conditionExpr.getOp1().getType() instanceof RefLikeType)
+                || conditionExpr.getOp1() instanceof NullConstant) {
+            // Comparison of two references
+            assert (conditionExpr.getOp2() instanceof Local
+                    && !isPrimitiveOrSprimitive(conditionExpr.getOp2().getType())
+                    && conditionExpr.getOp2().getType() instanceof RefLikeType)
+                    || conditionExpr.getOp2() instanceof NullConstant;
+            assert conditionExpr instanceof NeExpr || conditionExpr instanceof EqExpr;
+            assert !args.isTainted();
+            Local refEqLocal = args.spawnStackLocal(v.TYPE_SBOOL);
+            Stmt assignRefEq = Jimple.v().newAssignStmt(
+                    refEqLocal,
+                    Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_REFERENCES_EQ.makeRef(), conditionExpr.getOp1(), conditionExpr.getOp2())
+            );
+            args.addUnit(assignRefEq);
+            i.redirectJumpsToThisTo(assignRefEq);
+            Local sboolToBoolLocal = args.spawnStackLocal(v.TYPE_BOOL);
+            Stmt assignBool = Jimple.v().newAssignStmt(
+                    sboolToBoolLocal,
+                    Jimple.v().newVirtualInvokeExpr(refEqLocal, v.SM_SBOOL_BOOL_CHOICE_S.makeRef(), args.seLocal())
+            );
+            args.addUnit(assignBool);
+            i.setCondition(
+                    conditionExpr instanceof EqExpr ?
+                    Jimple.v().newEqExpr(sboolToBoolLocal, IntConstant.v(1))
+                    :
+                    Jimple.v().newEqExpr(sboolToBoolLocal, IntConstant.v(0))
+            );
+            args.addUnit(i);
+            return;
+        }
         if (!args.isTainted()) {
             args.addUnit(i);
             return;
         }
         // Since is tainted, one type must be Sbool
-        ValueBox conditionBox = i.getConditionBox();
-        ConditionExpr conditionExpr = (ConditionExpr) conditionBox.getValue();
         ValueBox lhsConditionExprBox = conditionExpr.getOp1Box();
         ValueBox rhsConditionExprBox = conditionExpr.getOp2Box();
         Value lhsCondition = lhsConditionExprBox.getValue();
@@ -3715,12 +3758,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Check if value can be statically transformed: That is the case for values with a reference type
             if (!isToTransformRefTypeOrArrayWithInnerToTransformRefType(toTransform.getType())
                     // For the fields, we need to check if we need to transform the owner of the field
-                    && !(toTransform instanceof FieldRef && isToTransformRefTypeOrArrayWithInnerToTransformRefType(((FieldRef) toTransform).getField().getDeclaringClass().getType()))) {
+                    && !(toTransform instanceof FieldRef
+                    && isToTransformRefTypeOrArrayWithInnerToTransformRefType(((FieldRef) toTransform).getField().getDeclaringClass().getType()))) {
                 transformedValues.add(toTransform);
                 return toTransform;
             }
             // If it is to transform, continue!
         } else if (!a.taintedValues.contains(toTransform)) {
+            // This is in an else-if-block since the type of ref types must still be transformed to the partner class type
             if (!(toTransform instanceof InstanceOfExpr)) {
                 // Primitives
                 transformedValues.add(toTransform);
@@ -3733,7 +3778,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else if (toTransform instanceof Expr) {
             transformed = transformExpr((Expr) toTransform, a);
         } else if (toTransform instanceof Local) {
-            transformed = transformLocal((Local) toTransform);
+            // We solely transform array to Sarray if toTransform is actually tainted
+            transformed = transformLocal((Local) toTransform, a.taintedValues.contains(toTransform));
         } else if (toTransform instanceof Ref) {
             transformed = transformRef((Ref) toTransform, a);
         } else {
@@ -3800,8 +3846,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return transformed;
     }
 
-    private Value transformLocal(Local l) {
-        l.setType(transformType(l.getType()));
+    private Value transformLocal(Local l, boolean arrayToSarray) {
+        l.setType(transformType(l.getType(), arrayToSarray));
         return l;
     }
 
@@ -3935,7 +3981,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private final Map<Type, Type> toTransformedType = new HashMap<>();
+
     private Type transformType(Type toTransform) {
+        return transformType(toTransform, true);
+    }
+
+    private Type transformType(Type toTransform, boolean arrayToSarray) {
         Type result;
         if ((result = toTransformedType.get(toTransform)) != null) {
             return result;
@@ -3963,7 +4014,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 result = RefType.v(addPrefixToName(refType.getClassName()));
             }
         } else if (toTransform instanceof ArrayType) {
-            result = transformArrayType((ArrayType) toTransform, true);
+            result = transformArrayType((ArrayType) toTransform, arrayToSarray);
         } else if (toTransform instanceof VoidType) {
             result = toTransform;
         } else {

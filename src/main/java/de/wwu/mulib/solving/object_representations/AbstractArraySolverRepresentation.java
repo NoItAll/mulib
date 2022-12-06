@@ -65,8 +65,6 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
                         aic.getInitialSelectConstraints(),
                         aic.getValueType()
                 );
-        assert (arrayId instanceof Sym && this instanceof AliasingArraySolverRepresentation)
-                || (arrayId instanceof ConcSnumber && !(this instanceof AliasingArraySolverRepresentation));
     }
 
     /**

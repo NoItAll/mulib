@@ -21,7 +21,7 @@ public interface MulibTransformer {
 
     boolean shouldBeTransformed(String classAsPath);
 
-    static MulibTransformer get(MulibConfig config) { /// TODO Share SootMulibTransformer if configs are compatible?
+    static MulibTransformer get(MulibConfig config) { // TODO Share SootMulibTransformer if configs are compatible?
         return new SootMulibTransformer(config);
     }
 }

@@ -1,5 +1,6 @@
 package de.wwu.mulib.constraints;
 
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
@@ -117,11 +118,12 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
+            Sint reservedId,
             Set<Sint> potentialIds,
             Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, potentialIds, null, null, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, potentialIds, reservedId, null, fieldTypes, initialGetfields,
                 defaultIsSymbolic, null);
     }
 
@@ -140,7 +142,7 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
         this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
-                defaultIsSymbolic, null);
+                defaultIsSymbolic, fieldName);
     }
 
 

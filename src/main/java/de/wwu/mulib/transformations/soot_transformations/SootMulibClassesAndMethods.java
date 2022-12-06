@@ -159,6 +159,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_NAMED_FREE_BYTE;
     public final SootMethod SM_MULIB_NAMED_FREE_BOOL;
     public final SootMethod SM_MULIB_NAMED_FREE_OBJECT;
+    public final SootMethod SM_MULIB_FREE_ALIASING_OBJECT_OF;
 
     // Framework methods
     public final SootMethod SM_SE_FREE_SINT;
@@ -196,6 +197,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_NAMED_SARRAYSARRAY;
     public final SootMethod SM_SE_SYM_OBJECT;
     public final SootMethod SM_SE_NAMED_SYM_OBJECT;
+    public final SootMethod SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY;
     public final List<SootMethod> SM_SE_PRIMITIVE_SARRAY_INITS;
 
     public final SootMethod SM_SINTSARRAY_COPY_CONSTR;
@@ -226,6 +229,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_CONCSBOOL;
     public final SootMethod SM_SE_GET;
     public final SootMethod SM_SE_INSTANCEOF;
+    public final SootMethod SM_SE_REFERENCES_EQ;
     public final SootMethod SM_SE_CAST_TO;
     public final SootMethod SM_SE_CONCRETIZE;
     public final SootMethod SM_SE_GET_NEXT_NUMBER_INITIALIZED;
@@ -539,6 +543,7 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_NAMED_FREE_BYTE    = SC_MULIB.getMethod("namedFreeByte",   List.of(TYPE_STRING),               TYPE_BYTE);
         SM_MULIB_NAMED_FREE_BOOL    = SC_MULIB.getMethod("namedFreeBoolean",List.of(TYPE_STRING),               TYPE_BOOL);
         SM_MULIB_NAMED_FREE_OBJECT  = SC_MULIB.getMethod("namedFreeObject", List.of(TYPE_STRING, TYPE_CLASS),   TYPE_OBJECT);
+        SM_MULIB_FREE_ALIASING_OBJECT_OF = SC_MULIB.getMethod("freeAliasingObjectOf", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
 
         SM_SE_FREE_SINT             = SC_SE.getMethod("symSint",            Collections.emptyList(), TYPE_SINT);
         SM_SE_FREE_SLONG            = SC_SE.getMethod("symSlong",           Collections.emptyList(), TYPE_SLONG);
@@ -574,6 +579,8 @@ public class SootMulibClassesAndMethods {
         SM_SE_NAMED_SARRAYSARRAY        = SC_SE.getMethod("namedSarraySarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
         SM_SE_SYM_OBJECT = SC_SE.getMethod("symObject", List.of(TYPE_CLASS), TYPE_PARTNER_CLASS);
         SM_SE_NAMED_SYM_OBJECT = SC_SE.getMethod("namedSymObject", List.of(TYPE_STRING, TYPE_CLASS), TYPE_PARTNER_CLASS);
+        SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_OBJECT.getArrayType()), TYPE_PARTNER_CLASS);
+        SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_PARTNER_CLASSSARRAY), TYPE_PARTNER_CLASS);
         SM_SE_MULTIDIM_SARRAYSARRAY = SC_SE.getMethod("sarraySarray", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_CLASS), TYPE_SARRAYSARRAY);
         SM_SE_PRIMITIVE_SARRAY_INITS = List.of(
                 SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY, SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY,
@@ -590,6 +597,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_CONCSBOOL = SC_SE.getMethod("concSbool", List.of(TYPE_BOOL), TYPE_SBOOL);
         SM_SE_GET = SC_SE.getMethod("get", Collections.emptyList(), TYPE_SE);
         SM_SE_INSTANCEOF = SC_SE.getMethod("evalInstanceof", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_SBOOL);
+        SM_SE_REFERENCES_EQ = SC_SE.getMethod("evalReferencesEq", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_SBOOL);
         SM_SE_CAST_TO = SC_SE.getMethod("castTo", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_OBJECT);
         SM_SE_CONCRETIZE = SC_SE.getMethod("concretize", List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_SE_GET_NEXT_NUMBER_INITIALIZED = SC_SE.getMethod("getNextNumberInitializedSymObject", List.of(), TYPE_INT);
@@ -832,6 +840,7 @@ public class SootMulibClassesAndMethods {
             case "namedFreeByteArray":
             case "namedFreeBooleanArray":
             case "freeObject":
+            case "freeAliasingObjectOf":
             case "namedFreeObject":
                 return true;
             default:
@@ -901,6 +910,8 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_SYM_OBJECT;
             case "namedFreeObject":
                 return SM_SE_NAMED_SYM_OBJECT;
+            case "freeAliasingObjectOf":
+                return SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
             default:
                 throw new NotYetImplementedException(indicatorMethodName);
         }

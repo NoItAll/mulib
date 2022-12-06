@@ -122,6 +122,10 @@ public final class Mulib {
     public static <T> T freeObject(Class<T> objClass) {
         throw _shouldHaveBeenReplaced();
     }
+    @SafeVarargs
+    public static <T> T freeAliasingObjectOf(T... aliasingTargets) {
+        throw _shouldHaveBeenReplaced();
+    }
 
     public static int[] freeIntArray() {
         throw _shouldHaveBeenReplaced();

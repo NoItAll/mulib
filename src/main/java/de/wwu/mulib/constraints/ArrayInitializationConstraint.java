@@ -125,11 +125,12 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint arrayId,
             Sint arrayLength,
             Sbool isNull,
+            Sint reservedId,
             Set<Sint> potentialIds,
             Class<?> valueType,
             ArrayAccessConstraint[] initialSelectConstraints,
             boolean defaultIsSymbolic) {
-        this(arrayId, arrayLength, isNull, potentialIds, null, null, valueType, initialSelectConstraints,
+        this(arrayId, arrayLength, isNull, potentialIds, reservedId, null, valueType, initialSelectConstraints,
                 defaultIsSymbolic, null);
     }
 

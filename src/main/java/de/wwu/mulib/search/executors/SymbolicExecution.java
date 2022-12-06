@@ -1,9 +1,11 @@
 package de.wwu.mulib.search.executors;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -161,6 +163,7 @@ public final class SymbolicExecution {
 
     private void set() {
         se.set(this);
+        AliasingInformation.resetAliasingTargets();
     }
 
     public static SymbolicExecution get() {
@@ -429,12 +432,43 @@ public final class SymbolicExecution {
         return valueFactory.symObject(this, clazz);
     }
 
+    public PartnerClass aliasingSymObjectOf(Object... aliasingTargets) {
+        // TODO There certainly are more efficient implementations for this without having to create a partner class sarray
+        //  Possibly, ValueFactory and CalculationFactory should reuse functionality for representing objects and arrays for the solver
+        if (aliasingTargets == null || aliasingTargets.length == 0) {
+            throw Mulib.fail();
+        }
+        Collection<Object> it = Set.of(aliasingTargets);
+        PartnerClass[] pcs = new PartnerClass[aliasingTargets.length];
+        Class mostGeneralClass = null;
+        for (int i = 0; i < aliasingTargets.length; i++) {
+            if (aliasingTargets[i] == null || aliasingTargets[i] instanceof PartnerClass) {
+                pcs[i] = (PartnerClass) aliasingTargets[i];
+                if (aliasingTargets[i] != null && (mostGeneralClass == null || !aliasingTargets[i].getClass().isAssignableFrom(mostGeneralClass))) {
+                    mostGeneralClass = aliasingTargets[i].getClass();
+                }
+            } else {
+                throw new NotYetImplementedException();
+            }
+        }
+        mostGeneralClass = mostGeneralClass == null ? PartnerClass.class : mostGeneralClass;
+        Sarray.PartnerClassSarray temp = new Sarray.PartnerClassSarray(mostGeneralClass, concSint(pcs.length), this, false, Sbool.ConcSbool.FALSE);
+        for (int i = 0; i < pcs.length; i++) {
+            store(temp, concSint(i), pcs[i]);
+        }
+        return aliasingSymObjectOf(temp);
+    }
+
+    public PartnerClass aliasingSymObjectOf(Sarray.PartnerClassSarray aliasingTargets) {
+        return select(aliasingTargets, symSint());
+    }
+
     public void initializeLazyFields(PartnerClass partnerClass) {
         calculationFactory.initializeLazyFields(this, partnerClass);
     }
 
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
-        PartnerClass symObject = valueFactory.symObject(this, clazz);
+        PartnerClass symObject = symObject(clazz);
         _getNamedVariables().put(identifier, symObject);
         return symObject;
     }
@@ -850,6 +884,21 @@ public final class SymbolicExecution {
     public boolean evalIsNull(Object sarrayOrPartnerClassObject) {
         /// TODO To CalculationFactory
         return sarrayOrPartnerClassObject == null;
+    }
+
+    public Sbool evalReferencesEq(Object o0, Object o1) {
+        if (o0 instanceof PartnerClass) {
+            if (o1 instanceof PartnerClass) {
+                return ((PartnerClass) o0).__mulib__getId().eq(((PartnerClass) o1).__mulib__getId(), this);
+            } else if (o1 == null) {
+                return ((PartnerClass) o0).__mulib__isNull();
+            }
+        } else if (o1 instanceof PartnerClass) {
+            if (o0 == null) {
+                return ((PartnerClass) o1).__mulib__isNull();
+            }
+        }
+        return concSbool(o0 == o1);
     }
 
     /* BOOLEAN OPERATIONS */

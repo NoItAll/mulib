@@ -56,7 +56,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
                 asr,
                 level
         );
-        assert !(id instanceof Sym) || this instanceof AliasingPartnerClassObjectSolverRepresentation;
         initializeFields(pic.getInitialGetfields(), fieldToType);
     }
 
