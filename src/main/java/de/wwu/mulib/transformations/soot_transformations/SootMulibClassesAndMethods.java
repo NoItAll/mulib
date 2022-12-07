@@ -5,6 +5,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
+import de.wwu.mulib.substitutions.AbstractPartnerClass;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -23,6 +24,7 @@ import java.util.Map;
 public class SootMulibClassesAndMethods {
     /* SPECIAL CLASSES */
     public final SootClass SC_CLASS;
+    public final SootClass SC_OBJECT;
     public final SootClass SC_INTEGER;
     public final SootClass SC_LONG;
     public final SootClass SC_DOUBLE;
@@ -51,6 +53,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSBYTE;
     public final SootClass SC_CONCSBOOL;
     public final SootClass SC_PARTNER_CLASS;
+    public final SootClass SC_ABSTRACT_PARTNER_CLASS;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
     public final SootClass SC_SFLOATSARRAY;
@@ -400,6 +403,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE;
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
+    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -415,6 +419,7 @@ public class SootMulibClassesAndMethods {
         SC_MAP                     = Scene.v().forceResolve(Map.class.getName(), SootClass.SIGNATURES);
         SC_HASH_MAP                = Scene.v().forceResolve(HashMap.class.getName(), SootClass.SIGNATURES);
         SC_CLASS = Scene.v().forceResolve(Class.class.getName(), SootClass.SIGNATURES);
+        SC_OBJECT = Scene.v().forceResolve(Object.class.getName(), SootClass.SIGNATURES);
         SC_INTEGER = Scene.v().forceResolve(Integer.class.getName(), SootClass.SIGNATURES);
         SC_LONG = Scene.v().forceResolve(Long.class.getName(), SootClass.SIGNATURES);
         SC_DOUBLE = Scene.v().forceResolve(Double.class.getName(), SootClass.SIGNATURES);
@@ -440,6 +445,7 @@ public class SootMulibClassesAndMethods {
         SC_CONCSBYTE    = Scene.v().forceResolve(Sbyte.ConcSbyte.class.getName(), SootClass.SIGNATURES);
         SC_CONCSBOOL    = Scene.v().forceResolve(Sbool.ConcSbool.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
+        SC_ABSTRACT_PARTNER_CLASS = Scene.v().forceResolve(AbstractPartnerClass.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
         SC_SINTSARRAY           = Scene.v().forceResolve(Sarray.SintSarray.class.getName(), SootClass.SIGNATURES);
         SC_SDOUBLESARRAY        = Scene.v().forceResolve(Sarray.SdoubleSarray.class.getName(), SootClass.SIGNATURES);
@@ -767,6 +773,7 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
+        SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
 
         SM_CONCSINT     = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_CONCSLONG    = SC_SLONG.getMethod("concSlong", List.of(TYPE_LONG), TYPE_SLONG);

@@ -2320,7 +2320,23 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     protected void ensureInitializedLibraryTypeFieldsInConstructors(SootClass result) {
         for (SootMethod sm : result.getMethods()) {
             if (sm.getName().equals(init) && !(sm.getParameterCount() == 1 && sm.getParameterType(0).equals(v.TYPE_SE))) {
+                replaceObjectConstructorCallIfNeeded(result, sm);
                 enhanceClinitOrInitWithNullConditionalDefaults(result, (JimpleBody) sm.retrieveActiveBody(), false);
+            }
+        }
+    }
+
+    private void replaceObjectConstructorCallIfNeeded(SootClass c, SootMethod sm) {
+        if (!c.getSuperclass().equals(v.SC_ABSTRACT_PARTNER_CLASS)) {
+            return;
+        }
+        UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
+        for (Unit u : upc) {
+            if (u instanceof InvokeStmt && ((InvokeStmt) u).getInvokeExpr() instanceof SpecialInvokeExpr) {
+                SpecialInvokeExpr sie = (SpecialInvokeExpr) ((InvokeStmt) u).getInvokeExpr();
+                if (sie.getMethodRef().getDeclaringClass().equals(v.SC_OBJECT)) {
+                    sie.setMethodRef(v.SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT.makeRef());
+                }
             }
         }
     }
@@ -2371,8 +2387,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // we can use it later on
         Scene.v().addClass(result);
         resolvedClasses.put(result.getName(), result);
+        if (sootSuperClass.equals(v.SC_OBJECT) && !toTransform.isInterface()) {
+            // We rectify calls to the Object constructor for interfaces when dealing with constructors dedicatedly
+            sootSuperClass = v.SC_ABSTRACT_PARTNER_CLASS;
+        }
         result.setSuperclass(sootSuperClass);
-        result.addInterface(v.SC_PARTNER_CLASS);
+        if (toTransform.isInterface()) {
+            result.addInterface(v.SC_PARTNER_CLASS);
+        }
         for (SootClass i : toTransform.getInterfaces()) {
             SootClass sootInterface = transformEnrichAndValidateIfNotSpecialCase(i.getName());
             result.addInterface(sootInterface);
