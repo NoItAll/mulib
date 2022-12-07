@@ -1,7 +1,6 @@
 package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.ArrayInformation;
@@ -16,18 +15,11 @@ import java.util.Map;
 import java.util.Set;
 
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
-    // representationState encodes several states that are important when representing an Array as a constraint or
-    // when interacting with the constraint solver. Each bit represents one possible state.
-    private byte representationState;
-
-    // Is null until to-be-represented in constraint solver
-    private Sint id;
+public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerClass {
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
-    private Sbool isNull;
 
     /** New instance constructor */
     protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
@@ -96,30 +88,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         this.isNull = s.isNull;
     }
 
-    protected final void initializeId(SymbolicExecution se) {
-        _initializeId(se.concSint(se.getNextNumberInitializedSymObject()));
-    }
-
-    @Override
-    public void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
-        _initializeId(se.symSint());
-        __mulib__blockCache();
-    }
-
-    private void _initializeId(Sint id) {
-        if (this.id != null) {
-            throw new MulibRuntimeException("Must not set already set id");
-        }
-
-        this.representationState |= SHOULD_BE_REPRESENTED_IN_SOLVER;
-        this.id = id;
-    }
-
-    @Override
-    public void __mulib__setDefaultIsSymbolic() {
-        this.representationState |= DEFAULT_IS_SYMBOLIC;
-    }
-
     @Override
     public String toString() {
         return "Sarray[" + id + "]{repState=" + representationState + ",elements=" + cachedElements + "}";
@@ -129,41 +97,9 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
     protected abstract T nonSymbolicDefaultElement(SymbolicExecution se);
 
-    @Override
-    public final boolean __mulib__shouldBeRepresentedInSolver() {
-        return (representationState & SHOULD_BE_REPRESENTED_IN_SOLVER) != 0;
-    }
-
-    @Override
-    public final boolean __mulib__isRepresentedInSolver() {
-        assert (representationState & IS_REPRESENTED_IN_SOLVER) == 0 || __mulib__shouldBeRepresentedInSolver();
-        return (representationState & IS_REPRESENTED_IN_SOLVER) != 0;
-    }
-
-    @Override
-    public void __mulib__setAsRepresentedInSolver() {
-        representationState |= IS_REPRESENTED_IN_SOLVER;
-    }
-
-    @Override
-    public void __mulib__blockCache() {
-        representationState |= CACHE_IS_BLOCKED;
-    }
-
-    @Override
-    public boolean __mulib__cacheIsBlocked() {
-        return (representationState & CACHE_IS_BLOCKED) != 0;
-    }
-
     public void clearCache() {
         cachedElements.clear();
     }
-
-    @Override
-    public final boolean __mulib__defaultIsSymbolic() {
-        return (representationState & DEFAULT_IS_SYMBOLIC) != 0;
-    }
-
 
     /**
      * Returns the type of the elements stored in the Sarray. In the case of Sarray.SarraySarray, the type of
@@ -188,12 +124,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
     public abstract void store(Sint i, T val, SymbolicExecution se);
 
-    @Override
-    public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-        initializeId(se);
-        assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
-    }
-
     public final Set<Sint> getCachedIndices() {
         return cachedElements.keySet();
     }
@@ -204,31 +134,6 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
     public final Sint _getLengthWithoutCheckingForIsNull() {
         return len;
-    }
-
-    @Override
-    public final void __mulib__setIsNull() {
-        this.isNull = Sbool.ConcSbool.TRUE;
-    }
-
-    @Override
-    public final void __mulib__setIsNull(Sbool b) {
-        this.isNull = b;
-    }
-
-    @Override
-    public final void __mulib__setIsNotNull() {
-        this.isNull = Sbool.ConcSbool.FALSE;
-    }
-
-    @Override
-    public boolean __mulib__isLazilyInitialized() {
-        return (representationState & IS_LAZILY_INITIALIZED) != 0;
-    }
-
-    @Override
-    public void __mulib__setAsLazilyInitialized() {
-        representationState |= IS_LAZILY_INITIALIZED;
     }
 
     public final Sint getLength() {
@@ -256,15 +161,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
         }
     }
 
-    public final Sint __mulib__getId() {
-        return id;
-    }
-
     public abstract Sarray<T> copy(MulibValueCopier mvt);
-
-    public final Sbool __mulib__isNull() {
-        return isNull;
-    }
 
     @Override
     public Object label(Object o, SolverManager solverManager) {
@@ -317,6 +214,21 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
             result = symbolicDefault(se);
         }
         return result;
+    }
+
+    @Override
+    public void __mulib__initializeLazyFields(SymbolicExecution se) {
+        throw new MulibIllegalStateException("Should not be called for Sarrays");
+    }
+
+    @Override
+    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+        throw new MulibIllegalStateException("Should not be called for Sarrays");
+    }
+
+    @Override
+    public Map<String, Class<?>> __mulib__getFieldNameToType() {
+        throw new MulibIllegalStateException("Should not be called for Sarrays");
     }
 
     public static class SintSarray extends Sarray<Sint> {
@@ -1034,7 +946,7 @@ public abstract class Sarray<T extends SubstitutedVar> implements PartnerClass {
 
         @Override
         public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-            initializeId(se);
+            super.__mulib__prepareToRepresentSymbolically(se);
             assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
             for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
                 Sarray val = entry.getValue();

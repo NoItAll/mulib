@@ -1,6 +1,5 @@
 package de.wwu.mulib.substitutions;
 
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -24,99 +23,41 @@ public interface PartnerClass extends SubstitutedVar {
 
     Class<?> __mulib__getOriginalClass();
 
-    default void __mulib__setIsNull(Sbool isNull) {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__setIsNull(Sbool isNull);
 
-    default void __mulib__initializeLazyFields(SymbolicExecution se) {
-        throw new MulibIllegalStateException("Should not occur");
-    }
+    void __mulib__initializeLazyFields(SymbolicExecution se);
 
-    default Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
-        throw new MulibIllegalStateException("Should not occur");
-    }
+    Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar();
 
-    default Map<String, Class<?>> __mulib__getFieldNameToType() {
-        throw new MulibIllegalStateException("Should not occur");
-    }
+    Map<String, Class<?>> __mulib__getFieldNameToType();
 
-    default Sint __mulib__getId() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    Sint __mulib__getId();
 
-    default void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__prepareToRepresentSymbolically(SymbolicExecution se);
 
-    default void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se);
 
-    default Sbool __mulib__isNull() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    Sbool __mulib__isNull();
 
-    default boolean __mulib__isRepresentedInSolver() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    boolean __mulib__isRepresentedInSolver();
 
-    default boolean __mulib__shouldBeRepresentedInSolver() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    boolean __mulib__shouldBeRepresentedInSolver();
 
-    default void __mulib__nullCheck() {
-        if (__mulib__isNull() == Sbool.ConcSbool.TRUE) {
-            throw new NullPointerException();
-        } else if (__mulib__isNull() != Sbool.ConcSbool.FALSE) {
-            SymbolicExecution se = SymbolicExecution.get();
-            if (__mulib__isNull().boolChoice(se)) {
-                __mulib__setIsNull();
-                throw new NullPointerException();
-            } else {
-                __mulib__setIsNotNull();
-            }
-        }
-    }
+    void __mulib__nullCheck();
 
-    // TODO Not needed to be publically exposed, but simpler to implement __mulib__nullCheck() this way as a default method
-    default void __mulib__setIsNull() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    boolean __mulib__defaultIsSymbolic();
 
-    // TODO Not needed to be publically exposed, but simpler to implement __mulib__nullCheck() this way as a default method
-    default void __mulib__setIsNotNull() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__setDefaultIsSymbolic();
 
-    default boolean __mulib__defaultIsSymbolic() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__setAsRepresentedInSolver();
 
-    default void __mulib__setDefaultIsSymbolic() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    boolean __mulib__cacheIsBlocked();
 
-    default void __mulib__setAsRepresentedInSolver() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__blockCache();
 
-    default boolean __mulib__cacheIsBlocked() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    boolean __mulib__isLazilyInitialized();
 
-    default void __mulib__blockCache() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
+    void __mulib__setAsLazilyInitialized();
 
-    default boolean __mulib__isLazilyInitialized() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
-
-    default void __mulib__setAsLazilyInitialized() {
-        throw new MulibIllegalStateException("Must not occur");
-    }
-
-    default boolean __mulib__isSymbolicAndNotYetInitialized() {
-        return __mulib__defaultIsSymbolic() && !__mulib__isLazilyInitialized();
-    }
+    boolean __mulib__isSymbolicAndNotYetInitialized();
 }

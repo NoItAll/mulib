@@ -2,16 +2,18 @@ package de.wwu.mulib.manual_transform_and_execute.manually_generated_classes;
 
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
+import de.wwu.mulib.substitutions.AbstractPartnerClass;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
-public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass {
+public class __mulib__IndirectCyclicInputClasses0Manual extends AbstractPartnerClass {
     public __mulib__IndirectCyclicInputClasses1Manual c;
 
     public __mulib__IndirectCyclicInputClasses0Manual(SymbolicExecution var1) {
@@ -42,6 +44,21 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
 
     public Class<?> __mulib__getOriginalClass() {
         return IndirectCyclicInputClasses0Manual.class;
+    }
+
+    @Override
+    public void __mulib__initializeLazyFields(SymbolicExecution se) {
+
+    }
+
+    @Override
+    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+        return null;
+    }
+
+    @Override
+    public Map<String, Class<?>> __mulib__getFieldNameToType() {
+        return null;
     }
 
     public __mulib__IndirectCyclicInputClasses0Manual() {
@@ -75,31 +92,5 @@ public class __mulib__IndirectCyclicInputClasses0Manual implements PartnerClass 
         SymbolicExecution se = SymbolicExecution.get();
         __mulib__IndirectCyclicInputClasses0Manual cycle = new __mulib__IndirectCyclicInputClasses0Manual();
         return calc0(cycle);
-    }
-
-    @Override
-    public Sint __mulib__getId() {
-        return null;
-    }
-
-    @Override
-    public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-
-    }
-
-    @Override
-    public Sbool __mulib__isNull() {
-        return Sbool.ConcSbool.FALSE;
-    }
-
-    @Override
-    public void __mulib__setIsNotNull() {
-    }
-    @Override
-    public void __mulib__setIsNull(Sbool b) {}
-
-    @Override
-    public boolean __mulib__shouldBeRepresentedInSolver() {
-        return false;
     }
 }

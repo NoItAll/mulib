@@ -2,13 +2,14 @@ package de.wwu.mulib.manual_transform_and_execute.manually_generated_classes;
 
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.AbstractPartnerClass;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass {
+import java.util.Map;
+
+public class __mulib__IndirectCyclicInputClasses1Manual extends AbstractPartnerClass {
     public __mulib__IndirectCyclicInputClasses0Manual c;
 
     public __mulib__IndirectCyclicInputClasses1Manual(SymbolicExecution var1) {
@@ -42,33 +43,23 @@ public class __mulib__IndirectCyclicInputClasses1Manual implements PartnerClass 
         return IndirectCyclicInputClasses1Manual.class;
     }
 
-    public __mulib__IndirectCyclicInputClasses1Manual(__mulib__IndirectCyclicInputClasses0Manual c0) {
-        this.c = c0;
+    @Override
+    public void __mulib__initializeLazyFields(SymbolicExecution se) {
+
     }
 
     @Override
-    public Sint __mulib__getId() {
+    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
         return null;
     }
 
     @Override
-    public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-
+    public Map<String, Class<?>> __mulib__getFieldNameToType() {
+        return null;
     }
 
-    @Override
-    public Sbool __mulib__isNull() {
-        return Sbool.ConcSbool.FALSE;
+    public __mulib__IndirectCyclicInputClasses1Manual(__mulib__IndirectCyclicInputClasses0Manual c0) {
+        this.c = c0;
     }
 
-    public void __mulib__setIsNotNull() {
-
-    }
-    @Override
-    public void __mulib__setIsNull(Sbool b) {}
-
-    @Override
-    public boolean __mulib__shouldBeRepresentedInSolver() {
-        return false;
-    }
 }

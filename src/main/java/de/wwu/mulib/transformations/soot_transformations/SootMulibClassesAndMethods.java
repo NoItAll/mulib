@@ -134,7 +134,7 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootField SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
     public final SootField SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED;
-
+    public final SootField SF_ABSTRACT_PARTNER_CLASS_REPRESENTATION_STATE;
 
     /* SPECIAL METHODS */
     // Unwrap methods
@@ -389,8 +389,6 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_GET_ID;
     public final SootMethod SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY;
     public final SootMethod SM_PARTNER_CLASS_IS_NULL;
-    public final SootMethod SM_PARTNER_CLASS_SET_IS_NULL;
-    public final SootMethod SM_PARTNER_CLASS_SET_IS_NOT_NULL;
     public final SootMethod SM_PARTNER_CLASS_NULL_CHECK;
     public final SootMethod SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
     public final SootMethod SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER;
@@ -404,6 +402,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
+    public final SootMethod SM_ABSTRACT_PARTNER_CLASS__initializeId;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -524,6 +523,7 @@ public class SootMulibClassesAndMethods {
         SF_PARTNER_CLASS_CACHE_IS_BLOCKED                 = SC_PARTNER_CLASS.getField("CACHE_IS_BLOCKED", TYPE_BYTE);
         SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getField("DEFAULT_IS_SYMBOLIC", TYPE_BYTE);
         SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED            = SC_PARTNER_CLASS.getField("IS_LAZILY_INITIALIZED", TYPE_BYTE);
+        SF_ABSTRACT_PARTNER_CLASS_REPRESENTATION_STATE    = SC_ABSTRACT_PARTNER_CLASS.getField("representationState", TYPE_BYTE);
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);
@@ -759,8 +759,6 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_GET_ID                               = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getId", List.of(), TYPE_SINT);
         SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_NULL                              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isNull", List.of(), TYPE_SBOOL);
-        SM_PARTNER_CLASS_SET_IS_NULL                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNull", List.of(), TYPE_VOID);
-        SM_PARTNER_CLASS_SET_IS_NOT_NULL                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setIsNotNull", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER             = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isRepresentedInSolver", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_NULL_CHECK                           = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "nullCheck", List.of(), TYPE_VOID);
@@ -774,6 +772,7 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
+        SM_ABSTRACT_PARTNER_CLASS__initializeId = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "_initializeId", List.of(TYPE_SINT));
 
         SM_CONCSINT     = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_CONCSLONG    = SC_SLONG.getMethod("concSlong", List.of(TYPE_LONG), TYPE_SLONG);
