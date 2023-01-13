@@ -452,14 +452,17 @@ public final class SymbolicExecution {
             }
         }
         mostGeneralClass = mostGeneralClass == null ? PartnerClass.class : mostGeneralClass;
-        Sarray.PartnerClassSarray temp = new Sarray.PartnerClassSarray(mostGeneralClass, concSint(pcs.length), this, false, Sbool.ConcSbool.FALSE);
+        Sarray.PartnerClassSarray temp = Sarray.class.isAssignableFrom(mostGeneralClass) ?
+                new Sarray.SarraySarray(concSint(pcs.length), this, false, mostGeneralClass, Sbool.ConcSbool.FALSE)
+                :
+                new Sarray.PartnerClassSarray(mostGeneralClass, concSint(pcs.length), this, false, Sbool.ConcSbool.FALSE);
         for (int i = 0; i < pcs.length; i++) {
             store(temp, concSint(i), pcs[i]);
         }
         return aliasingSymObjectOf(temp);
     }
 
-    public PartnerClass aliasingSymObjectOf(Sarray.PartnerClassSarray aliasingTargets) {
+    private PartnerClass aliasingSymObjectOf(Sarray.PartnerClassSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 

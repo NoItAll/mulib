@@ -25,6 +25,8 @@ public class AliasingAndIdsEqTransfExec {
             assertEquals(2, result.size());
             Solution s0 = result.get(0).getSolution();
             Solution s1 = result.get(1).getSolution();
+            assertNotEquals(null, s0.returnValue);
+            assertNotEquals(null, s1.returnValue);
             if (((AliasingAndIdsEq.ResultContainer) s0.returnValue).getResultIndicator() == 2) {
                 assertEquals(3, ((AliasingAndIdsEq.ResultContainer) s1.returnValue).getResultIndicator());
             } else {
@@ -52,6 +54,9 @@ public class AliasingAndIdsEqTransfExec {
             s0 = result.get(0).getSolution();
             s1 = result.get(1).getSolution();
             Solution s2 = result.get(2).getSolution();
+            assertNotEquals(null, s0.returnValue);
+            assertNotEquals(null, s1.returnValue);
+            assertNotEquals(null, s2.returnValue);
             boolean seenFirst = false;
             boolean seenSecond = false;
             boolean seenThird = false;
