@@ -18,4 +18,6 @@ public interface ChoiceOptionDeque {
     void setEmpty();
 
     int size();
+
+    int maxDepth();
 }
