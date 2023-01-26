@@ -32,6 +32,9 @@ public abstract class MulibExecutorManager {
     protected volatile boolean seenFirstPathSolution = false;
     protected final long startTime;
 
+    // Is null if no global incremental depth first search is used
+    protected final GlobalIddfsSynchronizer globalIddfsSynchronizer;
+
     protected MulibExecutorManager(
             MulibConfig config,
             List<MulibExecutor> mulibExecutorsList,
@@ -64,6 +67,13 @@ public abstract class MulibExecutorManager {
                         Collections.synchronizedList(new ArrayList<>());
         this.numberRequestedSolutions = null;
         this.startTime = config.LOG_TIME_FOR_EACH_PATH_SOLUTION || config.LOG_TIME_FOR_FIRST_PATH_SOLUTION ? System.nanoTime() : 0L;
+        this.globalIddfsSynchronizer =
+                (config.GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDSAS
+                || config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))
+                ?
+                new GlobalIddfsSynchronizer(config.INCR_ACTUAL_CP_BUDGET.get().intValue())
+                :
+                null;
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {

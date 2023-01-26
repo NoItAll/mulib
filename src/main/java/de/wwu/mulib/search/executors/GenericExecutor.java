@@ -11,10 +11,11 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
+import java.util.function.Supplier;
 
 public final class GenericExecutor extends AbstractMulibExecutor {
     private final Function<ChoiceOptionDeque, Optional<Choice.ChoiceOption>> choiceOptionDequeRetriever;
-    private final boolean continueExecution;
+    private final Supplier<Boolean> continueExecution;
     private long dsasMissed;
 
     public GenericExecutor(
@@ -25,19 +26,39 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             SearchStrategy searchStrategy) {
         super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy);
         if (searchStrategy == SearchStrategy.DFS) {
-            this.continueExecution = true;
+            this.continueExecution = () -> true;
             this.choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;
         } else if (searchStrategy == SearchStrategy.BFS) {
-            this.continueExecution = false;
+            this.continueExecution = () -> false;
             this.choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
         } else if (searchStrategy == SearchStrategy.IDDFS) {
-            this.continueExecution = true;
+            this.continueExecution = () -> true;
             this.choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
         } else if (searchStrategy == SearchStrategy.DSAS) {
-            this.continueExecution = true;
+            this.continueExecution = () -> true;
+            this.choiceOptionDequeRetriever = this::dsasRetriever;
+        } else if (searchStrategy == SearchStrategy.IDDSAS) {
+            this.continueExecution = this::continueBasedOnGlobalIddfs;
             this.choiceOptionDequeRetriever = this::dsasRetriever;
         } else {
             throw new NotYetImplementedException();
+        }
+    }
+
+    private boolean continueBasedOnGlobalIddfs() {
+        int currentDepth = currentChoiceOption.getDepth();
+        int toReach = getExecutorManager().globalIddfsSynchronizer.getToReachDepth();
+        // Should we simply continue since the current depth is less then the depth to be reached?
+        if (currentDepth < toReach) {
+            return true;
+        }
+        // Check if we should increase the depth to reach
+        int[] minMaxDepth = getDeque().getMinMaxDepth();
+        if (minMaxDepth[0] == minMaxDepth[1]) {
+            getExecutorManager().globalIddfsSynchronizer.setNextDepth(currentDepth);
+            return true;
+        } else {
+            return false;
         }
     }
 
@@ -47,7 +68,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
         boolean isActualIncrementalBudgetExceeded =
                 ebm.incrementalActualChoicePointBudgetIsExceeded();
-        if (continueExecution) {
+        if (continueExecution.get()) {
             for (Choice.ChoiceOption choiceOption : options) {
                 if (checkIfSatisfiableAndSet(choiceOption)) {
                     result = choiceOption;

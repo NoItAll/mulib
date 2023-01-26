@@ -576,18 +576,21 @@ public class MulibConfig {
 
 
             if (INCR_ACTUAL_CP_BUDGET != 0) {
-                if (GLOBAL_SEARCH_STRATEGY != SearchStrategy.IDDFS
-                        && !ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS)) {
-                    throw new MisconfigurationException("When choosing an incremental budget, IDDFS must be used" +
-                            " as the search strategy. Currently, " + GLOBAL_SEARCH_STRATEGY + " is used as the global" +
+                if ((GLOBAL_SEARCH_STRATEGY != SearchStrategy.IDDFS
+                        && !ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))
+                    && (GLOBAL_SEARCH_STRATEGY != SearchStrategy.IDDSAS && !ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
+                    throw new MisconfigurationException("When choosing an incremental budget, an IDDFS-based search strategy" +
+                            " must be used. Currently, " + GLOBAL_SEARCH_STRATEGY + " is used as the global" +
                             " search strategy and " + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES + " are used as additional" +
                             " search strategies.");
                 }
             }
 
             if (INCR_ACTUAL_CP_BUDGET < 1
-                    && (GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDFS
-                        || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))) {
+                    && ((GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDFS
+                        || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))
+                        || GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDSAS
+                        || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
                 throw new MisconfigurationException("When choosing IDDFS, an incremental budget must be specified.");
             }
 
