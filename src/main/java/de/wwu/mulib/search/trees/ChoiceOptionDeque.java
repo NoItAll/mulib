@@ -19,5 +19,6 @@ public interface ChoiceOptionDeque {
 
     int size();
 
-    int maxDepth();
+    int[] minMaxZero = { 0, 0 };
+    int[] getMinMaxDepth();
 }

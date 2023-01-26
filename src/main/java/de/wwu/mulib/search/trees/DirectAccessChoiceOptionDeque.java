@@ -8,17 +8,15 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
     private final ArrayList<ChoiceOptionLevelContainer> choiceOptions;
     private final int batchIncreaseOfDirectAccessList = 32;
     private int size = 0;
-    private int maxDepth = 0;
 
     protected DirectAccessChoiceOptionDeque(Choice.ChoiceOption rootChoice) {
         this.choiceOptions = new ArrayList<>();
         ChoiceOptionLevelContainer initialContainer = new ChoiceOptionLevelContainer(rootChoice.getDepth());
         initialContainer.insert(rootChoice);
-        size++;
-        this.maxDepth = rootChoice.getDepth();
+        this.size++;
         this.choiceOptions.add(initialContainer);
-        cachedTail = initialContainer;
-        cachedHead = initialContainer;
+        this.cachedTail = initialContainer;
+        this.cachedHead = initialContainer;
     }
 
     @Override
@@ -102,9 +100,6 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
         if (cachedHead.depth > depth) {
             cachedHead = choiceOptions.get(depth);
         }
-        if (depth > this.maxDepth) {
-            this.maxDepth = depth;
-        }
         ChoiceOptionLevelContainer toAddTo = choiceOptions.get(depth);
         for (Choice.ChoiceOption co : newChoiceOptions) {
             if (!co.isUnsatisfiable()) {
@@ -143,9 +138,16 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
         return size;
     }
 
+
     @Override
-    public int maxDepth() {
-        return maxDepth;
+    public synchronized int[] getMinMaxDepth() {
+        ChoiceOptionLevelContainer head = getHead();
+        if (head != null) {
+            ChoiceOptionLevelContainer tail = getTail();
+            assert tail != null;
+            return new int[] { head.depth, tail.depth };
+        }
+        return minMaxZero;
     }
 
 }

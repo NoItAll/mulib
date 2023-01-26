@@ -10,12 +10,10 @@ import java.util.function.Supplier;
 public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
 
     private final LinkedList<Choice.ChoiceOption> choiceOptions;
-    private int maxDepth;
 
     protected SimpleChoiceOptionDeque(Choice.ChoiceOption rootChoice) {
         this.choiceOptions = new LinkedList<>();
         this.choiceOptions.add(rootChoice);
-        this.maxDepth = rootChoice.getDepth();
     }
 
     @Override
@@ -50,9 +48,6 @@ public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
 
     @Override
     public synchronized void insert(int depth, List<Choice.ChoiceOption> options) {
-        if (depth > maxDepth) {
-            this.maxDepth = depth;
-        }
         if (choiceOptions.isEmpty()) {
             List<Choice.ChoiceOption> filtered = new ArrayList<>(options);
             filtered.removeIf(Choice.ChoiceOption::isUnsatisfiable);
@@ -107,8 +102,11 @@ public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
     }
 
     @Override
-    public int maxDepth() {
-        return maxDepth;
+    public synchronized int[] getMinMaxDepth() {
+        if (!choiceOptions.isEmpty()) {
+            return new int[] { choiceOptions.getFirst().getDepth(), choiceOptions.getLast().getDepth() };
+        }
+        return minMaxZero;
     }
 
 }
