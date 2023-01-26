@@ -14,8 +14,8 @@ public class GlobalIddfsSynchronizer {
     }
 
     public synchronized void setNextDepth(int currentStartingDepth) {
-        if (currentStartingDepth == toReachDepth) {
-            toReachDepth += incrementSize;
+        if (currentStartingDepth >= toReachDepth) {
+            toReachDepth = currentStartingDepth + incrementSize;
         }
     }
 }

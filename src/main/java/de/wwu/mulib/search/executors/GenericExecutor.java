@@ -49,7 +49,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         int currentDepth = currentChoiceOption.getDepth();
         int toReach = getExecutorManager().globalIddfsSynchronizer.getToReachDepth();
         // Should we simply continue since the current depth is less then the depth to be reached?
-        if (currentDepth < toReach) {
+        if (currentDepth <= toReach) {
             return true;
         }
         // Check if we should increase the depth to reach
