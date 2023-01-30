@@ -15,7 +15,7 @@ repositories {
 
 dependencies {
     implementation 'org.junit.jupiter:junit-jupiter:5.8.1'
-    implementation group: 'org.soot-oss', name: 'soot', version: '4.3.0'
+    implementation group: 'org.soot-oss', name: 'soot', version: '4.4.1'
     implementation (group: 'org.sosy-lab', name: 'java-smt', version: '3.14.3') {
         // Exclude external dependency required by princess
         exclude group: "uuverifiers", module: "princess_2.13"
