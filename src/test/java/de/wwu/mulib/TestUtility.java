@@ -35,8 +35,8 @@ public final class TestUtility {
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
-                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(IDDSAS, IDDSAS, DSAS)
-                        .setINCR_ACTUAL_CP_BUDGET(6)
+                        .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
+//                        .setINCR_ACTUAL_CP_BUDGET(6)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
@@ -102,6 +102,7 @@ public final class TestUtility {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(true)
                         .assumeMulibDefaultValueRanges()
+                        .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SEARCH_STRATEGY(IDDFS)
@@ -111,6 +112,7 @@ public final class TestUtility {
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setHIGH_LEVEL_FREE_ARRAY_THEORY(false)
                         .setCONCOLIC(true)
+                        .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .assumeMulibDefaultValueRanges()
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
@@ -119,6 +121,7 @@ public final class TestUtility {
                         .setGLOBAL_SEARCH_STRATEGY(DSAS)
                         .setINCR_ACTUAL_CP_BUDGET(13)
                         .setTREAT_BOOLEANS_AS_INTS(true)
+                        .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET),
                 MulibConfig.builder()
                         .setGLOBAL_SOLVER_TYPE(Solvers.JSMT_SMTINTERPOL)
