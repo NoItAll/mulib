@@ -2127,7 +2127,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (t instanceof InnerClassTag) {
                 InnerClassTag innerClassTag = (InnerClassTag) t;
                 String innerClassName = innerClassTag.getInnerClass().replace("/", ".");
-                String outerClassName = innerClassTag.getOuterClass().replace("/", ".");
+                String outerClassName = innerClassTag.getOuterClass() == null ? null : innerClassTag.getOuterClass().replace("/", ".");
                 if (!toTransform.getName().equals(outerClassName)) {
                     continue;
                 }
@@ -2179,6 +2179,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return shouldBeTransformed(rt.getClassName().replace(_TRANSFORMATION_PREFIX, ""));
     }
 
+
+    private final Set<Unit> summarized = new HashSet<>();
     private SootMethod transformMethod(final SootMethod toTransform, final SootClass declaringTransformedClass) {
         // Replace parameter types and return types
         List<Type> transformedParameterTypes = transformTypes(toTransform.getParameterTypes());
@@ -2201,6 +2203,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Analyze which parts of the jimple body need to be replaced
         TaintAnalyzer gta = new TaintAnalyzer(config, this, toTransform, v);
         TaintAnalysis a = gta.analyze();
+//        IfConditionSummarizer ics = new IfConditionSummarizer(a);
 
         JimpleBody transformedBody = Jimple.v().newBody(result);
         result.setActiveBody(transformedBody);
@@ -2410,21 +2413,57 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         args.addUnit(r);
     }
 
+
+    static class SwitchToIfElse {
+        final Unit target;
+        final int val;
+
+        SwitchToIfElse(Unit target, int val) {
+            this.target = target;
+            this.val = val;
+        }
+    }
     private void transform(SwitchStmt s, TcArgs args) {
         if (!args.isTainted() && !args.isToWrap()) {
             args.addUnit(s);
             return;
         }
-        // TODO args.isTainted and args.isWrapped
-        if (s instanceof TableSwitchStmt) {
-            throw new NotYetImplementedException();
-//            args.addUnit(s);
-        } else if (s instanceof LookupSwitchStmt) {
-            throw new NotYetImplementedException();
-//            args.addUnit(s);
-        } else {
-            throw new NotYetImplementedException();
+
+        List<SwitchToIfElse> substituteWithIfElse = new ArrayList<>();
+        for (int i = 0; i < s.getTargets().size(); i++) {
+            Unit target = s.getTarget(i);
+            if (s instanceof TableSwitchStmt) {
+                TableSwitchStmt tss = (TableSwitchStmt) s;
+                assert tss.getTarget(i) != null;
+                substituteWithIfElse.add(new SwitchToIfElse(tss.getTarget(i), i));
+            } else if (s instanceof LookupSwitchStmt) {
+                LookupSwitchStmt lss = (LookupSwitchStmt) s;
+                substituteWithIfElse.add(new SwitchToIfElse(target, lss.getLookupValue(i)));
+            }
         }
+        boolean first = true;
+        for (SwitchToIfElse sw : substituteWithIfElse) {
+            Local wrapLocal = args.spawnStackLocal(v.TYPE_SINT);
+            AssignStmt assign = Jimple.v().newAssignStmt(
+                    wrapLocal,
+                    Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_CONCSINT.makeRef(), IntConstant.v(sw.val))
+            );
+            if (first) {
+                s.redirectJumpsToThisTo(assign);
+                first = false;
+            }
+            // Wrap value
+            args.addUnit(assign);
+            Local boolResult = args.spawnStackLocal(v.TYPE_BOOL);
+            // Call eq-method
+            args.addUnit(Jimple.v().newAssignStmt(
+                    boolResult,
+                    Jimple.v().newVirtualInvokeExpr(wrapLocal, v.SM_SINT_EQ_CHOICE.makeRef(), s.getKey(), args.seLocal()))
+            );
+            // Conditional jump
+            args.addUnit(Jimple.v().newIfStmt(Jimple.v().newEqExpr(boolResult, IntConstant.v(1)), sw.target));
+        }
+        args.addUnit(Jimple.v().newGotoStmt(s.getDefaultTarget()));
     }
 
     private void transform(BreakpointStmt b, TcArgs args) {
@@ -2579,12 +2618,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if ((conditionExpr.getOp1() instanceof Local
                 && !isPrimitiveOrSprimitive(conditionExpr.getOp1().getType())
                 && conditionExpr.getOp1().getType() instanceof RefLikeType)
-                || conditionExpr.getOp1() instanceof NullConstant) {
+                || conditionExpr.getOp1() instanceof NullConstant
+                || conditionExpr.getOp1() instanceof ClassConstant) {
             // Comparison of two references
             assert (conditionExpr.getOp2() instanceof Local
                     && !isPrimitiveOrSprimitive(conditionExpr.getOp2().getType())
                     && conditionExpr.getOp2().getType() instanceof RefLikeType)
-                    || conditionExpr.getOp2() instanceof NullConstant;
+                    || conditionExpr.getOp2() instanceof NullConstant
+                    || conditionExpr.getOp2() instanceof ClassConstant;
             assert conditionExpr instanceof NeExpr || conditionExpr instanceof EqExpr;
             assert !args.isTainted();
             Local refEqLocal = args.spawnStackLocal(v.TYPE_SBOOL);

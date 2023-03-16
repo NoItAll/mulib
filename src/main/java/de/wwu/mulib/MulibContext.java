@@ -105,7 +105,7 @@ public final class MulibContext {
                         }
                     } else {
                         // Is null, Sarray, or PartnerClass
-                        assert arg == null || arg instanceof PartnerClass;
+                        assert arg == null || arg instanceof PartnerClass || arg instanceof String;
                         newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
                     }
                     replacedMap.put(arg, newArg);
@@ -120,7 +120,6 @@ public final class MulibContext {
             Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, transformedArgTypes);
             methodHandle = MethodHandles.lookup().unreflect(method);
         } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
-            e.printStackTrace();
             throw new MulibRuntimeException(e);
         }
         SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
