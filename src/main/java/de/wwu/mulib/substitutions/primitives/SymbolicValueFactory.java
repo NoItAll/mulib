@@ -21,6 +21,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final StampedLock atomicSymSlongLock = new StampedLock();
     private final StampedLock atomicSymSbyteLock = new StampedLock();
     private final StampedLock atomicSymSshortLock = new StampedLock();
+    private final StampedLock atomicSymScharLock = new StampedLock();
 
     private final List<Sint.SymSint> createdAtomicSymSints = new ArrayList<>();
     private final List<Sdouble.SymSdouble> createdAtomicSymSdoubles = new ArrayList<>();
@@ -29,6 +30,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Slong.SymSlong> createdAtomicSymSlongs = new ArrayList<>();
     private final List<Sshort.SymSshort> createdAtomicSymSshorts = new ArrayList<>();
     private final List<Sbyte.SymSbyte> createdAtomicSymSbytes = new ArrayList<>();
+    private final List<Schar.SymSchar> createdAtomicSymSchars = new ArrayList<>();
 
     private final MulibConfig config;
     SymbolicValueFactory(MulibConfig config) {
@@ -124,6 +126,17 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
+    public Schar symSchar(SymbolicExecution se) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSchars,
+                Schar::newInputSymbolicSchar,
+                se.getNextNumberInitializedAtomicSymSchars(),
+                atomicSymScharLock,
+                optionalScharRestriction(se, config)
+        );
+    }
+
+    @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
                 Sint::newExpressionSymbolicSint,
@@ -174,6 +187,15 @@ public class SymbolicValueFactory extends AbstractValueFactory {
                 Sbyte::newExpressionSymbolicSbyte,
                 numericExpression,
                 optionalSbyteRestriction(se, config)
+        );
+    }
+
+    @Override
+    public Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression) {
+        return returnWrapperIfExistsElseCreate(
+                Schar::newExpressionSymbolicSchar,
+                numericExpression,
+                optionalScharRestriction(se, config)
         );
     }
 
@@ -305,6 +327,13 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private static Function<Sshort.SymSshort, Sshort.SymSshort> optionalSshortRestriction(SymbolicExecution se, MulibConfig config) {
         return config.SYMSSHORT_LB.isPresent() ?
                 r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSSHORT_LB.get(), config.SYMSSHORT_UB.get())
+                :
+                r -> r;
+    }
+
+    private static Function<Schar.SymSchar, Schar.SymSchar> optionalScharRestriction(SymbolicExecution se, MulibConfig config) {
+        return config.SYMSCHAR_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSCHAR_LB.get(), config.SYMSCHAR_UB.get())
                 :
                 r -> r;
     }

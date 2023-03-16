@@ -470,6 +470,54 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    public static class ScharSarray extends Sarray<Schar> {
+
+        /** Transformation constructor */
+        public ScharSarray(Schar[] values, MulibValueTransformer mvt) {
+            super(values, mvt);
+        }
+
+        /** New instance constructor */
+        public ScharSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
+            super(Schar.class, len, se, defaultIsSymbolic, isNull);
+        }
+
+        /** Copy constructor */
+        public ScharSarray(MulibValueCopier mvt, ScharSarray s) {
+            super(mvt, s);
+        }
+
+        @Override
+        public final Schar select(Sint i, SymbolicExecution se) {
+            return se.select(this, i);
+        }
+
+        @Override
+        public final void store(Sint i, Schar val, SymbolicExecution se) {
+            se.store(this, i, val);
+        }
+
+        @Override
+        protected Schar symbolicDefault(SymbolicExecution se) {
+            return se.symSchar();
+        }
+
+        @Override
+        protected Schar nonSymbolicDefaultElement(SymbolicExecution se) {
+            return Schar.ConcSchar.ZERO;
+        }
+
+        @Override
+        public ScharSarray copy(MulibValueCopier mvt) {
+            return new ScharSarray(mvt, this);
+        }
+
+        @Override
+        public Class<?> __mulib__getOriginalClass() {
+            return char[].class;
+        }
+    }
+
     public static class SbyteSarray extends Sarray<Sbyte> {
 
         /** Transformation constructor */

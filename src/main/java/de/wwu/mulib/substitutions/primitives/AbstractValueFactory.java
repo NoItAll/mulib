@@ -76,6 +76,11 @@ public abstract class AbstractValueFactory implements ValueFactory {
     }
 
     @Override
+    public Schar.ConcSchar concSchar(char c) {
+        return (Schar.ConcSchar) Schar.concSchar(c);
+    }
+
+    @Override
     public final Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
         return sintSarray(
                 se,
@@ -115,6 +120,11 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public final Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
         return sboolSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+    }
+
+    @Override
+    public final Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
+        return scharSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
     }
 
     @Override
@@ -180,6 +190,14 @@ public abstract class AbstractValueFactory implements ValueFactory {
         restrictLength(se, len);
         Sarray.SboolSarray result = new Sarray.SboolSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
         decideOnAddToAliasingAndRepresentation(Sbool[].class, result, se);
+        return result;
+    }
+
+    @Override
+    public final Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic, boolean canBeNull) {
+        restrictLength(se, len);
+        Sarray.ScharSarray result = new Sarray.ScharSarray(len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        decideOnAddToAliasingAndRepresentation(Schar[].class, result, se);
         return result;
     }
 

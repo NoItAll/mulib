@@ -52,6 +52,9 @@ public class MulibConfig {
     public final Optional<Sbyte> SYMSBYTE_LB;
     public final Optional<Sbyte> SYMSBYTE_UB;
 
+    public final Optional<Schar> SYMSCHAR_LB;
+    public final Optional<Schar> SYMSCHAR_UB;
+
     public final boolean TREAT_BOOLEANS_AS_INTS;
 
     /* Free Arrays */
@@ -160,6 +163,8 @@ public class MulibConfig {
         private Optional<Short> SYMSSHORT_UB;
         private Optional<Byte> SYMSBYTE_LB;
         private Optional<Byte> SYMSBYTE_UB;
+        private Optional<Character> SYMSCHAR_LB;
+        private Optional<Character> SYMSCHAR_UB;
         private boolean TREAT_BOOLEANS_AS_INTS;
         private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
         private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
@@ -231,6 +236,8 @@ public class MulibConfig {
             this.SYMSSHORT_UB =  Optional.empty();
             this.SYMSBYTE_LB =   Optional.empty();
             this.SYMSBYTE_UB =   Optional.empty();
+            this.SYMSCHAR_LB =   Optional.empty();
+            this.SYMSCHAR_UB =   Optional.empty();
             this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = false;
             this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = false;
             this.TREAT_BOOLEANS_AS_INTS = false;
@@ -469,6 +476,19 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setSYMSCHAR_LB(char SYMSCHAR_LB, char SYMSCHAR_UB) {
+            if (SYMSCHAR_LB > SYMSCHAR_UB) {
+                throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
+            }
+            this.SYMSCHAR_UB = Optional.of(SYMSCHAR_UB);
+            this.SYMSCHAR_LB = Optional.of(SYMSCHAR_LB);
+            return this;
+        }
+
+        public void setSYMSCHAR_UB(Optional<Character> SYMSCHAR_UB) {
+            this.SYMSCHAR_UB = SYMSCHAR_UB;
+        }
+
         public MulibConfigBuilder setTREAT_BOOLEANS_AS_INTS(boolean TREAT_BOOLEANS_AS_INTS) {
             this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
             return this;
@@ -492,6 +512,8 @@ public class MulibConfig {
             this.SYMSSHORT_UB =  Optional.of(Short.MAX_VALUE);
             this.SYMSBYTE_LB =   Optional.of(Byte.MIN_VALUE);
             this.SYMSBYTE_UB =   Optional.of(Byte.MAX_VALUE);
+            this.SYMSCHAR_LB =   Optional.of(Character.MIN_VALUE);
+            this.SYMSCHAR_UB =   Optional.of(Character.MAX_VALUE);
             return this;
         }
 
@@ -647,6 +669,8 @@ public class MulibConfig {
                     SYMSSHORT_UB,
                     SYMSBYTE_LB,
                     SYMSBYTE_UB,
+                    SYMSCHAR_LB,
+                    SYMSCHAR_UB,
                     TREAT_BOOLEANS_AS_INTS,
                     USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
                     USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
@@ -708,6 +732,8 @@ public class MulibConfig {
                         Optional<Short> SYMSSHORT_UB,
                         Optional<Byte> SYMSBYTE_LB,
                         Optional<Byte> SYMSBYTE_UB,
+                        Optional<Character> SYMSCHAR_LB,
+                        Optional<Character> SYMSCHAR_UB,
                         boolean TREAT_BOOLEANS_AS_INTS,
                         boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
                         boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
@@ -766,6 +792,9 @@ public class MulibConfig {
         this.SYMSSHORT_UB =  SYMSSHORT_UB.isEmpty() ? Optional.empty() :  Optional.of(Sshort.concSshort(SYMSSHORT_UB.get()));
         this.SYMSBYTE_LB =   SYMSBYTE_LB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_LB.get()));
         this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
+        this.SYMSCHAR_LB =   SYMSCHAR_LB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(SYMSCHAR_LB.get()));
+        this.SYMSCHAR_UB =   SYMSCHAR_UB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(SYMSCHAR_UB.get()));
+
         this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
         this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
         this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;

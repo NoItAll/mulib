@@ -42,6 +42,7 @@ public final class SymbolicExecution {
     private int nextNumberInitializedAtomicSymSlongs = 0;
     private int nextNumberInitializedAtomicSymSshorts = 0;
     private int nextNumberInitializedAtomicSymSbytes = 0;
+    private int nextNumberInitializedAtomicSymSchars = 0;
     private int nextIdentitiyHavingObjectNr;
 
     public SymbolicExecution(
@@ -111,6 +112,10 @@ public final class SymbolicExecution {
 
     public int getNextNumberInitializedAtomicSymSshorts() {
         return nextNumberInitializedAtomicSymSshorts++;
+    }
+
+    public int getNextNumberInitializedAtomicSymSchars() {
+        return nextNumberInitializedAtomicSymSchars++;
     }
 
     public int getNextNumberInitializedSymObject() {
@@ -295,8 +300,16 @@ public final class SymbolicExecution {
         return (Sshort) calculationFactory.select(this, sarray, index);
     }
 
+    public Schar select(Sarray.ScharSarray sarray, Sint index) {
+        return (Schar.SymSchar) calculationFactory.select(this, sarray, index);
+    }
+
     public Sshort store(Sarray.SshortSarray sarray, Sint index, Sshort value) {
         return (Sshort) calculationFactory.store(this, sarray, index, value);
+    }
+
+    public Schar store(Sarray.ScharSarray sarray, Sint index, Schar value) {
+        return (Schar) calculationFactory.store(this, sarray, index, value);
     }
 
     public Sbool select(Sarray.SboolSarray sarray, Sint index) {
@@ -375,6 +388,12 @@ public final class SymbolicExecution {
         return result;
     }
 
+    public Schar namedSchar(String identifier) {
+        Schar result = symSchar();
+        _getNamedVariables().put(identifier, result);
+        return result;
+    }
+
     public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SintSarray result = valueFactory.sintSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
@@ -419,6 +438,13 @@ public final class SymbolicExecution {
 
     public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SboolSarray result = valueFactory.sboolSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
+        _getNamedVariables().put(identifier, result);
+        return result;
+    }
+
+    public Sarray.ScharSarray namedScharSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
+        Sarray.ScharSarray result = valueFactory.scharSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
@@ -517,6 +543,9 @@ public final class SymbolicExecution {
         return valueFactory.symSbool(this);
     }
 
+    public Schar symSchar() {
+        return valueFactory.symSchar(this);
+    }
     public Sint concSint(int i) {
         return valueFactory.concSint(i);
     }
@@ -543,6 +572,10 @@ public final class SymbolicExecution {
 
     public Sbool concSbool(boolean b) {
         return valueFactory.concSbool(b);
+    }
+
+    public Schar concSchar(char c) {
+        return valueFactory.concSchar(c);
     }
 
     public Sarray.SintSarray sintSarray(Sint len, boolean defaultIsSymbolic) {

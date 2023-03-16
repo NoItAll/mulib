@@ -130,6 +130,16 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
+    public Schar.SymSchar symSchar(SymbolicExecution se) {
+        return numericConcolicWrapperCreator(
+                se,
+                this::symSchar,
+                o -> concSchar((Character) o),
+                Schar::newExpressionSymbolicSchar
+        );
+    }
+
+    @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
@@ -175,6 +185,14 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 && !((numericExpression instanceof SymNumericExpressionSprimitive)
                     && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSbyte(se, numericExpression);
+    }
+
+    @Override
+    public Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression) {
+        assert !(numericExpression instanceof ConcolicNumericContainer)
+                && !((numericExpression instanceof SymNumericExpressionSprimitive)
+                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+        return svf.wrappingSymSchar(se, numericExpression);
     }
 
     @Override

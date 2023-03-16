@@ -31,6 +31,8 @@ public interface ValueFactory {
 
     Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements);
 
+    Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean freeElements);
+
     Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean freeElements);
 
     Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean freeElements);
@@ -50,6 +52,8 @@ public interface ValueFactory {
     Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull);
 
     Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull);
+
+    Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean freeElements, boolean canBeNull);
 
     Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean freeElements, boolean canBeNull);
 
@@ -73,6 +77,8 @@ public interface ValueFactory {
 
     Sbyte symSbyte(SymbolicExecution se);
 
+    Schar symSchar(SymbolicExecution se);
+
     Sint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression);
 
     Sdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression);
@@ -84,6 +90,8 @@ public interface ValueFactory {
     Sshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression);
 
     Sbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression);
+
+    Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression);
 
     Sbool wrappingSymSbool(SymbolicExecution se, Constraint constraint);
 
@@ -102,4 +110,6 @@ public interface ValueFactory {
     Sshort.ConcSshort concSshort(short s);
 
     Sbyte.ConcSbyte concSbyte(byte b);
+
+    Schar.ConcSchar concSchar(char c);
 }
