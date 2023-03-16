@@ -433,4 +433,26 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             return false;
         }
     }
+
+    @Override
+    public Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options) {
+        Choice.ChoiceOption result = null;
+        ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
+        boolean isActualIncrementalBudgetExceeded =
+                ebm.incrementalActualChoicePointBudgetIsExceeded();
+        if (shouldContinueExecution()) {
+            result = takeChoiceOptionFromNextAlternatives(options);
+        }
+        if (terminated || result == null || isActualIncrementalBudgetExceeded) {
+            backtrackOnce();
+            // Optional.empty() means backtracking. Is used in ChoicePointFactory.
+            return Optional.empty();
+        } else {
+            return Optional.of(result);
+        }
+    }
+
+    protected abstract boolean shouldContinueExecution();
+
+    protected abstract Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options);
 }

@@ -188,7 +188,7 @@ public final class SymbolicExecution {
         return true;
     }
 
-    public boolean isOnKnownPath() {
+    private boolean isOnKnownPath() {
         return !predeterminedPath.isEmpty();
     }
 
@@ -205,6 +205,9 @@ public final class SymbolicExecution {
     }
 
     public void addNamedVariable(String key, SubstitutedVar value) {
+        if (value instanceof PartnerClass) {
+            ((PartnerClass) value).__mulib__setIsNamed();
+        }
         Map<String, SubstitutedVar> namedVars = _getNamedVariables();
         if (namedVars.containsKey(key)) {
             throw new MulibRuntimeException("Must not overwrite named variable.");
@@ -374,42 +377,49 @@ public final class SymbolicExecution {
 
     public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SintSarray result = valueFactory.sintSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SdoubleSarray namedSdoubleSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SdoubleSarray result = valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SfloatSarray namedSfloatSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SfloatSarray result = valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SlongSarray namedSlongSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SlongSarray result = valueFactory.slongSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SshortSarray namedSshortSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SshortSarray result = valueFactory.sshortSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SbyteSarray namedSbyteSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SbyteSarray result = valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
 
     public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SboolSarray result = valueFactory.sboolSarray(this, len, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
@@ -417,6 +427,7 @@ public final class SymbolicExecution {
     public Sarray.PartnerClassSarray namedPartnerClassSarray(
             String identifier, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
         Sarray.PartnerClassSarray result = valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
@@ -424,6 +435,7 @@ public final class SymbolicExecution {
     public Sarray.SarraySarray namedSarraySarray(
             String identifier, Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
         Sarray.SarraySarray result = valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
+        result.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, result);
         return result;
     }
@@ -472,6 +484,7 @@ public final class SymbolicExecution {
 
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
         PartnerClass symObject = symObject(clazz);
+        symObject.__mulib__setIsNamed();
         _getNamedVariables().put(identifier, symObject);
         return symObject;
     }
@@ -606,6 +619,13 @@ public final class SymbolicExecution {
 
     public Sarray.SarraySarray sarraySarray(Sint[] lengths, Class<?> innerElementClass) {
         return valueFactory.sarrarySarray(this, lengths, innerElementClass);
+    }
+
+    public void nameSubstitutedVar(SubstitutedVar sv, String name) {
+        if (sv instanceof PartnerClass) {
+            ((PartnerClass) sv).__mulib__setIsNamed();
+        }
+        addNamedVariable(name, sv);
     }
 
 

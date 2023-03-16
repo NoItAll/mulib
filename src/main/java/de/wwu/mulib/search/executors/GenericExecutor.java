@@ -2,7 +2,6 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -63,26 +62,13 @@ public final class GenericExecutor extends AbstractMulibExecutor {
     }
 
     @Override
-    public Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options) {
-        Choice.ChoiceOption result = null;
-        ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
-        boolean isActualIncrementalBudgetExceeded =
-                ebm.incrementalActualChoicePointBudgetIsExceeded();
-        if (continueExecution.get()) {
-            for (Choice.ChoiceOption choiceOption : options) {
-                if (checkIfSatisfiableAndSet(choiceOption)) {
-                    result = choiceOption;
-                    break;
-                }
+    protected Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
+        for (Choice.ChoiceOption choiceOption : options) {
+            if (checkIfSatisfiableAndSet(choiceOption)) {
+                return choiceOption;
             }
         }
-        if (terminated || result == null || isActualIncrementalBudgetExceeded) {
-            backtrackOnce();
-            // Optional.empty() means backtracking. Is used in ChoicePointFactory.
-            return Optional.empty();
-        } else {
-            return Optional.of(result);
-        }
+        return null;
     }
 
     @Override
@@ -92,6 +78,11 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             result.put("missedDsas", String.valueOf(dsasMissed));
         }
         return result;
+    }
+
+    @Override
+    protected boolean shouldContinueExecution() {
+        return continueExecution.get();
     }
 
     @Override

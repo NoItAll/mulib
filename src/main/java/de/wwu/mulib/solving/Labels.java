@@ -21,4 +21,6 @@ public interface Labels {
 
     Map<String, Object> getIdToLabel();
 
+    Object[] getLabels();
+
 }

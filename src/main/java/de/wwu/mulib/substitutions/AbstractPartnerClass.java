@@ -16,6 +16,16 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     }
 
     @Override
+    public final void __mulib__setIsNamed() {
+        this.representationState |= IS_NAMED;
+    }
+
+    @Override
+    public final boolean __mulib__isNamed() {
+        return (this.representationState & IS_NAMED) != 0;
+    }
+
+    @Override
     public final void __mulib__setDefaultIsSymbolic() {
         this.representationState |= DEFAULT_IS_SYMBOLIC;
     }

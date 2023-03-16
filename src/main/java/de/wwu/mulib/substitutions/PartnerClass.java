@@ -16,12 +16,17 @@ public interface PartnerClass extends SubstitutedVar {
     byte CACHE_IS_BLOCKED = 4;
     byte IS_LAZILY_INITIALIZED = 8;
     byte DEFAULT_IS_SYMBOLIC = 16;
+    byte IS_NAMED = 32;
 
     Object label(Object originalContainer, SolverManager solverManager);
 
     Object copy(MulibValueCopier mulibValueCopier);
 
     Class<?> __mulib__getOriginalClass();
+
+    void __mulib__setIsNamed();
+
+    boolean __mulib__isNamed();
 
     void __mulib__setIsNull(Sbool isNull);
 

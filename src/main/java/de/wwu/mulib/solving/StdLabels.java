@@ -65,6 +65,10 @@ public class StdLabels implements Labels {
         return identifiersToValues;
     }
 
+    public Object[] getLabels() {
+        return identifiersToValues.values().toArray(new Object[0]);
+    }
+
     @Override
     public String toString() {
         return "StdLabels{" + getIdToLabel() + "}";
