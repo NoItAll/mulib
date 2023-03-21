@@ -1,87 +1,9 @@
 package de.wwu.mulib.search;
 
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.substitutions.primitives.*;
 
-import java.util.function.BiFunction;
-import java.util.function.Function;
-
 public class NumberUtil {
-
-    public static Snumber addConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
-        return newConcsNumberViaOperator(lhs, rhs,
-                Integer::sum,
-                Long::sum,
-                Float::sum,
-                Double::sum
-        );
-    }
-
-    public static Snumber subConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
-        return newConcsNumberViaOperator(lhs, rhs,
-                (l,r) -> l-r,
-                (l,r) -> l-r,
-                (l,r) -> l-r,
-                (l,r) -> l-r
-        );
-    }
-
-    public static Snumber mulConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
-        return newConcsNumberViaOperator(lhs, rhs,
-                (l,r) -> l*r,
-                (l,r) -> l*r,
-                (l,r) -> l*r,
-                (l,r) -> l*r
-        );
-    }
-
-    public static Snumber divConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
-        return newConcsNumberViaOperator(lhs, rhs,
-                (l,r) -> l/r,
-                (l,r) -> l/r,
-                (l,r) -> l/r,
-                (l,r) -> l/r
-        );
-    }
-
-    public static Snumber modConcSnumber(ConcSnumber lhs, ConcSnumber rhs) {
-        return newConcsNumberViaOperator(lhs, rhs,
-                (l,r) -> l%r,
-                (l,r) -> l%r,
-                (l,r) -> l%r,
-                (l,r) -> l%r
-        );
-    }
-
-    public static Snumber neg(ConcSnumber n) {
-        return newConcsNumber(
-                n,
-                (i) -> -i,
-                (l) -> -l,
-                (f) -> -f,
-                (d) -> -d
-        );
-    }
-
-    public static Snumber abs(ConcSnumber n) {
-        return newConcsNumber(
-                n,
-                Math::abs,
-                Math::abs,
-                Math::abs,
-                Math::abs
-        );
-    }
-
-    public static boolean gt(ConcSnumber lhs, ConcSnumber rhs) {
-        return compareConcSnumber(lhs, rhs) == 1;
-    }
-
-    public static boolean gte(ConcSnumber lhs, ConcSnumber rhs) {
-        int result = compareConcSnumber(lhs, rhs);
-        return result == 1 || result == 0;
-    }
 
     public static boolean lt(ConcSnumber lhs, ConcSnumber rhs) {
         return compareConcSnumber(lhs, rhs) == -1;
@@ -95,51 +17,6 @@ public class NumberUtil {
     public static boolean eq(ConcSnumber lhs, ConcSnumber rhs) {
         int result = compareConcSnumber(lhs, rhs);
         return result == 0;
-    }
-
-    public static NumericExpression getRepresentedExpression(Snumber n) {
-        return n instanceof SymNumericExpressionSprimitive ?
-                ((SymNumericExpressionSprimitive) n).getRepresentedExpression()
-                :
-                n;
-    }
-
-    private static Snumber newConcsNumberViaOperator(
-            ConcSnumber lhs, ConcSnumber rhs,
-            BiFunction<Integer, Integer, Integer> integerOperatorFunction,
-            BiFunction<Long, Long, Long> longOperatorFunction,
-            BiFunction<Float, Float, Float> floatOperatorFunction,
-            BiFunction<Double, Double, Double> doubleOperatorFunction) {
-        if (lhs instanceof Sint && rhs instanceof Sint) {
-            return Sint.concSint(integerOperatorFunction.apply(lhs.intVal(), rhs.intVal()));
-        } else if (lhs instanceof Sdouble || rhs instanceof Sdouble) {
-            return Sdouble.concSdouble(doubleOperatorFunction.apply(lhs.doubleVal(), rhs.doubleVal()));
-        } else if (lhs instanceof Sfloat || rhs instanceof Sfloat) {
-            return Sfloat.concSfloat(floatOperatorFunction.apply(lhs.floatVal(), rhs.floatVal()));
-        } else if (lhs instanceof Slong || rhs instanceof Slong) {
-            return Slong.concSlong(longOperatorFunction.apply(lhs.longVal(), rhs.longVal()));
-        } else {
-            throw new NotYetImplementedException();
-        }
-    }
-
-    private static Snumber newConcsNumber(
-            ConcSnumber n,
-            Function<Integer, Integer> integerOperatorFunction,
-            Function<Long, Long> longOperatorFunction,
-            Function<Float, Float> floatOperatorFunction,
-            Function<Double, Double> doubleOperatorFunction) {
-        if (n instanceof Sint) {
-            return Sint.concSint(integerOperatorFunction.apply(n.intVal()));
-        } else if (n instanceof Slong) {
-            return Slong.ConcSlong.concSlong(longOperatorFunction.apply(n.longVal()));
-        } else if (n instanceof Sdouble) {
-            return Sdouble.concSdouble(doubleOperatorFunction.apply(n.doubleVal()));
-        } else if (n instanceof Sfloat) {
-            return Sfloat.concSfloat(floatOperatorFunction.apply(n.floatVal()));
-        } else {
-            throw new NotYetImplementedException();
-        }
     }
 
     private static boolean isFpNumber(Number n) {
