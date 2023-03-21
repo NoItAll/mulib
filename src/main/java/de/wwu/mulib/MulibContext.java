@@ -270,6 +270,9 @@ public final class MulibContext {
         } else if (type == String.class) {
             mulibWrapper = String.class;
             javaWrapper = String.class;
+        } else if (type == Character.class) {
+            mulibWrapper = Schar.class;
+            javaWrapper = Character.class;
         } else {
             throw new NotYetImplementedException();
         }
