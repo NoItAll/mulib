@@ -11,9 +11,9 @@ public class WBSProp4 {
         int PedalPos;
         boolean AutoBrake, Skid;
         for (int i = 0; i < 2; i++) { // HW: Changed from four to two iterations to be more feasible as a normal test case
-            PedalPos = Mulib.namedFreeInt("PedalPos");
-            AutoBrake = Mulib.namedFreeBoolean("AutoBrake");
-            Skid = Mulib.namedFreeBoolean("Skid");
+            PedalPos = Mulib.rememberedFreeInt("PedalPos");
+            AutoBrake = Mulib.rememberedFreeBoolean("AutoBrake");
+            Skid = Mulib.rememberedFreeBoolean("Skid");
             wbs.update(PedalPos, AutoBrake, Skid);
             // This assertion should fail:
             assert ((PedalPos > 0 && !Skid) ? (wbs.Alt_Pressure > 0 || wbs.Nor_Pressure > 0) : true);

@@ -25,7 +25,7 @@ public class GraphColoring {
 
     public void generateColoring(){
         for(int i=0; i<n; i++) {
-            int color = Mulib.namedFreeInt("" + i);
+            int color = Mulib.rememberedFreeInt("" + i);
             if (!(color > 0 && color <= c))
                 throw Mulib.fail();
             else colors[i] = color; } }

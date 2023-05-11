@@ -7,7 +7,7 @@ public class AliasingAndIdsEq {
     public static ResultContainer objectsEq() {
         A a0 = Mulib.freeObject(A.class);
         A a1 = Mulib.freeObject(A.class);
-        A a2 = Mulib.freeAliasingObjectOf(a0, a1);
+        A a2 = Mulib.pickFrom(a0, a1);
         if (a1 == a0) {
             if (a0.i != 42) {
                 throw Mulib.fail();

@@ -22,7 +22,7 @@ public class FloatInstructions {
 
     public static void exec() {
         float a = Mulib.freeFloat();
-        float b = Mulib.namedFreeFloat("b");
+        float b = Mulib.rememberedFreeFloat("b");
         if (a + b != a || b == 0.0) {
             return;
         }

@@ -40,39 +40,39 @@ public class ArrayReturn {
     }
 
     public static int[] arReturn10() {
-        return Mulib.namedFreeIntArray("name");
+        return Mulib.rememberedFreeIntArray("name");
     }
 
     public static long[] arReturn11() {
-        return Mulib.namedFreeLongArray("name");
+        return Mulib.rememberedFreeLongArray("name");
     }
 
     public static double[] arReturn12() {
-        return Mulib.namedFreeDoubleArray("name");
+        return Mulib.rememberedFreeDoubleArray("name");
     }
 
     public static float[] arReturn13() {
-        return Mulib.namedFreeFloatArray("name");
+        return Mulib.rememberedFreeFloatArray("name");
     }
 
     public static short[] arReturn14() {
-        return Mulib.namedFreeShortArray("name");
+        return Mulib.rememberedFreeShortArray("name");
     }
 
     public static byte[] arReturn15() {
-        return Mulib.namedFreeByteArray("name");
+        return Mulib.rememberedFreeByteArray("name");
     }
 
     public static boolean[] arReturn16() {
-        return Mulib.namedFreeBooleanArray("name");
+        return Mulib.rememberedFreeBooleanArray("name");
     }
 
     public static ArrayReturn[][][] arReturn17() {
-        return Mulib.namedFreeObject("name", ArrayReturn[][][].class);
+        return Mulib.rememberedFreeObject("name", ArrayReturn[][][].class);
     }
 
     public static ArrayReturn[] arReturn18() {
-        return Mulib.namedFreeObject("name", ArrayReturn[].class);
+        return Mulib.rememberedFreeObject("name", ArrayReturn[].class);
     }
 
     public static int[] arReturn20() {
@@ -170,7 +170,7 @@ public class ArrayReturn {
     }
 
     public static ArrayReturn[][] arReturn36() {
-        ArrayReturn[][] result = Mulib.namedFreeObject("name", ArrayReturn[][].class);
+        ArrayReturn[][] result = Mulib.rememberedFreeObject("name", ArrayReturn[][].class);
         ArrayReturn arrayReturn = new ArrayReturn();
         result[0][12] = new ArrayReturn();
         result[22][73] = null;
@@ -181,10 +181,10 @@ public class ArrayReturn {
     public static ArrayReturn[][][] arReturn37() {
         ArrayReturn[][][] result = Mulib.freeObject(ArrayReturn[][][].class);
         result[0] = Mulib.freeObject(ArrayReturn[][].class);
-        result[1] = Mulib.namedFreeObject("id0", ArrayReturn[][].class);
-        result[2][3] = Mulib.namedFreeObject("id1", ArrayReturn[].class);
+        result[1] = Mulib.rememberedFreeObject("id0", ArrayReturn[][].class);
+        result[2][3] = Mulib.rememberedFreeObject("id1", ArrayReturn[].class);
         result[4][5][6] = Mulib.freeObject(ArrayReturn.class);
-        result[7][8][9] = Mulib.namedFreeObject("id2", ArrayReturn.class);
+        result[7][8][9] = Mulib.rememberedFreeObject("id2", ArrayReturn.class);
         return result;
     }
 

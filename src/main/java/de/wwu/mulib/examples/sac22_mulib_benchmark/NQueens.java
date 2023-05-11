@@ -11,8 +11,8 @@ public class NQueens {
         Queen[] qs = new Queen[n];
         for (int i = 0; i < n; i++) {
             Queen q = new Queen();
-            q.x = Mulib.namedFreeInt("q.x" + i);
-            q.y = Mulib.namedFreeInt("q.y" + i);
+            q.x = Mulib.rememberedFreeInt("q.x" + i);
+            q.y = Mulib.rememberedFreeInt("q.y" + i);
             qs[i] = q;
         }
         for (int i = 0; i < n; i++) {

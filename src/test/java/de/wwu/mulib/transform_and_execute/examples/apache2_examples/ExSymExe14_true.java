@@ -36,7 +36,7 @@ public class ExSymExe14_true {
     static int field2;
 
     public static void exec() { // HW: Changed from main to exec
-        int arg = Mulib.namedFreeShort("arg");
+        int arg = Mulib.rememberedFreeShort("arg");
         if (arg < 0) return;
         int x = arg;
 

@@ -32,13 +32,13 @@ public class SpecialMulibSubstitutionMethods {
     }
 
     public int check1() {
-        int i = Mulib.namedFreeInt("i");
-        double d = Mulib.namedFreeDouble("d");
-        float f = Mulib.namedFreeFloat("f");
-        boolean b = Mulib.namedFreeBoolean("b");
-        short s = Mulib.namedFreeShort("s");
-        byte by = Mulib.namedFreeByte("by");
-        int j = Mulib.namedFreeInt("j");
+        int i = Mulib.rememberedFreeInt("i");
+        double d = Mulib.rememberedFreeDouble("d");
+        float f = Mulib.rememberedFreeFloat("f");
+        boolean b = Mulib.rememberedFreeBoolean("b");
+        short s = Mulib.rememberedFreeShort("s");
+        byte by = Mulib.rememberedFreeByte("by");
+        int j = Mulib.rememberedFreeInt("j");
 
         if (i + j < 100) {
             throw Mulib.fail();
@@ -47,17 +47,17 @@ public class SpecialMulibSubstitutionMethods {
             throw Mulib.fail();
         }
 
-        Mulib.namedFreeLong("null");
+        Mulib.rememberedFreeLong("null");
         if (d < f || i < d || f < i && b) {
             throw Mulib.fail();
         }
-        Mulib.namedFreeLong(null);
+        Mulib.rememberedFreeLong(null);
 
-        long l = Mulib.namedFreeLong("l");
+        long l = Mulib.rememberedFreeLong("l");
         if (l < d) {
             throw Mulib.fail();
         }
-        long l2 = Mulib.namedFreeLong("l");
+        long l2 = Mulib.rememberedFreeLong("l");
         return (int) (l + l2);
     }
 

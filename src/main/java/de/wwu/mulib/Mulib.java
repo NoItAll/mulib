@@ -2,9 +2,7 @@ package de.wwu.mulib;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.lang.reflect.InvocationTargetException;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
@@ -119,11 +117,36 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
+    public static boolean check(boolean b) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static boolean checkAssume(boolean b) {
+        throw _shouldHaveBeenReplaced();
+    }
+
     public static <T> T freeObject(Class<T> objClass) {
         throw _shouldHaveBeenReplaced();
     }
+
     @SafeVarargs
-    public static <T> T freeAliasingObjectOf(T... aliasingTargets) {
+    public static <T> T pickFrom(T... aliasingTargets) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static int pickFrom(int... aliasingTargets) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static long pickFrom(long... aliasingTargets) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double pickFrom(double... aliasingTargets) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float pickFrom(float... aliasingTargets) {
         throw _shouldHaveBeenReplaced();
     }
 
@@ -155,90 +178,91 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static int namedFreeInt(String identifier) {
+    public static void remember(int i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static long namedFreeLong(String identifier) {
+    public static void remember(long i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static double namedFreeDouble(String identifier) {
+    public static void remember(double i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static float namedFreeFloat(String identifier) {
+    public static void remember(float i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static short namedFreeShort(String identifier) {
+    public static void remember(Object i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static byte namedFreeByte(String identifier) {
+    public static int rememberedFreeInt(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static boolean namedFreeBoolean(String identifier) {
+    public static long rememberedFreeLong(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static char namedFreeChar(String identifier) {
+    public static double rememberedFreeDouble(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static <T> T namedFreeObject(String identifier, Class<T> objClass) {
+    public static float rememberedFreeFloat(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static int[] namedFreeIntArray(String identifier) {
+    public static short rememberedFreeShort(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static long[] namedFreeLongArray(String identifier) {
+    public static byte rememberedFreeByte(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static double[] namedFreeDoubleArray(String identifier) {
+    public static boolean rememberedFreeBoolean(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static float[] namedFreeFloatArray(String identifier) {
+    public static char rememberedFreeChar(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static short[] namedFreeShortArray(String identifier) {
+    public static <T> T rememberedFreeObject(String identifier, Class<T> objClass) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static byte[] namedFreeByteArray(String identifier) {
+    public static int[] rememberedFreeIntArray(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static boolean[] namedFreeBooleanArray(String identifier) {
+    public static long[] rememberedFreeLongArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double[] rememberedFreeDoubleArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float[] rememberedFreeFloatArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static short[] rememberedFreeShortArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static byte[] rememberedFreeByteArray(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static boolean[] rememberedFreeBooleanArray(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 
     private static MulibRuntimeException _shouldHaveBeenReplaced() {
         return new MulibRuntimeException("This method should always be replaced by a code transformation.");
-    }
-
-    public static Object transformToMulibPartnerClass(Object toTransform, MulibValueTransformer mulibValueTransformer) {
-        if (toTransform == null) {
-            return null;
-        } else if (mulibValueTransformer == null) {
-            throw new MulibRuntimeException("MulibValueTransformer must not be null.");
-        }
-
-        try {
-            Object result = toTransform
-                    .getClass()
-                    .getConstructor(toTransform.getClass(), mulibValueTransformer.getClass())
-                    .newInstance(toTransform, mulibValueTransformer);
-            return result;
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new MulibRuntimeException(e);
-        }
     }
 }

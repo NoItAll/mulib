@@ -24,7 +24,7 @@ public class Partition3Transf {
         int n = 9;
         mapping = new int[n];
         for(int i=0; i<n; i++) {
-            int triple = Mulib.namedFreeInt("triple" + i);
+            int triple = Mulib.rememberedFreeInt("triple" + i);
             if (triple <= 0 || triple > m)
                 throw Mulib.fail();
             else mapping[i] = triple;

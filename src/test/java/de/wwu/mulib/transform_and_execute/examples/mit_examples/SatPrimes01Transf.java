@@ -77,16 +77,16 @@ public class SatPrimes01Transf {
 
     // HW: Changed from main
     public static void exec0() {
-        int n = Mulib.namedFreeInt("n");
+        int n = Mulib.rememberedFreeInt("n");
         if (n < 1 || n > 3) { // HW: Reduced for test case
             return;
         }
         int result = is_prime(n);
-        int f1 = Mulib.namedFreeInt("f1");
+        int f1 = Mulib.rememberedFreeInt("f1");
         if (f1 < 1 || f1 > 3) { // HW: Reduced for test case
             return;
         }
-        int f2 = Mulib.namedFreeInt("f2");
+        int f2 = Mulib.rememberedFreeInt("f2");
         if (f1 < 1 || f1 > 3) { // HW: Reduced for test case
             return;
         }
@@ -101,16 +101,16 @@ public class SatPrimes01Transf {
     // HW: Added, fixed check of f2, reduced bound so that every solution is calculable,
     // for, e.g. multiple_of(3,2) an endless loop was found
     public static void exec1() {
-        int n = Mulib.namedFreeInt("n");
+        int n = Mulib.rememberedFreeInt("n");
         if (n < 1 || n > 2) {
             return;
         }
         int result = is_prime(n);
-        int f1 = Mulib.namedFreeInt("f1");
+        int f1 = Mulib.rememberedFreeInt("f1");
         if (f1 < 1 || f1 > 2) {
             return;
         }
-        int f2 = Mulib.namedFreeInt("f2");
+        int f2 = Mulib.rememberedFreeInt("f2");
         if (f2 < 1 || f2 > 2) {
             return;
         }

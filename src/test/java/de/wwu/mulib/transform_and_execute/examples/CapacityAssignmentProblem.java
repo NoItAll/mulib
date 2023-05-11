@@ -23,7 +23,7 @@ public class CapacityAssignmentProblem {
     public static int[] assign(int[] machineCapacities, int[] workloads) {
         int[] assignment = new int[workloads.length];
         for (int i = 0; i < workloads.length; i++) {
-            int assignedMachine = Mulib.namedFreeInt("workload_" + i);
+            int assignedMachine = Mulib.rememberedFreeInt("workload_" + i);
             if (machineCapacities[assignedMachine] < workloads[i]) {
                 throw Mulib.fail();
             }

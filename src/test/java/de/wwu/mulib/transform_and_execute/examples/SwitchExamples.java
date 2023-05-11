@@ -5,7 +5,7 @@ import de.wwu.mulib.Mulib;
 public class SwitchExamples {
 
     public static int intSwitch() {
-        int i = Mulib.namedFreeByte("i");
+        int i = Mulib.rememberedFreeByte("i");
 
         switch (i) {
             case 0:
@@ -72,7 +72,7 @@ public class SwitchExamples {
     }
 
     public static int intSwitch3() {
-        int i = Mulib.namedFreeInt("i");
+        int i = Mulib.rememberedFreeInt("i");
 
         switch (i) {
             case 0:

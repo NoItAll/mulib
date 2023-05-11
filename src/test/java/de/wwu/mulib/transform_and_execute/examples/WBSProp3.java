@@ -11,7 +11,7 @@ public class WBSProp3 {
         int PedalPos;
         boolean AutoBrake, Skid;
         for (int i = 0; i < 2; i++) {
-            PedalPos = Mulib.namedFreeInt("PedalPos");
+            PedalPos = Mulib.rememberedFreeInt("PedalPos");
             AutoBrake = Mulib.freeBoolean();
             Skid = Mulib.freeBoolean();
             wbs.update(PedalPos, AutoBrake, Skid);

@@ -239,15 +239,15 @@ public class WBS {
     }
 
     public static WBS launch() { // WBS as return value, named free variables as inputs
-        int pedal1 = Mulib.namedFreeInt("pedal1");
-        boolean auto1 = Mulib.namedFreeBoolean("auto1");
-        boolean skid1 = Mulib.namedFreeBoolean("skid1");
-        int pedal2 = Mulib.namedFreeInt("pedal2");
-        boolean auto2 = Mulib.namedFreeBoolean("auto2");
-        boolean skid2 = Mulib.namedFreeBoolean("skid2");
-        int pedal3 = Mulib.namedFreeInt("pedal3");
-        boolean auto3 = Mulib.namedFreeBoolean("auto3");
-        boolean skid3 = Mulib.namedFreeBoolean("skid3");
+        int pedal1 = Mulib.rememberedFreeInt("pedal1");
+        boolean auto1 = Mulib.rememberedFreeBoolean("auto1");
+        boolean skid1 = Mulib.rememberedFreeBoolean("skid1");
+        int pedal2 = Mulib.rememberedFreeInt("pedal2");
+        boolean auto2 = Mulib.rememberedFreeBoolean("auto2");
+        boolean skid2 = Mulib.rememberedFreeBoolean("skid2");
+        int pedal3 = Mulib.rememberedFreeInt("pedal3");
+        boolean auto3 = Mulib.rememberedFreeBoolean("auto3");
+        boolean skid3 = Mulib.rememberedFreeBoolean("skid3");
         WBS wbs = new WBS();
         wbs.update(pedal1, auto1, skid1);
         wbs.update(pedal2, auto2, skid2);

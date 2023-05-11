@@ -51,7 +51,7 @@ public class SatHanoi01Transf {
 
     // 2021-09-23 HW: Changed to parameterless function.
     public static int exec() {
-        int n = Mulib.namedFreeInt("n");
+        int n = Mulib.rememberedFreeInt("n");
         SatHanoi01Transf s = new SatHanoi01Transf();
 
         if (n < 1 || n > 10) {

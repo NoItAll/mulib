@@ -31,7 +31,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 public class ExSymExeLongBytecodes_true {
 
     public static int exec() {
-        long x = Mulib.namedFreeInt("x");
+        long x = Mulib.rememberedFreeInt("x");
         x = x > 0 ? -x : x;
         long y = 5;
         ExSymExeLongBytecodes_true inst = new ExSymExeLongBytecodes_true();

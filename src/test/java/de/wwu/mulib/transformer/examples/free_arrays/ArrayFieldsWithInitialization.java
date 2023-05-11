@@ -57,14 +57,14 @@ public class ArrayFieldsWithInitialization {
 
     public ArrayFieldsWithInitialization(boolean b0) {
         Class<short[][]> parameter = short[][].class;
-        intAr1 = Mulib.namedFreeIntArray("is1");
-        doubleAr1 = Mulib.namedFreeDoubleArray("ds1");
-        floatAr1 = Mulib.namedFreeFloatArray("fs1");
-        longAr1 = Mulib.namedFreeLongArray("ls1");
-        shortArs1 = Mulib.namedFreeObject("ss1", parameter);
-        byteArs1 = Mulib.namedFreeObject("bs1", byte[][].class);
-        booleanArs1 = Mulib.namedFreeObject("bools1", boolean[][][].class);
-        objectArray1 = Mulib.namedFreeObject("os1", ArrayFieldsWithInitialization[].class);
+        intAr1 = Mulib.rememberedFreeIntArray("is1");
+        doubleAr1 = Mulib.rememberedFreeDoubleArray("ds1");
+        floatAr1 = Mulib.rememberedFreeFloatArray("fs1");
+        longAr1 = Mulib.rememberedFreeLongArray("ls1");
+        shortArs1 = Mulib.rememberedFreeObject("ss1", parameter);
+        byteArs1 = Mulib.rememberedFreeObject("bs1", byte[][].class);
+        booleanArs1 = Mulib.rememberedFreeObject("bools1", boolean[][][].class);
+        objectArray1 = Mulib.rememberedFreeObject("os1", ArrayFieldsWithInitialization[].class);
     }
 
     public ArrayFieldsWithInitialization(boolean b0, boolean b1) {

@@ -33,7 +33,7 @@ import de.wwu.mulib.Mulib;
 public class ExSymExeLongBytecodes_false {
 
     public static void exec() { // HW: Changed from main to exec
-        long x = Mulib.namedFreeLong("x");
+        long x = Mulib.rememberedFreeLong("x");
         long y = 5;
         ExSymExeLongBytecodes_false inst = new ExSymExeLongBytecodes_false();
         inst.test(x, y);
