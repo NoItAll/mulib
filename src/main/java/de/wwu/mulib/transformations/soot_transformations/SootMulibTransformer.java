@@ -1417,34 +1417,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return setAsLazilyInitialized;
     }
 
-
-    private SootMethod _generateAndSetSimpleSetter(Type typeToSet, SootField setField, String name, SootClass result) {
-        SootMethod setter =
-                new SootMethod(
-                        _TRANSFORMATION_PREFIX + name,
-                        List.of(typeToSet),
-                        v.TYPE_VOID,
-                        Modifier.PUBLIC
-                );
-        JimpleBody jb = Jimple.v().newBody(setter);
-        setter.setActiveBody(jb);
-        UnitPatchingChain upc = jb.getUnits();
-        LocalSpawner localSpawner = new LocalSpawner(jb);
-        Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-        IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
-        upc.add(identityStmt);
-        Local toSetLocal = localSpawner.spawnNewLocal(typeToSet);
-        upc.add(Jimple.v().newIdentityStmt(toSetLocal, Jimple.v().newParameterRef(typeToSet, 0)));
-        upc.add(Jimple.v().newAssignStmt(
-                Jimple.v().newInstanceFieldRef(thisLocal, setField.makeRef()),
-                toSetLocal
-        ));
-        upc.add(Jimple.v().newReturnVoidStmt());
-        setter.setDeclaringClass(result);
-        result.addMethod(setter);
-        return setter;
-    }
-
     @Override
     protected void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(SootClass old, SootClass result) {
         if (shouldBeTransformed(old.getSuperclass().getName())) {
