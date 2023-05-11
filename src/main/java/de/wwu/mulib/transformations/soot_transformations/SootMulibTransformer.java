@@ -2476,6 +2476,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         args.addUnit(r);
     }
 
+    private static boolean methodNameImpliesRememberedInitialization(String name) {
+        return name.startsWith("remembered");
+    }
+
     private InvokeExpr getInvokeExprIfIndicatorMethodExprElseNull(Stmt containingStmt, InvokeExpr invokeExpr, TcArgs args) {
         String methodName = invokeExpr.getMethodRef().getName();
         InvokeExpr result = null;
@@ -2485,7 +2489,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Class constant of class to be initialized
             Value potentiallyUsedClassConstant;
             boolean named = false;
-            if (methodName.startsWith("named")) {
+            if (methodNameImpliesRememberedInitialization(methodName)) {
                 assert invokeExpr.getArgs().size() == 2;
                 named = true;
                 invokeArgs.add(invokeExpr.getArgs().get(0));
@@ -2554,7 +2558,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             SootMethod frameworkMethod = v.getTransformedMethodForIndicatorMethodName(methodName);
             if (v.SM_SE_PRIMITIVE_SARRAY_INITS.contains(frameworkMethod)) {
                 List<Value> invokeArgs = new ArrayList<>();
-                if (methodName.startsWith("named")) {
+                if (methodNameImpliesRememberedInitialization(methodName)) {
                     assert invokeExpr.getArgs().size() == 1;
                     invokeArgs.addAll(invokeExpr.getArgs());
                 } else {
@@ -2570,7 +2574,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeArgs);
             } else {
                 // Primitive
-                if (methodName.startsWith("named")) {
+                if (methodNameImpliesRememberedInitialization(methodName)) {
                     assert invokeExpr.getArgs().size() == 1;
                     result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeExpr.getArgs());
                 } else {

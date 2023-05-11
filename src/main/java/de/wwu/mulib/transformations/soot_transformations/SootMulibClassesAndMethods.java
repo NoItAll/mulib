@@ -163,7 +163,19 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_NAMED_FREE_BOOL;
     public final SootMethod SM_MULIB_NAMED_FREE_OBJECT;
     public final SootMethod SM_MULIB_FREE_ALIASING_OBJECT_OF;
-
+    public final SootMethod SM_MULIB_ASSUME;
+    public final SootMethod SM_MULIB_CHECK;
+    public final SootMethod SM_MULIB_CHECK_ASSUME;
+    public final SootMethod SM_MULIB_PICK_FROM_OBJS;
+    public final SootMethod SM_MULIB_PICK_FROM_INTS;
+    public final SootMethod SM_MULIB_PICK_FROM_DOUBLES;
+    public final SootMethod SM_MULIB_PICK_FROM_LONGS;
+    public final SootMethod SM_MULIB_PICK_FROM_FLOATS;
+    public final SootMethod SM_MULIB_NAME_LONG;
+    public final SootMethod SM_MULIB_NAME_INT;
+    public final SootMethod SM_MULIB_NAME_DOUBLE;
+    public final SootMethod SM_MULIB_NAME_FLOAT;
+    public final SootMethod SM_MULIB_NAME_OBJECT;
     // Framework methods
     public final SootMethod SM_SE_FREE_SINT;
     public final SootMethod SM_SE_FREE_SLONG;
@@ -541,15 +553,28 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_FREE_BYTE          = SC_MULIB.getMethod("freeByte",        Collections.emptyList(), TYPE_BYTE);
         SM_MULIB_FREE_BOOL          = SC_MULIB.getMethod("freeBoolean",     Collections.emptyList(), TYPE_BOOL);
         SM_MULIB_FREE_OBJECT        = SC_MULIB.getMethod("freeObject",      List.of(TYPE_CLASS),                TYPE_OBJECT);
-        SM_MULIB_NAMED_FREE_INT     = SC_MULIB.getMethod("namedFreeInt",    List.of(TYPE_STRING),               TYPE_INT);
-        SM_MULIB_NAMED_FREE_LONG    = SC_MULIB.getMethod("namedFreeLong",   List.of(TYPE_STRING),               TYPE_LONG);
-        SM_MULIB_NAMED_FREE_DOUBLE  = SC_MULIB.getMethod("namedFreeDouble", List.of(TYPE_STRING),               TYPE_DOUBLE);
-        SM_MULIB_NAMED_FREE_FLOAT   = SC_MULIB.getMethod("namedFreeFloat",  List.of(TYPE_STRING),               TYPE_FLOAT);
-        SM_MULIB_NAMED_FREE_SHORT   = SC_MULIB.getMethod("namedFreeShort",  List.of(TYPE_STRING),               TYPE_SHORT);
-        SM_MULIB_NAMED_FREE_BYTE    = SC_MULIB.getMethod("namedFreeByte",   List.of(TYPE_STRING),               TYPE_BYTE);
-        SM_MULIB_NAMED_FREE_BOOL    = SC_MULIB.getMethod("namedFreeBoolean",List.of(TYPE_STRING),               TYPE_BOOL);
-        SM_MULIB_NAMED_FREE_OBJECT  = SC_MULIB.getMethod("namedFreeObject", List.of(TYPE_STRING, TYPE_CLASS),   TYPE_OBJECT);
-        SM_MULIB_FREE_ALIASING_OBJECT_OF = SC_MULIB.getMethod("freeAliasingObjectOf", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
+        SM_MULIB_NAMED_FREE_INT     = SC_MULIB.getMethod("rememberedFreeInt",    List.of(TYPE_STRING),               TYPE_INT);
+        SM_MULIB_NAMED_FREE_LONG    = SC_MULIB.getMethod("rememberedFreeLong",   List.of(TYPE_STRING),               TYPE_LONG);
+        SM_MULIB_NAMED_FREE_DOUBLE  = SC_MULIB.getMethod("rememberedFreeDouble", List.of(TYPE_STRING),               TYPE_DOUBLE);
+        SM_MULIB_NAMED_FREE_FLOAT   = SC_MULIB.getMethod("rememberedFreeFloat",  List.of(TYPE_STRING),               TYPE_FLOAT);
+        SM_MULIB_NAMED_FREE_SHORT   = SC_MULIB.getMethod("rememberedFreeShort",  List.of(TYPE_STRING),               TYPE_SHORT);
+        SM_MULIB_NAMED_FREE_BYTE    = SC_MULIB.getMethod("rememberedFreeByte",   List.of(TYPE_STRING),               TYPE_BYTE);
+        SM_MULIB_NAMED_FREE_BOOL    = SC_MULIB.getMethod("rememberedFreeBoolean",List.of(TYPE_STRING),               TYPE_BOOL);
+        SM_MULIB_NAMED_FREE_OBJECT  = SC_MULIB.getMethod("rememberedFreeObject", List.of(TYPE_STRING, TYPE_CLASS),   TYPE_OBJECT);
+        SM_MULIB_FREE_ALIASING_OBJECT_OF = SC_MULIB.getMethod("pickFrom", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
+        SM_MULIB_ASSUME             = SC_MULIB.getMethod("assume", List.of(TYPE_BOOL), TYPE_VOID);
+        SM_MULIB_CHECK              = SC_MULIB.getMethod("check", List.of(TYPE_BOOL), TYPE_BOOL);
+        SM_MULIB_CHECK_ASSUME       = SC_MULIB.getMethod("checkAssume", List.of(TYPE_BOOL), TYPE_BOOL);
+        SM_MULIB_PICK_FROM_OBJS     = SC_MULIB.getMethod("pickFrom", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
+        SM_MULIB_PICK_FROM_INTS     = SC_MULIB.getMethod("pickFrom", List.of(TYPE_INT.getArrayType()), TYPE_INT);
+        SM_MULIB_PICK_FROM_DOUBLES  = SC_MULIB.getMethod("pickFrom", List.of(TYPE_DOUBLE.getArrayType()), TYPE_DOUBLE);
+        SM_MULIB_PICK_FROM_LONGS    = SC_MULIB.getMethod("pickFrom", List.of(TYPE_LONG.getArrayType()), TYPE_LONG);
+        SM_MULIB_PICK_FROM_FLOATS   = SC_MULIB.getMethod("pickFrom", List.of(TYPE_FLOAT.getArrayType()), TYPE_FLOAT);
+        SM_MULIB_NAME_LONG          = SC_MULIB.getMethod("remember", List.of(TYPE_LONG, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_INT           = SC_MULIB.getMethod("remember", List.of(TYPE_INT, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_DOUBLE        = SC_MULIB.getMethod("remember", List.of(TYPE_DOUBLE, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_FLOAT         = SC_MULIB.getMethod("remember", List.of(TYPE_FLOAT, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_OBJECT        = SC_MULIB.getMethod("remember", List.of(TYPE_OBJECT, TYPE_STRING), TYPE_VOID);
 
         SM_SE_FREE_SINT             = SC_SE.getMethod("symSint",            Collections.emptyList(), TYPE_SINT);
         SM_SE_FREE_SLONG            = SC_SE.getMethod("symSlong",           Collections.emptyList(), TYPE_SLONG);
@@ -824,13 +849,13 @@ public class SootMulibClassesAndMethods {
             case "freeShort":
             case "freeByte":
             case "freeBoolean":
-            case "namedFreeInt":
-            case "namedFreeLong":
-            case "namedFreeDouble":
-            case "namedFreeFloat":
-            case "namedFreeShort":
-            case "namedFreeByte":
-            case "namedFreeBoolean":
+            case "rememberedFreeInt":
+            case "rememberedFreeLong":
+            case "rememberedFreeDouble":
+            case "rememberedFreeFloat":
+            case "rememberedFreeShort":
+            case "rememberedFreeByte":
+            case "rememberedFreeBoolean":
             case "freeIntArray":
             case "freeLongArray":
             case "freeDoubleArray":
@@ -838,16 +863,16 @@ public class SootMulibClassesAndMethods {
             case "freeShortArray":
             case "freeByteArray":
             case "freeBooleanArray":
-            case "namedFreeIntArray":
-            case "namedFreeLongArray":
-            case "namedFreeDoubleArray":
-            case "namedFreeFloatArray":
-            case "namedFreeShortArray":
-            case "namedFreeByteArray":
-            case "namedFreeBooleanArray":
+            case "rememberedFreeIntArray":
+            case "rememberedFreeLongArray":
+            case "rememberedFreeDoubleArray":
+            case "rememberedFreeFloatArray":
+            case "rememberedFreeShortArray":
+            case "rememberedFreeByteArray":
+            case "rememberedFreeBooleanArray":
             case "freeObject":
-            case "freeAliasingObjectOf":
-            case "namedFreeObject":
+            case "pickFrom":
+            case "rememberedFreeObject":
                 return true;
             default:
                 return false;
@@ -870,19 +895,19 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_FREE_SBYTE;
             case "freeBoolean":
                 return SM_SE_FREE_SBOOL;
-            case "namedFreeInt":
+            case "rememberedFreeInt":
                 return SM_SE_NAMED_FREE_SINT;
-            case "namedFreeLong":
+            case "rememberedFreeLong":
                 return SM_SE_NAMED_FREE_SLONG;
-            case "namedFreeDouble":
+            case "rememberedFreeDouble":
                 return SM_SE_NAMED_FREE_SDOUBLE;
-            case "namedFreeFloat":
+            case "rememberedFreeFloat":
                 return SM_SE_NAMED_FREE_SFLOAT;
-            case "namedFreeShort":
+            case "rememberedFreeShort":
                 return SM_SE_NAMED_FREE_SSHORT;
-            case "namedFreeByte":
+            case "rememberedFreeByte":
                 return SM_SE_NAMED_FREE_SBYTE;
-            case "namedFreeBoolean":
+            case "rememberedFreeBoolean":
                 return SM_SE_NAMED_FREE_SBOOL;
             case "freeIntArray":
                 return SM_SE_SINTSARRAY;
@@ -898,25 +923,25 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_SBYTESARRAY;
             case "freeBooleanArray":
                 return SM_SE_SBOOLSARRAY;
-            case "namedFreeIntArray":
+            case "rememberedFreeIntArray":
                 return SM_SE_NAMED_SINTSARRAY;
-            case "namedFreeLongArray":
+            case "rememberedFreeLongArray":
                 return SM_SE_NAMED_SLONGSARRAY;
-            case "namedFreeDoubleArray":
+            case "rememberedFreeDoubleArray":
                 return SM_SE_NAMED_SDOUBLESARRAY;
-            case "namedFreeFloatArray":
+            case "rememberedFreeFloatArray":
                 return SM_SE_NAMED_SFLOATSARRAY;
-            case "namedFreeShortArray":
+            case "rememberedFreeShortArray":
                 return SM_SE_NAMED_SSHORTSARRAY;
-            case "namedFreeByteArray":
+            case "rememberedFreeByteArray":
                 return SM_SE_NAMED_SBYTESARRAY;
-            case "namedFreeBooleanArray":
+            case "rememberedFreeBooleanArray":
                 return SM_SE_NAMED_SBOOLSARRAY;
             case "freeObject":
                 return SM_SE_SYM_OBJECT;
-            case "namedFreeObject":
+            case "rememberedFreeObject":
                 return SM_SE_NAMED_SYM_OBJECT;
-            case "freeAliasingObjectOf":
+            case "pickFrom":
                 return SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
             default:
                 throw new NotYetImplementedException(indicatorMethodName);
