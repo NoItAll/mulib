@@ -2,12 +2,13 @@ package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.transformations.MulibClassFileWriter;
+import org.apache.commons.io.FileUtils;
 import soot.Body;
 import soot.SootClass;
 import soot.SootMethod;
 import soot.validation.ValidationException;
 
-import java.io.FileOutputStream;
+import java.io.File;
 import java.io.OutputStream;
 
 public final class SootClassFileWriter implements MulibClassFileWriter<SootClass> {
@@ -48,7 +49,8 @@ public final class SootClassFileWriter implements MulibClassFileWriter<SootClass
         }
         MulibBafASMBackend backend = new MulibBafASMBackend(classNode);
         try {
-            OutputStream os = new FileOutputStream(String.format(generatedClassesPathPattern, className.replace(".", "/")));
+            File f = new File(String.format(generatedClassesPathPattern, className.replace(".", "/")));
+            OutputStream os = FileUtils.openOutputStream(f);
             backend.generateClassFile(os);
         } catch (Exception e) {
             e.printStackTrace();
