@@ -44,6 +44,12 @@ public class IncrementalSolverState<AR, PR> {
         }
     }
 
+    public void clear() {
+        this.arrayConstraints.clear();
+        this.constraints.clear();
+        this.partnerClassObjectConstraints.clear();
+    }
+
     @SuppressWarnings("unchecked")
     public SymbolicPartnerClassObjectStates<AR> getSymbolicArrayStates() {
         return symbolicPartnerClassObjectStates;

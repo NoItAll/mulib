@@ -95,7 +95,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public final void terminate() {
-        this.terminated = true;
+        terminated = true;
+        solverManager.shutdown();
     }
 
     @Override

@@ -55,4 +55,6 @@ public interface SolverManager {
     PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
 
     ArrayInformation getAvailableInformationOnArray(Sint id);
+
+    void shutdown();
 }

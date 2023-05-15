@@ -85,7 +85,7 @@ public abstract class MulibExecutorManager {
 
     private Optional<PathSolution> _getPathSolution() {
         int currentNumberPathSolutions = observedTree.getPathSolutionsList().size();
-        while (!checkForShutdown()) {
+        while (!checkForShutdownAndShutdown()) {
             Optional<PathSolution> possiblePathSolution = mainExecutor.getPathSolution();
             checkForFailure();
             if (possiblePathSolution.isPresent()) {
@@ -104,7 +104,7 @@ public abstract class MulibExecutorManager {
     public synchronized List<PathSolution> getAllPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         // We constantly poll with the mainExecutor.
-        while (!checkForShutdown()) {
+        while (!checkForShutdownAndShutdown()) {
             checkForFailure();
             Optional<PathSolution> ps = mainExecutor.getPathSolution();
             if ((config.LOG_TIME_FOR_EACH_PATH_SOLUTION || (config.LOG_TIME_FOR_FIRST_PATH_SOLUTION && !seenFirstPathSolution))
@@ -124,7 +124,7 @@ public abstract class MulibExecutorManager {
         }
         numberRequestedSolutions = new AtomicInteger(N);
         int currentNumberSolutions = solutions.size();
-        while (!checkForShutdown()) {
+        while (!checkForShutdownAndShutdown()) {
             _getPathSolution();
         }
         printStatistics();
@@ -197,9 +197,20 @@ public abstract class MulibExecutorManager {
         return globalBudgetExceeded() || observedTree.getChoiceOptionDeque().isEmpty();
     }
 
+    /**
+     * Checks whether the MulibExecutorManager and connected MulibExecutors should be terminated.
+     * @return true, if this MulibExecutorManager terminates, else false.
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
-    protected boolean checkForShutdown() {
-        return checkForPause();
+    protected boolean checkForShutdownAndShutdown() {
+        if (checkForPause()) {
+            for (MulibExecutor me : mulibExecutors) {
+                me.terminate();
+            }
+            observedTree.getChoiceOptionDeque().setEmpty();
+            return true;
+        }
+        return false;
     }
 
     // Returns false if numberRequestedSolutions == null, which is true if we did not ask for

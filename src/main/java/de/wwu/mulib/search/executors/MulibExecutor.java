@@ -36,6 +36,9 @@ public interface MulibExecutor {
 
     Object concretize(Object substitutedVar);
 
+    /**
+     * Closes any resources used. The MulibExecutor is not sensibly callable anymore thereafter.
+     */
     void terminate();
 
     boolean checkWithNewConstraint(Constraint c);

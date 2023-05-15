@@ -438,6 +438,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
+    public final void shutdown() {
+        _searchSpaceRepresentationToLabelObject.clear();
+        incrementalSolverState.clear();
+        solverSpecificShutdown();
+    }
+
+    @Override
     public Object getLabel(Object var) {
         if (!isSatisfiable()) {
             throw new LabelingNotPossibleException("Must be satisfiable.");
@@ -910,4 +917,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     protected abstract B newArraySelectConstraint(AR arrayRepresentation, Sint indexInArray, SubstitutedVar arrayValue);
 
     protected abstract B transformConstraint(Constraint c);
+
+    protected abstract void solverSpecificShutdown();
+
+
 }

@@ -570,4 +570,11 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
     }
+
+    @Override
+    protected void solverSpecificShutdown() {
+        adapter.booleanFormulaStore.clear();
+        adapter.numericExpressionStore.clear();
+        solver.close();
+    }
 }

@@ -125,7 +125,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     @Override
-    protected boolean checkForShutdown() {
+    protected boolean checkForShutdownAndShutdown() {
         checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
             executorService.shutdown();

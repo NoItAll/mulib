@@ -479,4 +479,13 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return ctx.mkEq(selectExpr, transformSubstitutedVar(value));
         }
     }
+
+    @Override
+    protected void solverSpecificShutdown() {
+        adapter.boolExprStore.clear();
+        adapter.numericExpressionsStore.clear();
+        try {
+            adapter.ctx.close();
+        } catch (Z3Exception e) {}
+    }
 }
