@@ -170,6 +170,11 @@ public abstract class Sdouble extends Sfpnumber {
         }
 
         @Override
+        public char charVal() {
+            return (char) value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSdouble{value=" + value + "}";
         }

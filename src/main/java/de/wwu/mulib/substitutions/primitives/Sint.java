@@ -144,6 +144,10 @@ public abstract class Sint extends AbstractSnumber {
         return se.i2s(this);
     }
 
+    public final Schar i2c(SymbolicExecution se) {
+        return se.i2c(this);
+    }
+
     @Override
     public final boolean isFp() {
         return false;
@@ -202,6 +206,11 @@ public abstract class Sint extends AbstractSnumber {
         @Override
         public byte byteVal() {
             return (byte) value;
+        }
+
+        @Override
+        public char charVal() {
+            return (char) value;
         }
 
         @Override

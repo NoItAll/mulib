@@ -1964,6 +1964,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     staticNeutralElementField = v.SF_SBYTE_NEUTRAL.makeRef();
                 } else if (isBoolOrSbool(t)) {
                     staticNeutralElementField = v.SF_SBOOL_NEUTRAL.makeRef();
+                } else if (isCharOrSchar(t)) {
+                    staticNeutralElementField = v.SF_SCHAR_NEUTRAL.makeRef();
                 } else {
                     throw new NotYetImplementedException();
                 }
@@ -2327,7 +2329,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private static boolean isIntOrSintSubtype(Type t) {
-        return isIntOrSint(t) || isShortOrSshort(t) || isByteOrSbyte(t);
+        return isIntOrSint(t) || isShortOrSshort(t) || isByteOrSbyte(t) || isCharOrSchar(t);
     }
     private static boolean isIntOrSint(Type t) {
         return t instanceof IntType
@@ -3198,7 +3200,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     Type typeToCast = ((CastExpr) value).getOp().getType();
                     Type castTo = ((CastExpr) value).getCastType();
                     SootMethodRef used;
-                    if (!isIntOrSint(castTo) && (isIntOrSint(typeToCast) || isByteOrSbyte(typeToCast) || isShortOrSshort(typeToCast))) {
+                    if (!isIntOrSint(castTo) && (isIntOrSint(typeToCast) || isByteOrSbyte(typeToCast) || isShortOrSshort(typeToCast) || isCharOrSchar(typeToCast))) {
                         if (isDoubleOrSdouble(castTo)) {
                             used = v.SM_SINT_I2D.makeRef();
                         } else if (isFloatOrSfloat(castTo)) {
@@ -3209,6 +3211,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             used = v.SM_SINT_I2B.makeRef();
                         } else if (isShortOrSshort(castTo)) {
                             used = v.SM_SINT_I2S.makeRef();
+                        } else if (isCharOrSchar(castTo)) {
+                            used = v.SM_SINT_I2C.makeRef();
                         } else if (isIntOrSint(castTo)) {
                             // To preserve other units using var, we simply assign it
                             AssignStmt newAssignStmt = Jimple.v().newAssignStmt(var, ((CastExpr) value).getOp());
@@ -3930,6 +3934,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             used = v.SM_SE_CONCSBYTE.makeRef();
         } else if (isBoolOrSbool(t)) {
             used = v.SM_SE_CONCSBOOL.makeRef();
+        } else if (isCharOrSchar(t)) {
+            used = v.SM_SE_CONCSCHAR.makeRef();
         } else {
             throw new NotYetImplementedException(t.toString());
         }

@@ -978,6 +978,10 @@ public final class SymbolicExecution {
         return calculationFactory.i2d(this, i);
     }
 
+    public Schar i2c(Sint i) {
+        return calculationFactory.i2c(this, i);
+    }
+
     public Sint l2i(Slong l) {
         return calculationFactory.l2i(this, l);
     }

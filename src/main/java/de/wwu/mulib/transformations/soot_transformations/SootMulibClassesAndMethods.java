@@ -54,6 +54,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSSHORT;
     public final SootClass SC_CONCSBYTE;
     public final SootClass SC_CONCSBOOL;
+    public final SootClass SC_CONCSCHAR;
     public final SootClass SC_PARTNER_CLASS;
     public final SootClass SC_ABSTRACT_PARTNER_CLASS;
     public final SootClass SC_SINTSARRAY;
@@ -92,6 +93,7 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_CONCSSHORT;
     public final RefType TYPE_CONCSBYTE;
     public final RefType TYPE_CONCSBOOL;
+    public final RefType TYPE_CONCSCHAR;
     public final RefType TYPE_PARTNER_CLASS;
     public final RefType TYPE_SARRAY;
     public final RefType TYPE_SARRAYSARRAY;
@@ -135,6 +137,7 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_SSHORT_NEUTRAL;
     public final SootField SF_SBYTE_NEUTRAL;
     public final SootField SF_SBOOL_NEUTRAL;
+    public final SootField SF_SCHAR_NEUTRAL;
     public final SootField SF_SBOOL_TRUE;
     public final SootField SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER;
     public final SootField SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER;
@@ -279,6 +282,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_CONCSSHORT;
     public final SootMethod SM_SE_CONCSBYTE;
     public final SootMethod SM_SE_CONCSBOOL;
+    public final SootMethod SM_SE_CONCSCHAR;
     public final SootMethod SM_SE_GET;
     public final SootMethod SM_SE_INSTANCEOF;
     public final SootMethod SM_SE_REFERENCES_EQ;
@@ -333,6 +337,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SINT_I2L;
     public final SootMethod SM_SINT_I2B;
     public final SootMethod SM_SINT_I2S;
+    public final SootMethod SM_SINT_I2C;
     public final SootMethod SM_SLONG_ADD;
     public final SootMethod SM_SLONG_SUB;
     public final SootMethod SM_SLONG_DIV;
@@ -495,6 +500,7 @@ public class SootMulibClassesAndMethods {
         SC_CONCSSHORT   = Scene.v().forceResolve(Sshort.ConcSshort.class.getName(), SootClass.SIGNATURES);
         SC_CONCSBYTE    = Scene.v().forceResolve(Sbyte.ConcSbyte.class.getName(), SootClass.SIGNATURES);
         SC_CONCSBOOL    = Scene.v().forceResolve(Sbool.ConcSbool.class.getName(), SootClass.SIGNATURES);
+        SC_CONCSCHAR    = Scene.v().forceResolve(Schar.ConcSchar.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
         SC_ABSTRACT_PARTNER_CLASS = Scene.v().forceResolve(AbstractPartnerClass.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
@@ -567,6 +573,7 @@ public class SootMulibClassesAndMethods {
         TYPE_CONCSSHORT     = SC_CONCSSHORT.getType();
         TYPE_CONCSBYTE      = SC_CONCSBYTE.getType();
         TYPE_CONCSBOOL      = SC_CONCSBOOL.getType();
+        TYPE_CONCSCHAR      = SC_CONCSCHAR.getType();
         TYPE_SUBSTITUTED_VAR = SC_SUBSTITUTED_VAR.getType();
 
         SF_SINT_NEUTRAL     = SC_CONCSINT.getField("ZERO",      TYPE_CONCSINT);
@@ -576,6 +583,7 @@ public class SootMulibClassesAndMethods {
         SF_SSHORT_NEUTRAL   = SC_CONCSSHORT.getField("ZERO",    TYPE_CONCSSHORT);
         SF_SBYTE_NEUTRAL    = SC_CONCSBYTE.getField("ZERO",     TYPE_CONCSBYTE);
         SF_SBOOL_NEUTRAL    = SC_CONCSBOOL.getField("FALSE",    TYPE_CONCSBOOL);
+        SF_SCHAR_NEUTRAL    = SC_CONCSCHAR.getField("ZERO",     TYPE_CONCSCHAR);
         SF_SBOOL_TRUE       = SC_CONCSBOOL.getField("TRUE",     TYPE_CONCSBOOL);
         SF_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER  = SC_PARTNER_CLASS.getField("SHOULD_BE_REPRESENTED_IN_SOLVER", TYPE_BYTE);
         SF_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getField("IS_REPRESENTED_IN_SOLVER", TYPE_BYTE);
@@ -707,6 +715,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_CONCSSHORT = SC_SE.getMethod("concSshort", List.of(TYPE_SHORT), TYPE_SSHORT);
         SM_SE_CONCSBYTE = SC_SE.getMethod("concSbyte", List.of(TYPE_BYTE), TYPE_SBYTE);
         SM_SE_CONCSBOOL = SC_SE.getMethod("concSbool", List.of(TYPE_BOOL), TYPE_SBOOL);
+        SM_SE_CONCSCHAR = SC_SE.getMethod("concSchar", List.of(TYPE_CHAR), TYPE_SCHAR);
         SM_SE_GET = SC_SE.getMethod("get", Collections.emptyList(), TYPE_SE);
         SM_SE_INSTANCEOF = SC_SE.getMethod("evalInstanceof", List.of(TYPE_OBJECT, TYPE_CLASS), TYPE_SBOOL);
         SM_SE_REFERENCES_EQ = SC_SE.getMethod("evalReferencesEq", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_SBOOL);
@@ -756,6 +765,7 @@ public class SootMulibClassesAndMethods {
         SM_SINT_I2L                 = SC_SINT.getMethod("i2l",          List.of(TYPE_SE),               TYPE_SLONG);
         SM_SINT_I2B                 = SC_SINT.getMethod("i2b",          List.of(TYPE_SE),               TYPE_SBYTE);
         SM_SINT_I2S                 = SC_SINT.getMethod("i2s",          List.of(TYPE_SE),               TYPE_SSHORT);
+        SM_SINT_I2C                 = SC_SINT.getMethod("i2c",          List.of(TYPE_SE),               TYPE_SCHAR);
 
         SM_SLONG_ADD                = SC_SLONG.getMethod("add",          List.of(TYPE_SLONG, TYPE_SE),  TYPE_SLONG);
         SM_SLONG_SUB                = SC_SLONG.getMethod("sub",          List.of(TYPE_SLONG, TYPE_SE),  TYPE_SLONG);

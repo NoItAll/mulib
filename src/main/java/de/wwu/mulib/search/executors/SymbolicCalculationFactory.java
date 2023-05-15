@@ -416,6 +416,14 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
+    public Schar i2c(SymbolicExecution se, Sint i) {
+        if (i instanceof ConcSnumber) {
+            return valueFactory.concSchar(((ConcSnumber) i).charVal());
+        }
+        return valueFactory.wrappingSymSchar(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+    }
+
+    @Override
     public Sint l2i(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
             return valueFactory.concSint(((ConcSnumber) l).intVal());

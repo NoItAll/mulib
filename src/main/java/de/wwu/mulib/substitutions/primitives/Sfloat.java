@@ -170,6 +170,11 @@ public abstract class Sfloat extends Sfpnumber {
         }
 
         @Override
+        public char charVal() {
+            return (char) value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSfloat{value=" + value + "}";
         }

@@ -59,6 +59,11 @@ public abstract class Schar extends Sint {
         }
 
         @Override
+        public char charVal() {
+            return value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSchar{value=" + value + "}";
         }

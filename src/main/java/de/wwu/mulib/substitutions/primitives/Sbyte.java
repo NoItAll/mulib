@@ -59,6 +59,11 @@ public abstract class Sbyte extends Sint {
         }
 
         @Override
+        public char charVal() {
+            return (char) value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSbyte{value=" + value + "}";
         }

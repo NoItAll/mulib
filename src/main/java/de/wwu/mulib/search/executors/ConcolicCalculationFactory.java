@@ -15,7 +15,6 @@ import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.stream.StreamSupport;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.tryGetSymFromConcolic;
@@ -731,6 +730,19 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         return Sshort.newExpressionSymbolicSshort(container);
     }
 
+    @Override
+    public Schar i2c(SymbolicExecution se, Sint i) {
+        Schar sym = scf.i2c(se, (Sint) tryGetSymFromConcolic(i));
+        if (sym instanceof Schar.ConcSchar) {
+            return sym;
+        }
+        ConcSnumber iconc = getConcNumericFromConcolic(i);
+        Schar.ConcSchar conc = valueFactory.concSchar(iconc.charVal());
+        ConcolicNumericContainer container =
+                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+        return Schar.newExpressionSymbolicSchar(container);
+    }
+
     private static Constraint getEqOfConcolic(SubstitutedVar e, SymbolicExecution se) {
         Sbool eq;
         if (e instanceof PartnerClass) {
@@ -768,7 +780,9 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         if (se.nextIsOnKnownPath() || !s.__mulib__shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
             return;
         }
-        assert StreamSupport.stream(s.getCachedElements().spliterator(), false).allMatch(e -> e instanceof Snumber || e instanceof PartnerClass || e == null) : "Failed with: " + s.getCachedElements(); // Also holds for Sbool
+        assert s.getCachedElements().stream().allMatch(
+                e -> e instanceof Snumber /* Also holds for Sbool */ || e instanceof PartnerClass || e == null)
+                : "Failed with: " + s.getCachedElements();
         Iterable<SubstitutedVar> symbolicValues = (Iterable<SubstitutedVar>) s.getCachedElements();
         List<Constraint> currentConcolicMapping = new ArrayList<>();
         for (SubstitutedVar e : symbolicValues) {

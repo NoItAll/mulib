@@ -14,4 +14,6 @@ public interface ConcSnumber extends Snumber, ConcSprimitive {
 
     byte byteVal();
 
+    char charVal();
+
 }

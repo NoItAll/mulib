@@ -174,6 +174,11 @@ public abstract class Slong extends AbstractSnumber {
         }
 
         @Override
+        public char charVal() {
+            return (char) value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSlong{value=" + value + "}";
         }

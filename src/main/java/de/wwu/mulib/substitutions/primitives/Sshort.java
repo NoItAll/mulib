@@ -60,6 +60,11 @@ public abstract class Sshort extends Sint {
         }
 
         @Override
+        public char charVal() {
+            return (char) value;
+        }
+
+        @Override
         public String toString() {
             return "ConcSshort{value=" + value + "}";
         }

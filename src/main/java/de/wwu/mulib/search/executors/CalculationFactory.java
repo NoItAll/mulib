@@ -108,6 +108,8 @@ public interface CalculationFactory {
 
     Sdouble i2d(SymbolicExecution se, Sint i);
 
+    Schar i2c(SymbolicExecution se, Sint i);
+
     Sint l2i(SymbolicExecution se, Slong l);
 
     Sfloat l2f(SymbolicExecution se, Slong l);
