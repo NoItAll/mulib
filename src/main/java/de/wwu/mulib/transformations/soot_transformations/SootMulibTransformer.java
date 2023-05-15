@@ -238,6 +238,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         private int nByteLocals;
         private int nBoolLocals;
         private int nRefLocals;
+        private int nCharLocals;
 
         private static boolean startsWithOneOf(String toCheck, String firstOption, String secondOption) {
             return toCheck.startsWith(firstOption) || toCheck.startsWith(secondOption);
@@ -264,10 +265,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     nByteLocals++;
                 } else if (startsWithOneOf(localName, "$z", "z")) {
                     nBoolLocals++;
+                } else if (startsWithOneOf(localName, "$c", "c")) {
+                    nCharLocals++;
                 } else if (l.getType() instanceof VoidType) {
                     throw new MulibRuntimeException("Void type as local variable");
-                } else if (startsWithOneOf(localName, "$c", "$c")) {
-                    throw new NotYetImplementedException();
                 }
             }
         }
@@ -302,6 +303,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else if (t instanceof BooleanType) {
                 result = Jimple.v().newLocal(prefix + "z" + nBoolLocals, t);
                 nBoolLocals++;
+            } else if (t instanceof CharType) {
+                result = Jimple.v().newLocal(prefix + "c" + nCharLocals, t);
+                nCharLocals++;
             } else if (t instanceof VoidType) {
                 throw new MulibRuntimeException("Void type as local variable");
             } else {

@@ -30,7 +30,6 @@ public class ArrayReturn {
     public static boolean[] arReturn6() {
         return Mulib.freeObject(boolean[].class);
     }
-
     public static ArrayReturn[][] arReturn7() {
         return Mulib.freeObject(ArrayReturn[][].class);
     }
@@ -201,5 +200,48 @@ public class ArrayReturn {
     public static int arReturn42() {
         int[] result = new int[0];
         return result.length;
+    }
+
+    public static char[] arReturn43() {
+        return Mulib.freeObject(char[].class);
+    }
+
+    public static char[][] arReturn44() {
+        return Mulib.freeObject(char[][].class);
+    }
+
+    public static char[] arReturn45() {
+        return Mulib.rememberedFreeObject("t", char[].class);
+    }
+
+    public static char[][] arReturn46() {
+        return Mulib.rememberedFreeObject("t", char[][].class);
+    }
+
+    public static char[][][] arReturn47() {
+        return Mulib.rememberedFreeObject("t", char[][][].class);
+    }
+
+    public static char[][] arReturn48() {
+        char[][] b = new char[12][12];
+        b[4][3] = 1;
+        b[1][2] = b[3][4];
+        b[2] = b[5];
+        return b;
+    }
+
+    public static char[][] arReturn49() {
+        char[][] i = new char[5][12];
+        i[2] = new char[] {1, 2, 3};
+        return i;
+    }
+
+    public static char[][][] arReturn50() {
+        char[][][] i = new char[15][16][];
+        i[2][3][4] = 2;
+        i[5][6] = new char[] {7, 8, 9};
+        i[10] = new char[][] {{11, 12}, {13, 14}, {}, null};
+        i[11] = new char[][] {{}};
+        return i;
     }
 }

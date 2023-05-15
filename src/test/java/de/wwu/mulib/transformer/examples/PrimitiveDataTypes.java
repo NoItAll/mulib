@@ -309,4 +309,92 @@ public class PrimitiveDataTypes {
         return s3;
     }
 
+    public int charTest() {
+        char a = 5;
+        a *= 17;
+        return a;
+    }
+
+    public static char charIfCheck0(char s0, char s1) {
+        if (s0 != s1) {
+            return 1;
+        }
+        return 2;
+    }
+
+    public static char charIfCheck1(char s0, char s1, char s2) {
+        if (s0 > s1) {
+            return 0;
+        } else if (s0 == s1) {
+            return 1;
+        } else if (s0 + 5 > s1) {
+            return 2;
+        } else if (s0 + 15 < s1) {
+            return 3;
+        } else if (s0 <= s1 - 35) {
+            return 4;
+        } else if (s0 * 32 >= s1 + 5) {
+            return 5;
+        } else if (s0 != s2) {
+            return 6;
+        }
+        return 7;
+    }
+
+    public static char charStores0(char s0, char s1) {
+        char s2 = 0;
+        char s3 = (char) (s0 + s1);
+        if (s3 > s2) {
+            return s2;
+        }
+        return s3;
+    }
+
+    public static char charStores1(char s0, char s1) {
+        char s2 = 0;
+        char s3 = 1;
+        if (s0 > s1) {
+            s3 = s2;
+        } else {
+            s3 = (char) (s0 + s1);
+        }
+        long s4 = 2;
+        if (s3 > s2) {
+            long s5 = 3;
+            s2 += s5;
+            return s2;
+        } else {
+            s3 += s4;
+        }
+        return s3;
+    }
+
+    public static int charStores2(char s0, char s1) {
+        char s2 = 0;
+        char s3 = (char) (s0 + s1);
+        if (s3 > s2) {
+            return s2;
+        }
+        return s3;
+    }
+
+    public static int charStores3(char s0, char s1) {
+        char s2 = 0;
+        char s3 = 1;
+        if (s0 > s1) {
+            s3 = s2;
+        } else {
+            s3 = (char) (s0 + s1);
+        }
+        long s4 = 2;
+        if (s3 > s2) {
+            long s5 = 3;
+            s2 += s5;
+            return s2;
+        } else {
+            s3 += s4;
+        }
+        return s3;
+    }
+
 }
