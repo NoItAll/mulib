@@ -5,9 +5,9 @@ import de.wwu.mulib.Mulib;
 public class SimpleSort0 {
 
     public static int[] sort(int[] b) {
-        int[] idx = Mulib.freeIntArray();
-        boolean[] usedIdx = Mulib.freeBooleanArray();
-        int[] a = Mulib.freeIntArray();
+        int[] idx = Mulib.freeObject(int[].class);
+        boolean[] usedIdx = Mulib.freeObject(boolean[].class);
+        int[] a = Mulib.freeObject(int[].class);
 
         if (a.length != b.length) {
             throw Mulib.fail();

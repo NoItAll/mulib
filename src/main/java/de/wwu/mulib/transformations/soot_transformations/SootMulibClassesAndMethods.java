@@ -14,6 +14,7 @@ import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import de.wwu.mulib.transformations.StringConstants;
 import soot.*;
+import soot.jimple.ClassConstant;
 
 import java.lang.reflect.Field;
 import java.util.Collections;
@@ -32,6 +33,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SHORT;
     public final SootClass SC_BYTE;
     public final SootClass SC_BOOLEAN;
+    public final SootClass SC_CHARACTER;
     public final SootClass SC_FIELD;
     public final SootClass SC_EXCEPTION;
     public final SootClass SC_MAP;
@@ -61,6 +63,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SSHORTSARRAY;
     public final SootClass SC_SBYTESARRAY;
     public final SootClass SC_SBOOLSARRAY;
+    public final SootClass SC_SCHARSARRAY;
     public final SootClass SC_SARRAYSARRAY;
     public final SootClass SC_SARRAY;
     public final SootClass SC_PARTNER_CLASSSARRAY;
@@ -81,6 +84,7 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_SSHORT;
     public final RefType TYPE_SBYTE;
     public final RefType TYPE_SBOOL;
+    public final RefType TYPE_SCHAR;
     public final RefType TYPE_CONCSINT;
     public final RefType TYPE_CONCSLONG;
     public final RefType TYPE_CONCSDOUBLE;
@@ -98,6 +102,8 @@ public class SootMulibClassesAndMethods {
     public final RefType TYPE_SSHORTSARRAY;
     public final RefType TYPE_SBYTESARRAY;
     public final RefType TYPE_SBOOLSARRAY;
+    public final RefType TYPE_SCHARSARRAY;
+    public final List<Type> TYPES_OF_SPRIMITIVE_SARRAYS;
     public final RefType TYPE_PARTNER_CLASSSARRAY;
     public final RefType TYPE_SE;
     public final RefType TYPE_MULIB_VALUE_TRANSFORMER;
@@ -109,6 +115,7 @@ public class SootMulibClassesAndMethods {
     public final Type TYPE_SHORT;
     public final Type TYPE_BYTE;
     public final Type TYPE_BOOL;
+    public final Type TYPE_CHAR;
     public final Type TYPE_CLASS;
     public final Type TYPE_FIELD;
     public final Type TYPE_EXCEPTION;
@@ -145,6 +152,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SHORT_GETVAL;
     public final SootMethod SM_BYTE_GETVAL;
     public final SootMethod SM_BOOLEAN_GETVAL;
+    public final SootMethod SM_CHARACTER_GETVAL;
     // Indicator methods
     public final SootMethod SM_MULIB_FREE_INT;
     public final SootMethod SM_MULIB_FREE_LONG;
@@ -171,11 +179,19 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_PICK_FROM_DOUBLES;
     public final SootMethod SM_MULIB_PICK_FROM_LONGS;
     public final SootMethod SM_MULIB_PICK_FROM_FLOATS;
+    public final SootMethod SM_MULIB_PICK_FROM_SHORTS;
+    public final SootMethod SM_MULIB_PICK_FROM_BYTES;
+    public final SootMethod SM_MULIB_PICK_FROM_BOOLEANS;
+    public final SootMethod SM_MULIB_PICK_FROM_CHARS;
     public final SootMethod SM_MULIB_NAME_LONG;
     public final SootMethod SM_MULIB_NAME_INT;
     public final SootMethod SM_MULIB_NAME_DOUBLE;
     public final SootMethod SM_MULIB_NAME_FLOAT;
     public final SootMethod SM_MULIB_NAME_OBJECT;
+    public final SootMethod SM_MULIB_NAME_SHORT;
+    public final SootMethod SM_MULIB_NAME_BYTE;
+    public final SootMethod SM_MULIB_NAME_BOOLEAN;
+    public final SootMethod SM_MULIB_NAME_CHAR;
     // Framework methods
     public final SootMethod SM_SE_FREE_SINT;
     public final SootMethod SM_SE_FREE_SLONG;
@@ -184,6 +200,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_FREE_SSHORT;
     public final SootMethod SM_SE_FREE_SBYTE;
     public final SootMethod SM_SE_FREE_SBOOL;
+    public final SootMethod SM_SE_FREE_SCHAR;
     public final SootMethod SM_SE_NAMED_FREE_SINT;
     public final SootMethod SM_SE_NAMED_FREE_SLONG;
     public final SootMethod SM_SE_NAMED_FREE_SDOUBLE;
@@ -191,6 +208,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_NAMED_FREE_SSHORT;
     public final SootMethod SM_SE_NAMED_FREE_SBYTE;
     public final SootMethod SM_SE_NAMED_FREE_SBOOL;
+    public final SootMethod SM_SE_NAMED_FREE_SCHAR;
     public final SootMethod SM_SE_SINTSARRAY;
     public final SootMethod SM_SE_SLONGSARRAY;
     public final SootMethod SM_SE_SDOUBLESARRAY;
@@ -198,6 +216,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_SSHORTSARRAY;
     public final SootMethod SM_SE_SBYTESARRAY;
     public final SootMethod SM_SE_SBOOLSARRAY;
+    public final SootMethod SM_SE_SCHARSARRAY;
     public final SootMethod SM_SE_PARTNER_CLASSSARRAY;
     public final SootMethod SM_SE_SARRAYSARRAY;
     public final SootMethod SM_SE_MULTIDIM_SARRAYSARRAY;
@@ -208,12 +227,30 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_NAMED_SSHORTSARRAY;
     public final SootMethod SM_SE_NAMED_SBYTESARRAY;
     public final SootMethod SM_SE_NAMED_SBOOLSARRAY;
+    public final SootMethod SM_SE_NAMED_SCHARSARRAY;
     public final SootMethod SM_SE_NAMED_PARTNER_CLASSSARRAY;
     public final SootMethod SM_SE_NAMED_SARRAYSARRAY;
     public final SootMethod SM_SE_SYM_OBJECT;
     public final SootMethod SM_SE_NAMED_SYM_OBJECT;
+    public final SootMethod SM_SE_NAME_SUBSTITUTED_VAR;
     public final SootMethod SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SINT_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SLONG_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SFLOAT_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SBOOL_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SBYTE_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SSHORT_WITHIN_ARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SCHAR_WITHIN_ARRAY;
     public final SootMethod SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SINT_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SLONG_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SFLOAT_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SBOOL_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SBYTE_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY;
+    public final SootMethod SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY;
     public final List<SootMethod> SM_SE_PRIMITIVE_SARRAY_INITS;
 
     public final SootMethod SM_SINTSARRAY_COPY_CONSTR;
@@ -393,6 +430,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SBYTESARRAY_STORE;
     public final SootMethod SM_SBOOLSARRAY_SELECT;
     public final SootMethod SM_SBOOLSARRAY_STORE;
+    public final SootMethod SM_SCHARSARRAY_SELECT;
+    public final SootMethod SM_SCHARSARRAY_STORE;
     public final SootMethod SM_SARRAY_LENGTH;
     public final SootMethod SM_PARTNER_CLASSSARRAY_SELECT;
     public final SootMethod SM_PARTNER_CLASSSARRAY_STORE;
@@ -438,6 +477,7 @@ public class SootMulibClassesAndMethods {
         SC_SHORT = Scene.v().forceResolve(Short.class.getName(), SootClass.SIGNATURES);
         SC_BYTE = Scene.v().forceResolve(Byte.class.getName(), SootClass.SIGNATURES);
         SC_BOOLEAN = Scene.v().forceResolve(Boolean.class.getName(), SootClass.SIGNATURES);
+        SC_CHARACTER = Scene.v().forceResolve(Character.class.getName(), SootClass.SIGNATURES);
         SC_FIELD = Scene.v().forceResolve(Field.class.getName(), SootClass.SIGNATURES);
         SC_EXCEPTION = Scene.v().forceResolve(Exception.class.getName(), SootClass.SIGNATURES);
         SC_MULIB = Scene.v().forceResolve(Mulib.class.getName(), SootClass.SIGNATURES);
@@ -465,6 +505,7 @@ public class SootMulibClassesAndMethods {
         SC_SSHORTSARRAY         = Scene.v().forceResolve(Sarray.SshortSarray.class.getName(), SootClass.SIGNATURES);
         SC_SBYTESARRAY          = Scene.v().forceResolve(Sarray.SbyteSarray.class.getName(), SootClass.SIGNATURES);
         SC_SBOOLSARRAY          = Scene.v().forceResolve(Sarray.SboolSarray.class.getName(), SootClass.SIGNATURES);
+        SC_SCHARSARRAY          = Scene.v().forceResolve(Sarray.ScharSarray.class.getName(), SootClass.SIGNATURES);
         SC_SARRAYSARRAY         = Scene.v().forceResolve(Sarray.SarraySarray.class.getName(), SootClass.SIGNATURES);
         SC_SARRAY               = Scene.v().forceResolve(Sarray.class.getName(), SootClass.SIGNATURES);
         SC_SE = Scene.v().forceResolve(SymbolicExecution.class.getName(), SootClass.SIGNATURES);
@@ -483,6 +524,7 @@ public class SootMulibClassesAndMethods {
         TYPE_SSHORT = Scene.v().getRefType(Sshort.class.getName());
         TYPE_SBYTE = Scene.v().getRefType(Sbyte.class.getName());
         TYPE_SBOOL = Scene.v().getRefType(Sbool.class.getName());
+        TYPE_SCHAR = Scene.v().getRefType(Schar.class.getName());
         TYPE_PARTNER_CLASS = Scene.v().getRefType(PartnerClass.class.getName());
         TYPE_SE = Scene.v().getRefType(SymbolicExecution.class.getName());
         TYPE_MULIB_VALUE_TRANSFORMER = SC_MULIB_VALUE_TRANSFORMER.getType();
@@ -495,6 +537,7 @@ public class SootMulibClassesAndMethods {
         TYPE_SHORT = Scene.v().getType("short");
         TYPE_BYTE = Scene.v().getType("byte");
         TYPE_BOOL = Scene.v().getType("boolean");
+        TYPE_CHAR = Scene.v().getType("char");
         TYPE_CLASS = Scene.v().getType(Class.class.getName());
         TYPE_FIELD = Scene.v().getType(Field.class.getName());
         TYPE_OBJECT = Scene.v().getType(Object.class.getName());
@@ -509,6 +552,10 @@ public class SootMulibClassesAndMethods {
         TYPE_SSHORTSARRAY           = SC_SSHORTSARRAY.getType();
         TYPE_SBYTESARRAY            = SC_SBYTESARRAY.getType();
         TYPE_SBOOLSARRAY            = SC_SBOOLSARRAY.getType();
+        TYPE_SCHARSARRAY = SC_SCHARSARRAY.getType();
+        TYPES_OF_SPRIMITIVE_SARRAYS = List.of(
+                TYPE_SINTSARRAY, TYPE_SDOUBLESARRAY, TYPE_SFLOATSARRAY, TYPE_SLONGSARRAY,
+                TYPE_SSHORTSARRAY, TYPE_SBYTESARRAY, TYPE_SCHARSARRAY, TYPE_SBOOLSARRAY);
         TYPE_PARTNER_CLASSSARRAY     = SC_PARTNER_CLASSSARRAY.getType();
         TYPE_SARRAY                 = SC_SARRAY.getType();
         TYPE_SPRIMITIVE             = SC_SPRIMITIVE.getType();
@@ -544,6 +591,7 @@ public class SootMulibClassesAndMethods {
         SM_SHORT_GETVAL     = SC_SHORT.getMethod("shortValue", List.of(), TYPE_SHORT);
         SM_BYTE_GETVAL      = SC_BYTE.getMethod("byteValue", List.of(), TYPE_BYTE);
         SM_BOOLEAN_GETVAL   = SC_BOOLEAN.getMethod("booleanValue", List.of(), TYPE_BOOL);
+        SM_CHARACTER_GETVAL = SC_CHARACTER.getMethod("charValue", List.of(), TYPE_CHAR);
 
         SM_MULIB_FREE_INT           = SC_MULIB.getMethod("freeInt",         Collections.emptyList(), TYPE_INT);
         SM_MULIB_FREE_LONG          = SC_MULIB.getMethod("freeLong",        Collections.emptyList(), TYPE_LONG);
@@ -570,11 +618,20 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_PICK_FROM_DOUBLES  = SC_MULIB.getMethod("pickFrom", List.of(TYPE_DOUBLE.getArrayType()), TYPE_DOUBLE);
         SM_MULIB_PICK_FROM_LONGS    = SC_MULIB.getMethod("pickFrom", List.of(TYPE_LONG.getArrayType()), TYPE_LONG);
         SM_MULIB_PICK_FROM_FLOATS   = SC_MULIB.getMethod("pickFrom", List.of(TYPE_FLOAT.getArrayType()), TYPE_FLOAT);
+        SM_MULIB_PICK_FROM_SHORTS   = SC_MULIB.getMethod("pickFrom", List.of(TYPE_SHORT.getArrayType()), TYPE_SHORT);
+        SM_MULIB_PICK_FROM_BYTES    = SC_MULIB.getMethod("pickFrom", List.of(TYPE_BYTE.getArrayType()), TYPE_BYTE);
+        SM_MULIB_PICK_FROM_BOOLEANS = SC_MULIB.getMethod("pickFrom", List.of(TYPE_BOOL.getArrayType()), TYPE_BOOL);
+        SM_MULIB_PICK_FROM_CHARS    = SC_MULIB.getMethod("pickFrom", List.of(TYPE_CHAR.getArrayType()), TYPE_CHAR);
+
         SM_MULIB_NAME_LONG          = SC_MULIB.getMethod("remember", List.of(TYPE_LONG, TYPE_STRING), TYPE_VOID);
         SM_MULIB_NAME_INT           = SC_MULIB.getMethod("remember", List.of(TYPE_INT, TYPE_STRING), TYPE_VOID);
         SM_MULIB_NAME_DOUBLE        = SC_MULIB.getMethod("remember", List.of(TYPE_DOUBLE, TYPE_STRING), TYPE_VOID);
         SM_MULIB_NAME_FLOAT         = SC_MULIB.getMethod("remember", List.of(TYPE_FLOAT, TYPE_STRING), TYPE_VOID);
         SM_MULIB_NAME_OBJECT        = SC_MULIB.getMethod("remember", List.of(TYPE_OBJECT, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_SHORT         = SC_MULIB.getMethod("remember", List.of(TYPE_SHORT, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_BYTE          = SC_MULIB.getMethod("remember", List.of(TYPE_BYTE, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_BOOLEAN       = SC_MULIB.getMethod("remember", List.of(TYPE_BOOL, TYPE_STRING), TYPE_VOID);
+        SM_MULIB_NAME_CHAR          = SC_MULIB.getMethod("remember", List.of(TYPE_CHAR, TYPE_STRING), TYPE_VOID);
 
         SM_SE_FREE_SINT             = SC_SE.getMethod("symSint",            Collections.emptyList(), TYPE_SINT);
         SM_SE_FREE_SLONG            = SC_SE.getMethod("symSlong",           Collections.emptyList(), TYPE_SLONG);
@@ -583,6 +640,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_FREE_SSHORT           = SC_SE.getMethod("symSshort",          Collections.emptyList(), TYPE_SSHORT);
         SM_SE_FREE_SBYTE            = SC_SE.getMethod("symSbyte",           Collections.emptyList(), TYPE_SBYTE);
         SM_SE_FREE_SBOOL            = SC_SE.getMethod("symSbool",           Collections.emptyList(), TYPE_SBOOL);
+        SM_SE_FREE_SCHAR            = SC_SE.getMethod("symSchar",           Collections.emptyList(), TYPE_SCHAR);
         SM_SE_NAMED_FREE_SINT       = SC_SE.getMethod("namedSymSint",       List.of(TYPE_STRING),    TYPE_SINT);
         SM_SE_NAMED_FREE_SLONG      = SC_SE.getMethod("namedSymSlong",      List.of(TYPE_STRING),    TYPE_SLONG);
         SM_SE_NAMED_FREE_SDOUBLE    = SC_SE.getMethod("namedSymSdouble",    List.of(TYPE_STRING),    TYPE_SDOUBLE);
@@ -590,6 +648,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_NAMED_FREE_SSHORT     = SC_SE.getMethod("namedSymSshort",     List.of(TYPE_STRING),    TYPE_SSHORT);
         SM_SE_NAMED_FREE_SBYTE      = SC_SE.getMethod("namedSymSbyte",      List.of(TYPE_STRING),    TYPE_SBYTE);
         SM_SE_NAMED_FREE_SBOOL      = SC_SE.getMethod("namedSymSbool",      List.of(TYPE_STRING),    TYPE_SBOOL);
+        SM_SE_NAMED_FREE_SCHAR      = SC_SE.getMethod("namedSymSchar",      List.of(TYPE_STRING),    TYPE_SCHAR);
         SM_SE_SINTSARRAY            = SC_SE.getMethod("sintSarray",         List.of(TYPE_SINT, TYPE_BOOL), TYPE_SINTSARRAY);
         SM_SE_SLONGSARRAY           = SC_SE.getMethod("slongSarray",        List.of(TYPE_SINT, TYPE_BOOL), TYPE_SLONGSARRAY);
         SM_SE_SDOUBLESARRAY         = SC_SE.getMethod("sdoubleSarray",      List.of(TYPE_SINT, TYPE_BOOL), TYPE_SDOUBLESARRAY);
@@ -597,6 +656,7 @@ public class SootMulibClassesAndMethods {
         SM_SE_SSHORTSARRAY          = SC_SE.getMethod("sshortSarray",       List.of(TYPE_SINT, TYPE_BOOL), TYPE_SSHORTSARRAY);
         SM_SE_SBYTESARRAY           = SC_SE.getMethod("sbyteSarray",        List.of(TYPE_SINT, TYPE_BOOL), TYPE_SBYTESARRAY);
         SM_SE_SBOOLSARRAY           = SC_SE.getMethod("sboolSarray",        List.of(TYPE_SINT, TYPE_BOOL), TYPE_SBOOLSARRAY);
+        SM_SE_SCHARSARRAY           = SC_SE.getMethod("scharSarray",        List.of(TYPE_SINT, TYPE_BOOL), TYPE_SCHARSARRAY);
         SM_SE_NAMED_SINTSARRAY      = SC_SE.getMethod("namedSintSarray",    List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SINTSARRAY);
         SM_SE_NAMED_SLONGSARRAY     = SC_SE.getMethod("namedSlongSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SLONGSARRAY);
         SM_SE_NAMED_SDOUBLESARRAY   = SC_SE.getMethod("namedSdoubleSarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SDOUBLESARRAY);
@@ -604,20 +664,41 @@ public class SootMulibClassesAndMethods {
         SM_SE_NAMED_SSHORTSARRAY    = SC_SE.getMethod("namedSshortSarray",  List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SSHORTSARRAY);
         SM_SE_NAMED_SBYTESARRAY     = SC_SE.getMethod("namedSbyteSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SBYTESARRAY);
         SM_SE_NAMED_SBOOLSARRAY     = SC_SE.getMethod("namedSboolSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SBOOLSARRAY);
+        SM_SE_NAMED_SCHARSARRAY     = SC_SE.getMethod("namedScharSarray",   List.of(TYPE_STRING, TYPE_SINT, TYPE_BOOL), TYPE_SCHARSARRAY);
+
         SM_SE_PARTNER_CLASSSARRAY        = SC_SE.getMethod("partnerClassSarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNER_CLASSSARRAY);
         SM_SE_SARRAYSARRAY              = SC_SE.getMethod("sarraySarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
         SM_SE_NAMED_PARTNER_CLASSSARRAY  = SC_SE.getMethod("namedPartnerClassSarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNER_CLASSSARRAY);
         SM_SE_NAMED_SARRAYSARRAY        = SC_SE.getMethod("namedSarraySarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
         SM_SE_SYM_OBJECT = SC_SE.getMethod("symObject", List.of(TYPE_CLASS), TYPE_PARTNER_CLASS);
         SM_SE_NAMED_SYM_OBJECT = SC_SE.getMethod("namedSymObject", List.of(TYPE_STRING, TYPE_CLASS), TYPE_PARTNER_CLASS);
+        SM_SE_NAME_SUBSTITUTED_VAR = SC_SE.getMethod("nameSubstitutedVar", List.of(TYPE_SUBSTITUTED_VAR, TYPE_STRING));
         SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_OBJECT.getArrayType()), TYPE_PARTNER_CLASS);
+        SM_SE_ALIASING_SYM_SINT_WITHIN_ARRAY   = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SINT.getArrayType()), TYPE_SINT);
+        SM_SE_ALIASING_SYM_SLONG_WITHIN_ARRAY  = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SLONG.getArrayType()), TYPE_SLONG);
+        SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_ARRAY= SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SDOUBLE.getArrayType()), TYPE_SDOUBLE);
+        SM_SE_ALIASING_SYM_SFLOAT_WITHIN_ARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SFLOAT.getArrayType()), TYPE_SFLOAT);
+        SM_SE_ALIASING_SYM_SBOOL_WITHIN_ARRAY  = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SBOOL.getArrayType()), TYPE_SBOOL);
+        SM_SE_ALIASING_SYM_SBYTE_WITHIN_ARRAY  = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SBYTE.getArrayType()), TYPE_SBYTE);
+        SM_SE_ALIASING_SYM_SSHORT_WITHIN_ARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SSHORT.getArrayType()), TYPE_SSHORT);
+        SM_SE_ALIASING_SYM_SCHAR_WITHIN_ARRAY  = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SCHAR.getArrayType()), TYPE_SCHAR);
         SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_PARTNER_CLASSSARRAY), TYPE_PARTNER_CLASS);
+        SM_SE_ALIASING_SYM_SINT_WITHIN_SARRAY      = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SINTSARRAY), TYPE_SINT);
+        SM_SE_ALIASING_SYM_SLONG_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SLONGSARRAY), TYPE_SLONG);
+        SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_SARRAY   = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SDOUBLESARRAY), TYPE_SDOUBLE);
+        SM_SE_ALIASING_SYM_SFLOAT_WITHIN_SARRAY    = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SFLOATSARRAY), TYPE_SFLOAT);
+        SM_SE_ALIASING_SYM_SBOOL_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SBOOLSARRAY), TYPE_SBOOL);
+        SM_SE_ALIASING_SYM_SBYTE_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SBYTESARRAY), TYPE_SBYTE);
+        SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY    = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SSHORTSARRAY), TYPE_SSHORT);
+        SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SCHARSARRAY), TYPE_SCHAR);
         SM_SE_MULTIDIM_SARRAYSARRAY = SC_SE.getMethod("sarraySarray", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_CLASS), TYPE_SARRAYSARRAY);
         SM_SE_PRIMITIVE_SARRAY_INITS = List.of(
                 SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY, SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY,
-                SM_SE_SSHORTSARRAY, SM_SE_SBYTESARRAY, SM_SE_SBOOLSARRAY, SM_SE_NAMED_SINTSARRAY,
+                SM_SE_SSHORTSARRAY, SM_SE_SBYTESARRAY, SM_SE_SBOOLSARRAY,
+                SM_SE_SCHARSARRAY, SM_SE_NAMED_SINTSARRAY,
                 SM_SE_NAMED_SLONGSARRAY, SM_SE_NAMED_SDOUBLESARRAY, SM_SE_NAMED_SFLOATSARRAY,
-                SM_SE_NAMED_SSHORTSARRAY, SM_SE_NAMED_SBYTESARRAY, SM_SE_NAMED_SBOOLSARRAY);
+                SM_SE_NAMED_SSHORTSARRAY, SM_SE_NAMED_SBYTESARRAY, SM_SE_NAMED_SBOOLSARRAY,
+                SM_SE_NAMED_SCHARSARRAY);
 
         SM_SE_CONCSINT = SC_SE.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_SE_CONCSDOUBLE = SC_SE.getMethod("concSdouble", List.of(TYPE_DOUBLE), TYPE_SDOUBLE);
@@ -776,6 +857,8 @@ public class SootMulibClassesAndMethods {
         SM_SBYTESARRAY_STORE    = SC_SBYTESARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SBYTE, TYPE_SE),     TYPE_VOID);
         SM_SBOOLSARRAY_SELECT   = SC_SBOOLSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE),                  TYPE_SBOOL);
         SM_SBOOLSARRAY_STORE    = SC_SBOOLSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SBOOL, TYPE_SE),     TYPE_VOID);
+        SM_SCHARSARRAY_SELECT   = SC_SCHARSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_SCHAR);
+        SM_SCHARSARRAY_STORE    = SC_SCHARSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SCHAR, TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASSSARRAY_SELECT    = SC_PARTNER_CLASSSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_PARTNER_CLASS);
         SM_PARTNER_CLASSSARRAY_STORE     = SC_PARTNER_CLASSSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_PARTNER_CLASS, TYPE_SE), TYPE_VOID);
         SM_SARRAYSARRAY_SELECT          = SC_SARRAYSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_SARRAY);
@@ -849,6 +932,7 @@ public class SootMulibClassesAndMethods {
             case "freeShort":
             case "freeByte":
             case "freeBoolean":
+            case "freeChar":
             case "rememberedFreeInt":
             case "rememberedFreeLong":
             case "rememberedFreeDouble":
@@ -856,22 +940,10 @@ public class SootMulibClassesAndMethods {
             case "rememberedFreeShort":
             case "rememberedFreeByte":
             case "rememberedFreeBoolean":
-            case "freeIntArray":
-            case "freeLongArray":
-            case "freeDoubleArray":
-            case "freeFloatArray":
-            case "freeShortArray":
-            case "freeByteArray":
-            case "freeBooleanArray":
-            case "rememberedFreeIntArray":
-            case "rememberedFreeLongArray":
-            case "rememberedFreeDoubleArray":
-            case "rememberedFreeFloatArray":
-            case "rememberedFreeShortArray":
-            case "rememberedFreeByteArray":
-            case "rememberedFreeBooleanArray":
+            case "rememberedFreeChar":
             case "freeObject":
             case "pickFrom":
+            case "remember":
             case "rememberedFreeObject":
                 return true;
             default:
@@ -879,7 +951,11 @@ public class SootMulibClassesAndMethods {
         }
     }
 
-    public SootMethod getTransformedMethodForIndicatorMethodName(String indicatorMethodName) {
+    public SootMethod getTransformedMethodOrNull(
+            String indicatorMethodName,
+            List<Value> argsToMethod,
+            SootMethodRef smr,
+            SootMulibTransformer.TcArgs args) {
         switch (indicatorMethodName) {
             case "freeInt":
                 return SM_SE_FREE_SINT;
@@ -895,6 +971,8 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_FREE_SBYTE;
             case "freeBoolean":
                 return SM_SE_FREE_SBOOL;
+            case "freeChar":
+                return SM_SE_FREE_SCHAR;
             case "rememberedFreeInt":
                 return SM_SE_NAMED_FREE_SINT;
             case "rememberedFreeLong":
@@ -909,42 +987,149 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_NAMED_FREE_SBYTE;
             case "rememberedFreeBoolean":
                 return SM_SE_NAMED_FREE_SBOOL;
-            case "freeIntArray":
-                return SM_SE_SINTSARRAY;
-            case "freeLongArray":
-                return SM_SE_SLONGSARRAY;
-            case "freeDoubleArray":
-                return SM_SE_SDOUBLESARRAY;
-            case "freeFloatArray":
-                return SM_SE_SFLOATSARRAY;
-            case "freeShortArray":
-                return SM_SE_SSHORTSARRAY;
-            case "freeByteArray":
-                return SM_SE_SBYTESARRAY;
-            case "freeBooleanArray":
-                return SM_SE_SBOOLSARRAY;
-            case "rememberedFreeIntArray":
-                return SM_SE_NAMED_SINTSARRAY;
-            case "rememberedFreeLongArray":
-                return SM_SE_NAMED_SLONGSARRAY;
-            case "rememberedFreeDoubleArray":
-                return SM_SE_NAMED_SDOUBLESARRAY;
-            case "rememberedFreeFloatArray":
-                return SM_SE_NAMED_SFLOATSARRAY;
-            case "rememberedFreeShortArray":
-                return SM_SE_NAMED_SSHORTSARRAY;
-            case "rememberedFreeByteArray":
-                return SM_SE_NAMED_SBYTESARRAY;
-            case "rememberedFreeBooleanArray":
-                return SM_SE_NAMED_SBOOLSARRAY;
-            case "freeObject":
-                return SM_SE_SYM_OBJECT;
-            case "rememberedFreeObject":
-                return SM_SE_NAMED_SYM_OBJECT;
-            case "pickFrom":
-                return SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
+            case "rememberedFreeChar":
+                return SM_SE_NAMED_FREE_SCHAR;
+            case "freeObject": {
+                Value potentiallyUsedClassConstant = argsToMethod.get(0);
+                return getFreeObjectTransformedMethod(
+                        args, potentiallyUsedClassConstant,
+                        SM_SE_SARRAYSARRAY, SM_SE_PARTNER_CLASSSARRAY, SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY,
+                        SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY, SM_SE_SBYTESARRAY, SM_SE_SSHORTSARRAY,
+                        SM_SE_SBOOLSARRAY, SM_SE_SCHARSARRAY, SM_SE_SYM_OBJECT
+                );
+            }
+            case "rememberedFreeObject": {
+                assert argsToMethod.size() == 2;
+                Value potentiallyUsedClassConstant = argsToMethod.get(1);
+                return getFreeObjectTransformedMethod(
+                        args, potentiallyUsedClassConstant,
+                        SM_SE_NAMED_SARRAYSARRAY, SM_SE_NAMED_PARTNER_CLASSSARRAY, SM_SE_NAMED_SINTSARRAY,
+                        SM_SE_NAMED_SLONGSARRAY, SM_SE_NAMED_SDOUBLESARRAY, SM_SE_NAMED_SFLOATSARRAY,
+                        SM_SE_NAMED_SBYTESARRAY, SM_SE_NAMED_SSHORTSARRAY, SM_SE_NAMED_SBOOLSARRAY,
+                        SM_SE_NAMED_SCHARSARRAY, SM_SE_NAMED_SYM_OBJECT);
+            }
+            case "pickFrom": {
+                assert smr.getParameterTypes().size() == 1;
+                assert argsToMethod.size() == 1;
+                Type t = smr.getParameterType(0);
+                Value v = argsToMethod.get(0);
+                if (t.equals(TYPE_INT.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SINT_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SINT_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_LONG.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SLONG_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SLONG_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_DOUBLE.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_FLOAT.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SFLOAT_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SFLOAT_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_SHORT.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SSHORT_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_BYTE.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SBYTE_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SBYTE_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_BOOL.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SBOOL_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SBOOL_WITHIN_ARRAY;
+                    }
+                } else if (t.equals(TYPE_CHAR.getArrayType())) {
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_SCHAR_WITHIN_ARRAY;
+                    }
+                } else {
+                    assert v.getType() instanceof ArrayType && ((ArrayType) v.getType()).getElementType() instanceof RefLikeType;
+                    if (args.isTainted(v)) {
+                        return SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY;
+                    } else {
+                        return SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
+                    }
+                }
+            }
+            case "remember":
+                assert smr.getParameterTypes().size() == 2;
+                assert argsToMethod.size() == 2;
+                return SM_SE_NAME_SUBSTITUTED_VAR;
             default:
-                throw new NotYetImplementedException(indicatorMethodName);
+                return null;
         }
+    }
+
+    private static SootMethod getFreeObjectTransformedMethod(
+            SootMulibTransformer.TcArgs args, Value potentiallyUsedClassConstant,
+            SootMethod smSeNamedSarraysarray, SootMethod smSeNamedPartnerClasssarray, SootMethod smSeNamedSintsarray,
+            SootMethod smSeNamedSlongsarray, SootMethod smSeNamedSdoublesarray, SootMethod smSeNamedSfloatsarray,
+            SootMethod smSeNamedSbytesarray, SootMethod smSeNamedSshortsarray, SootMethod smSeNamedSboolsarray,
+            SootMethod smSeNamedScharsarray, SootMethod smSeNamedSymObject) {
+        Type typeOfClass;
+        if (potentiallyUsedClassConstant instanceof ClassConstant) {
+            typeOfClass = ((ClassConstant) potentiallyUsedClassConstant).toSootType();
+        } else {
+            typeOfClass = args.taintAnalysis().valueHolderToClassConstantType.get(potentiallyUsedClassConstant);
+        }
+        if (typeOfClass instanceof ArrayType) {
+            // Is free array
+            ArrayType arrayType = (ArrayType) typeOfClass;
+            if (arrayType.getElementType() instanceof ArrayType) {
+                // Is array of arrays
+                return smSeNamedSarraysarray;
+            } else if (arrayType.getElementType() instanceof RefType) {
+                // Is array of partner class objects
+                return smSeNamedPartnerClasssarray;
+            } else {
+                assert arrayType.getElementType() instanceof PrimType;
+                PrimType elementType = (PrimType) arrayType.getElementType();
+                if (elementType instanceof IntType) {
+                    return smSeNamedSintsarray;
+                } else if (elementType instanceof LongType) {
+                    return smSeNamedSlongsarray;
+                } else if (elementType instanceof DoubleType) {
+                    return smSeNamedSdoublesarray;
+                } else if (elementType instanceof FloatType) {
+                    return smSeNamedSfloatsarray;
+                } else if (elementType instanceof ByteType) {
+                    return smSeNamedSbytesarray;
+                } else if (elementType instanceof ShortType) {
+                    return smSeNamedSshortsarray;
+                } else if (elementType instanceof BooleanType) {
+                    return smSeNamedSboolsarray;
+                } else if (elementType instanceof CharType) {
+                    return smSeNamedScharsarray;
+                } else {
+                    throw new NotYetImplementedException("Unknown element type for sarray: " + elementType);
+                }
+            }
+        } else {
+            assert typeOfClass instanceof RefType;
+            return smSeNamedSymObject;
+        }
+    }
+
+    public static boolean methodNameImpliesRememberedInitialization(String name) {
+        return name.startsWith("remembered");
     }
 }

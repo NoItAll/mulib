@@ -182,8 +182,10 @@ public class TaintAnalyzer {
                     v -> taintedValues.contains(v)
                             || v.getType() instanceof RefType);
         });
-        assert taintedValues.stream().noneMatch(tv ->
-                tv.getType() instanceof RefType);
+        // RefTypes can also be tainted. Arrays in Soot are not RefTypes but RefLikeTypes, however, to carry
+        // the taint of, e.g., (int[]) Mulib.freeObject(int[].class) to the array, the result of
+        // Mulib.freeObject(int[].class) must be tainted as well
+
         // If there is one tainted value defined by u in UPC, all values defined by u must be tainted:
         assert upc.stream().allMatch(u -> {
             Collection<Value> valuesOfStmt = getValuesOfBoxes(u.getDefBoxes());
@@ -202,7 +204,7 @@ public class TaintAnalyzer {
                 tainted, toWrap, unchangedStmts, concretizeInputs, generalizeSignature, valueHolderToClassConstantType);
     }
     
-    private Collection<Value> getValuesOfBoxes(List<? extends ValueBox> vbs) {
+    private List<Value> getValuesOfBoxes(List<? extends ValueBox> vbs) {
         return vbs.stream().map(ValueBox::getValue).collect(Collectors.toList());
     }
 
@@ -300,12 +302,39 @@ public class TaintAnalyzer {
         return taintedValues.add(v);
     }
 
+    private boolean isRhsArrayTypeStmt(AssignStmt u) {
+        if (u.getRightOp().getType() instanceof ArrayType) {
+            return true;
+        }
+        if (u.getRightOp() instanceof InvokeExpr) {
+            InvokeExpr ie = (InvokeExpr) u.getRightOp();
+            if (!ie.getMethodRef().equals(sootMulibClassesAndMethods.SM_MULIB_FREE_OBJECT.makeRef())
+                    && !ie.getMethodRef().equals(sootMulibClassesAndMethods.SM_MULIB_NAMED_FREE_OBJECT.makeRef())) {
+                return false;
+            }
+            Value potentiallyUsedClassConstant;
+            if (SootMulibClassesAndMethods.methodNameImpliesRememberedInitialization(ie.getMethodRef().getName())) {
+                potentiallyUsedClassConstant = ie.getArg(1);
+            } else {
+                potentiallyUsedClassConstant = ie.getArg(0);
+            }
+            Type typeOfClass = potentiallyUsedClassConstant instanceof ClassConstant ?
+                    ((ClassConstant) potentiallyUsedClassConstant).toSootType()
+                    :
+                    valueHolderToClassConstantType.get(potentiallyUsedClassConstant);
+            return typeOfClass instanceof ArrayType;
+        }
+        return false;
+    }
+
     private boolean addTainted(Stmt u) {
         if (u instanceof AssignStmt) {
             AssignStmt a = (AssignStmt) u;
-            if (a.getRightOp().getType() instanceof ArrayType) {
+            if (isRhsArrayTypeStmt(a)) {
                 // If the assign statement is tainted, then the array must be tainted as well
-                addValueToTainted(a.getRightOp());
+                taintedValues.add(a.getRightOp());
+                taintedValues.add(a.getLeftOp());
+                // TODO We usually want to avoid directly adding to the taintedValues field
                 if (a.getRightOp() instanceof ArrayRef) {
                     addValueToTainted(((ArrayRef) a.getRightOp()).getBase());
                 }

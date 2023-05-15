@@ -6,8 +6,8 @@ public class SimpleSort1 {
 
     public static int[] sort(int[] bBeforeFree) {
         int n = bBeforeFree.length;
-        int[] b = Mulib.freeIntArray();
-        int[] idx = Mulib.freeIntArray();
+        int[] b = Mulib.freeObject(int[].class);
+        int[] idx = Mulib.freeObject(int[].class);
         boolean failed = false;
         for (int i = 0; i < n; i++) {
             if (idx[i] < 0 || idx[i] >= n) {
@@ -29,7 +29,7 @@ public class SimpleSort1 {
         for (int i = 0; i < n; i++) {
             b[i] = bBeforeFree[i];
         }
-        int[] a = Mulib.freeIntArray();
+        int[] a = Mulib.freeObject(int[].class);
         for (int i = 0; i < n; i++) {
             a[idx[i]] = b[i];
         }

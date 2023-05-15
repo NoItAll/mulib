@@ -150,31 +150,23 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static int[] freeIntArray() {
+    public static short pickFrom(short... aliasingTargets) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static long[] freeLongArray() {
+    public static byte pickFrom(byte... aliasingTargets) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static double[] freeDoubleArray() {
+    public static boolean pickFrom(boolean... aliasingTargets) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static float[] freeFloatArray() {
+    public static char pickFrom(char... aliasingTargets) {
         throw _shouldHaveBeenReplaced();
     }
 
-    public static short[] freeShortArray() {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static byte[] freeByteArray() {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static boolean[] freeBooleanArray() {
+    public static <T> T[] freeObjectArray(int length, Class<T> clazz) {
         throw _shouldHaveBeenReplaced();
     }
 
@@ -191,6 +183,22 @@ public final class Mulib {
     }
 
     public static void remember(float i, String id) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static void remember(short i, String id) {
+        _shouldHaveBeenReplaced();
+    }
+
+    public static void remember(byte i, String id) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static void remember(boolean i, String id) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static void remember(char i, String id) {
         throw _shouldHaveBeenReplaced();
     }
 
@@ -231,34 +239,6 @@ public final class Mulib {
     }
 
     public static <T> T rememberedFreeObject(String identifier, Class<T> objClass) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static int[] rememberedFreeIntArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static long[] rememberedFreeLongArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static double[] rememberedFreeDoubleArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static float[] rememberedFreeFloatArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static short[] rememberedFreeShortArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static byte[] rememberedFreeByteArray(String identifier) {
-        throw _shouldHaveBeenReplaced();
-    }
-
-    public static boolean[] rememberedFreeBooleanArray(String identifier) {
         throw _shouldHaveBeenReplaced();
     }
 

@@ -4,31 +4,31 @@ import de.wwu.mulib.Mulib;
 
 public class ArrayReturn {
     public static int[] arReturn0() {
-        return Mulib.freeIntArray();
+        return Mulib.freeObject(int[].class);
     }
 
     public static long[] arReturn1() {
-        return Mulib.freeLongArray();
+        return Mulib.freeObject(long[].class);
     }
 
     public static double[] arReturn2() {
-        return Mulib.freeDoubleArray();
+        return Mulib.freeObject(double[].class);
     }
 
     public static float[] arReturn3() {
-        return Mulib.freeFloatArray();
+        return Mulib.freeObject(float[].class);
     }
 
     public static short[] arReturn4() {
-        return Mulib.freeShortArray();
+        return Mulib.freeObject(short[].class);
     }
 
     public static byte[] arReturn5() {
-        return Mulib.freeByteArray();
+        return Mulib.freeObject(byte[].class);
     }
 
     public static boolean[] arReturn6() {
-        return Mulib.freeBooleanArray();
+        return Mulib.freeObject(boolean[].class);
     }
 
     public static ArrayReturn[][] arReturn7() {
@@ -40,31 +40,31 @@ public class ArrayReturn {
     }
 
     public static int[] arReturn10() {
-        return Mulib.rememberedFreeIntArray("name");
+        return Mulib.rememberedFreeObject("name", int[].class);
     }
 
     public static long[] arReturn11() {
-        return Mulib.rememberedFreeLongArray("name");
+        return Mulib.rememberedFreeObject("name", long[].class);
     }
 
     public static double[] arReturn12() {
-        return Mulib.rememberedFreeDoubleArray("name");
+        return Mulib.rememberedFreeObject("name", double[].class);
     }
 
     public static float[] arReturn13() {
-        return Mulib.rememberedFreeFloatArray("name");
+        return Mulib.rememberedFreeObject("name", float[].class);
     }
 
     public static short[] arReturn14() {
-        return Mulib.rememberedFreeShortArray("name");
+        return Mulib.rememberedFreeObject("name", short[].class);
     }
 
     public static byte[] arReturn15() {
-        return Mulib.rememberedFreeByteArray("name");
+        return Mulib.rememberedFreeObject("name", byte[].class);
     }
 
     public static boolean[] arReturn16() {
-        return Mulib.rememberedFreeBooleanArray("name");
+        return Mulib.rememberedFreeObject("name", boolean[].class);
     }
 
     public static ArrayReturn[][][] arReturn17() {
