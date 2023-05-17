@@ -52,6 +52,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                     case JSMT_CVC4:
                         chosenSolver = SolverContextFactory.Solvers.CVC4;
                         break;
+                    case JSMT_CVC5:
+                        chosenSolver = SolverContextFactory.Solvers.CVC5;
+                        break;
                     case JSMT_MATHSAT5:
                         chosenSolver = SolverContextFactory.Solvers.MATHSAT5;
                         break;

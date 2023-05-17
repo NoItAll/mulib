@@ -15,6 +15,7 @@ public enum Solvers {
     JSMT_SMTINTERPOL,
     JSMT_PRINCESS,
     JSMT_CVC4,
+    JSMT_CVC5,
     JSMT_MATHSAT5,
     JSMT_YICES2,
     JSMT_BOOLECTOR;
