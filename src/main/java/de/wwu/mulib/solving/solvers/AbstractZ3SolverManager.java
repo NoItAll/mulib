@@ -310,7 +310,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     result = ctx.mkDiv((ArithExpr) elhs, (ArithExpr) erhs);
                 } else if (n instanceof Mod) {
                     result = ctx.mkMod((IntExpr) elhs, (IntExpr) erhs);
-                } else { /// TODO Validate
+                } else {
                     // Bit-wise operations
                     IntExpr ilhs = (IntExpr) elhs;
                     IntExpr irhs = (IntExpr) erhs;
@@ -336,6 +336,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     } else {
                         throw new NotYetImplementedException();
                     }
+                    result = ctx.mkBV2Int((BitVecExpr) result, true);
                 }
                 numericExpressionsStore.put(n, result);
             } else if (n instanceof AbstractExpressionWrappingExpression) {

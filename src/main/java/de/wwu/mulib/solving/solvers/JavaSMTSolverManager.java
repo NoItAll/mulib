@@ -375,7 +375,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 NumericExpression rhs = o.getExpr1();
                 NumeralFormula elhs = transformNumeral(lhs);
                 NumeralFormula erhs = transformNumeral(rhs);
-                if (n instanceof NumericBitwiseOperation) { /// TODO Validate
+                if (n instanceof NumericBitwiseOperation) {
                     BitvectorFormula bvresult;
                     // Bit-wise operations
                     NumeralFormula.IntegerFormula ilhs = (NumeralFormula.IntegerFormula) elhs;
