@@ -133,6 +133,30 @@ public abstract class Slong extends AbstractSnumber {
         return se.l2f(this);
     }
 
+    public final Slong lshl(Slong l, SymbolicExecution se) {
+        return se.lshl(this, l);
+    }
+
+    public final Slong lshr(Slong l, SymbolicExecution se) {
+        return se.lshr(this, l);
+    }
+
+    public final Slong lxor(Slong l, SymbolicExecution se) {
+        return se.lxor(this, l);
+    }
+
+    public final Slong lor(Slong l, SymbolicExecution se) {
+        return se.lor(this, l);
+    }
+
+    public final Slong land(Slong l, SymbolicExecution se) {
+        return se.land(this, l);
+    }
+
+    public final Slong lushr(Slong l, SymbolicExecution se) {
+        return se.lushr(this, l);
+    }
+
     public static final class ConcSlong extends Slong implements ConcSnumber {
         public static final ConcSlong ZERO = new ConcSlong(0);
         public static final ConcSlong ONE = new ConcSlong(1);

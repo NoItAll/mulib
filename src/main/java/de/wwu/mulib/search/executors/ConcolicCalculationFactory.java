@@ -731,6 +731,162 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     }
 
     @Override
+    public Sint ishl(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.ishl(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() << rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Sint ishr(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.ishr(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() >> rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Sint ixor(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.ixor(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() ^ rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Sint ior(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.ior(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() | rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Sint iushr(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.iushr(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() >>> rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Sint iand(SymbolicExecution se, Sint i0, Sint i1) {
+        Sint potentiallySymbolic = scf.iand(se,(Sint) tryGetSymFromConcolic(i0), (Sint) tryGetSymFromConcolic(i1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
+        ConcSnumber concResult = valueFactory.concSint(lhsExpr.intVal() & rhsExpr.intVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Sint.newExpressionSymbolicSint(container);
+    }
+
+    @Override
+    public Slong lshl(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.lshl(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() << rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
+    public Slong lshr(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.lshr(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() >> rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
+    public Slong lxor(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.lxor(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() ^ rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
+    public Slong lor(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.lor(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() | rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
+    public Slong lushr(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.lushr(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() >>> rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
+    public Slong land(SymbolicExecution se, Slong l0, Slong l1) {
+        Slong potentiallySymbolic = scf.land(se,(Slong) tryGetSymFromConcolic(l0), (Slong) tryGetSymFromConcolic(l1));
+        if (potentiallySymbolic instanceof ConcSnumber) {
+            return potentiallySymbolic;
+        }
+        ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
+        ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
+        ConcSnumber concResult = valueFactory.concSlong(lhsExpr.longVal() & rhsExpr.longVal());
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        return Slong.newExpressionSymbolicSlong(container);
+    }
+
+    @Override
     public Schar i2c(SymbolicExecution se, Sint i) {
         Schar sym = scf.i2c(se, (Sint) tryGetSymFromConcolic(i));
         if (sym instanceof Schar.ConcSchar) {

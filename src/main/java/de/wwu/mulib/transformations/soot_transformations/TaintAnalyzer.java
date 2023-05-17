@@ -105,7 +105,6 @@ public class TaintAnalyzer {
             }
         }
 
-
         // Taint methods statically (i.e. methods won't be tainted in the subsequent main loop)
         List<Stmt> methodCallsToPotentiallyTaint = upc.stream().filter(u -> this.isMethodCallStmt((Stmt) u)).map(Stmt.class::cast).collect(Collectors.toList());
         // Add taint of special Mulib-indicator methods
@@ -120,11 +119,10 @@ public class TaintAnalyzer {
                     assert s instanceof InvokeStmt;
                     invokeExpr = s.getInvokeExpr();
                 }
-                if (invokeExpr.getMethodRef().getReturnType() instanceof RefType) {
-                    continue;
-                }
+                // We must taint inputs that are arrays. These might be altered in the method. Hence, we cannot wrap arrays
+                // that are used as inputs for tainted methods
+                addValuesToTainted(invokeExpr.getArgs().stream().filter(arg -> arg.getType() instanceof ArrayType).collect(Collectors.toSet()));
                 taintedValues.add(invokeExpr);
-                addValuesToTainted(invokeExpr.getArgs().stream().filter(arg -> !(arg instanceof Constant)).collect(Collectors.toSet()));
                 addTainted(s);
             } else {
                 String declaringClassName = s.getInvokeExpr().getMethodRef().getDeclaringClass().getName();
@@ -142,8 +140,8 @@ public class TaintAnalyzer {
                         && !declaringClassName.equals(StringConcatFactory.class.getName())
                         && s.getInvokeExpr().getMethodRef().getParameterTypes().size() > 0) { // TODO Free Strings
                     Mulib.log.info("Behavior for treating untransformed method in Stmt " + s + " is not " +
-                            "defined. The generalized signature is used as a default");
-                    generalizeSignature.add(s);
+                            "defined. The inputs for this method will be concretized as a default");
+                    concretizeInputs.add(s);
                 }
             }
         }
@@ -246,14 +244,17 @@ public class TaintAnalyzer {
     private boolean stmtShouldBeWrapped(Stmt s) {
         return !stmtIsTainted(s)
                 && !stmtIsWrapped(s)
-                && !containsTaintedValueBoxes(s.getUseBoxes()) // Should then be tainted instead
+                // If the statement is an InvokeStmt that should be generalized or concretized, it can still be wrapped.
+                // If the statement uses inputs that are tainted, it should be tainted instead
+                && (generalizeSignature.contains(s) || concretizeInputs.contains(s)
+                    || !containsTaintedValueBoxes(s.getUseBoxes()))
                 && containsTaintedValueBoxes(s.getDefBoxes())
                 // Regard array cases:
                 // If an array is loaded from a field or stored in a field, it must not be wrapped
                 && !isFieldStmtWithArrayType(s)
-                && s instanceof AssignStmt &&
-                    // If AssignStmt does not define an array, it can be wrapped
-                    s.getDefBoxes().stream().noneMatch(vb -> vb.getValue().getType() instanceof ArrayType)
+                && s instanceof AssignStmt
+                // If AssignStmt does not define an array, it can be wrapped
+                && s.getDefBoxes().stream().noneMatch(vb -> vb.getValue().getType() instanceof ArrayType)
                 ;
     }
 

@@ -512,6 +512,102 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
+    public Sint ishl(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() << ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, ShiftLeft.newInstance(i0, i1));
+    }
+
+    @Override
+    public Sint ishr(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() >> ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, ShiftRight.newInstance(i0, i1));
+    }
+
+    @Override
+    public Sint ixor(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() ^ ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, NumericXor.newInstance(i0, i1));
+    }
+
+    @Override
+    public Sint ior(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() | ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, NumericOr.newInstance(i0, i1));
+    }
+
+    @Override
+    public Sint iushr(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() >>> ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, LogicalShiftRight.newInstance(i0, i1));
+    }
+
+    @Override
+    public Sint iand(SymbolicExecution se, Sint i0, Sint i1) {
+        if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
+            return valueFactory.concSint(((ConcSnumber) i0).intVal() & ((ConcSnumber) i1).intVal());
+        }
+        return valueFactory.wrappingSymSint(se, ShiftLeft.newInstance(i0, i1));
+    }
+
+    @Override
+    public Slong lshl(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() << ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, ShiftLeft.newInstance(l0, l1));
+    }
+
+    @Override
+    public Slong lshr(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >> ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, ShiftRight.newInstance(l0, l1));
+    }
+
+    @Override
+    public Slong lxor(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() ^ ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, NumericXor.newInstance(l0, l1));
+    }
+
+    @Override
+    public Slong lor(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() | ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, NumericOr.newInstance(l0, l1));
+    }
+
+    @Override
+    public Slong lushr(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >>> ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, LogicalShiftRight.newInstance(l0, l1));
+    }
+
+    @Override
+    public Slong land(SymbolicExecution se, Slong l0, Slong l1) {
+        if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() & ((ConcSnumber) l1).longVal());
+        }
+        return valueFactory.wrappingSymSlong(se, NumericAnd.newInstance(l0, l1));
+    }
+
+    @Override
     protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
         if (value instanceof PartnerClass) {
             assert ((PartnerClass) value).__mulib__isRepresentedInSolver();

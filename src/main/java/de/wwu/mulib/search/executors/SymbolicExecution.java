@@ -1026,6 +1026,54 @@ public final class SymbolicExecution {
         return calculationFactory.i2s(this, i);
     }
 
+    public Sint ishl(Sint i0, Sint i1) {
+        return calculationFactory.ishl(this, i0, i1);
+    }
+
+    public Sint ishr(Sint i0, Sint i1) {
+        return calculationFactory.ishr(this, i0, i1);
+    }
+
+    public Sint ixor(Sint i0, Sint i1) {
+        return calculationFactory.ixor(this, i0, i1);
+    }
+
+    public Sint ior(Sint i0, Sint i1) {
+        return calculationFactory.ior(this, i0, i1);
+    }
+
+    public Sint iushr(Sint i0, Sint i1) {
+        return calculationFactory.iushr(this, i0, i1);
+    }
+
+    public Sint iand(Sint i0, Sint i1) {
+        return calculationFactory.iand(this, i0, i1);
+    }
+
+    public Slong lshl(Slong l0, Slong l1) {
+        return calculationFactory.lshl(this, l0, l1);
+    }
+
+    public Slong lshr(Slong l0, Slong l1) {
+        return calculationFactory.lshr(this, l0, l1);
+    }
+
+    public Slong lxor(Slong l0, Slong l1) {
+        return calculationFactory.lxor(this, l0, l1);
+    }
+
+    public Slong lor(Slong l0, Slong l1) {
+        return calculationFactory.lor(this, l0, l1);
+    }
+
+    public Slong lushr(Slong l0, Slong l1) {
+        return calculationFactory.lushr(this, l0, l1);
+    }
+
+    public Slong land(Slong l0, Slong l1) {
+        return calculationFactory.land(this, l0, l1);
+    }
+
     public Sbool evalInstanceof(Object partnerClass, Class<?> c) {
         /// TODO To CalculationFactory
         if (partnerClass == null) {

@@ -132,6 +132,29 @@ public interface CalculationFactory {
 
     Sshort i2s(SymbolicExecution se, Sint i);
 
+    Sint ishl(SymbolicExecution se, Sint i0, Sint i1);
+
+    Sint ishr(SymbolicExecution se, Sint i0, Sint i1);
+
+    Sint ixor(SymbolicExecution se, Sint i0, Sint i1);
+
+    Sint ior(SymbolicExecution se, Sint i0, Sint i1);
+
+    Sint iushr(SymbolicExecution se, Sint i0, Sint i1);
+
+    Sint iand(SymbolicExecution se, Sint i0, Sint i1);
+
+    Slong lshl(SymbolicExecution se, Slong l0, Slong l1);
+
+    Slong lshr(SymbolicExecution se, Slong l0, Slong l1);
+
+    Slong lxor(SymbolicExecution se, Slong l0, Slong l1);
+
+    Slong lor(SymbolicExecution se, Slong l0, Slong l1);
+
+    Slong lushr(SymbolicExecution se, Slong l0, Slong l1);
+
+    Slong land(SymbolicExecution se, Slong l0, Slong l1);
     SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);
 
     SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);

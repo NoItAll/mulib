@@ -47,6 +47,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_SSHORT;
     public final SootClass SC_SBYTE;
     public final SootClass SC_SBOOL;
+    public final SootClass SC_SCHAR;
     public final SootClass SC_CONCSINT;
     public final SootClass SC_CONCSLONG;
     public final SootClass SC_CONCSDOUBLE;
@@ -308,6 +309,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_CONCSFLOAT;
     public final SootMethod SM_CONCSSHORT;
     public final SootMethod SM_CONCSBYTE;
+    public final SootMethod SM_CONCSCHAR;
     public final SootMethod SM_CONCSBOOL;
     public final SootMethod SM_SINT_ADD;
     public final SootMethod SM_SINT_SUB;
@@ -338,6 +340,12 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SINT_I2B;
     public final SootMethod SM_SINT_I2S;
     public final SootMethod SM_SINT_I2C;
+    public final SootMethod SM_SINT_ISHL;
+    public final SootMethod SM_SINT_ISHR;
+    public final SootMethod SM_SINT_IXOR;
+    public final SootMethod SM_SINT_IOR;
+    public final SootMethod SM_SINT_IUSHR;
+    public final SootMethod SM_SINT_IAND;
     public final SootMethod SM_SLONG_ADD;
     public final SootMethod SM_SLONG_SUB;
     public final SootMethod SM_SLONG_DIV;
@@ -365,6 +373,12 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SLONG_L2F;
     public final SootMethod SM_SLONG_L2I;
     public final SootMethod SM_SLONG_CMP;
+    public final SootMethod SM_SLONG_LSHL;
+    public final SootMethod SM_SLONG_LSHR;
+    public final SootMethod SM_SLONG_LXOR;
+    public final SootMethod SM_SLONG_LOR;
+    public final SootMethod SM_SLONG_LUSHR;
+    public final SootMethod SM_SLONG_LAND;
     public final SootMethod SM_SDOUBLE_ADD;
     public final SootMethod SM_SDOUBLE_SUB;
     public final SootMethod SM_SDOUBLE_DIV;
@@ -458,7 +472,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
-    public final SootMethod SM_ABSTRACT_PARTNER_CLASS__initializeId;
+    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
+    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_ACCESS_METHOD_OF_CLASS;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -493,6 +508,7 @@ public class SootMulibClassesAndMethods {
         SC_SSHORT = Scene.v().forceResolve(Sshort.class.getName(), SootClass.SIGNATURES);
         SC_SBYTE = Scene.v().forceResolve(Sbyte.class.getName(), SootClass.SIGNATURES);
         SC_SBOOL = Scene.v().forceResolve(Sbool.class.getName(), SootClass.SIGNATURES);
+        SC_SCHAR = Scene.v().forceResolve(Schar.class.getName(), SootClass.SIGNATURES);
         SC_CONCSINT     = Scene.v().forceResolve(Sint.ConcSint.class.getName(), SootClass.SIGNATURES);
         SC_CONCSLONG    = Scene.v().forceResolve(Slong.ConcSlong.class.getName(), SootClass.SIGNATURES);
         SC_CONCSDOUBLE  = Scene.v().forceResolve(Sdouble.ConcSdouble.class.getName(), SootClass.SIGNATURES);
@@ -699,6 +715,19 @@ public class SootMulibClassesAndMethods {
         SM_SE_ALIASING_SYM_SBYTE_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SBYTESARRAY), TYPE_SBYTE);
         SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY    = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SSHORTSARRAY), TYPE_SSHORT);
         SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY     = SC_SE.getMethod("aliasingSymObjectOf", List.of(TYPE_SCHARSARRAY), TYPE_SCHAR);
+        SM_SINT_ISHL = SC_SINT.getMethod("ishl", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SINT_ISHR = SC_SINT.getMethod("ishr", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SINT_IXOR = SC_SINT.getMethod("ixor", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SINT_IOR = SC_SINT.getMethod("ior", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SINT_IUSHR = SC_SINT.getMethod("iushr", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SINT_IAND = SC_SINT.getMethod("iand", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
+        SM_SLONG_LSHL = SC_SLONG.getMethod("lshl", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LSHR = SC_SLONG.getMethod("lshr", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LXOR = SC_SLONG.getMethod("lxor", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LOR = SC_SLONG.getMethod("lor", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LUSHR = SC_SLONG.getMethod("lushr", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LAND = SC_SLONG.getMethod("land", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+
         SM_SE_MULTIDIM_SARRAYSARRAY = SC_SE.getMethod("sarraySarray", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_CLASS), TYPE_SARRAYSARRAY);
         SM_SE_PRIMITIVE_SARRAY_INITS = List.of(
                 SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY, SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY,
@@ -890,7 +919,13 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
-        SM_ABSTRACT_PARTNER_CLASS__initializeId = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "_initializeId", List.of(TYPE_SINT));
+        SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "_initializeId", List.of(TYPE_SINT));
+        SM_ABSTRACT_PARTNER_CLASS_ACCESS_METHOD_OF_CLASS =
+                SC_ABSTRACT_PARTNER_CLASS.getMethod(
+                        StringConstants._TRANSFORMATION_PREFIX + "accessMethodOfClass",
+                        List.of(TYPE_CLASS, TYPE_STRING, TYPE_CLASS.getArrayType(), TYPE_OBJECT, TYPE_OBJECT.getArrayType()),
+                        TYPE_OBJECT
+                );
 
         SM_CONCSINT     = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_SINT);
         SM_CONCSLONG    = SC_SLONG.getMethod("concSlong", List.of(TYPE_LONG), TYPE_SLONG);
@@ -899,6 +934,7 @@ public class SootMulibClassesAndMethods {
         SM_CONCSSHORT   = SC_SSHORT.getMethod("concSshort", List.of(TYPE_SHORT), TYPE_SSHORT);
         SM_CONCSBYTE    = SC_SBYTE.getMethod("concSbyte", List.of(TYPE_BYTE), TYPE_SBYTE);
         SM_CONCSBOOL    = SC_SBOOL.getMethod("concSbool", List.of(TYPE_BOOL), TYPE_SBOOL);
+        SM_CONCSCHAR    = SC_SCHAR.getMethod("concSchar", List.of(TYPE_CHAR), TYPE_SCHAR);
 
         SM_SBOOL_BOOL_CHOICE = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);

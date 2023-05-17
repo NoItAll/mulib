@@ -156,6 +156,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     return bi.shortValue();
                 } else if (p instanceof Sbyte) {
                     return bi.byteValue();
+                } else if (p instanceof Schar) {
+                    return (char) bi.intValue();
                 } else {
                     return bi.intValue();
                 }
@@ -308,8 +310,32 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     result = ctx.mkDiv((ArithExpr) elhs, (ArithExpr) erhs);
                 } else if (n instanceof Mod) {
                     result = ctx.mkMod((IntExpr) elhs, (IntExpr) erhs);
-                } else {
-                    throw new NotYetImplementedException();
+                } else { /// TODO Validate
+                    // Bit-wise operations
+                    IntExpr ilhs = (IntExpr) elhs;
+                    IntExpr irhs = (IntExpr) erhs;
+                    assert lhs instanceof Slong || lhs instanceof Sint;
+                    assert rhs instanceof Slong || rhs instanceof Sint;
+                    boolean lhsIsLong = lhs instanceof Slong;
+                    boolean rhsIsLong = rhs instanceof Slong;
+                    assert lhsIsLong == rhsIsLong;
+                    BitVecExpr bvlhs = ctx.mkInt2BV(lhsIsLong ? 64 : 32, ilhs);
+                    BitVecExpr bvrhs = ctx.mkInt2BV(rhsIsLong ? 64 : 32, irhs);
+                    if (n instanceof NumericAnd) {
+                        result = ctx.mkBVAND(bvlhs, bvrhs);
+                    } else if (n instanceof NumericOr) {
+                        result = ctx.mkBVOR(bvlhs, bvrhs);
+                    } else if (n instanceof NumericXor) {
+                        result = ctx.mkBVXOR(bvlhs, bvrhs);
+                    } else if (n instanceof ShiftLeft) {
+                        result = ctx.mkBVSHL(bvlhs, bvrhs);
+                    } else if (n instanceof ShiftRight) {
+                        result = ctx.mkBVASHR(bvlhs, bvrhs);
+                    } else if (n instanceof LogicalShiftRight) {
+                        result = ctx.mkBVLSHR(bvlhs, bvrhs);
+                    } else {
+                        throw new NotYetImplementedException();
+                    }
                 }
                 numericExpressionsStore.put(n, result);
             } else if (n instanceof AbstractExpressionWrappingExpression) {

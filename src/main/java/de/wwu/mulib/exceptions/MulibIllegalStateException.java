@@ -7,4 +7,8 @@ public class MulibIllegalStateException extends MulibException {
     public MulibIllegalStateException(String msg) {
         super(msg);
     }
+
+    public MulibIllegalStateException(String msg, Exception e) {
+        super(msg, e);
+    }
 }

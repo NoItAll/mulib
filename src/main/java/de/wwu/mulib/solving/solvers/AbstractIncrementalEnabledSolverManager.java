@@ -502,6 +502,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 return searchRegionVal.shortVal();
             } else if (searchRegionVal instanceof Sbyte) {
                 return searchRegionVal.byteVal();
+            } else if (searchRegionVal instanceof Schar) {
+                return (char) searchRegionVal.intVal();
             } else {
                 return searchRegionVal.intVal();
             }
@@ -656,6 +658,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 return short.class;
             } else if (Sbyte.class.isAssignableFrom(c)) {
                 return byte.class;
+            } else if (Schar.class.isAssignableFrom(c)) {
+                return char.class;
             } else {
                 assert Sint.class == c;
                 return int.class;
@@ -843,6 +847,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 wrappedPreviousValue = Sshort.concSshort((Short) value);
             } else if (value instanceof Byte) {
                 wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
+            } else if (value instanceof Character) {
+                wrappedPreviousValue = Schar.concSchar((Character) value);
             } else {
                 throw new NotYetImplementedException(sv.getClass().toString());
             }

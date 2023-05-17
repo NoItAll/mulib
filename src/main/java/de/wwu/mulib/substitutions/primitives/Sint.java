@@ -148,6 +148,30 @@ public abstract class Sint extends AbstractSnumber {
         return se.i2c(this);
     }
 
+    public final Sint ishl(Sint i, SymbolicExecution se) {
+        return se.ishl(this, i);
+    }
+
+    public final Sint ishr(Sint i, SymbolicExecution se) {
+        return se.ishr(this, i);
+    }
+
+    public final Sint ixor(Sint i, SymbolicExecution se) {
+        return se.ixor(this, i);
+    }
+
+    public final Sint ior(Sint i, SymbolicExecution se) {
+        return se.ior(this, i);
+    }
+
+    public final Sint iand(Sint i, SymbolicExecution se) {
+        return se.iand(this, i);
+    }
+
+    public final Sint iushr(Sint i, SymbolicExecution se) {
+        return se.iushr(this, i);
+    }
+
     @Override
     public final boolean isFp() {
         return false;

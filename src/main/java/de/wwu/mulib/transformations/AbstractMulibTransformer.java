@@ -6,6 +6,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
+import soot.SootField;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
@@ -465,7 +466,11 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         classesToTransform.add(getClassForPath(path));
     }
 
-    protected final boolean calculateReflectionRequiredForField(int access) {
+    protected final boolean calculateReflectionRequiredForField(SootField originalField) {
+        if (originalField.getDeclaringClass().getPackageName().startsWith("java")) {
+            return true;
+        }
+        int access = originalField.getModifiers();
         if (Modifier.isStatic(access)) {
             return false;
         }

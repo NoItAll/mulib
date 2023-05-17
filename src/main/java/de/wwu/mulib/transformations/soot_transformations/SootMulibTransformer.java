@@ -588,8 +588,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private boolean calculateReflectionRequired(SootClass toCheck) {
+        if (toCheck.getPackageName().startsWith("java")) {
+            // We must not create classes within a Java package. Thus, we add _TRANSFORMATION_PREFIX.
+            // However, this means, that we cannot use package-access.
+            return true;
+        }
         for (SootField f : toCheck.getFields()) {
-            if (calculateReflectionRequiredForField(f.getModifiers())) {
+            if (calculateReflectionRequiredForField(f)) {
                 return true;
             }
         }
@@ -694,6 +699,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 clazz = Byte.class;
             } else if (t instanceof BooleanType) {
                 clazz = Boolean.class;
+            } else if (t instanceof CharType) {
+                clazz = Character.class;
             } else {
                 throw new NotYetImplementedException();
             }
@@ -815,7 +822,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else if (originalType instanceof ByteType) {
                 wrapper = v.SM_CONCSBYTE.makeRef();
             } else if (originalType instanceof BooleanType) {
-                wrapper = v.SM_SE_CONCSBOOL.makeRef();
+                wrapper = v.SM_CONCSBOOL.makeRef();
+            } else if (originalType instanceof CharType) {
+                wrapper = v.SM_CONCSCHAR.makeRef();
             } else {
                 throw new NotYetImplementedException(originalType.toString());
             }
@@ -864,7 +873,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local toGetFromLocal, Local toStoreInLocal,
             SootField originalField, SootField transformedField,
             UnitPatchingChain upc) {
-        boolean reflectionRequiredToGetFromField = calculateReflectionRequiredForField(transformedField.getModifiers());
+        boolean reflectionRequiredToGetFromField = calculateReflectionRequiredForField(originalField);
         if (reflectionRequiredToGetFromField) {
             Type originalType = originalField.getType();
             // Get field, store in fieldLocal, set accessible
@@ -1483,7 +1492,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     returnVoid[0]
             );
         }
-        SootMethod _initializeId = v.SM_ABSTRACT_PARTNER_CLASS__initializeId;
+        SootMethod _initializeId = v.SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
         {
             // Now generate prepareToRepresentSymbolically
             _generatePrepareToRepresentSymbolicallyOrForAliasing(result, _initializeId, blockCache);
@@ -1746,7 +1755,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(getField);
 
             boolean reflectionRequiredToSetField =
-                    calculateReflectionRequiredForField(oldField.getModifiers());
+                    calculateReflectionRequiredForField(oldField);
 
             /* LABEL VALUE */
             Local labeledValue;
@@ -2059,6 +2068,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if (addTo == null) {
             return null;
         }
+        if (addTo.startsWith("java")) {
+            // Starting with "java" is forbidden
+            addTo = _TRANSFORMATION_PREFIX + addTo;
+        }
         int actualNameIndex = addTo.lastIndexOf(useDot ? '.' : '/') + 1;
         String packageName = addTo.substring(0, actualNameIndex);
         String actualName = addTo.substring(actualNameIndex);
@@ -2324,7 +2337,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private static boolean isPrimitiveOrSprimitive(Type t) {
-        return isIntOrSintSubtype(t) || isLongOrSlong(t) || isDoubleOrSdouble(t) || isFloatOrSfloat(t) || isBoolOrSbool(t);
+        return isIntOrSintSubtype(t) || isLongOrSlong(t)
+                || isDoubleOrSdouble(t) || isFloatOrSfloat(t) || isBoolOrSbool(t);
     }
 
     private static boolean isLongOrSlong(Type t) {
@@ -2647,7 +2661,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     || conditionExpr.getOp2() instanceof NullConstant
                     || conditionExpr.getOp2() instanceof ClassConstant;
             assert conditionExpr instanceof NeExpr || conditionExpr instanceof EqExpr;
-            assert !args.isTainted();
             Local refEqLocal = args.spawnStackLocal(v.TYPE_SBOOL);
             Stmt assignRefEq = Jimple.v().newAssignStmt(
                     refEqLocal,
@@ -3080,7 +3093,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     Type t = b.getOp1().getType();
                     SootMethodRef used;
                     if (b instanceof OrExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSint(t)) {
+                            used = v.SM_SINT_IOR.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LOR.makeRef();
+                        }
                     } else if (b instanceof DivExpr) {
                         if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_DIV.makeRef();
@@ -3094,7 +3112,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException();
                         }
                     } else if (b instanceof UshrExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSint(t)) {
+                            used = v.SM_SINT_IUSHR.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LUSHR.makeRef();
+                        }
                     } else if (b instanceof CmpExpr || b instanceof CmpgExpr || b instanceof CmplExpr) {
                         // ImmediateBox is used --> must be Local
                         ((Local) var).setType(v.TYPE_SINT);
@@ -3120,7 +3143,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(b.toString());
                         }
                     } else if (b instanceof XorExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSint(t)) {
+                            used = v.SM_SINT_IXOR.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LXOR.makeRef();
+                        }
                     } else if (b instanceof SubExpr) {
                         if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_SUB.makeRef();
@@ -3136,7 +3164,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     } else if (b instanceof ConditionExpr) {
                         throw new NotYetImplementedException();
                     } else if (b instanceof ShlExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSint(t)) {
+                            used = v.SM_SINT_ISHL.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LSHL.makeRef();
+                        }
                     } else if (b instanceof AddExpr) {
                         if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_ADD.makeRef();
@@ -3162,9 +3195,19 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException();
                         }
                     } else if (b instanceof AndExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSintSubtype(t)) {
+                            used = v.SM_SINT_IAND.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LAND.makeRef();
+                        }
                     } else if (b instanceof ShrExpr) {
-                        throw new NotYetImplementedException();
+                        if (isIntOrSintSubtype(t)) {
+                            used = v.SM_SINT_ISHR.makeRef();
+                        } else {
+                            assert isLongOrSlong(t);
+                            used = v.SM_SLONG_LSHR.makeRef();
+                        }
                     } else {
                         throw new NotYetImplementedException(b.toString());
                     }
@@ -3484,7 +3527,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         for (int i = 0; i < invokeExpr.getArgCount(); i++) {
             ValueBox vb = invokeExpr.getArgBox(i);
             Value v = vb.getValue();
-            if (!args.isTainted(v) && !(v.getType() instanceof RefType)) {
+            if (!args.isTainted(v) && !(v.getType() instanceof RefType) && !(v instanceof NullConstant)) {
                 assert !(v.getType() instanceof ArrayType);
                 // Wrap input
                 // Get method ref for wrapping
@@ -3559,6 +3602,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // ValueBox containing this Value has already been regarded
             return toTransform;
         }
+        if (toTransform instanceof InvokeExpr
+                && !(toTransform instanceof DynamicInvokeExpr) // TODO invokedynamic
+                && shouldBeTransformed(((InvokeExpr) toTransform).getMethodRef().getDeclaringClass().getName())) {
+            transformExpr((Expr) toTransform, a);
+            transformedValues.add(toTransform);
+            return toTransform;
+        }
         if (isRefTypeOrArrayWithInnerRefType(toTransform.getType())) {
             // Check if value can be statically transformed: That is the case for values with a reference type
             if (!isToTransformRefTypeOrArrayWithInnerToTransformRefType(toTransform.getType())
@@ -3572,7 +3622,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else if (!a.taintedValues.contains(toTransform)) {
             // This is in an else-if-block since the type of ref types must still be transformed to the partner class type
             if (!(toTransform instanceof InstanceOfExpr)) {
-                // Primitives
                 transformedValues.add(toTransform);
                 return toTransform;
             }
@@ -3666,7 +3715,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             throw new NotYetImplementedException();
         } else if (c instanceof ClassConstant) {
             String newValue = ((ClassConstant) c).getValue();
-            if (shouldBeTransformed(newValue)) {
+            String adapted = newValue.substring(1, newValue.length()-1).replace("/", ".");
+            if (shouldBeTransformed(adapted)) {
                 newValue = addPrefixToPath(newValue);
             }
             transformed = ClassConstant.v(newValue);

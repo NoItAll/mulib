@@ -198,6 +198,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                     return ((BigInteger) o).shortValue();
                 } else if (p instanceof Sbyte) {
                     return ((BigInteger) o).byteValue();
+                } else if (p instanceof Schar) {
+                    return (char) ((BigInteger) o).intValue();
                 } else {
                     return ((BigInteger) o).intValue();
                 }
@@ -226,6 +228,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         private final IntegerFormulaManager integerFormulaManager;
         private final RationalFormulaManager rationalFormulaManager;
         private final ArrayFormulaManager arrayFormulaManager;
+        private final BitvectorFormulaManager bitvectorFormulaManager;
         private final boolean treatSboolsAsInts;
 
         JavaSMTMulibAdapter(MulibConfig config, SolverContext context) {
@@ -234,6 +237,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             integerFormulaManager = formulaManager.getIntegerFormulaManager();
             rationalFormulaManager = formulaManager.getRationalFormulaManager();
             arrayFormulaManager = formulaManager.getArrayFormulaManager();
+            bitvectorFormulaManager = formulaManager.getBitvectorFormulaManager();
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
         }
 
@@ -371,34 +375,64 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 NumericExpression rhs = o.getExpr1();
                 NumeralFormula elhs = transformNumeral(lhs);
                 NumeralFormula erhs = transformNumeral(rhs);
-                BiFunction<NumeralFormula, NumeralFormula, NumeralFormula> fpCase;
-                BiFunction<NumeralFormula.IntegerFormula, NumeralFormula.IntegerFormula, NumeralFormula> integerCase;
-                if (n instanceof Sum) {
-                    fpCase = rationalFormulaManager::add;
-                    integerCase = integerFormulaManager::add;
-                } else if (n instanceof Mul) {
-                    fpCase = rationalFormulaManager::multiply;
-                    integerCase = integerFormulaManager::multiply;
-                } else if (n instanceof Sub) {
-                    fpCase = rationalFormulaManager::subtract;
-                    integerCase = integerFormulaManager::subtract;
-                } else if (n instanceof Div) {
-                    fpCase = rationalFormulaManager::divide;
-                    integerCase = integerFormulaManager::divide;
-                } else if (n instanceof Mod) {
-                    if (n.isFp()) {
-                        throw new MulibIllegalStateException("Modulo to be calculated on FP number");
+                if (n instanceof NumericBitwiseOperation) { /// TODO Validate
+                    BitvectorFormula bvresult;
+                    // Bit-wise operations
+                    NumeralFormula.IntegerFormula ilhs = (NumeralFormula.IntegerFormula) elhs;
+                    NumeralFormula.IntegerFormula irhs = (NumeralFormula.IntegerFormula) erhs;
+                    assert lhs instanceof Slong || lhs instanceof Sint;
+                    assert rhs instanceof Slong || rhs instanceof Sint;
+                    boolean lhsIsLong = lhs instanceof Slong;
+                    boolean rhsIsLong = rhs instanceof Slong;
+                    assert lhsIsLong == rhsIsLong;
+                    BitvectorFormula bvlhs = bitvectorFormulaManager.makeBitvector(lhsIsLong ? 64 : 32, ilhs);
+                    BitvectorFormula bvrhs = bitvectorFormulaManager.makeBitvector(rhsIsLong ? 64 : 32, irhs);
+                    if (n instanceof NumericAnd) {
+                        bvresult = bitvectorFormulaManager.and(bvlhs, bvrhs);
+                    } else if (n instanceof NumericOr) {
+                        bvresult = bitvectorFormulaManager.or(bvlhs, bvrhs);
+                    } else if (n instanceof NumericXor) {
+                        bvresult = bitvectorFormulaManager.xor(bvlhs, bvrhs);
+                    } else if (n instanceof ShiftLeft) {
+                        bvresult = bitvectorFormulaManager.shiftLeft(bvlhs, bvrhs);
+                    } else if (n instanceof ShiftRight) {
+                        bvresult = bitvectorFormulaManager.shiftRight(bvlhs, bvrhs, true);
+                    } else if (n instanceof LogicalShiftRight) {
+                        bvresult = bitvectorFormulaManager.shiftRight(bvlhs, bvrhs, false);
+                    } else {
+                        throw new NotYetImplementedException();
                     }
-                    fpCase = null;
-                    integerCase = integerFormulaManager::modulo;
+                    result = bitvectorFormulaManager.toIntegerFormula(bvresult, true);
                 } else {
-                    throw new NotYetImplementedException();
-                }
-                if (n.isFp()) {
-                    assert fpCase != null;
-                    result = fpCase.apply(elhs, erhs);
-                } else {
-                    result = integerCase.apply((NumeralFormula.IntegerFormula) elhs, (NumeralFormula.IntegerFormula) erhs);
+                    BiFunction<NumeralFormula, NumeralFormula, NumeralFormula> fpCase;
+                    BiFunction<NumeralFormula.IntegerFormula, NumeralFormula.IntegerFormula, NumeralFormula> integerCase;
+                    if (n instanceof Sum) {
+                        fpCase = rationalFormulaManager::add;
+                        integerCase = integerFormulaManager::add;
+                    } else if (n instanceof Mul) {
+                        fpCase = rationalFormulaManager::multiply;
+                        integerCase = integerFormulaManager::multiply;
+                    } else if (n instanceof Sub) {
+                        fpCase = rationalFormulaManager::subtract;
+                        integerCase = integerFormulaManager::subtract;
+                    } else if (n instanceof Div) {
+                        fpCase = rationalFormulaManager::divide;
+                        integerCase = integerFormulaManager::divide;
+                    } else if (n instanceof Mod) {
+                        if (n.isFp()) {
+                            throw new MulibIllegalStateException("Modulo to be calculated on FP number");
+                        }
+                        fpCase = null;
+                        integerCase = integerFormulaManager::modulo;
+                    } else {
+                        throw new NotYetImplementedException();
+                    }
+                    if (n.isFp()) {
+                        assert fpCase != null;
+                        result = fpCase.apply(elhs, erhs);
+                    } else {
+                        result = integerCase.apply((NumeralFormula.IntegerFormula) elhs, (NumeralFormula.IntegerFormula) erhs);
+                    }
                 }
             } else if (n instanceof AbstractExpressionWrappingExpression) {
                 if (n instanceof Neg) {

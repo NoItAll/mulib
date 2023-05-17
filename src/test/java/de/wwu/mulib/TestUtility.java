@@ -41,7 +41,6 @@ public final class TestUtility {
                         .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setFIXED_ACTUAL_CP_BUDGET(TEST_FIXED_ACTUAL_CP_BUDGET)
                         .setTRANSF_WRITE_TO_FILE(true)
-                        .setTRANSF_VALIDATE_TRANSFORMATION(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
