@@ -148,6 +148,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             return Sbyte.class;
         } else if (toTransform == boolean.class) {
             return Sbool.class;
+        } else if (toTransform == char.class) {
+            return Schar.class;
         } else if (toTransform == String.class) {
             return String.class; // TODO Free Strings
         } else if (toTransform.isArray()) {
@@ -184,12 +186,95 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 return sarraysToRealArrayTypes ? Sbool[].class : Sarray.SboolSarray.class;
             } else if (componentType == byte.class) {
                 return sarraysToRealArrayTypes ? Sbyte[].class : Sarray.SbyteSarray.class;
+            } else if (componentType == char.class) {
+                return sarraysToRealArrayTypes ? Schar[].class : Sarray.ScharSarray.class;
             } else {
-                assert componentType != char.class;
                 return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : Sarray.PartnerClassSarray.class;
             }
         } else {
             return getPossiblyTransformedClass(toTransform);
+        }
+    }
+
+    @Override
+    public Class<?> transformMulibTypeBack(Class<?> toTransform) {
+        if (toTransform == null) {
+            throw new MulibRuntimeException("Type to transform must not be null.");
+        }
+        if (!SubstitutedVar.class.isAssignableFrom(toTransform)) {
+            return toTransform;
+        }
+        if (toTransform == Sint.class) {
+            return int.class;
+        } else if (toTransform == Slong.class) {
+            return long.class;
+        } else if (toTransform == Sdouble.class) {
+            return double.class;
+        } else if (toTransform == Sfloat.class) {
+            return float.class;
+        } else if (toTransform == Sshort.class) {
+            return short.class;
+        } else if (toTransform == Sbyte.class) {
+            return byte.class;
+        } else if (toTransform == Sbool.class) {
+            return boolean.class;
+        } else if (toTransform == Schar.class) {
+            return char.class;
+        } else if (toTransform == String.class) {
+            return String.class; // TODO Free Strings
+        } else if (Sarray.class.isAssignableFrom(toTransform)) {
+            if (toTransform == Sarray.SintSarray.class || toTransform == Sint[].class) {
+                return int[].class;
+            } else if (toTransform == Sarray.SlongSarray.class) {
+                return long[].class;
+            } else if (toTransform == Sarray.SdoubleSarray.class) {
+                return double[].class;
+            } else if (toTransform == Sarray.SfloatSarray.class) {
+                return float[].class;
+            } else if (toTransform == Sarray.SshortSarray.class) {
+                return short[].class;
+            } else if (toTransform == Sarray.SbyteSarray.class) {
+                return byte[].class;
+            } else if (toTransform == Sarray.SboolSarray.class) {
+                return boolean[].class;
+            } else if (toTransform == Sarray.ScharSarray.class) {
+                return char[].class;
+            } else {
+                assert Sarray.PartnerClassSarray.class.isAssignableFrom(toTransform);
+                throw new NotYetImplementedException();
+            }
+        } else if (toTransform.isArray()) {
+            if (toTransform == Sint[].class) {
+                return int[].class;
+            } else if (toTransform == Slong[].class) {
+                return long[].class;
+            } else if (toTransform == Sdouble[].class) {
+                return double[].class;
+            } else if (toTransform == Sfloat[].class) {
+                return float[].class;
+            } else if (toTransform == Sshort[].class) {
+                return short[].class;
+            } else if (toTransform == Sbyte[].class) {
+                return byte[].class;
+            } else if (toTransform == Sbool[].class) {
+                return boolean[].class;
+            } else if (toTransform == Schar[].class) {
+                return char[].class;
+            } else {
+                return Array.newInstance(transformMulibTypeBack(toTransform.getComponentType()), 0).getClass();
+            }
+        } else {
+            return getNonTransformedClassFromPartnerClass(toTransform);
+        }
+    }
+
+    private Class<?> getNonTransformedClassFromPartnerClass(Class<?> c) {
+        String name = c.getName();
+        String nameWithoutTransformationPrefix = name.replace(_TRANSFORMATION_PREFIX, "");
+        try {
+            return Class.forName(nameWithoutTransformationPrefix);
+        } catch (ClassNotFoundException e) {
+            throw new MulibRuntimeException(e);
         }
     }
 

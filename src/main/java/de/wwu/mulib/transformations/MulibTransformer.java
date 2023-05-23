@@ -13,6 +13,8 @@ public interface MulibTransformer {
         return transformType(toTransform, false);
     }
 
+    Class<?> transformMulibTypeBack(Class<?> toTransform);
+
     Class<?> getTransformedClass(Class<?> beforeTransformation);
 
     Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation);

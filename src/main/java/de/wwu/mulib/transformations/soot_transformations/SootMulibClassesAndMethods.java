@@ -721,11 +721,11 @@ public class SootMulibClassesAndMethods {
         SM_SINT_IOR = SC_SINT.getMethod("ior", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
         SM_SINT_IUSHR = SC_SINT.getMethod("iushr", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
         SM_SINT_IAND = SC_SINT.getMethod("iand", List.of(TYPE_SINT, TYPE_SE), TYPE_SINT);
-        SM_SLONG_LSHL = SC_SLONG.getMethod("lshl", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
-        SM_SLONG_LSHR = SC_SLONG.getMethod("lshr", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LSHL = SC_SLONG.getMethod("lshl", List.of(TYPE_SINT, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LSHR = SC_SLONG.getMethod("lshr", List.of(TYPE_SINT, TYPE_SE), TYPE_SLONG);
         SM_SLONG_LXOR = SC_SLONG.getMethod("lxor", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
         SM_SLONG_LOR = SC_SLONG.getMethod("lor", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
-        SM_SLONG_LUSHR = SC_SLONG.getMethod("lushr", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
+        SM_SLONG_LUSHR = SC_SLONG.getMethod("lushr", List.of(TYPE_SINT, TYPE_SE), TYPE_SLONG);
         SM_SLONG_LAND = SC_SLONG.getMethod("land", List.of(TYPE_SLONG, TYPE_SE), TYPE_SLONG);
 
         SM_SE_MULTIDIM_SARRAYSARRAY = SC_SE.getMethod("sarraySarray", List.of(ArrayType.v(TYPE_SINT, 1), TYPE_CLASS), TYPE_SARRAYSARRAY);

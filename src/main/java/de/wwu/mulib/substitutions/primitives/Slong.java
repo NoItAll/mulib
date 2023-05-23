@@ -133,11 +133,11 @@ public abstract class Slong extends AbstractSnumber {
         return se.l2f(this);
     }
 
-    public final Slong lshl(Slong l, SymbolicExecution se) {
+    public final Slong lshl(Sint l, SymbolicExecution se) {
         return se.lshl(this, l);
     }
 
-    public final Slong lshr(Slong l, SymbolicExecution se) {
+    public final Slong lshr(Sint l, SymbolicExecution se) {
         return se.lshr(this, l);
     }
 
@@ -153,7 +153,7 @@ public abstract class Slong extends AbstractSnumber {
         return se.land(this, l);
     }
 
-    public final Slong lushr(Slong l, SymbolicExecution se) {
+    public final Slong lushr(Sint l, SymbolicExecution se) {
         return se.lushr(this, l);
     }
 

@@ -23,6 +23,10 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         return new SymSbool(c);
     }
 
+    public final Sbool xor(Sbool rhs, SymbolicExecution se) {
+        return se.xor(this, rhs);
+    }
+
     public final Sbool and(Sbool rhs, SymbolicExecution se) {
        return se.and(this, rhs);
     }

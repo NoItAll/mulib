@@ -1050,11 +1050,11 @@ public final class SymbolicExecution {
         return calculationFactory.iand(this, i0, i1);
     }
 
-    public Slong lshl(Slong l0, Slong l1) {
+    public Slong lshl(Slong l0, Sint l1) {
         return calculationFactory.lshl(this, l0, l1);
     }
 
-    public Slong lshr(Slong l0, Slong l1) {
+    public Slong lshr(Slong l0, Sint l1) {
         return calculationFactory.lshr(this, l0, l1);
     }
 
@@ -1066,7 +1066,7 @@ public final class SymbolicExecution {
         return calculationFactory.lor(this, l0, l1);
     }
 
-    public Slong lushr(Slong l0, Slong l1) {
+    public Slong lushr(Slong l0, Sint l1) {
         return calculationFactory.lushr(this, l0, l1);
     }
 
@@ -1122,6 +1122,10 @@ public final class SymbolicExecution {
 
     public Sbool not(final Sbool b) {
         return calculationFactory.not(this, b);
+    }
+
+    public Sbool xor(final Sbool lhs, final Sbool rhs) {
+        return calculationFactory.xor(this, lhs, rhs);
     }
 
     /* CHOICEPOINTFACTORY FACADE */

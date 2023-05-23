@@ -399,6 +399,70 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return c;
     }
 
+    private static boolean classRepresentedByType(Class<?> c, Type t) {
+        if (c.isPrimitive()) {
+            if (c == int.class) {
+                return t instanceof IntType;
+            } else if (c == long.class) {
+                return t instanceof LongType;
+            } else if (c == double.class) {
+                return t instanceof DoubleType;
+            } else if (c == float.class) {
+                return t instanceof FloatType;
+            } else if (c == short.class) {
+                return t instanceof ShortType;
+            } else if (c == byte.class) {
+                return t instanceof ByteType;
+            } else if (c == boolean.class) {
+                return t instanceof BooleanType;
+            } else {
+                assert c == char.class;
+                return t instanceof CharType;
+            }
+        } else if (c.isArray()) {
+            if (!(t instanceof ArrayType)) {
+                return false;
+            }
+            return classRepresentedByType(c.getComponentType(), ((ArrayType) t).getElementType());
+        } else {
+            if (!(t instanceof RefType)) {
+                return false;
+            }
+            return ((RefType) t).getClassName().equals(c.getName());
+        }
+    }
+
+    private static boolean classesRepresentedByTypes(Class<?>[] cs, List<Type> ts) {
+        for (int i = 0; i < cs.length; i++) {
+            Class<?> c = cs[i];
+            Type t = ts.get(i);
+            if (!classRepresentedByType(c, t)) {
+                return false;
+            }
+        }
+        return true;
+    }
+
+    private SootMethod getSootMethodForMethod(Method m) {
+        Class<?> declaringClass = m.getDeclaringClass();
+        SootClass sootClass = getClassNodeForName(declaringClass.getName());
+        SootMethod result = null;
+        Class<?>[] parameterTypes = m.getParameterTypes();
+        for (SootMethod sm : sootClass.getMethods()) {
+            List<Type> types = sm.getParameterTypes();
+            if (!m.getName().equals(sm.getName()) || parameterTypes.length != types.size()) {
+                continue;
+            }
+            if (classesRepresentedByTypes(parameterTypes, types)) {
+                result = sm;
+                break;
+            }
+        }
+
+        assert result != null;
+        return result;
+    }
+
     private String getOuterClassField(SootClass c) {
         if (!c.isInnerClass()) {
             throw new MulibRuntimeException("Input must be an inner class");

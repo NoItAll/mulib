@@ -72,6 +72,8 @@ public interface CalculationFactory {
 
     Sbool not(SymbolicExecution se, Sbool b);
 
+    Sbool xor(SymbolicExecution se, Sbool lhs, Sbool rhs);
+
     Sbool lt(SymbolicExecution se, Sint lhs, Sint rhs);
 
     Sbool lt(SymbolicExecution se, Slong lhs, Slong rhs);
@@ -144,15 +146,15 @@ public interface CalculationFactory {
 
     Sint iand(SymbolicExecution se, Sint i0, Sint i1);
 
-    Slong lshl(SymbolicExecution se, Slong l0, Slong l1);
+    Slong lshl(SymbolicExecution se, Slong l0, Sint l1);
 
-    Slong lshr(SymbolicExecution se, Slong l0, Slong l1);
+    Slong lshr(SymbolicExecution se, Slong l0, Sint l1);
 
     Slong lxor(SymbolicExecution se, Slong l0, Slong l1);
 
     Slong lor(SymbolicExecution se, Slong l0, Slong l1);
 
-    Slong lushr(SymbolicExecution se, Slong l0, Slong l1);
+    Slong lushr(SymbolicExecution se, Slong l0, Sint l1);
 
     Slong land(SymbolicExecution se, Slong l0, Slong l1);
     SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);

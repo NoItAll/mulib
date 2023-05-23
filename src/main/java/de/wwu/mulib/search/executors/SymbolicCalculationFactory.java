@@ -254,6 +254,15 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
+    public Sbool xor(SymbolicExecution se, Sbool lhs, Sbool rhs) {
+        Constraint result = Xor.newInstance(lhs, rhs);
+        if (result instanceof Sbool.ConcSbool) {
+            return (Sbool.ConcSbool) result;
+        }
+        return valueFactory.wrappingSymSbool(se, result);
+    }
+
+    @Override
     public Sbool not(SymbolicExecution se, Sbool b) {
         if (b instanceof Sbool.ConcSbool) {
             return valueFactory.concSbool(((Sbool.ConcSbool) b).isFalse());
@@ -560,17 +569,17 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
-    public Slong lshl(SymbolicExecution se, Slong l0, Slong l1) {
+    public Slong lshl(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() << ((ConcSnumber) l1).longVal());
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() << ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, ShiftLeft.newInstance(l0, l1));
     }
 
     @Override
-    public Slong lshr(SymbolicExecution se, Slong l0, Slong l1) {
+    public Slong lshr(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >> ((ConcSnumber) l1).longVal());
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >> ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, ShiftRight.newInstance(l0, l1));
     }
@@ -592,9 +601,9 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
-    public Slong lushr(SymbolicExecution se, Slong l0, Slong l1) {
+    public Slong lushr(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >>> ((ConcSnumber) l1).longVal());
+            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >>> ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, LogicalShiftRight.newInstance(l0, l1));
     }
