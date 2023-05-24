@@ -17,7 +17,7 @@ public class NQueensTransfExec {
     @Test
     public void testNQueensTransfSolve() {
         TestUtility.getAllSolutions(this::_testNQueens, "solve");
-        // Check sequenece
+        // Check sequence
         TestUtility.getAllSolutions(this::_testNQueensAlt, "solveAlt");
     }
 
