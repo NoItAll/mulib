@@ -3158,7 +3158,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     Type t = b.getOp1().getType();
                     SootMethodRef used;
                     if (b instanceof OrExpr) {
-                        if (isIntOrSint(t)) {
+                        if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_IOR.makeRef();
                         } else {
                             assert isLongOrSlong(t);
@@ -3177,7 +3177,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException();
                         }
                     } else if (b instanceof UshrExpr) {
-                        if (isIntOrSint(t)) {
+                        if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_IUSHR.makeRef();
                         } else {
                             assert isLongOrSlong(t);
@@ -3196,7 +3196,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(b.toString());
                         }
                     } else if (b instanceof RemExpr) {
-                        if (isIntOrSint(t)) {
+                        if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_MOD.makeRef();
                         } else if (isDoubleOrSdouble(t)) {
                             used = v.SM_SDOUBLE_MOD.makeRef();
@@ -3229,7 +3229,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     } else if (b instanceof ConditionExpr) {
                         throw new NotYetImplementedException();
                     } else if (b instanceof ShlExpr) {
-                        if (isIntOrSint(t)) {
+                        if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_ISHL.makeRef();
                         } else {
                             assert isLongOrSlong(t);
