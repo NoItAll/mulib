@@ -10,7 +10,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
     private Sbool() {}
 
-    public static Sbool concSbool(boolean b) {
+    public static Sbool.ConcSbool concSbool(boolean b) {
         return b ? ConcSbool.TRUE : ConcSbool.FALSE;
     }
 

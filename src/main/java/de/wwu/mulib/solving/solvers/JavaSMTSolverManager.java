@@ -240,7 +240,14 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             integerFormulaManager = formulaManager.getIntegerFormulaManager();
             rationalFormulaManager = formulaManager.getRationalFormulaManager();
             arrayFormulaManager = formulaManager.getArrayFormulaManager();
-            bitvectorFormulaManager = formulaManager.getBitvectorFormulaManager();
+            BitvectorFormulaManager bitvectorFormulaManager;
+            try {
+                bitvectorFormulaManager = formulaManager.getBitvectorFormulaManager();
+            } catch (UnsupportedOperationException e) {
+                // Ignore for now
+                bitvectorFormulaManager = null;
+            }
+            this.bitvectorFormulaManager = bitvectorFormulaManager;
             this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
         }
 
@@ -379,6 +386,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 NumeralFormula elhs = transformNumeral(lhs);
                 NumeralFormula erhs = transformNumeral(rhs);
                 if (n instanceof NumericBitwiseOperation) {
+                    if (bitvectorFormulaManager == null) {
+                        throw new MulibRuntimeException("Solving with bitvectors is not supported.");
+                    }
                     BitvectorFormula bvresult;
                     // Bit-wise operations
                     NumeralFormula.IntegerFormula ilhs = (NumeralFormula.IntegerFormula) elhs;

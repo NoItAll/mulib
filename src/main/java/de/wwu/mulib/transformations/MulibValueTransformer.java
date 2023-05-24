@@ -165,31 +165,31 @@ public final class MulibValueTransformer {
             if (componentType.isPrimitive()) {
                 if (componentType == int.class) {
                     Sint[] transformedValues = (Sint[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SintSarray(transformedValues, this);
+                    return new Sarray.SintSarray(transformedValues);
                 } else if (componentType == long.class) {
                     Slong[] transformedValues = (Slong[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SlongSarray(transformedValues, this);
+                    return new Sarray.SlongSarray(transformedValues);
                 } else if (componentType == double.class) {
                     Sdouble[] transformedValues = (Sdouble[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SdoubleSarray(transformedValues, this);
+                    return new Sarray.SdoubleSarray(transformedValues);
                 } else if (componentType == float.class) {
                     Sfloat[] transformedValues = (Sfloat[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SfloatSarray(transformedValues, this);
+                    return new Sarray.SfloatSarray(transformedValues);
                 } else if (componentType == short.class) {
                     Sshort[] transformedValues = (Sshort[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SshortSarray(transformedValues, this);
+                    return new Sarray.SshortSarray(transformedValues);
                 } else if (componentType == byte.class) {
                     Sbyte[] transformedValues = (Sbyte[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SbyteSarray(transformedValues, this);
+                    return new Sarray.SbyteSarray(transformedValues);
                 } else if (componentType == boolean.class) {
                     Sbool[] transformedValues = (Sbool[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                    return new Sarray.SboolSarray(transformedValues, this);
+                    return new Sarray.SboolSarray(transformedValues);
                 } else {
                     throw new NotYetImplementedException(array.toString());
                 }
             } else {
                 PartnerClass[] transformedValues = (PartnerClass[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                return new Sarray.PartnerClassSarray<>(transformedValues, this);
+                return new Sarray.PartnerClassSarray<>(transformedValues);
             }
         } else {
             // Component is array! We need to generate a SarraySarray
@@ -199,7 +199,7 @@ public final class MulibValueTransformer {
                 Sarray<?> transformedValue = transformArrayToSarray(currentValue);
                 transformedValues[i] = transformedValue;
             }
-            return new Sarray.SarraySarray(transformedValues, transformedComponentType, this);
+            return new Sarray.SarraySarray(transformedValues, transformedComponentType);
         }
     }
 

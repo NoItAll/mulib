@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicLong;
 public abstract class Schar extends Sint {
     private Schar() {}
 
-    public static Schar concSchar(char s) {
+    public static Schar.ConcSchar concSchar(char s) {
         return new Schar.ConcSchar(s);
     }
 

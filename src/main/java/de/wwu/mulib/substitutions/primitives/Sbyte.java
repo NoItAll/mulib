@@ -8,7 +8,7 @@ public abstract class Sbyte extends Sint {
 
     private Sbyte() {}
 
-    public static Sbyte concSbyte(byte b) {
+    public static Sbyte.ConcSbyte concSbyte(byte b) {
         return new Sbyte.ConcSbyte(b);
     }
 

@@ -1,13 +1,13 @@
 package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
-import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -51,19 +51,18 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         if (len instanceof ConcSnumber) {
             int length = ((ConcSnumber) len).intVal();
             for (int i = 0; i < length; i++) {
-                cachedElements.put(se.concSint(i), getNewValueForSelect(se));
+                cachedElements.put(Sint.concSint(i), getNewValueForSelect(se));
             }
         }
     }
 
     /** Transformation constructor */
     protected Sarray(
-            T[] arrayElements,
-            MulibValueTransformer mvt) {
+            T[] arrayElements) {
         this.id = null;
         this.clazz = (Class<T>) arrayElements.getClass().getComponentType();
         int length = arrayElements.length;
-        this.len = (Sint) mvt.transform(length);
+        this.len = Sint.concSint(length);
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
         this.cachedElements = new HashMap<>();
         for (int i = 0; i < arrayElements.length; i++) {
@@ -123,7 +122,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public abstract T select(Sint i, SymbolicExecution se);
 
     public abstract void store(Sint i, T val, SymbolicExecution se);
-
+    
     public final Set<Sint> getCachedIndices() {
         return cachedElements.keySet();
     }
@@ -231,10 +230,20 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         throw new MulibIllegalStateException("Should not be called for Sarrays");
     }
 
+    public void storeConcrete(Sint i, T val) {
+        if (!(i instanceof ConcSnumber)) {
+            throw new MulibRuntimeException("Must be a concrete index");
+        } else if (__mulib__isLazilyInitialized() || __mulib__defaultIsSymbolic() || __mulib__cacheIsBlocked()
+                || __mulib__isNull() != Sbool.ConcSbool.FALSE || __mulib__isRepresentedInSolver()) {
+            throw new MulibIllegalStateException("Must not be of state " + representationState);
+        }
+        cachedElements.put(i, val);
+    }
+
     public static class SintSarray extends Sarray<Sint> {
         /** Transformation constructor */
-        public SintSarray(Sint[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SintSarray(Sint[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -281,8 +290,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SdoubleSarray extends Sarray<Sdouble> {
 
         /** Transformation constructor */
-        public SdoubleSarray(Sdouble[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SdoubleSarray(Sdouble[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -329,8 +338,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SfloatSarray extends Sarray<Sfloat> {
 
         /** Transformation constructor */
-        public SfloatSarray(Sfloat[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SfloatSarray(Sfloat[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -377,8 +386,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SlongSarray extends Sarray<Slong> {
 
         /** Transformation constructor */
-        public SlongSarray(Slong[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SlongSarray(Slong[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -425,8 +434,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SshortSarray extends Sarray<Sshort> {
 
         /** Transformation constructor */
-        public SshortSarray(Sshort[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SshortSarray(Sshort[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -473,8 +482,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class ScharSarray extends Sarray<Schar> {
 
         /** Transformation constructor */
-        public ScharSarray(Schar[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public ScharSarray(Schar[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -521,8 +530,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SbyteSarray extends Sarray<Sbyte> {
 
         /** Transformation constructor */
-        public SbyteSarray(Sbyte[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SbyteSarray(Sbyte[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -569,8 +578,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class SboolSarray extends Sarray<Sbool> {
 
         /** Transformation constructor */
-        public SboolSarray(Sbool[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SboolSarray(Sbool[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -617,8 +626,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public static class PartnerClassSarray<T extends PartnerClass> extends Sarray<T> {
 
         /** Transformation constructor */
-        public PartnerClassSarray(T[] values, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public PartnerClassSarray(T[] values) {
+            super(values);
         }
 
         /** New instance constructor */
@@ -726,8 +735,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         private final Class<?> elementType;
 
         /** Transformation constructor */
-        public SarraySarray(Sarray[] values, Class<?> elementType, MulibValueTransformer mvt) {
-            super(values, mvt);
+        public SarraySarray(Sarray[] values, Class<?> elementType) {
+            super(values);
             this.elementType = elementType;
             this.dim = determineDimFromInnerElementType(elementType);
         }
@@ -794,7 +803,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                         // If symbolic is required, optional aliasing etc. is handled here
                         result = symbolicDefaultDuringInitializationForConcreteLength(se);
                     }
-                    cachedElements.put(se.concSint(i), result);
+                    cachedElements.put(Sint.concSint(i), result);
                 }
             }
         }

@@ -9,7 +9,7 @@ public abstract class Sfloat extends Sfpnumber {
 
     private Sfloat() {}
 
-    public static Sfloat concSfloat(float d) {
+    public static Sfloat.ConcSfloat concSfloat(float d) {
         return new ConcSfloat(d);
     }
 

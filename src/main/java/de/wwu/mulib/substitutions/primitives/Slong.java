@@ -9,7 +9,7 @@ public abstract class Slong extends AbstractSnumber {
 
     private Slong() {}
 
-    public static Slong concSlong(long l) {
+    public static Slong.ConcSlong concSlong(long l) {
         return new ConcSlong(l);
     }
 

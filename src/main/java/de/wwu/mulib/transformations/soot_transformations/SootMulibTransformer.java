@@ -18,6 +18,7 @@ import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.util.Chain;
 
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -874,21 +875,21 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // not-initialized
             SootMethodRef wrapper;
             if (originalType instanceof IntType) {
-                wrapper = v.SM_CONCSINT.makeRef();
+                wrapper = v.SM_SINT_CONCSINT.makeRef();
             } else if (originalType instanceof LongType) {
-                wrapper = v.SM_CONCSLONG.makeRef();
+                wrapper = v.SM_SLONG_CONCSLONG.makeRef();
             } else if (originalType instanceof DoubleType) {
-                wrapper = v.SM_CONCSDOUBLE.makeRef();
+                wrapper = v.SM_SDOUBLE_CONCSDOUBLE.makeRef();
             } else if (originalType instanceof FloatType) {
-                wrapper = v.SM_CONCSFLOAT.makeRef();
+                wrapper = v.SM_SFLOAT_CONCSFLOAT.makeRef();
             } else if (originalType instanceof ShortType) {
-                wrapper = v.SM_CONCSSHORT.makeRef();
+                wrapper = v.SM_SSHORT_CONCSSHORT.makeRef();
             } else if (originalType instanceof ByteType) {
-                wrapper = v.SM_CONCSBYTE.makeRef();
+                wrapper = v.SM_SBYTE_CONCSBYTE.makeRef();
             } else if (originalType instanceof BooleanType) {
-                wrapper = v.SM_CONCSBOOL.makeRef();
+                wrapper = v.SM_SBOOL_CONCSBOOL.makeRef();
             } else if (originalType instanceof CharType) {
-                wrapper = v.SM_CONCSCHAR.makeRef();
+                wrapper = v.SM_SCHAR_CONCSCHAR.makeRef();
             } else {
                 throw new NotYetImplementedException(originalType.toString());
             }
@@ -1706,7 +1707,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         ));
         upc.add(Jimple.v().newAssignStmt(
                 idLocal,
-                Jimple.v().newVirtualInvokeExpr(seLocal, v.SM_SE_CONCSINT.makeRef(), nextNumberInitializedSymObjectLocal)
+                Jimple.v().newStaticInvokeExpr(v.SM_SINT_CONCSINT.makeRef(), nextNumberInitializedSymObjectLocal)
         ));
         upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, _initializeId.makeRef(), idLocal)));
         upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, blockCache.makeRef())));
@@ -2473,8 +2474,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Find method to wrap with
             SootMethodRef used = constantWrapperMethodRef(args.newMethod().getReturnType()); // TODO class and string returns...
             // Create virtual call
-            VirtualInvokeExpr virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used, op);
-            assignNewValueRedirectAndAdd(virtualInvokeExpr, null, r, r.getOpBox(), args);
+            InvokeExpr invokeExpr = Jimple.v().newStaticInvokeExpr(used, op);
+            assignNewValueRedirectAndAdd(invokeExpr, null, r, r.getOpBox(), args);
         }
         args.addUnit(r);
     }
@@ -2512,7 +2513,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local wrapLocal = args.spawnStackLocal(v.TYPE_SINT);
             AssignStmt assign = Jimple.v().newAssignStmt(
                     wrapLocal,
-                    Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_CONCSINT.makeRef(), IntConstant.v(sw.val))
+                    Jimple.v().newStaticInvokeExpr(v.SM_SINT_CONCSINT.makeRef(), IntConstant.v(sw.val))
             );
             if (first) {
                 s.redirectJumpsToThisTo(assign);
@@ -2910,7 +2911,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             toWrap = newLocal;
             firstStmt = assignNonImmediateToWrapToLocal;
         }
-        VirtualInvokeExpr wrapLhsExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), wrapLhs, toWrap);
+        InvokeExpr wrapLhsExpr = Jimple.v().newStaticInvokeExpr(wrapLhs, toWrap);
         Local lhsWrapLocal = args.spawnStackLocal(transformType(t));
         AssignStmt assignLhs = Jimple.v().newAssignStmt(lhsWrapLocal, wrapLhsExpr);
         args.addUnit(assignLhs);
@@ -3020,8 +3021,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     // Find method to wrap with
                     SootMethodRef used = constantWrapperMethodRef(var.getType());
                     // Create virtual call
-                    VirtualInvokeExpr virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used, var);
-                    assignNewValueRedirectAndAdd(virtualInvokeExpr, null, a, valueBox, args);
+                    InvokeExpr invokeExpr = Jimple.v().newStaticInvokeExpr(used, var);
+                    assignNewValueRedirectAndAdd(invokeExpr, null, a, valueBox, args);
                 }
             } else if (value instanceof Expr) {
                 if (value instanceof InstanceOfExpr) {
@@ -3207,7 +3208,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(b.toString());
                         }
                     } else if (b instanceof XorExpr) {
-                        if (isIntOrSint(t)) {
+                        if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_IXOR.makeRef();
                         } else {
                             assert isLongOrSlong(t);
@@ -3597,7 +3598,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 // Get method ref for wrapping
                 SootMethodRef smr = constantWrapperMethodRef(calledMethod.getParameterType(i));
                 // Call method ref (e.g. SymbolicExecution.concSint(int, SymbolicExecution))
-                VirtualInvokeExpr wrappingExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), smr, v);
+                InvokeExpr wrappingExpr = Jimple.v().newStaticInvokeExpr(smr, v);
                 // Store result in stack local
                 Local stackLocal = args.spawnStackLocal(smr.getReturnType());
                 AssignStmt wrappingStmt = Jimple.v().newAssignStmt(stackLocal, wrappingExpr);
@@ -3667,8 +3668,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return toTransform;
         }
         if (toTransform instanceof InvokeExpr
-                && !(toTransform instanceof DynamicInvokeExpr) // TODO invokedynamic
-                && shouldBeTransformed(((InvokeExpr) toTransform).getMethodRef().getDeclaringClass().getName())) {
+                // TODO invokedynamic
+                && !(toTransform instanceof DynamicInvokeExpr)) {
+            // Transform InvokeExprs that belong to classes that are substituted
             transformExpr((Expr) toTransform, a);
             transformedValues.add(toTransform);
             return toTransform;
@@ -4039,21 +4041,21 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private SootMethodRef constantWrapperMethodRef(Type t) {
         SootMethodRef used;
         if (isIntOrSint(t)) {
-            used = v.SM_SE_CONCSINT.makeRef();
+            used = v.SM_SINT_CONCSINT.makeRef();
         } else if (isLongOrSlong(t)) {
-            used = v.SM_SE_CONCSLONG.makeRef();
+            used = v.SM_SLONG_CONCSLONG.makeRef();
         } else if (isDoubleOrSdouble(t)) {
-            used = v.SM_SE_CONCSDOUBLE.makeRef();
+            used = v.SM_SDOUBLE_CONCSDOUBLE.makeRef();
         } else if (isFloatOrSfloat(t)) {
-            used = v.SM_SE_CONCSFLOAT.makeRef();
+            used = v.SM_SFLOAT_CONCSFLOAT.makeRef();
         } else if (isShortOrSshort(t)) {
-            used = v.SM_SE_CONCSSHORT.makeRef();
+            used = v.SM_SSHORT_CONCSSHORT.makeRef();
         } else if (isByteOrSbyte(t)) {
-            used = v.SM_SE_CONCSBYTE.makeRef();
+            used = v.SM_SBYTE_CONCSBYTE.makeRef();
         } else if (isBoolOrSbool(t)) {
-            used = v.SM_SE_CONCSBOOL.makeRef();
+            used = v.SM_SBOOL_CONCSBOOL.makeRef();
         } else if (isCharOrSchar(t)) {
-            used = v.SM_SE_CONCSCHAR.makeRef();
+            used = v.SM_SCHAR_CONCSCHAR.makeRef();
         } else {
             throw new NotYetImplementedException(t.toString());
         }

@@ -12,7 +12,7 @@ import static de.wwu.mulib.substitutions.primitives.Sint.ConcSint.smallConcSints
 
 public abstract class Sint extends AbstractSnumber {
     Sint() {}
-    public static Sint concSint(int i) {
+    public static Sint.ConcSint concSint(int i) {
         if (i >= 0 && i < smallConcSints.length) {
             return smallConcSints[i];
         }

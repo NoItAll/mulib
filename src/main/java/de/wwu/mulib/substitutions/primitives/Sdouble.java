@@ -9,7 +9,7 @@ public abstract class Sdouble extends Sfpnumber {
 
     private Sdouble() {}
 
-    public static Sdouble concSdouble(double d) {
+    public static Sdouble.ConcSdouble concSdouble(double d) {
         return new ConcSdouble(d);
     }
 

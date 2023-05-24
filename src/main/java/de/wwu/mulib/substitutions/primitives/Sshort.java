@@ -8,7 +8,7 @@ public abstract class Sshort extends Sint {
 
     private Sshort() {}
 
-    public static Sshort concSshort(short s) {
+    public static Sshort.ConcSshort concSshort(short s) {
         return new Sshort.ConcSshort(s);
     }
 
