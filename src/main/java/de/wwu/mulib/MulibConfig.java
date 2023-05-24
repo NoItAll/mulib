@@ -1,7 +1,6 @@
 package de.wwu.mulib;
 
 import de.wwu.mulib.exceptions.MisconfigurationException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.solving.Solvers;
@@ -11,6 +10,7 @@ import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.io.PrintStream;
+import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
@@ -64,7 +64,6 @@ public class MulibConfig {
     public final boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
     /* Solver */
     public final Solvers GLOBAL_SOLVER_TYPE;
-    public final boolean GLOBAL_AVOID_SAT_CHECKS;
     public final boolean LABEL_RESULT_VALUE;
     public final Map<String, Object> SOLVER_ARGS;
 
@@ -83,6 +82,9 @@ public class MulibConfig {
     public final boolean ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
+    public final Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
+    public final boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
+    public final Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
     public final List<String> TRANSF_IGNORE_FROM_PACKAGES;
     public final List<Class<?>> TRANSF_IGNORE_CLASSES;
     public final List<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
@@ -129,6 +131,9 @@ public class MulibConfig {
         private Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         private Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+        private Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
+        private boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
+        private Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
         private SearchStrategy GLOBAL_SEARCH_STRATEGY;
         private boolean CONCOLIC;
         private boolean ALLOW_EXCEPTIONS;
@@ -136,7 +141,6 @@ public class MulibConfig {
         private ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
         private long ACTIVATE_PARALLEL_FOR;
         private Solvers GLOBAL_SOLVER_TYPE;
-        private boolean GLOBAL_AVOID_SAT_CHECKS;
         private long FIXED_ACTUAL_CP_BUDGET;
         private long INCR_ACTUAL_CP_BUDGET;
         private long SECONDS_PER_INVOCATION;
@@ -194,24 +198,27 @@ public class MulibConfig {
             this.MAX_PATH_SOLUTIONS =       0;
             this.MAX_EXCEEDED_BUDGETS =     0;
             this.ACTIVATE_PARALLEL_FOR =    2;
-            this.GLOBAL_AVOID_SAT_CHECKS = true;
             this.CHOICE_OPTION_DEQUE_TYPE = ChoiceOptionDeques.SIMPLE;
             this.TRANSF_IGNORE_CLASSES = List.of(
                     Mulib.class, Fail.class
             );
             this.TRANSF_IGNORE_FROM_PACKAGES = List.of(
-                    "java", "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.exceptions",
-                    "de.wwu.mulib.expressions", "de.wwu.mulib.search", "de.wwu.mulib.solving"
+                    "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.exceptions",
+                    "de.wwu.mulib.expressions", "de.wwu.mulib.search", "de.wwu.mulib.solving",
+                    "java"
             );
             this.TRANSF_CONCRETIZE_FOR = List.of(
+                    String.class
             );
             this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = List.of(
                     PrintStream.class
             );
             this.TRANSF_IGNORE_SUBCLASSES_OF = List.of(
             );
-            this.TRANSF_REGARD_SPECIAL_CASE = List.of(
-            );
+            this.TRANSF_REGARD_SPECIAL_CASE = List.of();
+            this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = new HashMap<>();
+            this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = true;
+            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = new HashMap<>();
             this.TRANSF_WRITE_TO_FILE = true;
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
             this.TRANSF_INCLUDE_PACKAGE_NAME = false;
@@ -329,12 +336,6 @@ public class MulibConfig {
         public MulibConfigBuilder setTRANSF_VALIDATE_TRANSFORMATION(boolean TRANSF_VALIDATE_TRANSFORMATION) {
             this.TRANSF_VALIDATE_TRANSFORMATION = TRANSF_VALIDATE_TRANSFORMATION;
             return this;
-        }
-
-        public MulibConfigBuilder setGLOBAL_AVOID_SAT_CHECKS(boolean GLOBAL_AVOID_SAT_CHECKS) {
-            throw new NotYetImplementedException();
-//            this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
-//            return this;
         }
 
         public MulibConfigBuilder setSECONDS_PER_INVOCATION(long SECONDS_PER_INVOCATION) {
@@ -587,6 +588,26 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setTRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH) {
+            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
+            return this;
+        }
+
+        public MulibConfigBuilder addREPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Method toSubstitute, Method substituteBy) {
+            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH.put(toSubstitute, substituteBy);
+            return this;
+        }
+
+        public void setTRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH(boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
+            this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
+        }
+
+        public void setTRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS(Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS) {
+            this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
+        }
+        
+        
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -624,7 +645,6 @@ public class MulibConfig {
 
             return new MulibConfig(
                     LABEL_RESULT_VALUE,
-                    GLOBAL_AVOID_SAT_CHECKS,
                     ENLIST_LEAVES,
                     CONCRETIZE_IF_NEEDED,
                     TREE_INDENTATION,
@@ -682,12 +702,14 @@ public class MulibConfig {
                     ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                     ALIASING_FOR_FREE_OBJECTS,
                     LOG_TIME_FOR_EACH_PATH_SOLUTION,
-                    LOG_TIME_FOR_FIRST_PATH_SOLUTION
+                    LOG_TIME_FOR_FIRST_PATH_SOLUTION,
+                    TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
+                    TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
+                    TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS
             );
         }
     }
     private MulibConfig(boolean LABEL_RESULT_VALUE,
-                        boolean GLOBAL_AVOID_SAT_CHECKS,
                         boolean ENLIST_LEAVES,
                         boolean CONCRETIZE_IF_NEEDED,
                         String TREE_INDENTATION,
@@ -745,10 +767,12 @@ public class MulibConfig {
                         boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                         boolean ALIASING_FOR_FREE_OBJECTS,
                         boolean LOG_TIME_FOR_EACH_PATH_SOLUTION,
-                        boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION
+                        boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION,
+                        Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
+                        boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
+                        Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
-        this.GLOBAL_AVOID_SAT_CHECKS = GLOBAL_AVOID_SAT_CHECKS;
         this.ENLIST_LEAVES = ENLIST_LEAVES;
         this.TREE_INDENTATION = TREE_INDENTATION;
         this.GLOBAL_SEARCH_STRATEGY = GLOBAL_SEARCH_STRATEGY;
@@ -777,6 +801,9 @@ public class MulibConfig {
         this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
+        this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = Map.copyOf(TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH);
+        this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = Map.copyOf(TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS);
+        this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
         this.PARALLEL_TIMEOUT_IN_MS = PARALLEL_TIMEOUT_IN_MS;
         this.CHOICE_OPTION_DEQUE_TYPE = CHOICE_OPTION_DEQUE_TYPE;
         this.ACTIVATE_PARALLEL_FOR = ACTIVATE_PARALLEL_FOR < 1 ? Optional.empty() : Optional.of(ACTIVATE_PARALLEL_FOR);
@@ -820,7 +847,6 @@ public class MulibConfig {
                 + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS=" + USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS
                 + (!SOLVER_ARGS.isEmpty() ? "SOLVER_ARGS=" + SOLVER_ARGS : "")
                 + ",CONCOLIC=" + CONCOLIC
-//                + (GLOBAL_AVOID_SAT_CHECKS ? "GLOBAL_AVOID_SAT_CHECKS=" + GLOBAL_AVOID_SAT_CHECKS : "")
                 + (ENLIST_LEAVES ? ",ENLIST_LEAVES=" + true : "")
                 + FIXED_ACTUAL_CP_BUDGET.map(v -> ",FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
                 + INCR_ACTUAL_CP_BUDGET.map(v -> ",INCR_ACTUAL_CP_BUDGET=" + v).orElse("")

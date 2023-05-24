@@ -333,6 +333,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
     private static final SootMulibClassesAndMethods v;
 
+    private final Map<SootMethod, SootMethod> sootReplaceMethodCallOfNonSubstitutedClassWith = new HashMap<>();
+
     @Override
     public void transformAndLoadClasses(Class<?>... toTransform) {
         try {
@@ -370,6 +372,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
      */
     public SootMulibTransformer(MulibConfig config) {
         super(config);
+        for (Map.Entry<Method, Method> e : this.replaceMethodCallOfNonSubstitutedClassWith.entrySet()) {
+            sootReplaceMethodCallOfNonSubstitutedClassWith.put(
+                    getSootMethodForMethod(e.getKey()),
+                    getSootMethodForMethod(e.getValue())
+            );
+        }
     }
 
     @Override
@@ -2212,6 +2220,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         // Transform methods
         for (SootMethod m : toTransform.getMethods()) {
+            if (m.isNative()) {
+                SootMethod substituted = sootReplaceMethodCallOfNonSubstitutedClassWith.get(m);
+                if (substituted == null) {
+                    throw new MulibRuntimeException(m.getSignature() + " is native and should be transformed, " +
+                            "but has no substitution");
+                }
+                continue;
+            }
             SootMethod transformedMethod = transformMethod(m, result);
             result.addMethod(transformedMethod);
         }
@@ -3860,6 +3876,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 // TODO
                 throw new NotYetImplementedException();
             } else {
+                if (!shouldBeTransformed(invokeExpr.getMethodRef().getDeclaringClass().getName())) {
+                    // We check whether there is a replacement for the called method
+                    SootMethod substituteBy = this.sootReplaceMethodCallOfNonSubstitutedClassWith.get(invokeExpr.getMethod());
+                    if (substituteBy != null) {
+                        // No transformation
+                        invokeExpr.setMethodRef(substituteBy.makeRef());
+                    }
+                    return invokeExpr;
+                }
                 for (int i = 0; i < invokeExpr.getArgCount(); i++) {
                     invokeExpr.setArg(i, transformValue(invokeExpr.getArg(i), a));
                 }

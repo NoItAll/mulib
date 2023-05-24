@@ -2,6 +2,8 @@ package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -10,6 +12,7 @@ import soot.SootField;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -34,6 +37,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final List<Class<?>> ignoreClasses;
     protected final List<Class<?>> ignoreSubclassesOf;
     protected final List<Class<?>> regardSpecialCase;
+    protected final Map<Method, Method> replaceMethodCallOfNonSubstitutedClassWith;
     protected final Queue<Class<?>> classesToTransform = new ArrayDeque<>();
     protected final Set<Class<?>> explicitlyAddedClasses = new HashSet<>();
     protected final List<Class<?>> concretizeFor;
@@ -70,6 +74,11 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         this.includePackageName = config.TRANSF_INCLUDE_PACKAGE_NAME;
         this.overWriteFileForSystemClassLoader = config.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.config = config;
+        Map<Method, Method> replacementMethods = new HashMap<>(config.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH);
+        if (config.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
+            replacementMethods.putAll(ModelMethods.readDefaultModelMethods(this));
+        }
+        this.replaceMethodCallOfNonSubstitutedClassWith = replacementMethods;
     }
 
     /* PUBLIC METHODS */
