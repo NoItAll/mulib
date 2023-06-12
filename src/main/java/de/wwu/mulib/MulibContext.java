@@ -14,7 +14,9 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
+import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
 
@@ -27,7 +29,7 @@ public final class MulibContext {
     private final MulibTransformer mulibTransformer;
     private final Class<?> possiblyTransformedMethodClass;
 
-    protected MulibContext(
+    MulibContext(
             String methodName,
             Class<?> owningMethodClass,
             MulibConfig config,
@@ -40,13 +42,12 @@ public final class MulibContext {
             untransformedArgTypes = findMethodFittingToArgs(prototypicalArgs, methodName, owningMethodClass);
         }
         this.untransformedArgTypes = untransformedArgTypes;
+        this.mulibTransformer = MulibTransformer.get(config);
         if (config.TRANSF_TRANSFORMATION_REQUIRED) {
-            mulibTransformer = MulibTransformer.get(config);
             mulibTransformer.transformAndLoadClasses(owningMethodClass);
             possiblyTransformedMethodClass = mulibTransformer.getTransformedClass(owningMethodClass);
             transformedArgTypes = transformArgumentTypes(mulibTransformer, untransformedArgTypes);
         } else {
-            mulibTransformer = null;
             possiblyTransformedMethodClass = owningMethodClass;
             transformedArgTypes = untransformedArgTypes;
         }
@@ -68,11 +69,16 @@ public final class MulibContext {
 
         Object[] searchRegionArgs;
         MulibValueTransformer mulibValueTransformer;
+
+        Map<Field, Object> searchRegionStaticFields = new HashMap<>();
+        Collection<Field> accessibleStaticFields;
         if (config.TRANSF_TRANSFORMATION_REQUIRED) {
+            // Get the static fields that are used in the search region
+            accessibleStaticFields = mulibTransformer.getAccessibleStaticFieldsOfTransformedClasses();
             mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
         } else {
-            assert mulibTransformer == null;
+            accessibleStaticFields = mulibTransformer.getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(possiblyTransformedMethodClass);
             mulibValueTransformer = new MulibValueTransformer(config, null);
             searchRegionArgs = args;
         }
@@ -82,37 +88,27 @@ public final class MulibContext {
 
         Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {
-            argsSupplier = (se) -> { return emptyArgs; };
+            if (accessibleStaticFields.isEmpty()) {
+                argsSupplier = (se) -> {
+                    return emptyArgs;
+                };
+            } else {
+                argsSupplier = (se) -> {
+                    copyAccessibleNonFinalStaticFieldsOfTransformedClass(searchRegionStaticFields, accessibleStaticFields, se);
+                    return emptyArgs;
+                };
+            }
         } else {
-            argsSupplier = (se) -> {
-                Map<Object, Object> replacedMap = new IdentityHashMap<>();
-                Object[] arguments = new Object[searchRegionArgs.length];
-                for (int i = 0; i < searchRegionArgs.length; i++) {
-                    Object arg = searchRegionArgs[i];
-                    Object newArg;
-                    if ((newArg = replacedMap.get(arg)) != null) {
-                        arguments[i] = newArg;
-                        continue;
-                    }
-                    if (arg instanceof Sprimitive) {
-                        if (config.CONCOLIC
-                                && arg instanceof SymNumericExpressionSprimitive) {
-                            // Creation of wrapper SymSprimitive with concolic container required
-                            newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
-                        } else {
-                            // Keep value
-                            newArg = arg;
-                        }
-                    } else {
-                        // Is null, Sarray, or PartnerClass
-                        assert arg == null || arg instanceof PartnerClass || arg instanceof String;
-                        newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
-                    }
-                    replacedMap.put(arg, newArg);
-                    arguments[i] = newArg;
-                }
-                return arguments;
-            };
+            if (accessibleStaticFields.isEmpty()) {
+                argsSupplier = (se) -> {
+                    return copyArguments(searchRegionArgs, se, config);
+                };
+            } else {
+                argsSupplier = (se) -> {
+                    copyAccessibleNonFinalStaticFieldsOfTransformedClass(searchRegionStaticFields, accessibleStaticFields, se);
+                    return copyArguments(searchRegionArgs, se, config);
+                };
+            }
         }
 
         MethodHandle methodHandle;
@@ -144,6 +140,66 @@ public final class MulibContext {
         long end = System.nanoTime();
         Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");
         return result;
+    }
+
+    private static Object[] copyArguments(
+            Object[] searchRegionArgs,
+            SymbolicExecution se,
+            MulibConfig config) {
+        Map<Object, Object> replacedMap = new IdentityHashMap<>();
+        Object[] arguments = new Object[searchRegionArgs.length];
+        for (int i = 0; i < searchRegionArgs.length; i++) {
+            Object arg = searchRegionArgs[i];
+            Object newArg;
+            if ((newArg = replacedMap.get(arg)) != null) {
+                arguments[i] = newArg;
+                continue;
+            }
+            if (arg instanceof Sprimitive) {
+                if (config.CONCOLIC
+                        && arg instanceof SymNumericExpressionSprimitive) {
+                    // Creation of wrapper SymSprimitive with concolic container required
+                    newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
+                } else {
+                    // Keep value
+                    newArg = arg;
+                }
+            } else {
+                // Is null, Sarray, or PartnerClass
+                assert arg == null || arg instanceof PartnerClass || arg instanceof String;
+                newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
+            }
+            replacedMap.put(arg, newArg);
+            arguments[i] = newArg;
+        }
+        return arguments;
+    }
+
+    private static void copyAccessibleNonFinalStaticFieldsOfTransformedClass(
+            Map<Field, Object> toCopyValues,
+            Collection<Field> fields,
+            SymbolicExecution se) {
+        for (Field f : fields) {
+            try {
+                if (Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
+                    continue;
+                }
+                Object toCopy = toCopyValues.get(f);
+                if (toCopy == null) {
+                    toCopy = f.get(null);
+                    toCopyValues.put(f, toCopy);
+                }
+                Object copy;
+                if (toCopy instanceof Sprimitive) {
+                    copy = se.getMulibValueCopier().copySprimitive((Sprimitive) toCopy);
+                } else {
+                    copy = se.getMulibValueCopier().copyNonSprimitive(toCopy);
+                }
+                f.set(null, copy);
+            } catch (IllegalAccessException e) {
+                throw new MulibRuntimeException("Field should be accessible", e);
+            }
+        }
     }
 
     private <T> T _checkExecuteAndLog(Object[] args, Function<Object[], T> argsToResult) {
