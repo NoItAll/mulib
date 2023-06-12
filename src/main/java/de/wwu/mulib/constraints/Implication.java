@@ -17,4 +17,9 @@ public class Implication extends AbstractTwoSidedConstraint {
         return new Implication(lhs, rhs);
     }
 
+    @Override
+    public String toString() {
+        return String.format("(%s -> %s)", lhs.toString(), rhs.toString());
+    }
+
 }

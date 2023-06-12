@@ -21,7 +21,11 @@ public class Not implements Constraint {
         }
         if (constraint instanceof Not) {
             return ((Not) constraint).getConstraint();
-        } else {
+        } else if (constraint instanceof Lt) {
+            return Lte.newInstance(((Lt) constraint).getRhs(), ((Lt) constraint).getLhs());
+        } else if (constraint instanceof Lte) {
+            return Lt.newInstance(((Lte) constraint).getRhs(), ((Lte) constraint).getLhs());
+        } {
             return new Not(constraint);
         }
     }

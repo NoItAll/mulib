@@ -39,4 +39,15 @@ public final class PartnerClassObjectFieldConstraint implements PartnerClassObje
     public Type getType() {
         return type;
     }
+
+    @Override
+    public String toString() {
+        return String.format(
+                "POField{partnerClassObjectId=%s, fieldName=%s, value=%s, type=%s}",
+                partnerClassObjectId,
+                fieldName,
+                value,
+                type
+        );
+    }
 }

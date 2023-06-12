@@ -1,11 +1,9 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.Arrays;
-import java.util.Map;
 import java.util.Set;
 
 public class PartnerClassObjectInitializationConstraint implements PartnerClassObjectConstraint {
@@ -34,13 +32,13 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
     private final Class<?> clazz;
     private final Sint partnerClassObjectId;
     private final Sint reservedId;
-    // If is not null: Contains all those array-ids which arrayId can equal to
+    // If is not null: Contains all those array-ids which arrayId can equal to. If containintPartnerClassObjectId is set,
+    // the aliased targets are derived from there
     private final Set<Sint> potentialIds;
     private final PartnerClassObjectFieldConstraint[] initialGetfields;
     // Either the ID of the partner class object or the SarraySarray containing this
     private final Sint containingPartnerClassObjectId;
     private final Sbool isNull;
-    private final Map<String, Class<?>> fieldTypes;
     private final boolean defaultIsSymbolic;
     // Only set if type == SARRAY_IN_PARTNER_CLASS_OBJECT
     private final String fieldName;
@@ -52,7 +50,6 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Set<Sint> potentialIds,
             Sint reservedId,
             Sint containingPartnerClassObjectId,
-            Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic,
             String fieldName) {
@@ -76,7 +73,6 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         this.potentialIds = potentialIds;
         this.containingPartnerClassObjectId = containingPartnerClassObjectId;
         this.isNull = isNull;
-        this.fieldTypes = fieldTypes;
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.fieldName = fieldName;
     }
@@ -88,10 +84,9 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Class<?> clazz,
             Sint partnerClassObjectId,
             Sbool isNull,
-            Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, null, null, null, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, null, null, null, initialGetfields,
                 defaultIsSymbolic, null);
     }
 
@@ -104,10 +99,9 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sbool isNull,
             Sint reservedId,
             Sint containingPartnerClassObjectId,
-            Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, initialGetfields,
                 defaultIsSymbolic, null);
     }
 
@@ -120,10 +114,9 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sbool isNull,
             Sint reservedId,
             Set<Sint> potentialIds,
-            Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, potentialIds, reservedId, null, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, potentialIds, reservedId, null, initialGetfields,
                 defaultIsSymbolic, null);
     }
 
@@ -138,10 +131,9 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             Sint reservedId,
             Sint containingPartnerClassObjectId,
             String fieldName,
-            Map<String, Class<?>> fieldTypes,
             PartnerClassObjectFieldConstraint[] initialGetfields,
             boolean defaultIsSymbolic) {
-        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, fieldTypes, initialGetfields,
+        this(clazz, partnerClassObjectId, isNull, null, reservedId, containingPartnerClassObjectId, initialGetfields,
                 defaultIsSymbolic, fieldName);
     }
 
@@ -183,11 +175,23 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
         return isNull;
     }
 
-    public Map<String, Class<?>> getFieldTypes() {
-        return fieldTypes;
-    }
-
     public boolean isDefaultIsSymbolic() {
         return defaultIsSymbolic;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("POInit{type=%s, clazz=%s, id=%s, reservedId=%s, potentialIds=%s," +
+                "initialGetFields=%s, containingPartnerClassObjectId=%s, isNull=%s" +
+                "defaultIsSymbolic=%s, fieldName=%s}",
+                type.toString(), clazz.getSimpleName(), partnerClassObjectId.toString(),
+                reservedId == null ? "{}" : reservedId.toString(),
+                potentialIds == null ? "{}" : potentialIds.toString(),
+                Arrays.toString(initialGetfields),
+                containingPartnerClassObjectId == null ? "{}" : containingPartnerClassObjectId.toString(),
+                isNull.toString(),
+                String.valueOf(defaultIsSymbolic),
+                fieldName
+        );
     }
 }

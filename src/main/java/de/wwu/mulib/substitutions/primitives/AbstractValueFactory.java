@@ -284,7 +284,6 @@ public abstract class AbstractValueFactory implements ValueFactory {
                                 c,
                                 id,
                                 isNull,
-                                pc.__mulib__getFieldNameToType(),
                                 new PartnerClassObjectFieldConstraint[0],
                                 true
                         );
@@ -295,7 +294,6 @@ public abstract class AbstractValueFactory implements ValueFactory {
                                 isNull,
                                 reservedId,
                                 potentialIds,
-                                pc.__mulib__getFieldNameToType(),
                                 new PartnerClassObjectFieldConstraint[0],
                                 true
                         );

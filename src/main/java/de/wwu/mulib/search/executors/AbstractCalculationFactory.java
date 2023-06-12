@@ -287,7 +287,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     pcval.__mulib__prepareForAliasingAndBlockCache(se);
                 } else {
                     pcval.__mulib__prepareToRepresentSymbolically(se);
-                    pcval.__mulib__blockCache();
                 }
             }
         }
@@ -302,6 +301,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 fieldValue = se.symSbyte();
             } else if (Sshort.class.isAssignableFrom(fieldClass)) {
                 fieldValue = se.symSshort();
+            } else if (Schar.class.isAssignableFrom(fieldClass)) {
+                fieldValue = se.symSchar();
             } else {
                 assert fieldClass == Sint.class;
                 fieldValue = se.symSint();
@@ -433,13 +434,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     se.addNewPartnerClassObjectConstraint(arrayInitializationConstraint);
                 } else {
                     assert ihsr.__mulib__getId() != null;
-                    Map<String, Class<?>> fieldsToTypes = ihsr.__mulib__getFieldNameToType();
                     PartnerClassObjectInitializationConstraint c =
                             new PartnerClassObjectInitializationConstraint(
                                     ihsr.getClass(),
                                     (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
                                     tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
-                                    fieldsToTypes,
                                     collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
                                     ihsr.__mulib__defaultIsSymbolic()
                             );
@@ -473,7 +472,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                     :
                                     ArrayInitializationConstraint.Type.SARRAY_IN_PARTNER_CLASS_OBJECT);
                 } else {
-                    Map<String, Class<?>> fieldsToTypes = ihsr.__mulib__getFieldNameToType();
                     initializationConstraint =
                             new PartnerClassObjectInitializationConstraint(
                                     ihsr.getClass(),
@@ -482,7 +480,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                     nextNumberInitializedSymObject,
                                     (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                                     fieldName, // Is null if container is sarray
-                                    fieldsToTypes,
                                     collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
                                     ihsr.__mulib__defaultIsSymbolic()
                             );

@@ -14,6 +14,7 @@ import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.StringConstants;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -86,7 +87,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         this.isAliasing = isAliasing;
         Field[] fields = clazz.getDeclaredFields();
         for (Field f : fields) {
-            if (!f.getName().contains(StringConstants._TRANSFORMATION_PREFIX)) {
+            if (!f.getName().contains(StringConstants._TRANSFORMATION_PREFIX) && !Modifier.isStatic(f.getModifiers())) {
                 fieldToType.put(f.getName(), f.getType());
             }
         }
@@ -126,6 +127,8 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
                 val = Sbyte.newInputSymbolicSbyte();
             } else if (Sshort.class.isAssignableFrom(c)) {
                 val = Sshort.newInputSymbolicSshort();
+            } else if (Schar.class.isAssignableFrom(c)) {
+                val = Schar.newInputSymbolicSchar();
             } else {
                 assert c == Sint.class;
                 val = Sint.newInputSymbolicSint();
