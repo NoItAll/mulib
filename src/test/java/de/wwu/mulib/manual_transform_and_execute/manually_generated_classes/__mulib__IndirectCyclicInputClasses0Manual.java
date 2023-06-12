@@ -56,15 +56,15 @@ public class __mulib__IndirectCyclicInputClasses0Manual extends AbstractPartnerC
         return null;
     }
 
-    @Override
-    public Map<String, Class<?>> __mulib__getFieldNameToType() {
-        return null;
-    }
-
     public __mulib__IndirectCyclicInputClasses0Manual() {
         super();
         SymbolicExecution se = SymbolicExecution.get();
         this.c = new __mulib__IndirectCyclicInputClasses1Manual(this);
+    }
+
+    @Override
+    protected void __mulib__blockCacheInPartnerClassFields() {
+
     }
 
     public static Sint calc0(__mulib__IndirectCyclicInputClasses0Manual cycle) {

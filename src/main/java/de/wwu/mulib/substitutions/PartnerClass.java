@@ -34,8 +34,6 @@ public interface PartnerClass extends SubstitutedVar {
 
     Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar();
 
-    Map<String, Class<?>> __mulib__getFieldNameToType();
-
     Sint __mulib__getId();
 
     void __mulib__prepareToRepresentSymbolically(SymbolicExecution se);

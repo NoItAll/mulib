@@ -53,13 +53,12 @@ public class __mulib__IndirectCyclicInputClasses1Manual extends AbstractPartnerC
         return null;
     }
 
-    @Override
-    public Map<String, Class<?>> __mulib__getFieldNameToType() {
-        return null;
-    }
-
     public __mulib__IndirectCyclicInputClasses1Manual(__mulib__IndirectCyclicInputClasses0Manual c0) {
         this.c = c0;
     }
 
+    @Override
+    protected void __mulib__blockCacheInPartnerClassFields() {
+
+    }
 }

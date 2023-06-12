@@ -1,9 +1,15 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.HashMap;
+import java.util.Map;
 
 public abstract class AbstractPartnerClass implements PartnerClass {
     protected Sint id;
@@ -49,7 +55,10 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     @Override
     public void __mulib__blockCache() {
         representationState |= CACHE_IS_BLOCKED;
+        this.__mulib__blockCacheInPartnerClassFields();
     }
+
+    protected abstract void __mulib__blockCacheInPartnerClassFields();
 
     @Override
     public final boolean __mulib__cacheIsBlocked() {
@@ -63,16 +72,21 @@ public abstract class AbstractPartnerClass implements PartnerClass {
 
     @Override
     public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-        __mulib___initializeId(se.concSint(se.getNextNumberInitializedSymObject()));
+        __mulib__initializeId(se.concSint(se.getNextNumberInitializedSymObject()));
     }
 
     @Override
     public final void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
-        __mulib___initializeId(se.symSint());
+        __mulib__initializeId(se.symSint());
         __mulib__blockCache();
     }
 
-    protected void __mulib___initializeId(Sint id) {
+    @Override
+    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+        return new HashMap<>();
+    }
+
+    protected void __mulib__initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }

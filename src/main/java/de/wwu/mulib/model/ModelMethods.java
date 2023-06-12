@@ -41,9 +41,6 @@ public class ModelMethods {
                                 .map(mulibTransformer::transformMulibTypeBack)
                                 .toArray(Class[]::new);
                 Method substitutedMethod = c.getDeclaredMethod(methodName, transformedParameterTypes);
-                if (substitutedMethod == null) {
-                    throw new MulibIllegalStateException("There should be a method to substitute");
-                }
                 result.put(substitutedMethod, m);
             }
         } catch (ClassNotFoundException | NoSuchMethodException e) {

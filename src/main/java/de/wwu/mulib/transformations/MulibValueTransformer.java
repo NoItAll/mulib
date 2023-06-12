@@ -184,6 +184,9 @@ public final class MulibValueTransformer {
                 } else if (componentType == boolean.class) {
                     Sbool[] transformedValues = (Sbool[]) _transformArrayToSarrayHelper(array, transformedComponentType);
                     return new Sarray.SboolSarray(transformedValues);
+                } else if (componentType == char.class) {
+                    Schar[] transformedValues = (Schar[]) _transformArrayToSarrayHelper(array, transformedComponentType);
+                    return new Sarray.ScharSarray(transformedValues);
                 } else {
                     throw new NotYetImplementedException(array.toString());
                 }

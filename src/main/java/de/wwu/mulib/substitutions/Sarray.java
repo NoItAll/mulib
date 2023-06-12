@@ -8,6 +8,7 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -94,7 +95,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
 
     protected abstract T symbolicDefault(SymbolicExecution se);
 
-    protected abstract T nonSymbolicDefaultElement(SymbolicExecution se);
+    protected abstract T nonSymbolicDefaultElement();
 
     public void clearCache() {
         cachedElements.clear();
@@ -207,7 +208,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     public T getNewValueForSelect(SymbolicExecution se) {
         T result;
         if (!__mulib__defaultIsSymbolic() && !__mulib__shouldBeRepresentedInSolver()) {
-            result = nonSymbolicDefaultElement(se);
+            result = nonSymbolicDefaultElement();
         } else {
             // If symbolic is required, optional aliasing etc. is handled here
             result = symbolicDefault(se);
@@ -225,12 +226,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         throw new MulibIllegalStateException("Should not be called for Sarrays");
     }
 
-    @Override
-    public Map<String, Class<?>> __mulib__getFieldNameToType() {
-        throw new MulibIllegalStateException("Should not be called for Sarrays");
-    }
-
-    public void storeConcrete(Sint i, T val) {
+    public void storeConcrete(Sint i, T val, SymbolicExecution se) {
         if (!(i instanceof ConcSnumber)) {
             throw new MulibRuntimeException("Must be a concrete index");
         } else if (__mulib__isLazilyInitialized() || __mulib__defaultIsSymbolic() || __mulib__cacheIsBlocked()
@@ -240,10 +236,22 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         cachedElements.put(i, val);
     }
 
+    @Override
+    protected final void __mulib__blockCacheInPartnerClassFields() {
+    }
+
     public static class SintSarray extends Sarray<Sint> {
+
         /** Transformation constructor */
         public SintSarray(Sint[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SintSarray(Sint[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -272,7 +280,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sint nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sint nonSymbolicDefaultElement() {
             return Sint.ConcSint.ZERO;
         }
 
@@ -292,6 +300,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SdoubleSarray(Sdouble[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SdoubleSarray(Sdouble[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -320,7 +335,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sdouble nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sdouble nonSymbolicDefaultElement() {
             return Sdouble.ConcSdouble.ZERO;
         }
 
@@ -340,6 +355,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SfloatSarray(Sfloat[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SfloatSarray(Sfloat[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -368,7 +390,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sfloat nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sfloat nonSymbolicDefaultElement() {
             return Sfloat.ConcSfloat.ZERO;
         }
 
@@ -388,6 +410,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SlongSarray(Slong[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SlongSarray(Slong[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -416,7 +445,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Slong nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Slong nonSymbolicDefaultElement() {
             return Slong.ConcSlong.ZERO;
         }
 
@@ -436,6 +465,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SshortSarray(Sshort[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SshortSarray(Sshort[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -464,7 +500,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sshort nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sshort nonSymbolicDefaultElement() {
             return Sshort.ConcSshort.ZERO;
         }
 
@@ -484,6 +520,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public ScharSarray(Schar[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public ScharSarray(Schar[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -512,7 +555,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Schar nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Schar nonSymbolicDefaultElement() {
             return Schar.ConcSchar.ZERO;
         }
 
@@ -532,6 +575,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SbyteSarray(Sbyte[] values) {
             super(values);
+        }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SbyteSarray(Sbyte[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -560,7 +610,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sbyte nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sbyte nonSymbolicDefaultElement() {
             return Sbyte.ConcSbyte.ZERO;
         }
 
@@ -580,6 +630,12 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         /** Transformation constructor */
         public SboolSarray(Sbool[] values) {
             super(values);
+        }
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SboolSarray(Sbool[] values, MulibValueTransformer mvt) {
+            this(values);
         }
 
         /** New instance constructor */
@@ -608,7 +664,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sbool nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected Sbool nonSymbolicDefaultElement() {
             return Sbool.ConcSbool.FALSE;
         }
 
@@ -629,6 +685,14 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         public PartnerClassSarray(T[] values) {
             super(values);
         }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public PartnerClassSarray(T[] values, MulibValueTransformer mvt) {
+            this(values);
+        }
+
 
         /** New instance constructor */
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
@@ -688,7 +752,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected T nonSymbolicDefaultElement(SymbolicExecution se) {
+        protected T nonSymbolicDefaultElement() {
             return null;
         }
 
@@ -725,6 +789,33 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             T result = se.getValueFactory().symObject(se, this.getClazz(), canBeNull);
             return result;
         }
+
+        @Override
+        public void __mulib__blockCache() {
+            for (Map.Entry<Sint, T> entry : cachedElements.entrySet()) {
+                T val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
+                val.__mulib__blockCache();
+            }
+            super.__mulib__blockCache();
+        }
+
+        @Override
+        public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
+            super.__mulib__prepareToRepresentSymbolically(se);
+            assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
+            for (Map.Entry<Sint, T> entry : cachedElements.entrySet()) {
+                T val = entry.getValue();
+                if (val == null) {
+                    continue;
+                }
+                // Cache of values must be blocked since they will be represented
+                // Cache is cleared after representing each element in CalculationFactory. This is done in setAsRepresentedInSolver
+                val.__mulib__blockCache();
+            }
+        }
     }
 
     @SuppressWarnings("rawtypes")
@@ -740,6 +831,14 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             this.elementType = elementType;
             this.dim = determineDimFromInnerElementType(elementType);
         }
+
+        /**
+         * Transformation constructor to keep a consistent constructor signature
+         */
+        public SarraySarray(Sarray[] values, Class<?> elementType, MulibValueTransformer mvt) {
+            this(values, elementType);
+        }
+
 
         /** New instance constructor */
         public SarraySarray(Sint len, SymbolicExecution se,
@@ -798,7 +897,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                 for (int i = 0; i < length; i++) {
                     Sarray result;
                     if (!__mulib__defaultIsSymbolic()) {
-                        result = nonSymbolicDefaultElement(se);
+                        result = nonSymbolicDefaultElement();
                     } else {
                         // If symbolic is required, optional aliasing etc. is handled here
                         result = symbolicDefaultDuringInitializationForConcreteLength(se);
@@ -970,17 +1069,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             return new SarraySarray(mvt, this);
         }
 
-        @Override
-        public void __mulib__blockCache() {
-            for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
-                Sarray val = entry.getValue();
-                if (val == null) {
-                    continue;
-                }
-                val.__mulib__blockCache();
-            }
-            super.__mulib__blockCache();
-        }
 
         @Override
         public void clearCache() {
@@ -992,27 +1080,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                 val.clearCache();
             }
             super.clearCache();
-        }
-
-        @Override
-        public void setInCacheForIndexForSelect(Sint index, Sarray value) {
-            if (!__mulib__cacheIsBlocked()) {
-                cachedElements.put(index, value);
-            }
-        }
-
-        @Override
-        public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-            super.__mulib__prepareToRepresentSymbolically(se);
-            assert cachedElements.keySet().stream().allMatch(s -> s instanceof ConcSnumber);
-            for (Map.Entry<Sint, Sarray> entry : cachedElements.entrySet()) {
-                Sarray val = entry.getValue();
-                if (val == null) {
-                    continue;
-                }
-                // Cache is cleared after representing each element in CalculationFactory. This is done in setAsRepresentedInSolver
-                val.__mulib__blockCache();
-            }
         }
 
         @Override
