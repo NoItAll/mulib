@@ -1454,7 +1454,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     Jimple.v().newVirtualInvokeExpr(
                             seLocal, v.SM_SE_GET_FIELD.makeRef(),
                             thisLocal,
-                            StringConstant.v(forField.getName()),
+                            StringConstant.v(forField.getDeclaringClass().getName() + "." + forField.getName()),
                             // Preserve information on arrays
                             ClassConstant.fromType(oldField.getType() instanceof ArrayType ?
                                     transformArrayType((ArrayType) oldField.getType(), false)
@@ -1473,7 +1473,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(Jimple.v().newInvokeStmt(
                     Jimple.v().newVirtualInvokeExpr(
                             seLocal, v.SM_SE_PUT_FIELD.makeRef(),
-                            thisLocal, StringConstant.v(forField.getName()), setParamLocal)
+                            thisLocal, StringConstant.v(forField.getDeclaringClass().getName() + "." + forField.getName()), setParamLocal)
             ));
             upc.add(Jimple.v().newReturnVoidStmt());
         }
@@ -1693,7 +1693,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 }
                 // Push name of field
                 Local nameOfFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_STRING);
-                upc.add(Jimple.v().newAssignStmt(nameOfFieldLocal, StringConstant.v(newField.getName())));
+                upc.add(Jimple.v().newAssignStmt(nameOfFieldLocal, StringConstant.v(newField.getDeclaringClass().getName() + "." + newField.getName())));
                 // Get field
                 Local getFieldLocal = localSpawner.spawnNewStackLocal(newField.getType());
                 upc.add(Jimple.v().newAssignStmt(getFieldLocal, Jimple.v().newInstanceFieldRef(thisLocal, newField.makeRef())));
@@ -1817,7 +1817,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         for (SootField oldField : old.getFields()) {
             SootField transformedField = getTransformedFieldForOldField(oldField, result);
             if (transformedField.isStatic()) {
-                // We do this in <clinit>
                 continue;
             }
             /* GET VALUE OF ORIGINAL FIELD */
@@ -2128,12 +2127,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected MulibClassLoader<SootClass> generateMulibClassLoader() {
         return new SootClassLoader(this);
-    }
-
-
-    private String getNameOfTransformedClass(String toTransformName) {
-        Class<?> originalClass = getClassForName(toTransformName);
-        return replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(originalClass, originalClass).getName();
     }
 
     @Override

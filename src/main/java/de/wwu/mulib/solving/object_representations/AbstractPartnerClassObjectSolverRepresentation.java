@@ -88,7 +88,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         Field[] fields = clazz.getDeclaredFields();
         for (Field f : fields) {
             if (!f.getName().contains(StringConstants._TRANSFORMATION_PREFIX) && !Modifier.isStatic(f.getModifiers())) {
-                fieldToType.put(f.getName(), f.getType());
+                fieldToType.put(f.getDeclaringClass().getName() + "." + f.getName(), f.getType());
             }
         }
     }

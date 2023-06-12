@@ -2,10 +2,7 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.LabelingNotPossibleException;
-import de.wwu.mulib.exceptions.MisconfigurationException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
@@ -471,6 +468,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
             return result;
         } catch (Throwable t) {
+            if (t instanceof MulibException) {
+                throw t;
+            }
             throw new MulibRuntimeException("Failed to get label", t);
         }
     }
@@ -678,7 +678,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     private void setFieldInLabelObject(Object object, Field[] fields, PartnerClassObjectFieldConstraint g) {
         Field f = null;
         for (Field fo : fields) {
-            if (fo.getName().equals(g.getFieldName())) {
+            // TODO Think about better way of identifying fields in constraints
+            if ((fo.getDeclaringClass().getName() + "." + fo.getName()).equals(g.getFieldName().replace("__mulib__", ""))) {
                 f = fo;
                 break;
             }
