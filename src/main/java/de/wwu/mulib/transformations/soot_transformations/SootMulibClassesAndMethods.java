@@ -223,6 +223,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_SCHARSARRAY;
     public final SootMethod SM_SE_PARTNER_CLASSSARRAY;
     public final SootMethod SM_SE_SARRAYSARRAY;
+    public final List<SootMethod> SM_SE_SARRAY_INITS;
     public final SootMethod SM_SE_MULTIDIM_SARRAYSARRAY;
     public final SootMethod SM_SE_NAMED_SINTSARRAY;
     public final SootMethod SM_SE_NAMED_SLONGSARRAY;
@@ -276,6 +277,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SBOOLSARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_PARTNER_CLASSSARRAY_TRANSFORMATION_CONSTR;
     public final SootMethod SM_SARRAYSARRAY_TRANSFORMATION_CONSTR;
+
     public final SootMethod SM_SINT_CONCSINT;
     public final SootMethod SM_SDOUBLE_CONCSDOUBLE;
     public final SootMethod SM_SLONG_CONCSLONG;
@@ -443,6 +445,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SBOOLSARRAY_STORE;
     public final SootMethod SM_SCHARSARRAY_SELECT;
     public final SootMethod SM_SCHARSARRAY_STORE;
+    public final List<SootMethodRef> SARRAY_TYPE_STORES;
+    public final SootMethod SM_SARRAY_STORE_CONCRETE;
     public final SootMethod SM_SARRAY_LENGTH;
     public final SootMethod SM_PARTNER_CLASSSARRAY_SELECT;
     public final SootMethod SM_PARTNER_CLASSSARRAY_STORE;
@@ -460,7 +464,6 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_BLOCK_CACHE;
     public final SootMethod SM_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
-    public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE;
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
@@ -686,6 +689,11 @@ public class SootMulibClassesAndMethods {
         SM_SE_SARRAYSARRAY              = SC_SE.getMethod("sarraySarray", List.of(TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
         SM_SE_NAMED_PARTNER_CLASSSARRAY  = SC_SE.getMethod("namedPartnerClassSarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_PARTNER_CLASSSARRAY);
         SM_SE_NAMED_SARRAYSARRAY        = SC_SE.getMethod("namedSarraySarray", List.of(TYPE_STRING, TYPE_SINT, TYPE_CLASS, TYPE_BOOL), TYPE_SARRAYSARRAY);
+        SM_SE_SARRAY_INITS = List.of(
+                SM_SE_SINTSARRAY, SM_SE_SLONGSARRAY, SM_SE_SDOUBLESARRAY, SM_SE_SFLOATSARRAY,
+                SM_SE_SSHORTSARRAY, SM_SE_SBYTESARRAY, SM_SE_SBOOLSARRAY, SM_SE_SCHARSARRAY,
+                SM_SE_PARTNER_CLASSSARRAY, SM_SE_SARRAYSARRAY
+        );
         SM_SE_SYM_OBJECT = SC_SE.getMethod("symObject", List.of(TYPE_CLASS), TYPE_PARTNER_CLASS);
         SM_SE_NAMED_SYM_OBJECT = SC_SE.getMethod("namedSymObject", List.of(TYPE_STRING, TYPE_CLASS), TYPE_PARTNER_CLASS);
         SM_SE_NAME_SUBSTITUTED_VAR = SC_SE.getMethod("nameSubstitutedVar", List.of(TYPE_SUBSTITUTED_VAR, TYPE_STRING));
@@ -871,6 +879,7 @@ public class SootMulibClassesAndMethods {
         SM_SFLOAT_F2L               = SC_SFLOAT.getMethod("f2l",          List.of(TYPE_SE),              TYPE_SLONG);
         SM_SFLOAT_F2I               = SC_SFLOAT.getMethod("f2i",          List.of(TYPE_SE),              TYPE_SINT);
         SM_SFLOAT_CMP               = SC_SFLOAT.getMethod("cmp",          List.of(TYPE_SFLOAT, TYPE_SE), TYPE_SINT);
+        SM_SARRAY_STORE_CONCRETE = SC_SARRAY.getMethod("storeConcrete", List.of(TYPE_SINT, TYPE_SUBSTITUTED_VAR, TYPE_SE), TYPE_VOID);
         SM_SARRAY_LENGTH    = SC_SARRAY.getMethod("length", List.of(),                                    TYPE_SINT);
         SM_SARRAY_SELECT    = SC_SARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE),                  TYPE_SUBSTITUTED_VAR);
         SM_SARRAY_STORE     = SC_SARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SUBSTITUTED_VAR, TYPE_SE),     TYPE_VOID);
@@ -894,6 +903,10 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASSSARRAY_STORE     = SC_PARTNER_CLASSSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_PARTNER_CLASS, TYPE_SE), TYPE_VOID);
         SM_SARRAYSARRAY_SELECT          = SC_SARRAYSARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE), TYPE_SARRAY);
         SM_SARRAYSARRAY_STORE           = SC_SARRAYSARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SARRAY, TYPE_SE), TYPE_VOID);
+        SARRAY_TYPE_STORES = List.of(SM_SINTSARRAY_STORE.makeRef(), SM_SLONGSARRAY_STORE.makeRef(), SM_SDOUBLESARRAY_STORE.makeRef(),
+                SM_SFLOATSARRAY_STORE.makeRef(), SM_SSHORTSARRAY_STORE.makeRef(), SM_SBYTESARRAY_STORE.makeRef(),
+                SM_SBOOLSARRAY_STORE.makeRef(), SM_SCHARSARRAY_STORE.makeRef(),
+                SM_SARRAYSARRAY_STORE.makeRef(), SM_PARTNER_CLASSSARRAY_STORE.makeRef());
 
         SM_PARTNER_CLASS_GET_ID                               = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getId", List.of(), TYPE_SINT);
         SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
@@ -907,11 +920,10 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
-        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_TYPE                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToType", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
-        SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "_initializeId", List.of(TYPE_SINT));
+        SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
         SM_ABSTRACT_PARTNER_CLASS_ACCESS_METHOD_OF_CLASS =
                 SC_ABSTRACT_PARTNER_CLASS.getMethod(
                         StringConstants._TRANSFORMATION_PREFIX + "accessMethodOfClass",

@@ -117,7 +117,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // We treat the outer class field as a regular field. Thus, we do not need to add it as a parameter.
             parameterTypesOfTransfConstructor =
                     shouldBeTransformed ?
-                            List.of(original.getType(), v.TYPE_MULIB_VALUE_TRANSFORMER)
+                            List.of(getOriginalOrModelType(original), v.TYPE_MULIB_VALUE_TRANSFORMER)
                             :
                             List.of();
             parameterTypesOfCopyConstructor =
@@ -125,6 +125,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             List.of(transformed.getType(), v.TYPE_MULIB_VALUE_COPIER)
                             :
                             List.of();
+        }
+
+        // Return either the original type, if it has no model class, otherwise the model class
+        private Type getOriginalOrModelType(SootClass original) {
+            Class<?> c = getClassForName(original.getName());
+            return RefType.v(
+                    replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(
+                            c,
+                            c
+                    ).getName()
+            );
         }
 
         private Local getAdditionalLocal(ChosenConstructor cc, LocalSpawner localSpawner) {
@@ -359,11 +370,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         super.setPartnerClass(original, partnerClass);
     }
 
-    @Override
-    protected void transformClass(Class<?> toTransform) {
-        super.transformClass(toTransform);
-    }
-
 
     /**
      * Constructs an instance of MulibTransformer according to the configuration.
@@ -388,6 +394,67 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected String getNameToLoadOfClassNode(SootClass classNode) {
         return classNode.getName().replace("/", ".");
+    }
+
+    @Override
+    protected Collection<SootClass> getConnectedClassNodes(SootClass classNode) {
+        Collection<SootClass> result = new HashSet<>();
+        ArrayDeque<SootClass> toWorkOn = new ArrayDeque<>();
+        SootClass current = classNode;
+        while (current != null) {
+            if (result.contains(current) || !shouldBeTransformed(current.getName())) {
+                current = toWorkOn.poll();
+                continue;
+            } else if (current.resolvingLevel() != SootClass.BODIES) {
+                current = getClassNodeForName(current.getName());
+            }
+            result.add(current);
+            if (current != v.SC_OBJECT) {
+                if (current.hasSuperclass()) {
+                    toWorkOn.add(current.getSuperclass());
+                }
+            }
+            // Add fields
+            toWorkOn.addAll(
+                    current.getFields().stream()
+                            .filter(f -> f.getType() instanceof RefType)
+                            .map(f -> getClassNodeForName(((RefType) f.getType()).getClassName()))
+                            .collect(Collectors.toList())
+            );
+            current.getMethods().forEach(
+                    m -> {
+                        if (m.isNative() || m.isAbstract()) {
+                            return;
+                        }
+                        List<SootClass> newClasses = new ArrayList<>();
+                        newClasses.addAll(
+                                m.getParameterTypes().stream()
+                                        .filter(pt -> pt instanceof RefType)
+                                        .map(
+                                                pt -> getClassNodeForName(((RefType) pt).getClassName()))
+                                        .collect(Collectors.toList()));
+                        newClasses.addAll(
+                                m.getExceptions().stream()
+                                        .map(e -> getClassNodeForName(e.getType().getClassName()))
+                                        .collect(Collectors.toList()));
+                        newClasses.addAll(
+                                m.retrieveActiveBody().getLocals().stream()
+                                        .filter(l -> l.getType() instanceof RefType)
+                                        .map(l -> getClassNodeForName(((RefType) l.getType()).getClassName()))
+                                        .collect(Collectors.toList()));
+                        newClasses.addAll(
+                                m.retrieveActiveBody().getUnits().stream()
+                                        .filter(u -> u instanceof AssignStmt && ((AssignStmt) u).getRightOp() instanceof FieldRef)
+                                        .map(u -> getClassNodeForName(((FieldRef) ((AssignStmt) u).getRightOp()).getField().getDeclaringClass().getName()))
+                                        .collect(Collectors.toList()));
+                        toWorkOn.addAll(newClasses);
+                    }
+            );
+
+            current = toWorkOn.poll();
+        }
+
+        return result;
     }
 
     @Override
@@ -1251,6 +1318,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         for (SootField sf : oldFields) {
             SootField newField = getTransformedFieldForOldField(sf, result);
             if (!fieldWasTransformedAndIsNonStatic(newField, sf.getType(), newField.getType())) {
+                if (newField.isFinal()) {
+                    newField.setModifiers(newField.getModifiers() - Modifier.FINAL);
+                }
                 continue;
             }
             SootMethodRef accessor = generateAndAddAccessorMethod(sf, result, newField);
@@ -1477,56 +1547,45 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
     }
 
-    private SootMethod _generateAndSetRepresentationStateSetter(String name, SootField representationState, SootField partnerClassStaticField, SootClass result) {
-        SootMethod setAsLazilyInitialized = new SootMethod(_TRANSFORMATION_PREFIX + name, List.of(), v.TYPE_VOID, Modifier.PUBLIC | Modifier.FINAL);
-        JimpleBody jb = Jimple.v().newBody(setAsLazilyInitialized);
-        setAsLazilyInitialized.setActiveBody(jb);
-        UnitPatchingChain upc = jb.getUnits();
-        LocalSpawner localSpawner = new LocalSpawner(jb);
-        Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-        IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
-        upc.add(identityStmt);
-        Local getFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
-        upc.add(Jimple.v().newAssignStmt(
-                getFieldLocal,
-                Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef())
-        ));
-        Local staticGetFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_BYTE);
-        upc.add(Jimple.v().newAssignStmt(
-                staticGetFieldLocal,
-                Jimple.v().newStaticFieldRef(partnerClassStaticField.makeRef())
-        ));
-        upc.add(Jimple.v().newAssignStmt(
-                getFieldLocal,
-                Jimple.v().newOrExpr(getFieldLocal, staticGetFieldLocal)
-        ));
-        upc.add(Jimple.v().newAssignStmt(
-                Jimple.v().newInstanceFieldRef(thisLocal, representationState.makeRef()),
-                getFieldLocal
-        ));
-        upc.add(Jimple.v().newReturnVoidStmt());
-        setAsLazilyInitialized.setDeclaringClass(result);
-        result.addMethod(setAsLazilyInitialized);
-        return setAsLazilyInitialized;
+    private static void addSuperCallToUpcIfNeeded(
+            Local thisLocal,
+            SootClass result,
+            String methodName,
+            List<Type> paramTypes,
+            List<Value> params,
+            Type returnType,
+            UnitPatchingChain upc) {
+        if (result.getSuperclass().getName().contains(_TRANSFORMATION_PREFIX)) {
+            // Add super-call
+            InvokeStmt invokeSuperCall = Jimple.v().newInvokeStmt(
+                    Jimple.v().newSpecialInvokeExpr(
+                            thisLocal,
+                            Scene.v().makeMethodRef(
+                                    result.getSuperclass(),
+                                    methodName,
+                                    paramTypes,
+                                    returnType,
+                                    false
+                            ),
+                            params));
+            upc.add(invokeSuperCall);
+        }
     }
 
     @Override
     protected void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(SootClass old, SootClass result) {
-        if (shouldBeTransformed(old.getSuperclass().getName())) {
-            return;
-        }
-        SootField representationState = v.SF_ABSTRACT_PARTNER_CLASS_REPRESENTATION_STATE;
+        // TODO Split up into finer template methods
+        // TODO Regard Exception and RuntimeException dedicatedly
+        boolean superClassIsTransformed = result.getSuperclass().getName().contains(_TRANSFORMATION_PREFIX);
 
-        SootMethod blockCache =
-                _generateAndSetRepresentationStateSetter(
-                        "blockCache",
-                        representationState,
-                        v.SF_PARTNER_CLASS_CACHE_IS_BLOCKED,
-                        result
-                );
+        // If we block the cache, we will also call to block the cache in the objects (indirectly) contained
+        // in a field
         SootMethod blockCacheInPartnerClassFields;
         {
-            blockCacheInPartnerClassFields = new SootMethod(_TRANSFORMATION_PREFIX + "blockCacheInPartnerClassFields", List.of(), v.TYPE_VOID,  Modifier.PUBLIC | Modifier.FINAL);
+            final String methodName = _TRANSFORMATION_PREFIX + "blockCacheInPartnerClassFields";
+            final List<Type> paramTypes = List.of();
+            final Type returnType = v.TYPE_VOID;
+            blockCacheInPartnerClassFields = new SootMethod(methodName, paramTypes, returnType,  Modifier.PUBLIC);
             JimpleBody jb = Jimple.v().newBody(blockCacheInPartnerClassFields);
             blockCacheInPartnerClassFields.setActiveBody(jb);
             UnitPatchingChain upc = jb.getUnits();
@@ -1534,6 +1593,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local thisLocal = localSpawner.spawnNewLocal(result.getType());
             IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
             upc.add(identityStmt);
+            addSuperCallToUpcIfNeeded(thisLocal, result, methodName, paramTypes, List.of(), returnType, upc);
             Collection<SootField> oldFields = old.getFields();
             Stmt returnStmt = Jimple.v().newReturnVoidStmt();
             upc.add(returnStmt);
@@ -1555,25 +1615,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             blockCacheInPartnerClassFields.setDeclaringClass(result);
             result.addMethod(blockCacheInPartnerClassFields);
         }
-        {
-            // Also add blockCacheInPartnerClassFields-invocation to blockCache-Method
-            JimpleBody jb = (JimpleBody) blockCache.getActiveBody();
-            Stmt[] returnVoid = jb.getUnits().stream().filter(u -> u instanceof ReturnVoidStmt).toArray(Stmt[]::new);
-            assert returnVoid.length == 1;
-            jb.getUnits().insertBefore(
-                    Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(jb.getThisLocal(), blockCacheInPartnerClassFields.makeRef())),
-                    returnVoid[0]
-            );
-        }
-        SootMethod _initializeId = v.SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
-        {
-            // Now generate prepareToRepresentSymbolically
-            _generatePrepareToRepresentSymbolicallyOrForAliasing(result, _initializeId, blockCache);
-        }
 
-        // TODO For free objects: add super-call to get super-classes results as well
         {
-            SootMethod initializeLazyFields = new SootMethod(_TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(v.TYPE_SE), v.TYPE_VOID,  Modifier.PUBLIC | Modifier.FINAL);
+            String methodName = _TRANSFORMATION_PREFIX + "initializeLazyFields";
+            List<Type> paramTypes = List.of(v.TYPE_SE);
+            Type returnType = v.TYPE_VOID;
+            SootMethod initializeLazyFields = new SootMethod(methodName, paramTypes, returnType, Modifier.PUBLIC);
             JimpleBody jb = Jimple.v().newBody(initializeLazyFields);
             initializeLazyFields.setActiveBody(jb);
             UnitPatchingChain upc = jb.getUnits();
@@ -1582,6 +1629,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             Local seLocal = localSpawner.spawnNewLocal(v.TYPE_SE);
             upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
             upc.add(Jimple.v().newIdentityStmt(seLocal, Jimple.v().newParameterRef(v.TYPE_SE, 0)));
+            addSuperCallToUpcIfNeeded(thisLocal, result, methodName, paramTypes, List.of(seLocal), returnType, upc);
             Collection<SootField> oldFields = old.getFields();
             SootField resultOuterClassField = null;
             if (old.isInnerClass()) {
@@ -1608,8 +1656,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
         {
             // Generate getFieldNameToSubstitutedVar
+            String methodName = _TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar";
+            List<Type> paramTypes = List.of();
+            Type returnType = v.SC_MAP.getType();
+
             SootMethod getFieldNameToSubstitutedVar =
-                    new SootMethod(_TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar" , List.of(), v.SC_MAP.getType(), Modifier.PUBLIC | Modifier.FINAL);
+                    new SootMethod(methodName, paramTypes, returnType, Modifier.PUBLIC);
             JimpleBody jb = Jimple.v().newBody(getFieldNameToSubstitutedVar);
             getFieldNameToSubstitutedVar.setActiveBody(jb);
             UnitPatchingChain upc = jb.getUnits();
@@ -1618,11 +1670,20 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
             upc.add(identityStmt);
             Local mapLocal = localSpawner.spawnNewLocal(v.SC_MAP.getType());
-            NewExpr newExpr = Jimple.v().newNewExpr(v.SC_HASH_MAP.getType());
-            SpecialInvokeExpr invokeSpecialExpr =
-                    Jimple.v().newSpecialInvokeExpr(mapLocal, Scene.v().makeConstructorRef(v.SC_HASH_MAP, List.of()));
-            upc.add(Jimple.v().newAssignStmt(mapLocal, newExpr));
-            upc.add(Jimple.v().newInvokeStmt(invokeSpecialExpr));
+            if (!superClassIsTransformed) {
+                NewExpr newExpr = Jimple.v().newNewExpr(v.SC_HASH_MAP.getType());
+                SpecialInvokeExpr invokeSpecialExpr =
+                        Jimple.v().newSpecialInvokeExpr(mapLocal, Scene.v().makeConstructorRef(v.SC_HASH_MAP, List.of()));
+                upc.add(Jimple.v().newAssignStmt(mapLocal, newExpr));
+                upc.add(Jimple.v().newInvokeStmt(invokeSpecialExpr));
+            } else {
+                upc.add(Jimple.v().newAssignStmt(
+                        mapLocal,
+                        Jimple.v().newSpecialInvokeExpr(
+                                thisLocal,
+                                Scene.v().makeMethodRef(result.getSuperclass(), methodName, paramTypes, returnType, false))
+                ));
+            }
 
             Collection<SootField> oldFields = old.getFields();
             for (SootField sf : oldFields) {
@@ -1644,85 +1705,23 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             getFieldNameToSubstitutedVar.setDeclaringClass(result);
             result.addMethod(getFieldNameToSubstitutedVar);
         }
-        {
-            // Generate getFieldNameToType
-            SootMethod getFieldNameToSubstitutedVar =
-                    new SootMethod(_TRANSFORMATION_PREFIX + "getFieldNameToType" , List.of(), v.SC_MAP.getType(), Modifier.PUBLIC | Modifier.FINAL);
-            JimpleBody jb = Jimple.v().newBody(getFieldNameToSubstitutedVar);
-            getFieldNameToSubstitutedVar.setActiveBody(jb);
-            UnitPatchingChain upc = jb.getUnits();
-            LocalSpawner localSpawner = new LocalSpawner(jb);
-            Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-            IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
-            upc.add(identityStmt);
-            Local mapLocal = localSpawner.spawnNewLocal(v.SC_MAP.getType());
-            NewExpr newExpr = Jimple.v().newNewExpr(v.SC_HASH_MAP.getType());
-            SpecialInvokeExpr invokeSpecialExpr =
-                    Jimple.v().newSpecialInvokeExpr(mapLocal, Scene.v().makeConstructorRef(v.SC_HASH_MAP, List.of()));
-            upc.add(Jimple.v().newAssignStmt(mapLocal, newExpr));
-            upc.add(Jimple.v().newInvokeStmt(invokeSpecialExpr));
-
-            Collection<SootField> oldFields = old.getFields();
-            for (SootField sf : oldFields) {
-                SootField newField = getTransformedFieldForOldField(sf, result);
-                if (!fieldWasTransformedAndIsNonStatic(newField, sf.getType(), newField.getType())) {
-                    continue;
-                }
-                // Push name of field
-                Local nameOfFieldLocal = localSpawner.spawnNewStackLocal(v.TYPE_STRING);
-                upc.add(Jimple.v().newAssignStmt(nameOfFieldLocal, StringConstant.v(newField.getName())));
-                // Get field
-                Local getFieldTypeLocal = localSpawner.spawnNewStackLocal(v.TYPE_CLASS);
-                Type t;
-                if (sf.getType() instanceof ArrayType) {
-                    t = transformArrayType((ArrayType) sf.getType(), false);
-                } else {
-                    t = newField.getType();
-                }
-                upc.add(Jimple.v().newAssignStmt(getFieldTypeLocal, ClassConstant.fromType(t)));
-                // Add field to Map
-                upc.add(Jimple.v().newInvokeStmt(Jimple.v().newInterfaceInvokeExpr(mapLocal, v.SM_MAP_PUT.makeRef(), nameOfFieldLocal, getFieldTypeLocal)));
-            }
-
-            upc.add(Jimple.v().newReturnStmt(mapLocal));
-            getFieldNameToSubstitutedVar.setDeclaringClass(result);
-            result.addMethod(getFieldNameToSubstitutedVar);
-        }
     }
 
-    private SootMethod _generatePrepareToRepresentSymbolicallyOrForAliasing(SootClass result, SootMethod _initializeId, SootMethod blockCache) {
-        SootMethod prepareToRepresent =
-                new SootMethod(_TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically",
-                        List.of(v.TYPE_SE),
-                        v.TYPE_VOID,
-                        Modifier.PUBLIC | Modifier.FINAL
-                );
-        JimpleBody jb = Jimple.v().newBody(prepareToRepresent);
-        prepareToRepresent.setActiveBody(jb);
-        UnitPatchingChain upc = jb.getUnits();
-        LocalSpawner localSpawner = new LocalSpawner(jb);
-        Local thisLocal = localSpawner.spawnNewLocal(result.getType());
-        IdentityStmt identityStmt = Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType()));
-        upc.add(identityStmt);
-        Local seLocal = localSpawner.spawnNewLocal(v.TYPE_SE);
-        IdentityStmt seIdentity = Jimple.v().newIdentityStmt(seLocal, Jimple.v().newParameterRef(v.TYPE_SE, 0));
-        upc.add(seIdentity);
-        final Local idLocal = localSpawner.spawnNewStackLocal(v.TYPE_SINT);
-        Local nextNumberInitializedSymObjectLocal = localSpawner.spawnNewStackLocal(v.TYPE_INT);
-        upc.add(Jimple.v().newAssignStmt(
-                nextNumberInitializedSymObjectLocal,
-                Jimple.v().newVirtualInvokeExpr(seLocal, v.SM_SE_GET_NEXT_NUMBER_INITIALIZED.makeRef())
-        ));
-        upc.add(Jimple.v().newAssignStmt(
-                idLocal,
-                Jimple.v().newStaticInvokeExpr(v.SM_SINT_CONCSINT.makeRef(), nextNumberInitializedSymObjectLocal)
-        ));
-        upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, _initializeId.makeRef(), idLocal)));
-        upc.add(Jimple.v().newInvokeStmt(Jimple.v().newVirtualInvokeExpr(thisLocal, blockCache.makeRef())));
-        upc.add(Jimple.v().newReturnVoidStmt());
-        prepareToRepresent.setDeclaringClass(result);
-        result.addMethod(prepareToRepresent);
-        return prepareToRepresent;
+    protected final boolean calculateReflectionRequiredForField(SootField originalField) {
+        if (originalField.getDeclaringClass().getPackageName().startsWith("java")) {
+            return true;
+        }
+        int access = originalField.getModifiers();
+        if (java.lang.reflect.Modifier.isStatic(access)) {
+            return false;
+        }
+        if (tryUseSystemClassLoader) {
+            return java.lang.reflect.Modifier.isPrivate(access) || java.lang.reflect.Modifier.isFinal(access);
+        } else {
+            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
+            // without reflection
+            return !java.lang.reflect.Modifier.isPublic(access) || java.lang.reflect.Modifier.isFinal(access);
+        }
     }
 
     @Override
@@ -1742,6 +1741,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     @Override
     protected void generateAndAddCopyMethod(SootClass old, SootClass result) {
+        if (result.isAbstract()) {
+            return;
+        }
         // Create copy method
         SootMethod copyMethod =
                 new SootMethod("copy", List.of(v.TYPE_MULIB_VALUE_COPIER), v.TYPE_OBJECT, Modifier.PUBLIC);
@@ -2129,36 +2131,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
 
-    public static String addPrefixToPath(String addTo) {
-        return _addPrefix(false, addTo);
-    }
-
-    public static String addPrefixToName(String addTo) {
-        return _addPrefix(true, addTo);
-    }
-
-    private static String _addPrefix(boolean useDot, String addTo) {
-        if (addTo == null) {
-            return null;
-        }
-        if (addTo.startsWith("java")) {
-            // Starting with "java" is forbidden
-            addTo = _TRANSFORMATION_PREFIX + addTo;
-        }
-        int actualNameIndex = addTo.lastIndexOf(useDot ? '.' : '/') + 1;
-        String packageName = addTo.substring(0, actualNameIndex);
-        String actualName = addTo.substring(actualNameIndex);
-        String[] innerClassSplit = actualName.split("\\$");
-        StringBuilder resultBuilder = new StringBuilder(packageName);
-        for (int i = 0; i < innerClassSplit.length; i++) {
-            String s = innerClassSplit[i];
-            resultBuilder.append(_TRANSFORMATION_PREFIX)
-                    .append(s);
-            if (i < innerClassSplit.length - 1) {
-                resultBuilder.append('$');
-            }
-        }
-        return resultBuilder.toString();
+    private String getNameOfTransformedClass(String toTransformName) {
+        Class<?> originalClass = getClassForName(toTransformName);
+        return replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(originalClass, originalClass).getName();
     }
 
     @Override
@@ -2167,12 +2142,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootClass result = new SootClass(addPrefixToName(toTransform.getName()));
         // Set modifiers
         result.setModifiers(toTransform.getModifiers());
-        // Set super class and interfaces
-        SootClass sootSuperClass = transformEnrichAndValidateIfNotSpecialCase(toTransform.getSuperclass().getName());
         // The class is already added and added to the set of resolved classes. This is done to ensure that
         // we can use it later on
         Scene.v().addClass(result);
         resolvedClasses.put(result.getName(), result);
+        // Set super class and interfaces
+        SootClass sootSuperClass = transformEnrichAndValidateIfNotSpecialCase(toTransform.getSuperclass().getName());
         if (sootSuperClass.equals(v.SC_OBJECT) && !toTransform.isInterface()) {
             // We rectify calls to the Object constructor for interfaces when dealing with constructors dedicatedly
             sootSuperClass = v.SC_ABSTRACT_PARTNER_CLASS;
@@ -2205,7 +2180,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         new InnerClassTag(
                                 addPrefixToPath(innerClassTag.getInnerClass()),
                                 addPrefixToPath(innerClassTag.getOuterClass()),
-                                addPrefixToName(innerClassTag.getName()),
+                                addPrefixToName(innerClassName),
                                 innerClassTag.getAccessFlags()
                         )
                 );
@@ -4037,12 +4012,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return transformed;
     }
 
-    private void decideOnWhetherStillNeedsToBeAddedToTransformationQueue(String name) {
-        if (shouldBeTransformed(name) && isAlreadyTransformedOrToBeTransformedPath(name)) {
-            decideOnAddToClassesToTransform(name);
-        }
-    }
-
     private SootClass transformEnrichAndValidateIfNotSpecialCase(String toTransformName) {
         synchronized (syncObject) {
             SootClass result;
@@ -4051,12 +4020,16 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             }
             if (shouldBeTransformed(toTransformName)) {
                 if (!isAlreadyTransformedOrToBeTransformedPath(toTransformName)) {
-                    decideOnAddToClassesToTransform(toTransformName);
+                    addToClassesToTransform(toTransformName);
                 }
+                Class<?> toTransform = getClassForName(toTransformName);
+                toTransform = this.replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(toTransform, toTransform);
+                toTransformName = toTransform.getName();
                 assert transformedClassNodes.get(toTransformName) == null;
-                transformClass(getClassForName(toTransformName));
+                result = transformEnrichAndValidate(toTransformName);
+                assert result != null;
                 assert transformedClassNodes.get(toTransformName) != null : "Setting class in transformedClassNodes failed! Config: " + config;
-                return transformedClassNodes.get(toTransformName);
+                return result;
             } else {
                 return getClassNodeForName(toTransformName);
             }

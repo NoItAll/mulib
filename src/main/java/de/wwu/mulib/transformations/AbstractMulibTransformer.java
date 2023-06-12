@@ -1,5 +1,6 @@
 package de.wwu.mulib.transformations;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -8,18 +9,12 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
-import soot.SootField;
 
-import java.lang.reflect.Array;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
+import java.lang.reflect.*;
 import java.util.*;
 
 import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
-import static de.wwu.mulib.transformations.TransformationUtility.determineNestHostFieldName;
-import static de.wwu.mulib.transformations.TransformationUtility.getClassForPath;
-import static de.wwu.mulib.transformations.soot_transformations.SootMulibTransformer.addPrefixToName;
+import static de.wwu.mulib.transformations.TransformationUtility.*;
 
 /**
  * Core piece of Mulib. The MulibTransformer accepts classes and generates partner classes for them, according
@@ -33,21 +28,23 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final boolean validate;
     protected final boolean tryUseSystemClassLoader;
     protected final boolean includePackageName;
-    protected final List<String> ignoreFromPackages;
-    protected final List<Class<?>> ignoreClasses;
-    protected final List<Class<?>> ignoreSubclassesOf;
-    protected final List<Class<?>> regardSpecialCase;
+    protected final Set<String> ignoreFromPackages;
+    protected final Set<Class<?>> ignoreClasses;
+    protected final Set<Class<?>> ignoreSubclassesOf;
+    protected final Set<Class<?>> regardSpecialCase;
     protected final Map<Method, Method> replaceMethodCallOfNonSubstitutedClassWith;
+    protected final Map<Class<?>, Class<?>> replaceToBeTransformedClassWithSpecifiedClass;
     protected final Queue<Class<?>> classesToTransform = new ArrayDeque<>();
     protected final Set<Class<?>> explicitlyAddedClasses = new HashSet<>();
-    protected final List<Class<?>> concretizeFor;
-    protected final List<Class<?>> generalizeMethodCallsFor;
+    protected final Set<Class<?>> concretizeFor;
+    protected final Set<Class<?>> generalizeMethodCallsFor;
     protected final boolean overWriteFileForSystemClassLoader;
 
     // original class -> class transformed for symbolic execution
     protected final Map<String, Class<?>> transformedClasses = new HashMap<>();
     protected final MulibConfig config;
     protected final Map<String, T> transformedClassNodes = new HashMap<>();
+    protected final Collection<Field> accessibleStaticFieldsOfTransformedClasses = new HashSet<>();
 
 
     protected final ClassLoader classLoader;
@@ -74,6 +71,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         this.includePackageName = config.TRANSF_INCLUDE_PACKAGE_NAME;
         this.overWriteFileForSystemClassLoader = config.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.config = config;
+        this.replaceToBeTransformedClassWithSpecifiedClass = config.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
         Map<Method, Method> replacementMethods = new HashMap<>(config.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH);
         if (config.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
             replacementMethods.putAll(ModelMethods.readDefaultModelMethods(this));
@@ -82,6 +80,22 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     }
 
     /* PUBLIC METHODS */
+
+    public static Collection<Field> getAccessibleStaticFields(Class<?> c) {
+        Set<Field> result = new HashSet<>();
+        Field[] fs = c.getDeclaredFields();
+        for (Field f : fs) {
+            if (Modifier.isStatic(f.getModifiers())) {
+                if (!f.trySetAccessible()) {
+                    Mulib.log.warning("Setting static field " + f.getName() + " in "
+                            + f.getDeclaringClass().getName() + " failed. It will not be regarded while backtracking!");
+                    continue;
+                }
+                result.add(f);
+            }
+        }
+        return result;
+    }
 
     /**
      * Transforms the specified classes. Even if the passed classes are ignored according to the configuration,
@@ -101,6 +115,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             }
 
             // Replace GETFIELD and PUTFIELD
+            // This must happen now, since only now we have assured that the respective methods have been generated for
+            // each class
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 replaceGetFieldsAndPutFieldsWithGeneratedMethods(getClassNodeForName(entry.getKey()), entry.getValue());
                 generateNullChecksForMethods(getClassNodeForName(entry.getKey()), entry.getValue());
@@ -125,83 +141,106 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 }
             }
 
+            for (Map.Entry<String, Class<?>> e : transformedClasses.entrySet()) {
+                accessibleStaticFieldsOfTransformedClasses.addAll(getAccessibleStaticFields(e.getValue()));
+            }
+
             maybeCheckAreValidInitializedClasses(transformedClasses.values());
         }
     }
 
+    @Override
+    public Collection<Field> getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(Class<?> clazz) {
+        synchronized (syncObject) {
+            Collection<Field> result = new HashSet<>();
+            T classNode = getClassNodeForName(clazz.getName());
+            Collection<T> classNodes = getConnectedClassNodes(classNode);
+            for (T t : classNodes) {
+                String name = getNameToLoadOfClassNode(t);
+                Class<?> c = TransformationUtility.getClassForName(name);
+                result.addAll(getAccessibleStaticFields(c));
+            }
+            return result;
+        }
+    }
+
+    protected abstract Collection<T> getConnectedClassNodes(T classNode);
+
     /**
      * Transforms type. Arrays are transformed to their respective subclass of Sarray.
      * @param toTransform Type to transform
-     * @param sarraysToRealArrayTypes Should, e.g., Sint[].class be returned insted of SintSarray?
+     * @param sarraysToRealArrayTypes Should, e.g., Sint[].class be returned instead of SintSarray?
      * @return Transformed type
      */
     @Override
     public Class<?> transformType(Class<?> toTransform, boolean sarraysToRealArrayTypes) {
-        if (toTransform == null) {
-            throw new MulibRuntimeException("Type to transform must not be null.");
-        }
-        if (SubstitutedVar.class.isAssignableFrom(toTransform)) {
-            return toTransform;
-        }
-        if (toTransform == int.class) {
-            return Sint.class;
-        } else if (toTransform == long.class) {
-            return Slong.class;
-        } else if (toTransform == double.class) {
-            return Sdouble.class;
-        } else if (toTransform == float.class) {
-            return Sfloat.class;
-        } else if (toTransform == short.class) {
-            return Sshort.class;
-        } else if (toTransform == byte.class) {
-            return Sbyte.class;
-        } else if (toTransform == boolean.class) {
-            return Sbool.class;
-        } else if (toTransform == char.class) {
-            return Schar.class;
-        } else if (toTransform == String.class) {
-            return String.class; // TODO Free Strings
-        } else if (toTransform.isArray()) {
-            Class<?> componentType = toTransform.getComponentType();
-            if (componentType.isArray()) {
-                if (sarraysToRealArrayTypes) {
-                    int nesting = 1; // Already is outer array
-                    while (componentType.isArray()) {
-                        nesting++; // Always at least one
-                        componentType = componentType.getComponentType();
-                    }
-                    @SuppressWarnings("redundant")
-                    Class<?> transformedInnermostComponentType = transformType(componentType);
-                    Class<?> result = transformedInnermostComponentType;
-                    // Now wrap the innermost transformed component type in arrays
-                    for (int i = 0; i < nesting; i++) {
-                        result = Array.newInstance(result, 0).getClass();
-                    }
-                    return result;
-                } else {
-                    return Sarray.SarraySarray.class;
-                }
-            } else if (componentType == int.class) {
-                return sarraysToRealArrayTypes ? Sint[].class : Sarray.SintSarray.class;
-            } else if (componentType == long.class) {
-                return sarraysToRealArrayTypes ? Slong[].class : Sarray.SlongSarray.class;
-            } else if (componentType == double.class) {
-                return sarraysToRealArrayTypes ? Sdouble[].class : Sarray.SdoubleSarray.class;
-            } else if (componentType == float.class) {
-                return sarraysToRealArrayTypes ? Sfloat[].class : Sarray.SfloatSarray.class;
-            } else if (componentType == short.class) {
-                return sarraysToRealArrayTypes ? Sshort[].class : Sarray.SshortSarray.class;
-            } else if (componentType == boolean.class) {
-                return sarraysToRealArrayTypes ? Sbool[].class : Sarray.SboolSarray.class;
-            } else if (componentType == byte.class) {
-                return sarraysToRealArrayTypes ? Sbyte[].class : Sarray.SbyteSarray.class;
-            } else if (componentType == char.class) {
-                return sarraysToRealArrayTypes ? Schar[].class : Sarray.ScharSarray.class;
-            } else {
-                return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : Sarray.PartnerClassSarray.class;
+        synchronized (syncObject) {
+            if (toTransform == null) {
+                throw new MulibRuntimeException("Type to transform must not be null.");
             }
-        } else {
-            return getPossiblyTransformedClass(toTransform);
+            if (SubstitutedVar.class.isAssignableFrom(toTransform)) {
+                return toTransform;
+            }
+            if (toTransform == int.class) {
+                return Sint.class;
+            } else if (toTransform == long.class) {
+                return Slong.class;
+            } else if (toTransform == double.class) {
+                return Sdouble.class;
+            } else if (toTransform == float.class) {
+                return Sfloat.class;
+            } else if (toTransform == short.class) {
+                return Sshort.class;
+            } else if (toTransform == byte.class) {
+                return Sbyte.class;
+            } else if (toTransform == boolean.class) {
+                return Sbool.class;
+            } else if (toTransform == char.class) {
+                return Schar.class;
+            } else if (toTransform == String.class) {
+                return String.class; // TODO Free Strings
+            } else if (toTransform.isArray()) {
+                Class<?> componentType = toTransform.getComponentType();
+                if (componentType.isArray()) {
+                    if (sarraysToRealArrayTypes) {
+                        int nesting = 1; // Already is outer array
+                        while (componentType.isArray()) {
+                            nesting++; // Always at least one
+                            componentType = componentType.getComponentType();
+                        }
+                        @SuppressWarnings("redundant")
+                        Class<?> transformedInnermostComponentType = transformType(componentType);
+                        Class<?> result = transformedInnermostComponentType;
+                        // Now wrap the innermost transformed component type in arrays
+                        for (int i = 0; i < nesting; i++) {
+                            result = Array.newInstance(result, 0).getClass();
+                        }
+                        return result;
+                    } else {
+                        return Sarray.SarraySarray.class;
+                    }
+                } else if (componentType == int.class) {
+                    return sarraysToRealArrayTypes ? Sint[].class : Sarray.SintSarray.class;
+                } else if (componentType == long.class) {
+                    return sarraysToRealArrayTypes ? Slong[].class : Sarray.SlongSarray.class;
+                } else if (componentType == double.class) {
+                    return sarraysToRealArrayTypes ? Sdouble[].class : Sarray.SdoubleSarray.class;
+                } else if (componentType == float.class) {
+                    return sarraysToRealArrayTypes ? Sfloat[].class : Sarray.SfloatSarray.class;
+                } else if (componentType == short.class) {
+                    return sarraysToRealArrayTypes ? Sshort[].class : Sarray.SshortSarray.class;
+                } else if (componentType == boolean.class) {
+                    return sarraysToRealArrayTypes ? Sbool[].class : Sarray.SboolSarray.class;
+                } else if (componentType == byte.class) {
+                    return sarraysToRealArrayTypes ? Sbyte[].class : Sarray.SbyteSarray.class;
+                } else if (componentType == char.class) {
+                    return sarraysToRealArrayTypes ? Schar[].class : Sarray.ScharSarray.class;
+                } else {
+                    return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : Sarray.PartnerClassSarray.class;
+                }
+            } else {
+                return getPossiblyTransformedClass(toTransform);
+            }
         }
     }
 
@@ -319,15 +358,61 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return result;
     }
 
+    @Override
     public void setPartnerClass(Class<?> original, Class<?> partnerClass) {
         transformedClasses.put(original.getName(), partnerClass);
+    }
+
+    @Override
+    public final Collection<Field> getAccessibleStaticFieldsOfTransformedClasses() {
+        return accessibleStaticFieldsOfTransformedClasses;
+    }
+
+    public String addPrefixToPath(String addTo) {
+        return _addPrefix(false, addTo);
+    }
+
+    public String addPrefixToName(String addTo) {
+        Class<?> originalClass = getClassForName(addTo);
+        String modelClassOrOriginal = replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(originalClass, originalClass).getName();
+        return _addPrefix(true, modelClassOrOriginal);
+    }
+
+    private static String _addPrefix(boolean useDot, String addTo) {
+        if (addTo == null) {
+            return null;
+        }
+        if (addTo.startsWith("java")) {
+            // Starting with "java" is forbidden
+            addTo = _TRANSFORMATION_PREFIX + addTo;
+        }
+        int actualNameIndex = addTo.lastIndexOf(useDot ? '.' : '/') + 1;
+        String packageName = addTo.substring(0, actualNameIndex);
+        String actualName = addTo.substring(actualNameIndex);
+        String[] innerClassSplit = actualName.split("\\$");
+        StringBuilder resultBuilder = new StringBuilder(packageName);
+        for (int i = 0; i < innerClassSplit.length; i++) {
+            String s = innerClassSplit[i];
+            resultBuilder.append(_TRANSFORMATION_PREFIX)
+                    .append(s);
+            if (i < innerClassSplit.length - 1) {
+                resultBuilder.append('$');
+            }
+        }
+        return resultBuilder.toString();
     }
 
     protected abstract boolean isInterface(T classNode);
 
     protected abstract T getClassNodeForName(String name);
 
-    protected T transformEnrichAndValidate(String toTransformName) {
+    protected final T transformEnrichAndValidate(String toTransformName) {
+        Class<?> toTransform = getClassForName(toTransformName);
+        Class<?> replacement = replaceToBeTransformedClassWithSpecifiedClass.get(toTransform);
+        if (replacement != null) {
+            toTransformName = replacement.getName();
+
+        }
         T result;
         if ((result = this.transformedClassNodes.get(toTransformName)) != null) {
             return result;
@@ -363,8 +448,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             generateAccessorAndSetterMethodsForFieldsAndDiscardIsFinal(originalCn, result);
             ensureInitializedLibraryTypeFieldsInConstructors(result);
         }
-
-
         return result;
     }
 
@@ -479,6 +562,12 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 || transformedClasses.containsKey(c.getName()); // Should not already be transformed
     }
 
+    protected void decideOnWhetherStillNeedsToBeAddedToTransformationQueue(String name) {
+        if (shouldBeTransformed(name) && isAlreadyTransformedOrToBeTransformedPath(name)) {
+            addToClassesToTransform(name);
+        }
+    }
+
     // Checks if a class is ignored according to some configuration. Ignored classes are not transformed.
     protected boolean isIgnored(Class<?> toTransform) {
         return shouldBeConcretizedFor(toTransform)
@@ -511,7 +600,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     // If set contains toTransformName: partnerclass-class was loaded and does not have to be written anymore
     private final Set<String> usedLoadedAndAlreadyWrittenVersion = new HashSet<>();
     // Transforms one class. Checks whether the class is ignored and whether the class has already been transformed.
-    protected void transformClass(Class<?> toTransform) {
+    protected final void transformClass(Class<?> toTransform) {
         if (!(classLoader instanceof MulibClassLoader)) {
             try {
                 synchronized (syncObject) {
@@ -530,7 +619,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 throw new MulibRuntimeException(e);
             }
         }
-        if (isIgnored(toTransform) || transformedClassNodes.containsKey(toTransform.getName())) {
+        if (isIgnored(toTransform) || isAlreadyTransformedOrToBeTransformedPath(toTransform.getName())) {
             return;
         }
         transformEnrichAndValidate(toTransform.getName());
@@ -549,7 +638,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     /* PROTECTED METHODS FOR TRANSFORMING PARAMETERS AND TYPES */
 
-    protected void decideOnAddToClassesToTransform(String path) {
+    protected void addToClassesToTransform(String path) {
         if (path.startsWith("[")) {
             path = path.substring(path.lastIndexOf('[') + 1);
         }
@@ -557,24 +646,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             assert path.endsWith(";");
             path = path.substring(1, path.length() - 1);
         }
-        classesToTransform.add(getClassForPath(path));
-    }
-
-    protected final boolean calculateReflectionRequiredForField(SootField originalField) {
-        if (originalField.getDeclaringClass().getPackageName().startsWith("java")) {
-            return true;
-        }
-        int access = originalField.getModifiers();
-        if (Modifier.isStatic(access)) {
-            return false;
-        }
-        if (tryUseSystemClassLoader) {
-            return Modifier.isPrivate(access) || Modifier.isFinal(access);
-        } else {
-            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
-            // without reflection
-            return !Modifier.isPublic(access) || Modifier.isFinal(access);
-        }
+        Class<?> c = getClassForPath(path);
+        classesToTransform.add(c);
     }
 
     /* OPTIONALLY EXECUTED METHODS */
