@@ -644,35 +644,35 @@ public final class SymbolicExecution {
         return valueFactory.symSchar(this);
     }
     public Sint concSint(int i) {
-        return valueFactory.concSint(i);
+        return Sint.concSint(i);
     }
 
     public Slong concSlong(long l) {
-        return valueFactory.concSlong(l);
+        return Slong.concSlong(l);
     }
 
     public Sbyte concSbyte(byte b) {
-        return valueFactory.concSbyte(b);
+        return Sbyte.concSbyte(b);
     }
 
     public Sshort concSshort(short s) {
-        return valueFactory.concSshort(s);
+        return Sshort.concSshort(s);
     }
 
     public Sdouble concSdouble(double d) {
-        return valueFactory.concSdouble(d);
+        return Sdouble.concSdouble(d);
     }
 
     public Sfloat concSfloat(float f) {
-        return valueFactory.concSfloat(f);
+        return Sfloat.concSfloat(f);
     }
 
     public Sbool concSbool(boolean b) {
-        return valueFactory.concSbool(b);
+        return Sbool.concSbool(b);
     }
 
     public Schar concSchar(char c) {
-        return valueFactory.concSchar(c);
+        return Schar.concSchar(c);
     }
 
     public Sarray.SintSarray sintSarray(Sint len, boolean defaultIsSymbolic) {

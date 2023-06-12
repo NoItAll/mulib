@@ -96,20 +96,4 @@ public interface ValueFactory {
     Sbool wrappingSymSbool(SymbolicExecution se, Constraint constraint);
 
     Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1);
-
-    Sint.ConcSint concSint(int i);
-
-    Sdouble.ConcSdouble concSdouble(double d);
-
-    Sfloat.ConcSfloat concSfloat(float f);
-
-    Sbool.ConcSbool concSbool(boolean b);
-
-    Slong.ConcSlong concSlong(long l);
-
-    Sshort.ConcSshort concSshort(short s);
-
-    Sbyte.ConcSbyte concSbyte(byte b);
-
-    Schar.ConcSchar concSchar(char c);
 }

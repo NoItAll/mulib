@@ -26,7 +26,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint add(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) lhs).intVal() + ((ConcSnumber) rhs).intVal());
+            return Sint.concSint(((ConcSnumber) lhs).intVal() + ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSint(se, sum(lhs, rhs));
     }
@@ -34,7 +34,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint sub(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) lhs).intVal() - ((ConcSnumber) rhs).intVal());
+            return Sint.concSint(((ConcSnumber) lhs).intVal() - ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSint(se, sub(lhs, rhs));
     }
@@ -42,7 +42,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint mul(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) lhs).intVal() * ((ConcSnumber) rhs).intVal());
+            return Sint.concSint(((ConcSnumber) lhs).intVal() * ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSint(se, mul(lhs, rhs));
     }
@@ -50,7 +50,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint div(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) lhs).intVal() / ((ConcSnumber) rhs).intVal());
+            return Sint.concSint(((ConcSnumber) lhs).intVal() / ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSint(se, div(lhs, rhs));
     }
@@ -58,7 +58,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint mod(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) lhs).intVal() % ((ConcSnumber) rhs).intVal());
+            return Sint.concSint(((ConcSnumber) lhs).intVal() % ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSint(se, mod(lhs, rhs));
     }
@@ -66,7 +66,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint neg(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSint(- ((ConcSnumber) i).intVal());
+            return Sint.concSint(- ((ConcSnumber) i).intVal());
         }
         return valueFactory.wrappingSymSint(se, neg(i));
     }
@@ -74,7 +74,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble add(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() + ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sdouble.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() + ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, sum(lhs, rhs));
     }
@@ -82,7 +82,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble sub(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() - ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sdouble.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() - ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, sub(lhs, rhs));
     }
@@ -90,7 +90,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble mul(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() * ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sdouble.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() * ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, mul(lhs, rhs));
     }
@@ -98,7 +98,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble div(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() / ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sdouble.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() / ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, div(lhs, rhs));
     }
@@ -106,7 +106,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble mod(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() % ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sdouble.concSdouble(((Sdouble.ConcSdouble) lhs).doubleVal() % ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, mod(lhs, rhs));
     }
@@ -114,7 +114,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble neg(SymbolicExecution se, Sdouble d) {
         if (d instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSdouble(- ((Sdouble.ConcSdouble) d).doubleVal());
+            return Sdouble.concSdouble(- ((Sdouble.ConcSdouble) d).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, neg(d));
     }
@@ -122,7 +122,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong add(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() + ((Slong.ConcSlong) rhs).longVal());
+            return Slong.concSlong(((Slong.ConcSlong) lhs).longVal() + ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSlong(se, sum(lhs, rhs));
     }
@@ -130,7 +130,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong sub(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() - ((Slong.ConcSlong) rhs).longVal());
+            return Slong.concSlong(((Slong.ConcSlong) lhs).longVal() - ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSlong(se, sub(lhs, rhs));
     }
@@ -138,7 +138,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong mul(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() * ((Slong.ConcSlong) rhs).longVal());
+            return Slong.concSlong(((Slong.ConcSlong) lhs).longVal() * ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSlong(se, mul(lhs, rhs));
     }
@@ -146,7 +146,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong div(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() / ((Slong.ConcSlong) rhs).longVal());
+            return Slong.concSlong(((Slong.ConcSlong) lhs).longVal() / ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSlong(se, div(lhs, rhs));
     }
@@ -154,7 +154,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong mod(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(((Slong.ConcSlong) lhs).longVal() % ((Slong.ConcSlong) rhs).longVal());
+            return Slong.concSlong(((Slong.ConcSlong) lhs).longVal() % ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSlong(se, mod(lhs, rhs));
     }
@@ -162,7 +162,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong neg(SymbolicExecution se, Slong l) {
         if (l instanceof Slong.ConcSlong) {
-            return valueFactory.concSlong(- ((Slong.ConcSlong) l).longVal());
+            return Slong.concSlong(- ((Slong.ConcSlong) l).longVal());
         }
         return valueFactory.wrappingSymSlong(se, neg(l));
     }
@@ -170,7 +170,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat add(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() + ((Sfloat.ConcSfloat) rhs).floatVal());
+            return Sfloat.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() + ((Sfloat.ConcSfloat) rhs).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, sum(lhs, rhs));
     }
@@ -178,7 +178,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat sub(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() - ((Sfloat.ConcSfloat) rhs).floatVal());
+            return Sfloat.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() - ((Sfloat.ConcSfloat) rhs).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, sub(lhs, rhs));
     }
@@ -186,7 +186,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat mul(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() * ((Sfloat.ConcSfloat) rhs).floatVal());
+            return Sfloat.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() * ((Sfloat.ConcSfloat) rhs).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, mul(lhs, rhs));
     }
@@ -194,7 +194,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat div(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() / ((Sfloat.ConcSfloat) rhs).floatVal());
+            return Sfloat.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() / ((Sfloat.ConcSfloat) rhs).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, div(lhs, rhs));
     }
@@ -202,7 +202,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat mod(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() % ((Sfloat.ConcSfloat) rhs).floatVal());
+            return Sfloat.concSfloat(((Sfloat.ConcSfloat) lhs).floatVal() % ((Sfloat.ConcSfloat) rhs).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, mod(lhs, rhs));
     }
@@ -210,7 +210,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat neg(SymbolicExecution se, Sfloat f) {
         if (f instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSfloat(- ((Sfloat.ConcSfloat) f).floatVal());
+            return Sfloat.concSfloat(- ((Sfloat.ConcSfloat) f).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, neg(f));
     }
@@ -265,7 +265,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool not(SymbolicExecution se, Sbool b) {
         if (b instanceof Sbool.ConcSbool) {
-            return valueFactory.concSbool(((Sbool.ConcSbool) b).isFalse());
+            return Sbool.concSbool(((Sbool.ConcSbool) b).isFalse());
         }
         return valueFactory.wrappingSymSbool(se, not(b));
     }
@@ -273,7 +273,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lt(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSbool(((ConcSnumber) lhs).intVal() < ((ConcSnumber) rhs).intVal());
+            return Sbool.concSbool(((ConcSnumber) lhs).intVal() < ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
@@ -281,7 +281,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lt(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSbool(((Slong.ConcSlong) lhs).longVal() < ((Slong.ConcSlong) rhs).longVal());
+            return Sbool.concSbool(((Slong.ConcSlong) lhs).longVal() < ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
@@ -289,7 +289,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lt(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() < ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sbool.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() < ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
@@ -297,7 +297,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lt(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() < ((Sfloat.ConcSfloat) rhs).doubleVal());
+            return Sbool.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() < ((Sfloat.ConcSfloat) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSbool(se, lt(lhs, rhs));
     }
@@ -305,7 +305,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lte(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
-            return valueFactory.concSbool(((ConcSnumber) lhs).intVal() <= ((ConcSnumber) rhs).intVal());
+            return Sbool.concSbool(((ConcSnumber) lhs).intVal() <= ((ConcSnumber) rhs).intVal());
         }
         return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
@@ -313,7 +313,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lte(SymbolicExecution se, Slong lhs, Slong rhs) {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
-            return valueFactory.concSbool(((Slong.ConcSlong) lhs).longVal() <= ((Slong.ConcSlong) rhs).longVal());
+            return Sbool.concSbool(((Slong.ConcSlong) lhs).longVal() <= ((Slong.ConcSlong) rhs).longVal());
         }
         return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
@@ -321,7 +321,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lte(SymbolicExecution se, Sdouble lhs, Sdouble rhs) {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
-            return valueFactory.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() <= ((Sdouble.ConcSdouble) rhs).doubleVal());
+            return Sbool.concSbool(((Sdouble.ConcSdouble) lhs).doubleVal() <= ((Sdouble.ConcSdouble) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
@@ -329,7 +329,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbool lte(SymbolicExecution se, Sfloat lhs, Sfloat rhs) {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
-            return valueFactory.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() <= ((Sfloat.ConcSfloat) rhs).doubleVal());
+            return Sbool.concSbool(((Sfloat.ConcSfloat) lhs).doubleVal() <= ((Sfloat.ConcSfloat) rhs).doubleVal());
         }
         return valueFactory.wrappingSymSbool(se, lte(lhs, rhs));
     }
@@ -375,7 +375,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (lhs instanceof Slong.ConcSlong && rhs instanceof Slong.ConcSlong) {
             long lrhs = ((Slong.ConcSlong) rhs).longVal();
             long llhs = ((Slong.ConcSlong) lhs).longVal();
-            return valueFactory.concSint(Long.compare(llhs, lrhs));
+            return Sint.concSint(Long.compare(llhs, lrhs));
         }
         return valueFactory.cmp(se, lhs, rhs);
     }
@@ -385,7 +385,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (lhs instanceof Sdouble.ConcSdouble && rhs instanceof Sdouble.ConcSdouble) {
             double drhs = ((Sdouble.ConcSdouble) rhs).doubleVal();
             double dlhs = ((Sdouble.ConcSdouble) lhs).doubleVal();
-            return valueFactory.concSint(Double.compare(dlhs, drhs));
+            return Sint.concSint(Double.compare(dlhs, drhs));
         }
         return valueFactory.cmp(se, lhs, rhs);
     }
@@ -395,7 +395,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (lhs instanceof Sfloat.ConcSfloat && rhs instanceof Sfloat.ConcSfloat) {
             float frhs = ((Sfloat.ConcSfloat) rhs).floatVal();
             float flhs = ((Sfloat.ConcSfloat) lhs).floatVal();
-            return valueFactory.concSint(Float.compare(flhs, frhs));
+            return Sint.concSint(Float.compare(flhs, frhs));
         }
         return valueFactory.cmp(se, lhs, rhs);
     }
@@ -403,7 +403,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong i2l(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) i).longVal());
+            return Slong.concSlong(((ConcSnumber) i).longVal());
         }
         return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -411,7 +411,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat i2f(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSfloat(((ConcSnumber) i).floatVal());
+            return Sfloat.concSfloat(((ConcSnumber) i).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -419,7 +419,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble i2d(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSdouble(((ConcSnumber) i).doubleVal());
+            return Sdouble.concSdouble(((ConcSnumber) i).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -427,7 +427,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Schar i2c(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSchar(((ConcSnumber) i).charVal());
+            return Schar.concSchar(((ConcSnumber) i).charVal());
         }
         return valueFactory.wrappingSymSchar(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -435,7 +435,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint l2i(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) l).intVal());
+            return Sint.concSint(((ConcSnumber) l).intVal());
         }
         return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
@@ -443,7 +443,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat l2f(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return valueFactory.concSfloat(((ConcSnumber) l).floatVal());
+            return Sfloat.concSfloat(((ConcSnumber) l).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
@@ -451,7 +451,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble l2d(SymbolicExecution se, Slong l) {
         if (l instanceof ConcSnumber) {
-            return valueFactory.concSdouble(((ConcSnumber) l).doubleVal());
+            return Sdouble.concSdouble(((ConcSnumber) l).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
     }
@@ -459,7 +459,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint f2i(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) f).intVal());
+            return Sint.concSint(((ConcSnumber) f).intVal());
         }
         return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
@@ -467,7 +467,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong f2l(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) f).longVal());
+            return Slong.concSlong(((ConcSnumber) f).longVal());
         }
         return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
@@ -475,7 +475,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sdouble f2d(SymbolicExecution se, Sfloat f) {
         if (f instanceof ConcSnumber) {
-            return valueFactory.concSdouble(((ConcSnumber) f).doubleVal());
+            return Sdouble.concSdouble(((ConcSnumber) f).doubleVal());
         }
         return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
     }
@@ -483,7 +483,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint d2i(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) d).intVal());
+            return Sint.concSint(((ConcSnumber) d).intVal());
         }
         return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
@@ -491,7 +491,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong d2l(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) d).longVal());
+            return Slong.concSlong(((ConcSnumber) d).longVal());
         }
         return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
@@ -499,7 +499,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sfloat d2f(SymbolicExecution se, Sdouble d) {
         if (d instanceof ConcSnumber) {
-            return valueFactory.concSfloat(((ConcSnumber) d).floatVal());
+            return Sfloat.concSfloat(((ConcSnumber) d).floatVal());
         }
         return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
     }
@@ -507,7 +507,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sbyte i2b(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSbyte(((ConcSnumber) i).byteVal());
+            return Sbyte.concSbyte(((ConcSnumber) i).byteVal());
         }
         return valueFactory.wrappingSymSbyte(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -515,7 +515,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sshort i2s(SymbolicExecution se, Sint i) {
         if (i instanceof ConcSnumber) {
-            return valueFactory.concSshort(((ConcSnumber) i).shortVal());
+            return Sshort.concSshort(((ConcSnumber) i).shortVal());
         }
         return valueFactory.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
     }
@@ -523,7 +523,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint ishl(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() << ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() << ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, ShiftLeft.newInstance(i0, i1));
     }
@@ -531,7 +531,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint ishr(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() >> ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() >> ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, ShiftRight.newInstance(i0, i1));
     }
@@ -539,7 +539,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint ixor(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() ^ ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() ^ ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, NumericXor.newInstance(i0, i1));
     }
@@ -547,7 +547,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint ior(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() | ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() | ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, NumericOr.newInstance(i0, i1));
     }
@@ -555,7 +555,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint iushr(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() >>> ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() >>> ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, LogicalShiftRight.newInstance(i0, i1));
     }
@@ -563,7 +563,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Sint iand(SymbolicExecution se, Sint i0, Sint i1) {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
-            return valueFactory.concSint(((ConcSnumber) i0).intVal() & ((ConcSnumber) i1).intVal());
+            return Sint.concSint(((ConcSnumber) i0).intVal() & ((ConcSnumber) i1).intVal());
         }
         return valueFactory.wrappingSymSint(se, ShiftLeft.newInstance(i0, i1));
     }
@@ -571,7 +571,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong lshl(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() << ((ConcSnumber) l1).intVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() << ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, ShiftLeft.newInstance(l0, l1));
     }
@@ -579,7 +579,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong lshr(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >> ((ConcSnumber) l1).intVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() >> ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, ShiftRight.newInstance(l0, l1));
     }
@@ -587,7 +587,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong lxor(SymbolicExecution se, Slong l0, Slong l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() ^ ((ConcSnumber) l1).longVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() ^ ((ConcSnumber) l1).longVal());
         }
         return valueFactory.wrappingSymSlong(se, NumericXor.newInstance(l0, l1));
     }
@@ -595,7 +595,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong lor(SymbolicExecution se, Slong l0, Slong l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() | ((ConcSnumber) l1).longVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() | ((ConcSnumber) l1).longVal());
         }
         return valueFactory.wrappingSymSlong(se, NumericOr.newInstance(l0, l1));
     }
@@ -603,7 +603,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong lushr(SymbolicExecution se, Slong l0, Sint l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() >>> ((ConcSnumber) l1).intVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() >>> ((ConcSnumber) l1).intVal());
         }
         return valueFactory.wrappingSymSlong(se, LogicalShiftRight.newInstance(l0, l1));
     }
@@ -611,7 +611,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     @Override
     public Slong land(SymbolicExecution se, Slong l0, Slong l1) {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
-            return valueFactory.concSlong(((ConcSnumber) l0).longVal() & ((ConcSnumber) l1).longVal());
+            return Slong.concSlong(((ConcSnumber) l0).longVal() & ((ConcSnumber) l1).longVal());
         }
         return valueFactory.wrappingSymSlong(se, NumericAnd.newInstance(l0, l1));
     }

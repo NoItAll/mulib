@@ -41,46 +41,6 @@ public abstract class AbstractValueFactory implements ValueFactory {
     }
 
     @Override
-    public Sint.ConcSint concSint(int i) {
-        return (Sint.ConcSint) Sint.concSint(i);
-    }
-
-    @Override
-    public Sdouble.ConcSdouble concSdouble(double d) {
-        return (Sdouble.ConcSdouble) Sdouble.concSdouble(d);
-    }
-
-    @Override
-    public Sfloat.ConcSfloat concSfloat(float f) {
-        return (Sfloat.ConcSfloat) Sfloat.concSfloat(f);
-    }
-
-    @Override
-    public Sbool.ConcSbool concSbool(boolean b) {
-        return (Sbool.ConcSbool) Sbool.concSbool(b);
-    }
-
-    @Override
-    public Slong.ConcSlong concSlong(long l) {
-        return (Slong.ConcSlong) Slong.concSlong(l);
-    }
-
-    @Override
-    public Sshort.ConcSshort concSshort(short s) {
-        return (Sshort.ConcSshort) Sshort.concSshort(s);
-    }
-
-    @Override
-    public Sbyte.ConcSbyte concSbyte(byte b) {
-        return (Sbyte.ConcSbyte) Sbyte.concSbyte(b);
-    }
-
-    @Override
-    public Schar.ConcSchar concSchar(char c) {
-        return (Schar.ConcSchar) Schar.concSchar(c);
-    }
-
-    @Override
     public final Sarray.SintSarray sintSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
         return sintSarray(
                 se,
