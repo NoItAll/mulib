@@ -1,6 +1,8 @@
 package de.wwu.mulib;
 
 import de.wwu.mulib.exceptions.MisconfigurationException;
+import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
+import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.solving.Solvers;
@@ -13,6 +15,7 @@ import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
+import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
@@ -32,6 +35,7 @@ public class MulibConfig {
     public final boolean ALLOW_EXCEPTIONS;
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
     public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
+    public final Consumer<SolverManager> PATH_SOLUTION_CALLBACK;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -82,15 +86,16 @@ public class MulibConfig {
     public final boolean ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
+    private final boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
     public final Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
     public final boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
     public final Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
-    public final List<String> TRANSF_IGNORE_FROM_PACKAGES;
-    public final List<Class<?>> TRANSF_IGNORE_CLASSES;
-    public final List<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
-    public final List<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
-    public final List<Class<?>> TRANSF_CONCRETIZE_FOR;
-    public final List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
+    public final Set<String> TRANSF_IGNORE_FROM_PACKAGES;
+    public final Set<Class<?>> TRANSF_IGNORE_CLASSES;
+    public final Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
+    public final Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
+    public final Set<Class<?>> TRANSF_CONCRETIZE_FOR;
+    public final Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
     public final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
     public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
     public final Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
@@ -122,15 +127,16 @@ public class MulibConfig {
         private boolean LABEL_RESULT_VALUE;
         private boolean ENLIST_LEAVES;
         private boolean CONCRETIZE_IF_NEEDED;
-        private List<String> TRANSF_IGNORE_FROM_PACKAGES;
-        private List<Class<?>> TRANSF_IGNORE_CLASSES;
-        private List<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
-        private List<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
-        private List<Class<?>> TRANSF_CONCRETIZE_FOR;
-        private List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
+        private Set<String> TRANSF_IGNORE_FROM_PACKAGES;
+        private Set<Class<?>> TRANSF_IGNORE_CLASSES;
+        private Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
+        private Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
+        private Set<Class<?>> TRANSF_CONCRETIZE_FOR;
+        private Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
         private Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         private Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+        private boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
         private Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
         private boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
         private Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
@@ -176,6 +182,7 @@ public class MulibConfig {
         private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
         private boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
+        private Consumer<SolverManager> PATH_SOLUTION_CALLBACK;
 
         private MulibConfigBuilder() {
             // Defaults
@@ -199,25 +206,26 @@ public class MulibConfig {
             this.MAX_EXCEEDED_BUDGETS =     0;
             this.ACTIVATE_PARALLEL_FOR =    2;
             this.CHOICE_OPTION_DEQUE_TYPE = ChoiceOptionDeques.SIMPLE;
-            this.TRANSF_IGNORE_CLASSES = List.of(
+            this.TRANSF_IGNORE_CLASSES = Set.of(
                     Mulib.class, Fail.class
             );
-            this.TRANSF_IGNORE_FROM_PACKAGES = List.of(
+            this.TRANSF_IGNORE_FROM_PACKAGES = Set.of(
                     "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.exceptions",
                     "de.wwu.mulib.expressions", "de.wwu.mulib.search", "de.wwu.mulib.solving",
                     "java"
             );
-            this.TRANSF_CONCRETIZE_FOR = List.of(
+            this.TRANSF_CONCRETIZE_FOR = Set.of(
                     String.class
             );
-            this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = List.of(
+            this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = Set.of(
                     PrintStream.class
             );
-            this.TRANSF_IGNORE_SUBCLASSES_OF = List.of(
+            this.TRANSF_IGNORE_SUBCLASSES_OF = Set.of(
             );
-            this.TRANSF_REGARD_SPECIAL_CASE = List.of();
+            this.TRANSF_REGARD_SPECIAL_CASE = new HashSet<>();
+            this.TRANSF_USE_DEFAULT_MODEL_CLASSES = true;
             this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = new HashMap<>();
-            this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = true;
+            this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = false;
             this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = new HashMap<>();
             this.TRANSF_WRITE_TO_FILE = true;
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
@@ -252,6 +260,7 @@ public class MulibConfig {
             this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
             this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = false;
+            this.PATH_SOLUTION_CALLBACK = (sm) -> {};
         }
 
         public MulibConfigBuilder setENLIST_LEAVES(boolean ENLIST_LEAVES) {
@@ -269,36 +278,36 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORE_FROM_PACKAGES(List<String> TRANSF_IGNORE_FROM_PACKAGES) {
-            this.TRANSF_IGNORE_FROM_PACKAGES = TRANSF_IGNORE_FROM_PACKAGES;
+        public MulibConfigBuilder setTRANSF_IGNORE_FROM_PACKAGES(Collection<String> TRANSF_IGNORE_FROM_PACKAGES) {
+            this.TRANSF_IGNORE_FROM_PACKAGES = new HashSet<>(TRANSF_IGNORE_FROM_PACKAGES);
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORE_CLASSES(List<Class<?>> TRANSF_IGNORE_CLASSES) {
-            List<Class<?>> temp = new ArrayList<>(TRANSF_IGNORE_CLASSES);
+        public MulibConfigBuilder setTRANSF_IGNORE_CLASSES(Collection<Class<?>> TRANSF_IGNORE_CLASSES) {
+            Set<Class<?>> temp = new HashSet<>(TRANSF_IGNORE_CLASSES);
             temp.add(Mulib.class);
             temp.add(Fail.class);
-            this.TRANSF_IGNORE_CLASSES = Collections.unmodifiableList(temp);
+            this.TRANSF_IGNORE_CLASSES = Collections.unmodifiableSet(temp);
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORE_SUBCLASSES_OF(List<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF) {
-            this.TRANSF_IGNORE_SUBCLASSES_OF = TRANSF_IGNORE_SUBCLASSES_OF;
+        public MulibConfigBuilder setTRANSF_IGNORE_SUBCLASSES_OF(Collection<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF) {
+            this.TRANSF_IGNORE_SUBCLASSES_OF = new HashSet<>(TRANSF_IGNORE_SUBCLASSES_OF);
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_REGARD_SPECIAL_CASE(List<Class<?>> TRANSF_REGARD_SPECIAL_CASE) {
-            this.TRANSF_REGARD_SPECIAL_CASE = TRANSF_REGARD_SPECIAL_CASE;
+        public MulibConfigBuilder setTRANSF_REGARD_SPECIAL_CASE(Collection<Class<?>> TRANSF_REGARD_SPECIAL_CASE) {
+            this.TRANSF_REGARD_SPECIAL_CASE = new HashSet<>(TRANSF_REGARD_SPECIAL_CASE);
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_CONCRETIZE_FOR(List<Class<?>> TRANSF_CONCRETIZE_FOR) {
-            this.TRANSF_CONCRETIZE_FOR = TRANSF_CONCRETIZE_FOR;
+        public MulibConfigBuilder setTRANSF_CONCRETIZE_FOR(Collection<Class<?>> TRANSF_CONCRETIZE_FOR) {
+            this.TRANSF_CONCRETIZE_FOR = new HashSet<>(TRANSF_CONCRETIZE_FOR);
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR(List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR) {
-            this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
+        public MulibConfigBuilder setTRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR(Collection<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR) {
+            this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = new HashSet<>(TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR);
             return this;
         }
 
@@ -598,15 +607,31 @@ public class MulibConfig {
             return this;
         }
 
-        public void setTRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH(boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
+        public MulibConfigBuilder setTRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH(boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
             this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
+            return this;
         }
 
-        public void setTRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS(Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS) {
-            this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
+        public MulibConfigBuilder addModelClass(Class<?> toBeModelled, Class<?> modelClass) {
+            this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS.put(toBeModelled, modelClass);
+            this.TRANSF_REGARD_SPECIAL_CASE.add(toBeModelled);
+            return this;
         }
-        
-        
+
+        public MulibConfigBuilder setTRANSF_USE_DEFAULT_MODEL_CLASSES(boolean val) {
+            this.TRANSF_USE_DEFAULT_MODEL_CLASSES = val;
+            return this;
+        }
+
+        public MulibConfigBuilder setPATH_SOLUTION_CALLBACK(Consumer<SolverManager> callback) {
+            this.PATH_SOLUTION_CALLBACK = callback;
+            return this;
+        }
+
+        private void addDefaultModelClasses() {
+            addModelClass(Number.class, NumberReplacement.class);
+            addModelClass(Integer.class, IntegerReplacement.class);
+        }
 
         public MulibConfig build() {
 
@@ -641,6 +666,10 @@ public class MulibConfig {
                 throw new MisconfigurationException("Since our way of representing free arrays of arrays or free arrays of objects " +
                         "is based on the assumption that we represent the contained arrays in the constraint solver, we cannot " +
                         "use eager indices for primitive elements but not for object elements.");
+            }
+
+            if (TRANSF_USE_DEFAULT_MODEL_CLASSES) {
+                addDefaultModelClasses();
             }
 
             return new MulibConfig(
@@ -705,7 +734,9 @@ public class MulibConfig {
                     LOG_TIME_FOR_FIRST_PATH_SOLUTION,
                     TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
                     TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
-                    TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS
+                    TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
+                    TRANSF_USE_DEFAULT_MODEL_CLASSES,
+                    PATH_SOLUTION_CALLBACK
             );
         }
     }
@@ -724,16 +755,16 @@ public class MulibConfig {
                         long MAX_FAILS,
                         long MAX_PATH_SOLUTIONS,
                         long MAX_EXCEEDED_BUDGETS,
-                        List<String> TRANSF_IGNORE_FROM_PACKAGES,
-                        List<Class<?>> TRANSF_IGNORE_CLASSES,
-                        List<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF,
-                        List<Class<?>> TRANSF_REGARD_SPECIAL_CASE,
+                        Set<String> TRANSF_IGNORE_FROM_PACKAGES,
+                        Set<Class<?>> TRANSF_IGNORE_CLASSES,
+                        Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF,
+                        Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE,
                         boolean TRANSF_WRITE_TO_FILE,
                         String TRANSF_GENERATED_CLASSES_PATH,
                         boolean TRANSF_INCLUDE_PACKAGE_NAME,
                         boolean TRANSF_VALIDATE_TRANSFORMATION,
-                        List<Class<?>> TRANSF_CONCRETIZE_FOR,
-                        List<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
+                        Set<Class<?>> TRANSF_CONCRETIZE_FOR,
+                        Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
                         Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
                         Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
                         Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
@@ -770,7 +801,9 @@ public class MulibConfig {
                         boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION,
                         Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
                         boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
-                        Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS
+                        Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
+                        boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
+                        Consumer<SolverManager> PATH_SOLUTION_CALLBACK
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.ENLIST_LEAVES = ENLIST_LEAVES;
@@ -785,10 +818,10 @@ public class MulibConfig {
         this.MAX_FAILS =                0 != MAX_FAILS                  ? Optional.of(MAX_FAILS) : Optional.empty();
         this.MAX_PATH_SOLUTIONS =       0 != MAX_PATH_SOLUTIONS         ? Optional.of(MAX_PATH_SOLUTIONS) : Optional.empty();
         this.MAX_EXCEEDED_BUDGETS =     0 != MAX_EXCEEDED_BUDGETS       ? Optional.of(MAX_EXCEEDED_BUDGETS) : Optional.empty();
-        this.TRANSF_IGNORE_FROM_PACKAGES = List.copyOf(TRANSF_IGNORE_FROM_PACKAGES);
-        this.TRANSF_IGNORE_CLASSES = List.copyOf(TRANSF_IGNORE_CLASSES);
-        this.TRANSF_IGNORE_SUBCLASSES_OF = List.copyOf(TRANSF_IGNORE_SUBCLASSES_OF);
-        this.TRANSF_REGARD_SPECIAL_CASE = List.copyOf(TRANSF_REGARD_SPECIAL_CASE);
+        this.TRANSF_IGNORE_FROM_PACKAGES = Set.copyOf(TRANSF_IGNORE_FROM_PACKAGES);
+        this.TRANSF_IGNORE_CLASSES = Set.copyOf(TRANSF_IGNORE_CLASSES);
+        this.TRANSF_IGNORE_SUBCLASSES_OF = Set.copyOf(TRANSF_IGNORE_SUBCLASSES_OF);
+        this.TRANSF_REGARD_SPECIAL_CASE = Set.copyOf(TRANSF_REGARD_SPECIAL_CASE);
         this.TRANSF_WRITE_TO_FILE = TRANSF_WRITE_TO_FILE;
         this.TRANSF_GENERATED_CLASSES_PATH = TRANSF_GENERATED_CLASSES_PATH;
         this.TRANSF_INCLUDE_PACKAGE_NAME = TRANSF_INCLUDE_PACKAGE_NAME;
@@ -802,6 +835,7 @@ public class MulibConfig {
         this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
         this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = Map.copyOf(TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH);
+        this.TRANSF_USE_DEFAULT_MODEL_CLASSES = TRANSF_USE_DEFAULT_MODEL_CLASSES;
         this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = Map.copyOf(TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS);
         this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
         this.PARALLEL_TIMEOUT_IN_MS = PARALLEL_TIMEOUT_IN_MS;
@@ -834,6 +868,7 @@ public class MulibConfig {
         this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
+        this.PATH_SOLUTION_CALLBACK = PATH_SOLUTION_CALLBACK;
     }
 
     @Override

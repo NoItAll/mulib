@@ -23,6 +23,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.function.Consumer;
 
 public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected SymbolicExecution currentSymbolicExecution;
@@ -48,6 +49,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
+    private final Consumer<SolverManager> pathSolutionCallback;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
@@ -65,6 +67,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.config = config;
         this.mulibValueTransformer = mulibValueTransformer;
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
+        this.pathSolutionCallback = config.PATH_SOLUTION_CALLBACK;
     }
 
     @Override
@@ -173,6 +176,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         solution = getPathSolution(solutionValue, symbolicExecution, false);
                     } catch (Throwable t) {
                         t.printStackTrace();
+
                         throw new MulibRuntimeException(t);
                     }
                     this.mulibExecutorManager.addToPathSolutions(solution, this);
@@ -278,6 +282,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 && labelResultValue) {
             symbolicExecution.addNamedVariable("return", (SubstitutedVar) solutionValue);
         }
+        pathSolutionCallback.accept(solverManager);
         Labels labels = LabelUtility.getLabels(
                 solverManager,
                 symbolicExecution.getNamedVariables()
