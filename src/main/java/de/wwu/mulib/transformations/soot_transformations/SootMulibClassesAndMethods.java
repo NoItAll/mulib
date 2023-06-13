@@ -468,7 +468,6 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
-    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_ACCESS_METHOD_OF_CLASS;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -924,12 +923,6 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetInitialized", List.of(), TYPE_BOOL);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
         SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
-        SM_ABSTRACT_PARTNER_CLASS_ACCESS_METHOD_OF_CLASS =
-                SC_ABSTRACT_PARTNER_CLASS.getMethod(
-                        StringConstants._TRANSFORMATION_PREFIX + "accessMethodOfClass",
-                        List.of(TYPE_CLASS, TYPE_STRING, TYPE_CLASS.getArrayType(), TYPE_OBJECT, TYPE_OBJECT.getArrayType()),
-                        TYPE_OBJECT
-                );
 
         SM_SBOOL_BOOL_CHOICE = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);
