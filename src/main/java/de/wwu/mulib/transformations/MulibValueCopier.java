@@ -51,6 +51,10 @@ public class MulibValueCopier {
         return o;
     }
 
+    public Object copy(Object o) {
+        return o instanceof Sprimitive ? copySprimitive((Sprimitive) o) : copyNonSprimitive(o);
+    }
+
     public Object copyNonSprimitive(Object o) {
         if (o == null) {
             return null;

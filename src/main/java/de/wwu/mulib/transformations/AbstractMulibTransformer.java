@@ -46,7 +46,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final Map<String, T> transformedClassNodes = new HashMap<>();
     protected final Collection<Field> accessibleStaticFieldsOfTransformedClasses = new HashSet<>();
 
-
     protected final ClassLoader classLoader;
 
     /**
@@ -85,6 +84,9 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         Set<Field> result = new HashSet<>();
         Field[] fs = c.getDeclaredFields();
         for (Field f : fs) {
+            if (Modifier.isFinal(f.getModifiers())) {
+                continue;
+            }
             if (Modifier.isStatic(f.getModifiers())) {
                 if (!f.trySetAccessible()) {
                     Mulib.log.warning("Setting static field " + f.getName() + " in "
@@ -118,8 +120,13 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // This must happen now, since only now we have assured that the respective methods have been generated for
             // each class
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
-                replaceGetFieldsAndPutFieldsWithGeneratedMethods(getClassNodeForName(entry.getKey()), entry.getValue());
-                generateNullChecksForMethods(getClassNodeForName(entry.getKey()), entry.getValue());
+                T classNode = getClassNodeForName(entry.getKey());
+                // Replace accesses to fields with methods conducting mor checks
+                replaceGetFieldsAndPutFieldsWithGeneratedMethods(classNode, entry.getValue());
+                replaceStaticFieldInsnsWithGeneratedMethods(classNode, entry.getValue());
+                // Insert method calls checking whether 'this' is null into each method. This is done to account for
+                // symbolic aliasing
+                generateNullChecksForMethods(classNode, entry.getValue());
             }
 
 
@@ -129,6 +136,9 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 if (!usedLoadedAndAlreadyWrittenVersion.contains(entry.getKey())) {
                     maybeWriteToFile(entry.getValue());
                 }
+            }
+
+            for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 if (transformedClasses.get(entry.getKey()) != null) {
                     continue;
                 }
@@ -141,11 +151,50 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 }
             }
 
-            for (Map.Entry<String, Class<?>> e : transformedClasses.entrySet()) {
-                accessibleStaticFieldsOfTransformedClasses.addAll(getAccessibleStaticFields(e.getValue()));
+            for (Map.Entry<String, Class<?>> entry : transformedClasses.entrySet()) {
+                // Get static fields
+                Collection<Field> staticFieldsOfTransformedClass = getAccessibleStaticFields(entry.getValue());
+                if (staticFieldsOfTransformedClass.isEmpty()) {
+                    continue;
+                }
+                accessibleStaticFieldsOfTransformedClasses.addAll(staticFieldsOfTransformedClass);
             }
 
             maybeCheckAreValidInitializedClasses(transformedClasses.values());
+        }
+    }
+
+    private Map<Field, Field> getFieldsOfTransformedClassesToOriginalClasses(
+            Collection<Field> accessibleStaticFieldsOfTransformedClasses) {
+        Map<Field, Field> result = new HashMap<>();
+        try {
+            for (Field f : accessibleStaticFieldsOfTransformedClasses) {
+                if (f.getName().contains(_TRANSFORMATION_PREFIX)) {
+                    continue;
+                }
+                Class<?> originalClass = classLoader.loadClass(f.getDeclaringClass().getName().replace(_TRANSFORMATION_PREFIX, ""));
+                Field of = originalClass.getDeclaredField(f.getName());
+                result.put(f, of);
+            }
+        } catch (ClassNotFoundException | NoSuchFieldException e) {
+            throw new MulibRuntimeException(e);
+        }
+        return result;
+    }
+
+    @Override
+    public Map<Field, Field> getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses() {
+        if (tryUseSystemClassLoader && !overWriteFileForSystemClassLoader) {
+            // In this case we might not have added all transformed classes into the map. They were loaded by the
+            // class loader implicitly
+            Map<Field, Field> result = new HashMap<>();
+            for (Map.Entry<String, Class<?>> entry : transformedClasses.entrySet()) {
+                Collection<Field> staticFields = getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(entry.getValue());
+                result.putAll(getFieldsOfTransformedClassesToOriginalClasses(staticFields));
+            }
+            return result;
+        } else {
+            return getFieldsOfTransformedClassesToOriginalClasses(accessibleStaticFieldsOfTransformedClasses);
         }
     }
 
@@ -446,6 +495,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             decideOnGenerateIdAndStateAndIsNullFieldAndMethods(originalCn, result);
             // Replace GETFIELD and PUTFIELD with methods to add additional logic. Generate those methods here
             generateAccessorAndSetterMethodsForFieldsAndDiscardIsFinal(originalCn, result);
+            // Insert instructions for checking for null and setting to neutral element, if not yet initialized
             ensureInitializedLibraryTypeFieldsInConstructors(result);
         }
         return result;
@@ -458,6 +508,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected abstract void generateAccessorAndSetterMethodsForFieldsAndDiscardIsFinal(T old, T result);
 
     protected abstract void replaceGetFieldsAndPutFieldsWithGeneratedMethods(T old, T result);
+
+    protected abstract void replaceStaticFieldInsnsWithGeneratedMethods(T old, T result);
 
 
     /**
@@ -583,8 +635,17 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     /* METHODS FOR INTERACTING WITH CUSTOM CLASSLOADER */
     // Gets the partner class to the class represented by its name.
-    public Class<?> getTransformedClass(String className) {
-        return transformedClasses.get(className);
+    public Class<?> getTransformedClassForOriginalClassName(String originalClassName) {
+        return transformedClasses.get(originalClassName);
+    }
+
+    public Class<?> getTransformedClassForTransformedClassName(String transformedClassName) {
+        for (Map.Entry<String, Class<?>> e : transformedClasses.entrySet()) {
+            if (e.getValue().getName().equals(transformedClassName)) {
+                return e.getValue();
+            }
+        }
+        throw new MulibRuntimeException("Class not found");
     }
 
     // Gets the ASM representation of the partner class of the class represented by its name.
@@ -606,7 +667,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 synchronized (syncObject) {
                     if (!overWriteFileForSystemClassLoader) {
                         String transformedName = addPrefixToName(toTransform.getName());
-                        Class<?> loadedClass = getClass().getClassLoader().loadClass(transformedName);
+                        Class<?> loadedClass = classLoader.loadClass(transformedName);
                         // If loading succeeded there already is a class file in the build
                         transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
                         transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));

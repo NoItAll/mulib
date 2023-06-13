@@ -1329,4 +1329,12 @@ public final class SymbolicExecution {
     public boolean negatedBoolChoice(final Sbool b) {
         return choicePointFactory.negatedBoolChoice(this, b);
     }
+
+    public void setStaticField(String fieldName, Object value) {
+        mulibExecutor.getExecutorManager().observedTree.getStaticVariables().setStaticField(fieldName, value, this);
+    }
+
+    public Object getStaticField(String fieldName) {
+        return mulibExecutor.getExecutorManager().observedTree.getStaticVariables().getStaticField(fieldName, this);
+    }
 }

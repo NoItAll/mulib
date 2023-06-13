@@ -30,7 +30,7 @@ public abstract class MulibClassLoader<T> extends ClassLoader {
             }
         }
         String withoutPrefix = name.replace(_TRANSFORMATION_PREFIX, "");
-        Class<?> result = transformer.getTransformedClass(withoutPrefix);
+        Class<?> result = transformer.getTransformedClassForOriginalClassName(withoutPrefix);
         if (result != null) {
             return result;
         }

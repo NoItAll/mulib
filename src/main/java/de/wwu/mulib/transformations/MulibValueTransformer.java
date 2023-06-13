@@ -100,7 +100,7 @@ public final class MulibValueTransformer {
         } else if (currentValue instanceof Byte) {
             return Sbyte.concSbyte((Byte) currentValue);
         } else if (currentValue instanceof Character) {
-            throw new NotYetImplementedException();
+            return Schar.concSchar((Character) currentValue);
         } else if (currentValue.getClass().isArray()) {
             result = transformArrayToSarray(currentValue);
             alreadyTransformedObjects.put(currentValue, result);

@@ -16,7 +16,6 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
-import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
 
@@ -70,15 +69,19 @@ public final class MulibContext {
         Object[] searchRegionArgs;
         MulibValueTransformer mulibValueTransformer;
 
-        Map<Field, Object> searchRegionStaticFields = new HashMap<>();
-        Collection<Field> accessibleStaticFields;
+        Map<Field, Field> transformedToOriginalStaticFields = new HashMap<>();
         if (config.TRANSF_TRANSFORMATION_REQUIRED) {
             // Get the static fields that are used in the search region
-            accessibleStaticFields = mulibTransformer.getAccessibleStaticFieldsOfTransformedClasses();
+            transformedToOriginalStaticFields =
+                    mulibTransformer.getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses();
             mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
         } else {
-            accessibleStaticFields = mulibTransformer.getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(possiblyTransformedMethodClass);
+            Collection<Field> staticFields = mulibTransformer.getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(possiblyTransformedMethodClass);
+            // We will copy the very same value in StaticVariables, no need to take a snapshot
+            for (Field f : staticFields) {
+                transformedToOriginalStaticFields.put(f, f);
+            }
             mulibValueTransformer = new MulibValueTransformer(config, null);
             searchRegionArgs = args;
         }
@@ -88,27 +91,13 @@ public final class MulibContext {
 
         Function<SymbolicExecution, Object[]> argsSupplier;
         if (searchRegionArgs.length == 0) {
-            if (accessibleStaticFields.isEmpty()) {
-                argsSupplier = (se) -> {
-                    return emptyArgs;
-                };
-            } else {
-                argsSupplier = (se) -> {
-                    copyAccessibleNonFinalStaticFieldsOfTransformedClass(searchRegionStaticFields, accessibleStaticFields, se);
-                    return emptyArgs;
-                };
-            }
+            argsSupplier = (se) -> {
+                return emptyArgs;
+            };
         } else {
-            if (accessibleStaticFields.isEmpty()) {
-                argsSupplier = (se) -> {
-                    return copyArguments(searchRegionArgs, se, config);
-                };
-            } else {
-                argsSupplier = (se) -> {
-                    copyAccessibleNonFinalStaticFieldsOfTransformedClass(searchRegionStaticFields, accessibleStaticFields, se);
-                    return copyArguments(searchRegionArgs, se, config);
-                };
-            }
+            argsSupplier = (se) -> {
+                return copyArguments(searchRegionArgs, se, config);
+            };
         }
 
         MethodHandle methodHandle;
@@ -118,7 +107,8 @@ public final class MulibContext {
         } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
             throw new MulibRuntimeException(e);
         }
-        SearchTree searchTree = new SearchTree(config, methodHandle, argsSupplier);
+        StaticVariables staticVariables = new StaticVariables(mulibValueTransformer, transformedToOriginalStaticFields);
+        SearchTree searchTree = new SearchTree(config, methodHandle, staticVariables, argsSupplier);
         MulibExecutorManager result = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
@@ -173,33 +163,6 @@ public final class MulibContext {
             arguments[i] = newArg;
         }
         return arguments;
-    }
-
-    private static void copyAccessibleNonFinalStaticFieldsOfTransformedClass(
-            Map<Field, Object> toCopyValues,
-            Collection<Field> fields,
-            SymbolicExecution se) {
-        for (Field f : fields) {
-            try {
-                if (Modifier.isStatic(f.getModifiers()) && Modifier.isFinal(f.getModifiers())) {
-                    continue;
-                }
-                Object toCopy = toCopyValues.get(f);
-                if (toCopy == null) {
-                    toCopy = f.get(null);
-                    toCopyValues.put(f, toCopy);
-                }
-                Object copy;
-                if (toCopy instanceof Sprimitive) {
-                    copy = se.getMulibValueCopier().copySprimitive((Sprimitive) toCopy);
-                } else {
-                    copy = se.getMulibValueCopier().copyNonSprimitive(toCopy);
-                }
-                f.set(null, copy);
-            } catch (IllegalAccessException e) {
-                throw new MulibRuntimeException("Field should be accessible", e);
-            }
-        }
     }
 
     private <T> T _checkExecuteAndLog(Object[] args, Function<Object[], T> argsToResult) {

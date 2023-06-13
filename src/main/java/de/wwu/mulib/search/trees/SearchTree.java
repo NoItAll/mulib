@@ -2,6 +2,7 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.executors.StaticVariables;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
@@ -12,6 +13,7 @@ import java.util.function.Function;
 public final class SearchTree {
 
     private final MethodHandle representedMethod;
+    private final StaticVariables staticVariables;
     private final Function<SymbolicExecution, Object[]> argsSupplier;
     public final Choice root;
     private final List<PathSolution> solutionsList;
@@ -24,6 +26,7 @@ public final class SearchTree {
     public SearchTree(
             MulibConfig config,
             MethodHandle methodHandle,
+            StaticVariables staticVariables,
             Function<SymbolicExecution, Object[]> argsProvider) {
         this.indentBy = config.TREE_INDENTATION;
         this.enlistLeaves = config.ENLIST_LEAVES;
@@ -31,6 +34,7 @@ public final class SearchTree {
         this.argsSupplier = argsProvider;
         this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
+        this.staticVariables = staticVariables;
         if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
             solutionsList = Collections.synchronizedList(new ArrayList<>());
             if (enlistLeaves) {
@@ -55,11 +59,14 @@ public final class SearchTree {
 
     public Object invokeSearchRegion(SymbolicExecution symbolicExecution) throws Throwable {
         Object[] args = argsSupplier.apply(symbolicExecution);
+        Object result;
         if (args.length == 0) {
-            return representedMethod.invoke();
+            result = representedMethod.invoke();
         } else {
-            return representedMethod.invokeWithArguments(Arrays.asList(args));
+            result = representedMethod.invokeWithArguments(Arrays.asList(args));
         }
+        staticVariables.tearDown(symbolicExecution);
+        return result;
     }
 
     public static ArrayDeque<Choice.ChoiceOption> getPathTo(final Choice.ChoiceOption getTo) {
@@ -180,5 +187,9 @@ public final class SearchTree {
 
     public void addToExceededBudgets(ExceededBudget exceededBudget) {
         if (enlistLeaves) this.exceededBudgetList.add(exceededBudget);
+    }
+
+    public StaticVariables getStaticVariables() {
+        return staticVariables;
     }
 }

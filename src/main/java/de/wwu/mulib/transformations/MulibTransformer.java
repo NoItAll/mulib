@@ -5,9 +5,13 @@ import de.wwu.mulib.transformations.soot_transformations.SootMulibTransformer;
 
 import java.lang.reflect.Field;
 import java.util.Collection;
+import java.util.Map;
 
 public interface MulibTransformer {
 
+    Map<Field, Field> getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses();
+
+    Collection<Field> getAccessibleStaticFieldsOfTransformedClasses();
     Collection<Field> getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(Class<?> c);
 
     void transformAndLoadClasses(Class<?>... toTransform);
@@ -27,8 +31,6 @@ public interface MulibTransformer {
     void setPartnerClass(Class<?> clazz, Class<?> partnerClass);
 
     boolean shouldBeTransformed(String classAsPath);
-
-    Collection<Field> getAccessibleStaticFieldsOfTransformedClasses();
 
     static MulibTransformer get(MulibConfig config) { // TODO Share SootMulibTransformer if configs are compatible?
         return new SootMulibTransformer(config);

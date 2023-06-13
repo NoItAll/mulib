@@ -197,6 +197,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_NAME_BOOLEAN;
     public final SootMethod SM_MULIB_NAME_CHAR;
     // Framework methods
+    public final SootMethod SM_SE_GET_STATIC_FIELD;
+    public final SootMethod SM_SE_SET_STATIC_FIELD;
     public final SootMethod SM_SE_FREE_SINT;
     public final SootMethod SM_SE_FREE_SLONG;
     public final SootMethod SM_SE_FREE_SDOUBLE;
@@ -651,6 +653,8 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_NAME_BOOLEAN       = SC_MULIB.getMethod("remember", List.of(TYPE_BOOL, TYPE_STRING), TYPE_VOID);
         SM_MULIB_NAME_CHAR          = SC_MULIB.getMethod("remember", List.of(TYPE_CHAR, TYPE_STRING), TYPE_VOID);
 
+        SM_SE_GET_STATIC_FIELD      = SC_SE.getMethod("getStaticField", List.of(TYPE_STRING), TYPE_OBJECT);
+        SM_SE_SET_STATIC_FIELD      = SC_SE.getMethod("setStaticField", List.of(TYPE_STRING, TYPE_OBJECT), TYPE_VOID);
         SM_SE_FREE_SINT             = SC_SE.getMethod("symSint",            Collections.emptyList(), TYPE_SINT);
         SM_SE_FREE_SLONG            = SC_SE.getMethod("symSlong",           Collections.emptyList(), TYPE_SLONG);
         SM_SE_FREE_SDOUBLE          = SC_SE.getMethod("symSdouble",         Collections.emptyList(), TYPE_SDOUBLE);
