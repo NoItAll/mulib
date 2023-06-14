@@ -215,7 +215,9 @@ public final class MulibValueTransformer {
         for (int i = 0; i < length; i++) {
             Object value = Array.get(array, i);
             Object transformedValue;
-            if (value.getClass().isArray()) {
+            if (value == null) {
+                transformedValue = null;
+            } else if (value.getClass().isArray()) {
                 transformedValue = _transformArrayToSarrayHelper(value, possiblyTransformed.getComponentType());
             } else {
                 transformedValue = transform(value);

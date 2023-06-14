@@ -734,7 +734,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         private static Map<Sint, PartnerClass> copyArrayElements(MulibValueCopier mvt, Map<Sint, PartnerClass> elementCache) {
             Map<Sint, PartnerClass> elements = new HashMap<>();
             for (Sint i : elementCache.keySet()) {
-                elements.put(i, (PartnerClass) elementCache.get(i).copy(mvt));
+                PartnerClass pc = elementCache.get(i);
+                elements.put(i, pc == null ? null : (PartnerClass) pc.copy(mvt));
             }
             return elements;
         }
