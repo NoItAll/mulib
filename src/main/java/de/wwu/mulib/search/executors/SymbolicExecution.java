@@ -176,6 +176,10 @@ public final class SymbolicExecution {
         return se.get();
     }
 
+    public static void remove() {
+        se.remove();
+    }
+
     // If a ChoiceOption exists on the predeterminedPath, pop it and add its constraints to existingConstraints
     // These are then orderly polled during the execution.
     public boolean transitionToNextChoiceOptionAndCheckIfOnKnownPath() {
