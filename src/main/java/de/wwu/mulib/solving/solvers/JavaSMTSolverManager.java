@@ -1,5 +1,6 @@
 package de.wwu.mulib.solving.solvers;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
@@ -235,16 +236,44 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         private final boolean treatSboolsAsInts;
 
         JavaSMTMulibAdapter(MulibConfig config, SolverContext context) {
+            RationalFormulaManager rationalFormulaManager;
+            IntegerFormulaManager integerFormulaManager;
+            BooleanFormulaManager booleanFormulaManager;
             FormulaManager formulaManager = context.getFormulaManager();
-            booleanFormulaManager = formulaManager.getBooleanFormulaManager();
-            integerFormulaManager = formulaManager.getIntegerFormulaManager();
-            rationalFormulaManager = formulaManager.getRationalFormulaManager();
-            arrayFormulaManager = formulaManager.getArrayFormulaManager();
+            try {
+                booleanFormulaManager = formulaManager.getBooleanFormulaManager();
+            } catch (RuntimeException e) {
+                Mulib.log.warning("Boolean formulas not supported");
+                booleanFormulaManager = null;
+            }
+            this.booleanFormulaManager = booleanFormulaManager;
+            try {
+                integerFormulaManager = formulaManager.getIntegerFormulaManager();
+            } catch (RuntimeException e) {
+                Mulib.log.warning("Integer formulas not supported");
+                integerFormulaManager = null;
+            }
+            this.integerFormulaManager = integerFormulaManager;
+            try {
+                rationalFormulaManager = formulaManager.getRationalFormulaManager();
+            } catch (RuntimeException e) {
+                Mulib.log.warning("Rational formulas not supported");
+                rationalFormulaManager = null;
+            }
+            this.rationalFormulaManager = rationalFormulaManager;
             BitvectorFormulaManager bitvectorFormulaManager;
+            ArrayFormulaManager arrayFormulaManager;
+            try {
+                arrayFormulaManager = formulaManager.getArrayFormulaManager();
+            } catch (RuntimeException e) {
+                Mulib.log.warning("Array formulas not supported");
+                arrayFormulaManager = null;
+            }
+            this.arrayFormulaManager = arrayFormulaManager;
             try {
                 bitvectorFormulaManager = formulaManager.getBitvectorFormulaManager();
-            } catch (UnsupportedOperationException e) {
-                // Ignore for now
+            } catch (RuntimeException e) {
+                Mulib.log.warning("Bitvector formulas not supported");
                 bitvectorFormulaManager = null;
             }
             this.bitvectorFormulaManager = bitvectorFormulaManager;
