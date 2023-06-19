@@ -10,6 +10,7 @@ import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.lang.invoke.MethodHandle;
 import java.util.*;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -28,9 +29,13 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             ChoicePointFactory choicePointFactory,
             ValueFactory valueFactory,
             CalculationFactory calculationFactory,
-            MulibValueTransformer mulibValueTransformer) {
+            MulibValueTransformer mulibValueTransformer,
+            MethodHandle representedMethod,
+            StaticVariables staticVariables,
+            Object[] searchRegionArgs) {
         super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
-                choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer);
+                choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer,
+                representedMethod, staticVariables, searchRegionArgs);
         this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
         this.idle = new SimpleSyncedQueue<>();
@@ -86,7 +91,10 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                                 this,
                                 mulibValueTransformer,
                                 config,
-                                searchStrategy
+                                searchStrategy,
+                                searchRegionMethod,
+                                staticVariables,
+                                searchRegionArgs
                         );
                         finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
                                 observedTree.root.getOption(0).getOptionConstraint());

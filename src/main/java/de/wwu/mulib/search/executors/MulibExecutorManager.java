@@ -9,6 +9,7 @@ import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
@@ -28,6 +29,9 @@ public abstract class MulibExecutorManager {
     protected final MulibValueTransformer mulibValueTransformer;
     private AtomicInteger numberRequestedSolutions;
     protected final List<Solution> solutions;
+    protected final MethodHandle searchRegionMethod;
+    protected final StaticVariables staticVariables;
+    protected final Object[] searchRegionArgs;
 
     protected volatile boolean seenFirstPathSolution = false;
     protected final long startTime;
@@ -42,7 +46,10 @@ public abstract class MulibExecutorManager {
             ChoicePointFactory choicePointFactory,
             ValueFactory valueFactory,
             CalculationFactory calculationFactory,
-            MulibValueTransformer mulibValueTransformer) {
+            MulibValueTransformer mulibValueTransformer,
+            MethodHandle searchRegionMethod,
+            StaticVariables staticVariables,
+            Object[] searchRegionArgs) {
         this.config = config;
         this.observedTree = observedTree;
         this.choicePointFactory = choicePointFactory;
@@ -50,12 +57,18 @@ public abstract class MulibExecutorManager {
         this.calculationFactory = calculationFactory;
         this.mulibExecutors = mulibExecutorsList;
         this.mulibValueTransformer = mulibValueTransformer;
+        this.searchRegionMethod = searchRegionMethod;
+        this.staticVariables = staticVariables;
+        this.searchRegionArgs = searchRegionArgs;
         this.mulibExecutors.add(new GenericExecutor(
                 observedTree.root.getOption(0),
                 this,
                 this.mulibValueTransformer,
                 config,
-                config.GLOBAL_SEARCH_STRATEGY
+                config.GLOBAL_SEARCH_STRATEGY,
+                searchRegionMethod,
+                staticVariables,
+                searchRegionArgs
         ));
         this.globalExecutionManagerBudgetManager = new GlobalExecutionBudgetManager(config);
         this.mainExecutor = this.mulibExecutors.get(0);

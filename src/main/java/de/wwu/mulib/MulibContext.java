@@ -94,7 +94,7 @@ public final class MulibContext {
         // Find the next sarray-id if any of the arguments are sarrays
         mulibValueTransformer.setPartnerClassObjectNr(args);
         StaticVariables staticVariables = new StaticVariables(mulibValueTransformer, transformedToOriginalStaticFields);
-        SearchTree searchTree = new SearchTree(config, methodHandle, searchRegionArgs, staticVariables);
+        SearchTree searchTree = new SearchTree(config);
 
         Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass = mulibTransformer.getArrayTypesToSpecializedSarrayClass();
         assert arrayTypesToSpecializedSarrayClass.values().stream().allMatch(Sarray.PartnerClassSarray.class::isAssignableFrom) : "Specialized arrays should only be created for arrays of arrays and arrays of partner class objects";
@@ -108,7 +108,10 @@ public final class MulibContext {
                         choicePointFactory,
                         valueFactory,
                         calculationFactory,
-                        mulibValueTransformer
+                        mulibValueTransformer,
+                        methodHandle,
+                        staticVariables,
+                        searchRegionArgs
                 )
                 :
                 new MultiExecutorsManager(
@@ -117,7 +120,10 @@ public final class MulibContext {
                         choicePointFactory,
                         valueFactory,
                         calculationFactory,
-                        mulibValueTransformer
+                        mulibValueTransformer,
+                        methodHandle,
+                        staticVariables,
+                        searchRegionArgs
                 );
         long end = System.nanoTime();
         Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");

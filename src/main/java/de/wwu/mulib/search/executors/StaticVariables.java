@@ -7,23 +7,22 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.ConcurrentHashMap;
 
 public class StaticVariables {
 
-    private final Map<String, Object> staticFieldsToInitialValues;
-    private final Map<SymbolicExecution, Map<String, Object>> staticFieldsForSymbolicExecutions;
+    private final Map<String, Object> fieldNamesToInitialValues;
+    private Map<String, Object> staticFieldsToValues;
 
     public StaticVariables(MulibValueTransformer mulibValueTransformer, Map<Field, Field> transformedToOriginalStaticFields) {
-        this.staticFieldsForSymbolicExecutions = new ConcurrentHashMap<>();
-        staticFieldsToInitialValues = new HashMap<>();
+        this.staticFieldsToValues = new HashMap<>();
+        this.fieldNamesToInitialValues = new HashMap<>();
         for (Map.Entry<Field, Field> entry : transformedToOriginalStaticFields.entrySet()) {
             Field originalField = entry.getValue();
             originalField.setAccessible(true);
             assert Modifier.isStatic(originalField.getModifiers()) : "No static field";
             try {
                 Object value = originalField.get(null);
-                staticFieldsToInitialValues.put(
+                this.fieldNamesToInitialValues.put(
                         entry.getKey().getDeclaringClass().getName() + "." + entry.getKey().getName(),
                         mulibValueTransformer.transform(value)
                 );
@@ -33,22 +32,36 @@ public class StaticVariables {
         }
     }
 
+    private StaticVariables(Map<String, Object> fieldNamesToInitialValues) {
+        this.fieldNamesToInitialValues = fieldNamesToInitialValues;
+    }
+
     public Object getStaticField(String fieldName, SymbolicExecution se) {
-        Map<String, Object> staticFieldsForSe = staticFieldsForSymbolicExecutions.computeIfAbsent(se, k -> new HashMap<>());
-        Object result = staticFieldsForSe.computeIfAbsent(
+        if (staticFieldsToValues == null) {
+            staticFieldsToValues = new HashMap<>();
+        }
+        return staticFieldsToValues.computeIfAbsent(
                 fieldName,
-                k -> se.getMulibValueCopier().copy(staticFieldsToInitialValues.get(fieldName))
+                k -> se.getMulibValueCopier().copy(fieldNamesToInitialValues.get(fieldName))
         );
-        return result;
     }
 
-    public void setStaticField(String fieldName, Object value, SymbolicExecution se) {
-        Map<String, Object> staticFieldsForSe = staticFieldsForSymbolicExecutions.computeIfAbsent(se, k -> new HashMap<>());
-        staticFieldsForSe.put(fieldName, value);
+    public void setStaticField(String fieldName, Object value) {
+        if (staticFieldsToValues == null) {
+            staticFieldsToValues = new HashMap<>();
+        }
+        staticFieldsToValues.put(fieldName, value);
     }
 
-    public void tearDown(SymbolicExecution se) {
-        staticFieldsForSymbolicExecutions.remove(se);
+    public void renew() {
+        if (staticFieldsToValues == null) {
+            return;
+        }
+        staticFieldsToValues.clear();
+    }
+
+    public StaticVariables copyFromPrototype() {
+        return new StaticVariables(fieldNamesToInitialValues);
     }
 
 }

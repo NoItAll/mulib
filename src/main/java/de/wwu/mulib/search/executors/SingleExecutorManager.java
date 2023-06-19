@@ -6,6 +6,7 @@ import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 
 public class SingleExecutorManager extends MulibExecutorManager {
@@ -17,7 +18,10 @@ public class SingleExecutorManager extends MulibExecutorManager {
             ChoicePointFactory choicePointFactory,
             ValueFactory valueFactory,
             CalculationFactory calculationFactory,
-            MulibValueTransformer mulibValueTransformer) {
+            MulibValueTransformer mulibValueTransformer,
+            MethodHandle representedMethod,
+            StaticVariables staticVariables,
+            Object[] searchRegionArgs) {
         super(
                 config,
                 new ArrayList<>(),
@@ -25,7 +29,10 @@ public class SingleExecutorManager extends MulibExecutorManager {
                 choicePointFactory,
                 valueFactory,
                 calculationFactory,
-                mulibValueTransformer
+                mulibValueTransformer,
+                representedMethod,
+                staticVariables,
+                searchRegionArgs
         );
     }
 

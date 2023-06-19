@@ -54,4 +54,7 @@ public interface MulibExecutor {
     PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
 
     ArrayInformation getAvailableInformationOnArray(Sint id);
+
+    StaticVariables getStaticVariables();
+
 }

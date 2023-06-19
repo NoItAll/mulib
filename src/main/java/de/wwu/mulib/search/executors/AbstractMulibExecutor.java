@@ -18,10 +18,8 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
-import java.util.ArrayDeque;
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Optional;
+import java.lang.invoke.MethodHandle;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.Consumer;
 
@@ -50,13 +48,19 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
     private final Consumer<SolverManager> pathSolutionCallback;
+    private final MethodHandle searchRegionMethod;
+    private final StaticVariables staticVariables;
+    private final Object[] searchRegionArgs;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
             Choice.ChoiceOption rootChoiceOption,
-            SearchStrategy searchStrategy) {
+            SearchStrategy searchStrategy,
+            MethodHandle searchRegionMethod,
+            StaticVariables staticVariables,
+            Object[] searchRegionArgs) {
         this.currentChoiceOption = rootChoiceOption; // Is mutable and will be adapted throughout search
         this.rootChoiceOfSearchTree = rootChoiceOption.getChoice();
         this.mulibExecutorManager = mulibExecutorManager;
@@ -68,6 +72,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.mulibValueTransformer = mulibValueTransformer;
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
         this.pathSolutionCallback = config.PATH_SOLUTION_CALLBACK;
+        this.searchRegionMethod = searchRegionMethod;
+        this.staticVariables = staticVariables.copyFromPrototype();
+        this.searchRegionArgs = searchRegionArgs;
     }
 
     @Override
@@ -217,6 +224,51 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
+    private static Object[] copyArguments(
+            Object[] searchRegionArgs,
+            SymbolicExecution se,
+            MulibConfig config) {
+        Map<Object, Object> replacedMap = new IdentityHashMap<>();
+        Object[] arguments = new Object[searchRegionArgs.length];
+        for (int i = 0; i < searchRegionArgs.length; i++) {
+            Object arg = searchRegionArgs[i];
+            Object newArg;
+            if ((newArg = replacedMap.get(arg)) != null) {
+                arguments[i] = newArg;
+                continue;
+            }
+            if (arg instanceof Sprimitive) {
+                if (config.CONCOLIC
+                        && arg instanceof SymNumericExpressionSprimitive) {
+                    // Creation of wrapper SymSprimitive with concolic container required
+                    newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
+                } else {
+                    // Keep value
+                    newArg = arg;
+                }
+            } else {
+                // Is null, Sarray, PartnerClass, or should have custom copying behavior
+                newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
+            }
+            replacedMap.put(arg, newArg);
+            arguments[i] = newArg;
+        }
+        return arguments;
+    }
+
+    private Object invokeSearchRegion() throws Throwable {
+        Object result;
+        if (searchRegionArgs.length == 0) {
+            result = searchRegionMethod.invoke();
+        } else {
+            Object[] args = copyArguments(searchRegionArgs, currentSymbolicExecution, config);
+            result = searchRegionMethod.invokeWithArguments(args);
+        }
+        staticVariables.renew();
+        AliasingInformation.resetAliasingTargets();
+        return result;
+    }
+
     private Optional<SymbolicExecution> createExecution() {
         Choice.ChoiceOption optionToBeEvaluated;
         try {
@@ -359,11 +411,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected CalculationFactory getCalculationFactory() {
         return getExecutorManager().calculationFactory;
     }
-
-    protected Object invokeSearchRegion() throws Throwable {
-        return getExecutorManager().observedTree.invokeSearchRegion(currentSymbolicExecution);
-    }
-
     protected void adjustSolverManagerToNewChoiceOption(final Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
         final Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
@@ -461,4 +508,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected abstract boolean shouldContinueExecution();
 
     protected abstract Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options);
+
+    public StaticVariables getStaticVariables() {
+        return staticVariables;
+    }
 }

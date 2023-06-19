@@ -1331,10 +1331,10 @@ public final class SymbolicExecution {
     }
 
     public void setStaticField(String fieldName, Object value) {
-        mulibExecutor.getExecutorManager().observedTree.getStaticVariables().setStaticField(fieldName, value, this);
+        mulibExecutor.getStaticVariables().setStaticField(fieldName, value);
     }
 
     public Object getStaticField(String fieldName) {
-        return mulibExecutor.getExecutorManager().observedTree.getStaticVariables().getStaticField(fieldName, this);
+        return mulibExecutor.getStaticVariables().getStaticField(fieldName, this);
     }
 }

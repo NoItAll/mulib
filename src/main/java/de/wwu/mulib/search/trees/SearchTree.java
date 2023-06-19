@@ -2,22 +2,16 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.search.executors.AliasingInformation;
-import de.wwu.mulib.search.executors.StaticVariables;
-import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
-import de.wwu.mulib.substitutions.primitives.Sprimitive;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
-import java.lang.invoke.MethodHandle;
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
 
 public final class SearchTree {
 
     private final MulibConfig config;
-    private final MethodHandle representedMethod;
-    private final StaticVariables staticVariables;
-    private final Object[] searchRegionArgs;
     public final Choice root;
     private final List<PathSolution> solutionsList;
     private final List<Fail> failsList;
@@ -27,18 +21,12 @@ public final class SearchTree {
     private final boolean enlistLeaves;
 
     public SearchTree(
-            MulibConfig config,
-            MethodHandle methodHandle,
-            Object[] searchRegionArgs,
-            StaticVariables staticVariables) {
+            MulibConfig config) {
         this.config = config;
         this.indentBy = config.TREE_INDENTATION;
         this.enlistLeaves = config.ENLIST_LEAVES;
-        this.representedMethod = methodHandle;
-        this.searchRegionArgs = searchRegionArgs;
         this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
-        this.staticVariables = staticVariables;
         if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
             solutionsList = Collections.synchronizedList(new ArrayList<>());
             if (enlistLeaves) {
@@ -59,51 +47,6 @@ public final class SearchTree {
             }
         }
         choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
-    }
-
-    private static Object[] copyArguments(
-            Object[] searchRegionArgs,
-            SymbolicExecution se,
-            MulibConfig config) {
-        Map<Object, Object> replacedMap = new IdentityHashMap<>();
-        Object[] arguments = new Object[searchRegionArgs.length];
-        for (int i = 0; i < searchRegionArgs.length; i++) {
-            Object arg = searchRegionArgs[i];
-            Object newArg;
-            if ((newArg = replacedMap.get(arg)) != null) {
-                arguments[i] = newArg;
-                continue;
-            }
-            if (arg instanceof Sprimitive) {
-                if (config.CONCOLIC
-                        && arg instanceof SymNumericExpressionSprimitive) {
-                    // Creation of wrapper SymSprimitive with concolic container required
-                    newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
-                } else {
-                    // Keep value
-                    newArg = arg;
-                }
-            } else {
-                // Is null, Sarray, PartnerClass, or should have custom copying behavior
-                newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
-            }
-            replacedMap.put(arg, newArg);
-            arguments[i] = newArg;
-        }
-        return arguments;
-    }
-
-    public Object invokeSearchRegion(SymbolicExecution symbolicExecution) throws Throwable {
-        Object result;
-        if (searchRegionArgs.length == 0) {
-            result = representedMethod.invoke();
-        } else {
-            Object[] args = copyArguments(searchRegionArgs, symbolicExecution, config);
-            result = representedMethod.invokeWithArguments(args);
-        }
-        staticVariables.tearDown(symbolicExecution);
-        AliasingInformation.resetAliasingTargets();
-        return result;
     }
 
     public static ArrayDeque<Choice.ChoiceOption> getPathTo(final Choice.ChoiceOption getTo) {
@@ -226,7 +169,4 @@ public final class SearchTree {
         if (enlistLeaves) this.exceededBudgetList.add(exceededBudget);
     }
 
-    public StaticVariables getStaticVariables() {
-        return staticVariables;
-    }
 }

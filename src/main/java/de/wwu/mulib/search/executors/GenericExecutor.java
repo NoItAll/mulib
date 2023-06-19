@@ -6,6 +6,7 @@ import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
+import java.lang.invoke.MethodHandle;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Optional;
@@ -22,8 +23,12 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,
             MulibConfig config,
-            SearchStrategy searchStrategy) {
-        super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy);
+            SearchStrategy searchStrategy,
+            MethodHandle searchRegionMethod,
+            StaticVariables staticVariables,
+            Object[] searchRegionArgs) {
+        super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy,
+                searchRegionMethod, staticVariables, searchRegionArgs);
         if (searchStrategy == SearchStrategy.DFS) {
             this.continueExecution = () -> true;
             this.choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;
