@@ -192,7 +192,13 @@ public final class MulibValueTransformer {
                 }
             } else {
                 PartnerClass[] transformedValues = (PartnerClass[]) _transformArrayToSarrayHelper(array, transformedComponentType);
-                return new Sarray.PartnerClassSarray<>(transformedValues);
+                Class<?> partnerClassSarraySubtype = mulibTransformer.transformType(array.getClass());
+                try {
+                    Sarray<?> result = (Sarray<?>) partnerClassSarraySubtype.getConstructor(PartnerClass[].class).newInstance((Object) transformedValues);
+                    return result;
+                } catch (Exception e) {
+                    throw new MulibRuntimeException(e);
+                }
             }
         } else {
             // Component is array! We need to generate a SarraySarray
@@ -202,7 +208,13 @@ public final class MulibValueTransformer {
                 Sarray<?> transformedValue = transformArrayToSarray(currentValue);
                 transformedValues[i] = transformedValue;
             }
-            return new Sarray.SarraySarray(transformedValues, transformedComponentType);
+            Class<?> partnerClassSarraySubtype = mulibTransformer.transformType(array.getClass());
+            try {
+                Sarray<?> result = (Sarray<?>) partnerClassSarraySubtype.getConstructor(Sarray[].class, Class.class).newInstance(transformedValues, transformedComponentType);
+                return result;
+            } catch (Exception e) {
+                throw new MulibRuntimeException(e);
+            }
         }
     }
 

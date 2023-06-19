@@ -187,6 +187,7 @@ public class FreeArraysTransfExec {
                 MulibConfig.builder()
                         .setTRANSF_WRITE_TO_FILE(true)
                         .setTRANSF_VALIDATE_TRANSFORMATION(true)
+                        .setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(true)
                         .setTRANSF_GENERATED_CLASSES_PATH(TEST_BUILD_PATH)
                         .build();

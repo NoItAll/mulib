@@ -7,7 +7,7 @@ import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -27,6 +27,7 @@ public final class MulibContext {
     private final String methodName;
     private final MulibTransformer mulibTransformer;
     private final Class<?> possiblyTransformedMethodClass;
+    private final MethodHandle methodHandle;
 
     MulibContext(
             String methodName,
@@ -50,6 +51,13 @@ public final class MulibContext {
             possiblyTransformedMethodClass = owningMethodClass;
             transformedArgTypes = untransformedArgTypes;
         }
+        try {
+            Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, transformedArgTypes);
+            methodHandle = MethodHandles.lookup().unreflect(method);
+        } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
+            throw new MulibRuntimeException(e);
+        }
+
         long end = System.nanoTime();
         Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibContext");
     }
@@ -62,9 +70,6 @@ public final class MulibContext {
 
     private MulibExecutorManager generateNewMulibExecutorManagerForPreInitializedContext(Object[] args) {
         long start = System.nanoTime();
-        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
-        ValueFactory valueFactory = ValueFactory.getInstance(config);
-        CalculationFactory calculationFactory = CalculationFactory.getInstance(config, valueFactory);
 
         Object[] searchRegionArgs;
         MulibValueTransformer mulibValueTransformer;
@@ -88,27 +93,14 @@ public final class MulibContext {
 
         // Find the next sarray-id if any of the arguments are sarrays
         mulibValueTransformer.setPartnerClassObjectNr(args);
-
-        Function<SymbolicExecution, Object[]> argsSupplier;
-        if (searchRegionArgs.length == 0) {
-            argsSupplier = (se) -> {
-                return emptyArgs;
-            };
-        } else {
-            argsSupplier = (se) -> {
-                return copyArguments(searchRegionArgs, se, config);
-            };
-        }
-
-        MethodHandle methodHandle;
-        try {
-            Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, transformedArgTypes);
-            methodHandle = MethodHandles.lookup().unreflect(method);
-        } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
-            throw new MulibRuntimeException(e);
-        }
         StaticVariables staticVariables = new StaticVariables(mulibValueTransformer, transformedToOriginalStaticFields);
-        SearchTree searchTree = new SearchTree(config, methodHandle, staticVariables, argsSupplier);
+        SearchTree searchTree = new SearchTree(config, methodHandle, searchRegionArgs, staticVariables);
+
+        Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass = mulibTransformer.getArrayTypesToSpecializedSarrayClass();
+        assert arrayTypesToSpecializedSarrayClass.values().stream().allMatch(Sarray.PartnerClassSarray.class::isAssignableFrom) : "Specialized arrays should only be created for arrays of arrays and arrays of partner class objects";
+        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
+        ValueFactory valueFactory = ValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
+        CalculationFactory calculationFactory = CalculationFactory.getInstance(config, valueFactory);
         MulibExecutorManager result = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
@@ -130,39 +122,6 @@ public final class MulibContext {
         long end = System.nanoTime();
         Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");
         return result;
-    }
-
-    private static Object[] copyArguments(
-            Object[] searchRegionArgs,
-            SymbolicExecution se,
-            MulibConfig config) {
-        Map<Object, Object> replacedMap = new IdentityHashMap<>();
-        Object[] arguments = new Object[searchRegionArgs.length];
-        for (int i = 0; i < searchRegionArgs.length; i++) {
-            Object arg = searchRegionArgs[i];
-            Object newArg;
-            if ((newArg = replacedMap.get(arg)) != null) {
-                arguments[i] = newArg;
-                continue;
-            }
-            if (arg instanceof Sprimitive) {
-                if (config.CONCOLIC
-                        && arg instanceof SymNumericExpressionSprimitive) {
-                    // Creation of wrapper SymSprimitive with concolic container required
-                    newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
-                } else {
-                    // Keep value
-                    newArg = arg;
-                }
-            } else {
-                // Is null, Sarray, or PartnerClass
-                assert arg == null || arg instanceof PartnerClass || arg instanceof String;
-                newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
-            }
-            replacedMap.put(arg, newArg);
-            arguments[i] = newArg;
-        }
-        return arguments;
     }
 
     private <T> T _checkExecuteAndLog(Object[] args, Function<Object[], T> argsToResult) {

@@ -7,13 +7,15 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 
+import java.util.Map;
+
 public interface ValueFactory {
 
-    static ValueFactory getInstance(MulibConfig config) {
+    static ValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
         if (config.CONCOLIC) {
-            return ConcolicValueFactory.getInstance(config);
+            return ConcolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
         } else {
-            return SymbolicValueFactory.getInstance(config);
+            return SymbolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
         }
     }
 

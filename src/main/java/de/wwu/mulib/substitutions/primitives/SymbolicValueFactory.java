@@ -33,13 +33,13 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Schar.SymSchar> createdAtomicSymSchars = new ArrayList<>();
 
     private final MulibConfig config;
-    SymbolicValueFactory(MulibConfig config) {
-        super(config);
+    protected SymbolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+        super(config, arrayTypesToSpecializedSarrayClass);
         this.config = config;
     }
 
-    public static SymbolicValueFactory getInstance(MulibConfig config) {
-        return new SymbolicValueFactory(config);
+    public static SymbolicValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+        return new SymbolicValueFactory(config, arrayTypesToSpecializedSarrayClass);
     }
 
     @Override

@@ -21,20 +21,22 @@ public abstract class MulibClassLoader<T> extends ClassLoader {
 
     @Override
     public final Class<?> loadClass(String name) {
-        String classNameWithoutPackage = name.substring(name.lastIndexOf('.') + 1);
-        if (!classNameWithoutPackage.startsWith(_TRANSFORMATION_PREFIX)) {
+        if (!name.contains(_TRANSFORMATION_PREFIX)) {
             try {
-                return super.loadClass(name, true);
+                return super.loadClass(name);
             } catch (ClassNotFoundException e) {
                 throw new MulibRuntimeException(e);
             }
         }
-        String withoutPrefix = name.replace(_TRANSFORMATION_PREFIX, "");
-        Class<?> result = transformer.getTransformedClassForOriginalClassName(withoutPrefix);
+        String adjusted = transformer.getSpecializedArrayTypeNameToOriginalTypeName().get(name);
+        if (adjusted == null) {
+            adjusted = name.replace(_TRANSFORMATION_PREFIX, "");
+        }
+        Class<?> result = transformer.getTransformedClassForOriginalClassName(adjusted);
         if (result != null) {
             return result;
         }
-        result = getPartnerClassForOriginal(withoutPrefix);
+        result = getPartnerClassForOriginal(adjusted);
         return result;
     }
 

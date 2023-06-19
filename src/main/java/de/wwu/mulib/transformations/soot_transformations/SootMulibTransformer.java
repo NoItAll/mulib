@@ -18,6 +18,7 @@ import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.util.Chain;
 
+import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
@@ -129,7 +130,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         // Return either the original type, if it has no model class, otherwise the model class
         private Type getOriginalOrModelType(SootClass original) {
-            Class<?> c = getClassForName(original.getName());
+            Class<?> c = getClassForName(original.getName(), classLoader);
             return RefType.v(
                     replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(
                             c,
@@ -370,6 +371,59 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         super.setPartnerClass(original, partnerClass);
     }
 
+    @Override
+    public synchronized Map<Class<?>, Class<?>> getArrayTypesToSpecializedSarrayClass() {
+        Map<Class<?>, Class<?>> result = new HashMap<>();
+        for (Map.Entry<String, SootClass> entry : this.arrayTypeToSpecialPartnerClassSarray.entrySet()) {
+            try {
+                Class<?> keyTypeTransformedToArrayType = transformType(Class.forName(entry.getKey()), true);
+                Class<?> actualClass = classLoader.loadClass(entry.getValue().getName());
+                result.put(keyTypeTransformedToArrayType, actualClass);
+            } catch (ClassNotFoundException e) {
+                throw new MulibRuntimeException(e);
+            }
+        }
+        return result;
+    }
+
+    private Class<?> transformToTransformedClass(Type t) {
+        if (t instanceof ArrayType) {
+            ArrayType at = (ArrayType) t;
+            Type transformedBaseType = transformType(at.baseType);
+            Class<?> baseClass = transformToTransformedClass(transformedBaseType);
+            int[] dimensions = new int[at.numDimensions];
+            Class<?> arrayType = Array.newInstance(baseClass, dimensions).getClass();
+            return arrayType;
+        } else if (t instanceof RefType) {
+            RefType rt = (RefType) t;
+            try {
+                return classLoader.loadClass(rt.getClassName());
+            } catch (ClassNotFoundException e) {
+                throw new MulibRuntimeException(e);
+            }
+        } else {
+            assert t instanceof PrimType;
+            if (t instanceof IntType) {
+                return Sint.class;
+            } else if (t instanceof LongType) {
+                return Slong.class;
+            } else if (t instanceof DoubleType) {
+                return Sdouble.class;
+            } else if (t instanceof FloatType) {
+                return Sfloat.class;
+            } else if (t instanceof ShortType) {
+                return Sshort.class;
+            } else if (t instanceof ByteType) {
+                return Sbyte.class;
+            } else if (t instanceof BooleanType) {
+                return Sbool.class;
+            } else if (t instanceof CharType) {
+                return Schar.class;
+            } else {
+                throw new NotYetImplementedException();
+            }
+        }
+    }
 
     /**
      * Constructs an instance of MulibTransformer according to the configuration.
@@ -392,8 +446,32 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     @Override
+    protected Class<?> getTransformedSpecializedPartnerClassSarrayClass(Class<?> c) {
+        if (!c.isArray()) {
+            throw new MulibRuntimeException("This method can only be used to get the specialized array type for an array type. A non-array type was passed.");
+        }
+        SootClass specializedPartnerClassSarray = arrayTypeToSpecialPartnerClassSarray.get(c.getName());
+        try {
+            // Load the class with the classLoader
+            return classLoader.loadClass(specializedPartnerClassSarray.getName());
+        } catch (ClassNotFoundException e) {
+            throw new MulibRuntimeException(e);
+        }
+    }
+
+    @Override
     protected String getNameToLoadOfClassNode(SootClass classNode) {
         return classNode.getName().replace("/", ".");
+    }
+
+    @Override
+    protected Map<String, SootClass> getArrayTypeNameToGeneratedSpecializedPartnerClassSarrayClass() {
+        return arrayTypeToSpecialPartnerClassSarray;
+    }
+
+    @Override
+    protected Map<String, String> getSpecializedArrayTypeNameToOriginalTypeName() {
+        return specializedArrayTypeNameToOriginalTypeName;
     }
 
     @Override
@@ -1227,10 +1305,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     methodToUse = v.SM_SE_SBOOLSARRAY;
                 } else if (refType.getClassName().equals(v.SC_SCHARSARRAY.getName())) {
                     methodToUse = v.SM_SE_SCHARSARRAY;
-                } else if (refType.getClassName().equals(v.SC_SARRAYSARRAY.getName())) {
+                } else if (isSarraySarray(refType)) {
                     methodToUse = v.SM_SE_SARRAYSARRAY;
                     isSarraySarray = true;
-                } else if (refType.getClassName().equals(v.SC_PARTNER_CLASSSARRAY.getName())) {
+                } else if (isPartnerClassSarray(refType)) {
                     methodToUse = v.SM_SE_PARTNER_CLASSSARRAY;
                     isPartnerClassSarray = true;
                 } else {
@@ -1268,7 +1346,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Local stackLocalForSarray = localSpawner.spawnNewStackLocal(initializeSymbolicArray.getType());
                 AssignStmt assignToStackLocal = Jimple.v().newAssignStmt(stackLocalForSarray, initializeSymbolicArray);
                 upc.add(assignToStackLocal);
-                AssignStmt assignToField = Jimple.v().newAssignStmt(fieldRef, stackLocalForSarray);
+                Local castedLocal = localSpawner.spawnNewStackLocal(fieldRef.getType());
+                upc.add(Jimple.v().newAssignStmt(castedLocal, Jimple.v().newCastExpr(stackLocalForSarray, fieldRef.getType())));
+                AssignStmt assignToField = Jimple.v().newAssignStmt(fieldRef, castedLocal);
                 upc.add(assignToField);
             } else {
                 // Is partnerclass
@@ -2304,7 +2384,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else {
             return false;
         }
-        return shouldBeTransformed(rt.getClassName().replace(_TRANSFORMATION_PREFIX, ""));
+        if (rt.getClassName().contains(_TRANSFORMATION_PREFIX)) {
+            // Already transformed
+            return false;
+        }
+
+        return shouldBeTransformed(rt.getClassName());
     }
 
 
@@ -2413,18 +2498,20 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return result;
     }
 
-    /* TODO isXOrSX methods are a workaround until we decide how to deal with mutability in Soot. Perhaps transform local etc. later on */
-
     private static boolean isSarray(Type t) {
         return isSarraySarray(t) || isPartnerClassSarray(t) || isPrimitiveSarray(t);
     }
 
     private static boolean isSarraySarray(Type t) {
-        return (t instanceof RefType) && ((RefType) t).getClassName().equals(Sarray.SarraySarray.class.getName());
+        return (t instanceof RefType) &&
+                (((RefType) t).getClassName().equals(Sarray.SarraySarray.class.getName())
+                        || ((RefType) t).getClassName().endsWith(_SARRAYSARRAY_POSTFIX));
     }
 
     private static boolean isPartnerClassSarray(Type t) {
-        return (t instanceof RefType) && ((RefType) t).getClassName().equals(Sarray.PartnerClassSarray.class.getName());
+        return (t instanceof RefType) &&
+                (((RefType) t).getClassName().equals(Sarray.PartnerClassSarray.class.getName())
+                        || (((RefType) t).getClassName().endsWith(_PARTNER_CLASSSARRAY_POSTFIX)));
     }
 
     private static boolean isPrimitiveSarray(Type t) {
@@ -2458,11 +2545,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private static boolean isSboolSarray(Type t) {
         return (t instanceof RefType) && ((RefType) t).getClassName().equals(Sarray.SboolSarray.class.getName());
-    }
-
-    private static boolean isActualPrimitive(Type t) {
-        return t instanceof IntType || t instanceof LongType || t instanceof DoubleType || t instanceof FloatType
-                || t instanceof ShortType || t instanceof ByteType || t instanceof BooleanType;
     }
 
     private static boolean isPrimitiveOrSprimitive(Type t) {
@@ -3053,7 +3135,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     } else if (sarrayType.equals(v.TYPE_SCHARSARRAY)) {
                         typeToStore = v.TYPE_SCHAR;
                     } else {
-                        // SarraySarrays cannot be wrapped
+                        // Sarrays cannot be wrapped
                         throw new NotYetImplementedException(sarrayType.toString());
                     }
                     WrapPair wp = wrap(args, valueBox, typeToStore);
@@ -3135,15 +3217,22 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         firstStmt = wp.newFirstStmt;
                         sizeValue = wp.newValue;
                     }
-                    VirtualInvokeExpr virtualInvokeExpr;
+                    VirtualInvokeExpr sarrayInitVirtualExpr;
                     IntConstant falseConstant = IntConstant.v(0);
                     if (used == v.SM_SE_PARTNER_CLASSSARRAY || used == v.SM_SE_SARRAYSARRAY) {
                         ClassConstant classConstant = getWrapperAwareClassConstantForType(nae.getBaseType());
-                        virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used.makeRef(), sizeValue, classConstant, falseConstant);
+                        sarrayInitVirtualExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used.makeRef(), sizeValue, classConstant, falseConstant);
                     } else {
-                        virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used.makeRef(), sizeValue, falseConstant);
+                        sarrayInitVirtualExpr = Jimple.v().newVirtualInvokeExpr(args.seLocal(), used.makeRef(), sizeValue, falseConstant);
                     }
-                    assignNewValueRedirectAndAdd(virtualInvokeExpr, firstStmt, a, valueBox, args);
+                    Local toCastLocal = args.spawnStackLocal(used.getReturnType());
+                    AssignStmt assignStmt = Jimple.v().newAssignStmt(toCastLocal, sarrayInitVirtualExpr);
+                    if (firstStmt == null) {
+                        firstStmt = assignStmt;
+                    }
+                    args.addUnit(assignStmt);
+                    a.redirectJumpsToThisTo(firstStmt);
+                    a.setRightOp(Jimple.v().newCastExpr(toCastLocal, a.getLeftOp().getType()));
                 } else if (value instanceof NewMultiArrayExpr) {
                     NewMultiArrayExpr nae = (NewMultiArrayExpr) value;
                     Stmt firstStmt = null;
@@ -3180,13 +3269,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                                     sizesArrayLocal,
                                     getWrapperAwareClassConstantForType(elementType)
                             );
-                    assignNewValueRedirectAndAdd(
-                            newSarraySarrayExpr,
-                            firstStmt,
-                            a,
-                            valueBox,
-                            args
-                    );
+                    Local toCastLocal = args.spawnStackLocal(v.SM_SE_MULTIDIM_SARRAYSARRAY.getReturnType());
+                    AssignStmt assignStmt = Jimple.v().newAssignStmt(toCastLocal, newSarraySarrayExpr);
+                    if (firstStmt == null) {
+                        firstStmt = assignStmt;
+                    }
+                    args.addUnit(assignStmt);
+                    a.redirectJumpsToThisTo(firstStmt);
+                    Local castedLocal = args.spawnStackLocal(a.getLeftOp().getType());
+                    AssignStmt cast = Jimple.v().newAssignStmt(castedLocal, Jimple.v().newCastExpr(toCastLocal, castedLocal.getType()));
+                    args.addUnit(cast);
+                    a.setRightOp(castedLocal);
                 } else if (value instanceof UnopExpr) {
                     assert args.isTainted(value);
                     Type t = ((UnopExpr) value).getOp().getType();
@@ -3494,6 +3587,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         firstStmt = wp.newFirstStmt;
                         index = wp.newValue;
                     }
+                    assert arrayRefValue.getBase().getType() instanceof RefType : "The array has not been transformed to " +
+                            "a Sarray class but should be used to perform select or store operations";
                     SootMethodRef selectRef = getSelectOrStoreBasedOnArrayBase((RefType) arrayRefValue.getBase().getType(), true).makeRef();
                     Expr expr = Jimple.v().newVirtualInvokeExpr(
                             (Local) arrayRefValue.getBase(),
@@ -3540,9 +3635,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return returnSelect ? v.SM_SBOOLSARRAY_SELECT : v.SM_SBOOLSARRAY_STORE;
         } else if (arrayType.equals(v.TYPE_SCHARSARRAY)) {
             return returnSelect ? v.SM_SCHARSARRAY_SELECT : v.SM_SCHARSARRAY_STORE;
-        } else if (arrayType.equals(v.TYPE_SARRAYSARRAY)) {
+        } else if (arrayType.equals(v.TYPE_SARRAYSARRAY) || specificSarraySarrayTypes.contains(arrayType.getSootClass())) {
             return returnSelect ? v.SM_SARRAYSARRAY_SELECT : v.SM_SARRAYSARRAY_STORE;
-        } else if (arrayType.equals(v.TYPE_PARTNER_CLASSSARRAY)) {
+        } else if (arrayType.equals(v.TYPE_PARTNER_CLASSSARRAY) || specificPartnerClassSarrayTypes.contains(arrayType.getSootClass())) {
             return returnSelect ? v.SM_PARTNER_CLASSSARRAY_SELECT : v.SM_PARTNER_CLASSSARRAY_STORE;
         } else {
             throw new NotYetImplementedException();
@@ -4002,7 +4097,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             result = v.TYPE_SCHAR;
         } else if (toTransform instanceof RefType) {
             RefType refType = (RefType) toTransform;
-            if (isIgnored(getClassForName(refType.getClassName()))) {
+            if (!refType.getClassName().contains(_TRANSFORMATION_PREFIX) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
+                addToClassesToTransform(refType.getClassName());
+            }
+            if (refType.getClassName().contains(_TRANSFORMATION_PREFIX) || isIgnored(getClassForName(refType.getClassName(), classLoader))) {
                 result = refType;
             } else {
                 decideOnWhetherStillNeedsToBeAddedToTransformationQueue(refType.getClassName());
@@ -4027,12 +4125,154 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return current;
     }
 
-    private Type transformArrayType(final ArrayType arrayType, boolean toSarraySarray) {
-        Type result;
+
+    private static String getNormalBaseTypeNameForType(Type t) {
+        assert !(t instanceof ArrayType);
+        if (t instanceof IntType) {
+            return "I";
+        } else if (t instanceof LongType) {
+            return "J";
+        } else if (t instanceof DoubleType) {
+            return "D";
+        } else if (t instanceof FloatType) {
+            return "F";
+        } else if (t instanceof ShortType) {
+            return "S";
+        } else if (t instanceof ByteType) {
+            return "B";
+        } else if (t instanceof BooleanType) {
+            return "Z";
+        } else if (t instanceof CharType) {
+            return "C";
+        } else {
+            assert t instanceof RefType;
+            return "L" + ((RefType) t).getClassName() + ";";
+        }
+    }
+
+
+
+    private final Map<String, SootClass> arrayTypeToSpecialPartnerClassSarray = new HashMap<>();
+    private final Map<String, String> specializedArrayTypeNameToOriginalTypeName = new HashMap<>();
+    private SootClass getSpecificPartnerClassSarrayClassForArrayType(ArrayType at) {
+        assert !(at.getElementType() instanceof PrimType) : "We only need to spawn new classes for non-primitive sarrays";
+        SootClass result = arrayTypeToSpecialPartnerClassSarray.get(at.toString());
+        if (result == null) {
+            result = _generateAndLoadSpecificPartnerClassSarrayClassForArrayType(at);
+            String normalName = "[".repeat(at.numDimensions) + getNormalBaseTypeNameForType(at.baseType);
+            arrayTypeToSpecialPartnerClassSarray.put(normalName, result);
+            specializedArrayTypeNameToOriginalTypeName.put(result.getName(), normalName);
+        }
+        return result;
+    }
+
+    private final Collection<SootClass> specificSarraySarrayTypes = new HashSet<>();
+    private final Collection<SootClass> specificPartnerClassSarrayTypes = new HashSet<>();
+    private SootClass _generateAndLoadSpecificPartnerClassSarrayClassForArrayType(ArrayType at) {
+        assert !(at.getElementType() instanceof PrimType) : "We only need to spawn new classes for non-primitive sarrays";
+        SootClass result;
+        String spawnedClassName;
+        SootClass superClass;
+        if (at.getElementType() instanceof ArrayType) {
+            Type baseType = at.baseType;
+            int numberDimensions = at.numDimensions;
+            superClass = v.SC_SARRAYSARRAY;
+            // As we transform it, it must be a ref type
+            spawnedClassName =
+                    ((RefType) transformType(baseType, true)).getClassName()
+                            + numberDimensions
+                            + _SARRAYSARRAY_POSTFIX;
+        } else {
+            RefType refType = (RefType) at.getElementType();
+            superClass = v.SC_PARTNER_CLASSSARRAY;
+            spawnedClassName = addPrefixToName(refType.getClassName()) + _PARTNER_CLASSSARRAY_POSTFIX;
+        }
+        result = Scene.v().makeSootClass(spawnedClassName);
+        result.setModifiers(Modifier.PUBLIC);
+        result.setSuperclass(superClass);
+        _addSuitingConstructorsForGeneratedSarraySarray(superClass, result);
+        if (at.getElementType() instanceof ArrayType) {
+            specificSarraySarrayTypes.add(result);
+        } else {
+            specificPartnerClassSarrayTypes.add(result);
+        }
+        return result;
+    }
+
+    private static void _addSuitingConstructorsForGeneratedSarraySarray(SootClass superClass, SootClass newClass) {
+        boolean isSarraySarray = superClass.equals(v.SC_SARRAYSARRAY);
+        SootMethod transform1, transform2, newInstance, copyConstr;
+        if (isSarraySarray) {
+            transform1 = Scene.v().makeSootMethod(init, List.of(v.TYPE_SARRAY.getArrayType(), v.TYPE_CLASS), v.TYPE_VOID, Modifier.PUBLIC);
+            transform2 = Scene.v().makeSootMethod(init, List.of(v.TYPE_SARRAY.getArrayType(), v.TYPE_CLASS, v.TYPE_MULIB_VALUE_TRANSFORMER), v.TYPE_VOID, Modifier.PUBLIC);
+            newInstance = Scene.v().makeSootMethod(init, List.of(v.TYPE_SINT, v.TYPE_SE, v.TYPE_BOOL, v.TYPE_CLASS, v.TYPE_SBOOL), v.TYPE_VOID, Modifier.PUBLIC);
+            SootMethod multiNewInstance = Scene.v().makeSootMethod(init, List.of(v.TYPE_SINT.getArrayType(), v.TYPE_SE, v.TYPE_CLASS), v.TYPE_VOID, Modifier.PUBLIC);
+            newClass.addMethod(multiNewInstance);
+            _createBodyOfInitJustCallingSuper(multiNewInstance);
+            copyConstr = Scene.v().makeSootMethod(init, List.of(v.TYPE_MULIB_VALUE_COPIER, v.TYPE_SARRAYSARRAY), v.TYPE_VOID, Modifier.PUBLIC);
+        } else {
+            transform1 = Scene.v().makeSootMethod(init, List.of(v.TYPE_PARTNER_CLASS.getArrayType()), v.TYPE_VOID, Modifier.PUBLIC);
+            transform2 = Scene.v().makeSootMethod(init, List.of(v.TYPE_PARTNER_CLASS.getArrayType(), v.TYPE_MULIB_VALUE_TRANSFORMER), v.TYPE_VOID, Modifier.PUBLIC);
+            newInstance = Scene.v().makeSootMethod(init, List.of(v.TYPE_CLASS, v.TYPE_SINT, v.TYPE_SE, v.TYPE_BOOL, v.TYPE_SBOOL), v.TYPE_VOID, Modifier.PUBLIC);
+            copyConstr = Scene.v().makeSootMethod(init, List.of(v.TYPE_MULIB_VALUE_COPIER, v.TYPE_PARTNER_CLASSSARRAY), v.TYPE_VOID, Modifier.PUBLIC);
+        }
+        newClass.addMethod(transform1);
+        newClass.addMethod(transform2);
+        newClass.addMethod(newInstance);
+        newClass.addMethod(copyConstr);
+        _createBodyOfInitJustCallingSuper(transform1);
+        _createBodyOfInitJustCallingSuper(transform2);
+        _createBodyOfInitJustCallingSuper(newInstance);
+        _createBodyOfInitJustCallingSuper(copyConstr);
+        SootMethod copy = Scene.v().makeSootMethod("copy", List.of(v.TYPE_MULIB_VALUE_COPIER), isSarraySarray ? v.TYPE_SARRAYSARRAY : v.TYPE_PARTNER_CLASSSARRAY, Modifier.PUBLIC);
+        {
+            JimpleBody b = Jimple.v().newBody(copy);
+            copy.setActiveBody(b);
+            UnitPatchingChain upc = b.getUnits();
+            LocalSpawner ls = new LocalSpawner(b);
+            Local thisLocal = ls.spawnNewLocal(newClass.getType());
+            Local mvcLocal = ls.spawnNewLocal(v.TYPE_MULIB_VALUE_COPIER);
+            upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(newClass.getType())));
+            upc.add(Jimple.v().newIdentityStmt(mvcLocal, Jimple.v().newParameterRef(mvcLocal.getType(), 0)));
+            Local resultLocal = ls.spawnNewLocal(newClass.getType());
+            upc.add(Jimple.v().newAssignStmt(resultLocal, Jimple.v().newNewExpr(newClass.getType())));
+            upc.add(Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(resultLocal, copyConstr.makeRef(), mvcLocal, thisLocal)));
+            upc.add(Jimple.v().newReturnStmt(resultLocal));
+        }
+        newClass.addMethod(copy);
+
+        // getOriginalClass is not transformed; - it is not used in the workflow
+        // label-method does not need to be transformed; - it is not used in the workflow
+    }
+
+    private static void _createBodyOfInitJustCallingSuper(SootMethod sm) {
+        JimpleBody b = Jimple.v().newBody(sm);
+        sm.setActiveBody(b);
+        UnitPatchingChain upc = b.getUnits();
+        LocalSpawner ls = new LocalSpawner(b);
+        SootClass c = sm.getDeclaringClass();
+        SootClass s = c.getSuperclass();
+        Local thisLocal = ls.spawnNewLocal(c.getType());
+        upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(c.getType())));
+        int localNumber = 0;
+        List<Local> paramLocals = new ArrayList<>();
+        for (Type t : sm.getParameterTypes()) {
+            Local l = ls.spawnNewLocal(t);
+            paramLocals.add(l);
+            upc.add(Jimple.v().newIdentityStmt(l, Jimple.v().newParameterRef(l.getType(), localNumber++)));
+        }
+        upc.add(Jimple.v().newInvokeStmt(
+                Jimple.v().newSpecialInvokeExpr(thisLocal, s.getMethod(init, sm.getParameterTypes()).makeRef(), paramLocals))
+        );
+        upc.add(Jimple.v().newReturnVoidStmt());
+    }
+
+    private RefLikeType transformArrayType(final ArrayType arrayType, boolean toSarray) {
+        RefLikeType result;
         Type t = arrayType.baseType;
         if (arrayType.numDimensions > 1) {
-            if (toSarraySarray) {
-                result = v.TYPE_SARRAYSARRAY;
+            if (toSarray) {
+                result = getSpecificPartnerClassSarrayClassForArrayType(arrayType).getType();
             } else {
                 int numDimensions = arrayType.numDimensions;
                 Type innermostType = getInnermostTypeInArray(arrayType);
@@ -4040,23 +4280,27 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 return ArrayType.v(transformedInnermostBaseType, numDimensions);
             }
         } else if (!(t instanceof PrimType)) {
-            result = toSarraySarray ? v.TYPE_PARTNER_CLASSSARRAY : ArrayType.v(transformType(arrayType.baseType), 1);
+            RefType refType = (RefType) t;
+            if (refType.getClassName().contains(_TRANSFORMATION_PREFIX) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
+                addToClassesToTransform(refType.getClassName());
+            }
+            result = toSarray ? getSpecificPartnerClassSarrayClassForArrayType(arrayType).getType() : ArrayType.v(transformType(arrayType.baseType), 1);
         } else if (isIntOrSint(t)) {
-            result = toSarraySarray ? v.TYPE_SINTSARRAY : ArrayType.v(v.TYPE_SINT, 1);
+            result = toSarray ? v.TYPE_SINTSARRAY : ArrayType.v(v.TYPE_SINT, 1);
         } else if (isLongOrSlong(t)) {
-            result = toSarraySarray ? v.TYPE_SLONGSARRAY : ArrayType.v(v.TYPE_SLONG, 1);
+            result = toSarray ? v.TYPE_SLONGSARRAY : ArrayType.v(v.TYPE_SLONG, 1);
         } else if (isDoubleOrSdouble(t)) {
-            result = toSarraySarray ? v.TYPE_SDOUBLESARRAY : ArrayType.v(v.TYPE_SDOUBLE, 1);
+            result = toSarray ? v.TYPE_SDOUBLESARRAY : ArrayType.v(v.TYPE_SDOUBLE, 1);
         } else if (isFloatOrSfloat(t)) {
-            result = toSarraySarray ? v.TYPE_SFLOATSARRAY : ArrayType.v(v.TYPE_SFLOAT, 1);
+            result = toSarray ? v.TYPE_SFLOATSARRAY : ArrayType.v(v.TYPE_SFLOAT, 1);
         } else if (isShortOrSshort(t)) {
-            result = toSarraySarray ? v.TYPE_SSHORTSARRAY : ArrayType.v(v.TYPE_SSHORT, 1);
+            result = toSarray ? v.TYPE_SSHORTSARRAY : ArrayType.v(v.TYPE_SSHORT, 1);
         } else if (isByteOrSbyte(t)) {
-            result = toSarraySarray ? v.TYPE_SBYTESARRAY : ArrayType.v(v.TYPE_SBYTE, 1);
+            result = toSarray ? v.TYPE_SBYTESARRAY : ArrayType.v(v.TYPE_SBYTE, 1);
         } else if (isBoolOrSbool(t)) {
-            result = toSarraySarray ? v.TYPE_SBOOLSARRAY : ArrayType.v(v.TYPE_SBOOL, 1);
+            result = toSarray ? v.TYPE_SBOOLSARRAY : ArrayType.v(v.TYPE_SBOOL, 1);
         } else if (isCharOrSchar(t)) {
-            result = toSarraySarray ? v.TYPE_SCHARSARRAY : ArrayType.v(v.TYPE_SCHAR, 1);
+            result = toSarray ? v.TYPE_SCHARSARRAY : ArrayType.v(v.TYPE_SCHAR, 1);
         } else {
             throw new NotYetImplementedException();
         }
@@ -4065,7 +4309,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     // If is ignored, return original, if already resolved, return resolved object, otherwise transformEnrichAndValidate
     private SootClass decideOnWhetherStillToCreatePartnerClass(SootClass original) {
-        if (isIgnored(getClassForName(original.getName()))) {
+        if (isIgnored(getClassForName(original.getName(), classLoader))) {
             return original;
         }
         SootClass result;
@@ -4095,7 +4339,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 if (!isAlreadyTransformedOrToBeTransformedPath(toTransformName)) {
                     addToClassesToTransform(toTransformName);
                 }
-                Class<?> toTransform = getClassForName(toTransformName);
+                Class<?> toTransform = getClassForName(toTransformName, classLoader);
                 toTransform = this.replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(toTransform, toTransform);
                 toTransformName = toTransform.getName();
                 assert transformedClassNodes.get(toTransformName) == null;

@@ -8,6 +8,7 @@ import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 
+import java.util.Map;
 import java.util.function.Function;
 
 // The creation of concrete numbers is performed in SymbolicValueFactory.
@@ -15,13 +16,13 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     private final SymbolicValueFactory svf;
     
-    ConcolicValueFactory(MulibConfig config) {
-        super(config);
-        this.svf = SymbolicValueFactory.getInstance(config);
+    protected ConcolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+        super(config, arrayTypesToSpecializedSarrayClass);
+        this.svf = SymbolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
     }
 
-    public static ConcolicValueFactory getInstance(MulibConfig config) {
-        return new ConcolicValueFactory(config);
+    public static ConcolicValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+        return new ConcolicValueFactory(config, arrayTypesToSpecializedSarrayClass);
     }
 
     @Override

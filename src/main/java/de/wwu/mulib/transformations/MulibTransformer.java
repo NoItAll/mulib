@@ -11,7 +11,6 @@ public interface MulibTransformer {
 
     Map<Field, Field> getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses();
 
-    Collection<Field> getAccessibleStaticFieldsOfTransformedClasses();
     Collection<Field> getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(Class<?> c);
 
     void transformAndLoadClasses(Class<?>... toTransform);
@@ -27,6 +26,8 @@ public interface MulibTransformer {
     Class<?> getTransformedClass(Class<?> beforeTransformation);
 
     Class<?> getPossiblyTransformedClass(Class<?> beforeTransformation);
+
+    Map<Class<?>, Class<?>> getArrayTypesToSpecializedSarrayClass();
 
     void setPartnerClass(Class<?> clazz, Class<?> partnerClass);
 

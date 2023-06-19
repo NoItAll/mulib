@@ -44,8 +44,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final Map<String, Class<?>> transformedClasses = new HashMap<>();
     protected final MulibConfig config;
     protected final Map<String, T> transformedClassNodes = new HashMap<>();
-    protected final Collection<Field> accessibleStaticFieldsOfTransformedClasses = new HashSet<>();
-
     protected final ClassLoader classLoader;
 
     /**
@@ -129,17 +127,32 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 generateNullChecksForMethods(classNode, entry.getValue());
             }
 
+            Map<String, T> typeStringToGeneratedSpecificPartnerClassSarrayClass = getArrayTypeNameToGeneratedSpecializedPartnerClassSarrayClass();
+            transformedClassNodes.putAll(typeStringToGeneratedSpecificPartnerClassSarrayClass);
 
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 maybeCheckIsValidWrittenClassNode(entry.getValue());
-                // Optionally, conduct some checks and write class node to class file
-                if (!usedLoadedAndAlreadyWrittenVersion.contains(entry.getKey())) {
+                // Write class node to class file
+                if (tryUseSystemClassLoader && !overWriteFileForSystemClassLoader) {
+                    try {
+                        Class<?> loadedClass = classLoader.loadClass(getNameToLoadOfClassNode(entry.getValue()));
+                        transformedClasses.put(entry.getKey(), loadedClass);
+                        // If loading succeeded there already is a class file in the build
+                        // To trigger all subroutines, we still will transform everything. We just won't put the class
+                        // into this.transformedClasses
+                    } catch (ClassNotFoundException ignored) {
+                        maybeWriteToFile(entry.getValue());
+                    } catch (ClassFormatError e) {
+                        throw new MulibRuntimeException("Non-overwritten class is erroneous", e);
+                    }
+                } else {
                     maybeWriteToFile(entry.getValue());
                 }
             }
 
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 if (transformedClasses.get(entry.getKey()) != null) {
+                    // Is already loaded
                     continue;
                 }
                 try {
@@ -149,15 +162,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                     e.printStackTrace();
                     throw new MulibRuntimeException(e);
                 }
-            }
-
-            for (Map.Entry<String, Class<?>> entry : transformedClasses.entrySet()) {
-                // Get static fields
-                Collection<Field> staticFieldsOfTransformedClass = getAccessibleStaticFields(entry.getValue());
-                if (staticFieldsOfTransformedClass.isEmpty()) {
-                    continue;
-                }
-                accessibleStaticFieldsOfTransformedClasses.addAll(staticFieldsOfTransformedClass);
             }
 
             maybeCheckAreValidInitializedClasses(transformedClasses.values());
@@ -184,18 +188,16 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     @Override
     public Map<Field, Field> getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses() {
-        if (tryUseSystemClassLoader && !overWriteFileForSystemClassLoader) {
-            // In this case we might not have added all transformed classes into the map. They were loaded by the
-            // class loader implicitly
-            Map<Field, Field> result = new HashMap<>();
-            for (Map.Entry<String, Class<?>> entry : transformedClasses.entrySet()) {
-                Collection<Field> staticFields = getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(entry.getValue());
-                result.putAll(getFieldsOfTransformedClassesToOriginalClasses(staticFields));
+        Collection<Field> accessibleStaticFieldsOfTransformedClasses = new HashSet<>();
+        for (Map.Entry<String, Class<?>> entry : transformedClasses.entrySet()) {
+            // Get static fields
+            Collection<Field> staticFieldsOfTransformedClass = getAccessibleStaticFields(entry.getValue());
+            if (staticFieldsOfTransformedClass.isEmpty()) {
+                continue;
             }
-            return result;
-        } else {
-            return getFieldsOfTransformedClassesToOriginalClasses(accessibleStaticFieldsOfTransformedClasses);
+            accessibleStaticFieldsOfTransformedClasses.addAll(staticFieldsOfTransformedClass);
         }
+        return getFieldsOfTransformedClassesToOriginalClasses(accessibleStaticFieldsOfTransformedClasses);
     }
 
     @Override
@@ -206,7 +208,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             Collection<T> classNodes = getConnectedClassNodes(classNode);
             for (T t : classNodes) {
                 String name = getNameToLoadOfClassNode(t);
-                Class<?> c = TransformationUtility.getClassForName(name);
+                Class<?> c = TransformationUtility.getClassForName(name, classLoader);
                 result.addAll(getAccessibleStaticFields(c));
             }
             return result;
@@ -216,7 +218,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected abstract Collection<T> getConnectedClassNodes(T classNode);
 
     /**
-     * Transforms type. Arrays are transformed to their respective subclass of Sarray.
+     * Transforms type. Arrays are transformed to their respective subclass of Sarray. Must be called after
+     * the transformation has been performed.
      * @param toTransform Type to transform
      * @param sarraysToRealArrayTypes Should, e.g., Sint[].class be returned instead of SintSarray?
      * @return Transformed type
@@ -266,7 +269,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                         }
                         return result;
                     } else {
-                        return Sarray.SarraySarray.class;
+                        return getTransformedSpecializedPartnerClassSarrayClass(toTransform);
                     }
                 } else if (componentType == int.class) {
                     return sarraysToRealArrayTypes ? Sint[].class : Sarray.SintSarray.class;
@@ -285,13 +288,15 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 } else if (componentType == char.class) {
                     return sarraysToRealArrayTypes ? Schar[].class : Sarray.ScharSarray.class;
                 } else {
-                    return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : Sarray.PartnerClassSarray.class;
+                    return sarraysToRealArrayTypes ? Array.newInstance(transformType(componentType), 0).getClass() : getTransformedSpecializedPartnerClassSarrayClass(toTransform);
                 }
             } else {
                 return getPossiblyTransformedClass(toTransform);
             }
         }
     }
+
+    protected abstract Class<?> getTransformedSpecializedPartnerClassSarrayClass(Class<?> clazz);
 
     @Override
     public Class<?> transformMulibTypeBack(Class<?> toTransform) {
@@ -412,17 +417,12 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         transformedClasses.put(original.getName(), partnerClass);
     }
 
-    @Override
-    public final Collection<Field> getAccessibleStaticFieldsOfTransformedClasses() {
-        return accessibleStaticFieldsOfTransformedClasses;
-    }
-
     public String addPrefixToPath(String addTo) {
         return _addPrefix(false, addTo);
     }
 
     public String addPrefixToName(String addTo) {
-        Class<?> originalClass = getClassForName(addTo);
+        Class<?> originalClass = getClassForName(addTo, classLoader);
         String modelClassOrOriginal = replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(originalClass, originalClass).getName();
         return _addPrefix(true, modelClassOrOriginal);
     }
@@ -451,12 +451,16 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return resultBuilder.toString();
     }
 
+    protected abstract Map<String, T> getArrayTypeNameToGeneratedSpecializedPartnerClassSarrayClass();
+
+    protected abstract Map<String, String> getSpecializedArrayTypeNameToOriginalTypeName();
+
     protected abstract boolean isInterface(T classNode);
 
     protected abstract T getClassNodeForName(String name);
 
     protected final T transformEnrichAndValidate(String toTransformName) {
-        Class<?> toTransform = getClassForName(toTransformName);
+        Class<?> toTransform = getClassForName(toTransformName, classLoader);
         Class<?> replacement = replaceToBeTransformedClassWithSpecifiedClass.get(toTransform);
         if (replacement != null) {
             toTransformName = replacement.getName();
@@ -600,7 +604,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      */
     public boolean shouldBeTransformed(String classAsPath) {
         // TODO "/" in classAsPath is not really always respected but does not disturb since it is later replaced via '.' anyway. Still, this is unclean
-        Class<?> c = getClassForPath(classAsPath);
+        Class<?> c = getClassForPath(classAsPath, classLoader);
         return !isIgnored(c);
     }
 
@@ -609,7 +613,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     // Check if the class, represented by the path, is about to be transformed or has already been transformed.
     protected boolean isAlreadyTransformedOrToBeTransformedPath(String classAsPath) {
-        Class<?> c = getClassForPath(classAsPath);
+        Class<?> c = getClassForPath(classAsPath, classLoader);
         return classesToTransform.contains(c) // Should not be already enqueued for transformation
                 || transformedClasses.containsKey(c.getName()); // Should not already be transformed
     }
@@ -658,28 +662,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         transformedClasses.put(className, c);
     }
 
-    // If set contains toTransformName: partnerclass-class was loaded and does not have to be written anymore
-    private final Set<String> usedLoadedAndAlreadyWrittenVersion = new HashSet<>();
     // Transforms one class. Checks whether the class is ignored and whether the class has already been transformed.
     protected final void transformClass(Class<?> toTransform) {
-        if (!(classLoader instanceof MulibClassLoader)) {
-            try {
-                synchronized (syncObject) {
-                    if (!overWriteFileForSystemClassLoader) {
-                        String transformedName = addPrefixToName(toTransform.getName());
-                        Class<?> loadedClass = classLoader.loadClass(transformedName);
-                        // If loading succeeded there already is a class file in the build
-                        transformedClasses.putIfAbsent(toTransform.getName(), loadedClass);
-                        transformedClassNodes.putIfAbsent(toTransform.getName(), getClassNodeForName(transformedName));
-                        usedLoadedAndAlreadyWrittenVersion.add(toTransform.getName());
-                        return;
-                    }
-                }
-            } catch (ClassNotFoundException ignored) {
-            } catch (ClassFormatError e) {
-                throw new MulibRuntimeException(e);
-            }
-        }
         if (isIgnored(toTransform) || isAlreadyTransformedOrToBeTransformedPath(toTransform.getName())) {
             return;
         }
@@ -707,7 +691,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             assert path.endsWith(";");
             path = path.substring(1, path.length() - 1);
         }
-        Class<?> c = getClassForPath(path);
+        Class<?> c = getClassForPath(path, classLoader);
         classesToTransform.add(c);
     }
 

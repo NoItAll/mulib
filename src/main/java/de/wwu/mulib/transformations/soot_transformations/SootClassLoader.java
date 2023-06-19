@@ -1,5 +1,6 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.transformations.AbstractMulibTransformer;
 import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;
@@ -14,7 +15,9 @@ public final class SootClassLoader extends MulibClassLoader<SootClass> {
     @Override
     protected Class<?> getPartnerClassForOriginal(String original) {
         SootClass classNode = transformer.getTransformedClassNode(original);
-        assert classNode != null : "Partner class node for '" + original  + "' not found.";
+        if (classNode == null) {
+            throw new MulibRuntimeException("Partner class node for '" + original  + "' not found.");
+        }
         MulibClassFileWriter<SootClass> classWriter = transformer.generateMulibClassFileWriter();
         return defineClass(original, classNode.getName().replace("/", "."), classWriter.toByteArray(classNode));
     }

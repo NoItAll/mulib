@@ -10,5 +10,7 @@ public final class StringConstants {
     public static final String clinit = "<clinit>";
     public static final String init = "<init>";
     public static final String main = "main";
+    public static final String _SARRAYSARRAY_POSTFIX = "SarraySarray" + _TRANSFORMATION_PREFIX;
+    public static final String _PARTNER_CLASSSARRAY_POSTFIX = "PartnerClassSarray" + _TRANSFORMATION_PREFIX;
     public static final String primitiveTypes = "BCDFIJSZ";
 }

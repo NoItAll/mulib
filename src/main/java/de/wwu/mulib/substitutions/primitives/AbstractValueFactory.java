@@ -3,15 +3,21 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.AliasingInformation;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 
+import java.lang.invoke.MethodHandle;
+import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
+import java.util.function.BiFunction;
 import java.util.function.Function;
 
 public abstract class AbstractValueFactory implements ValueFactory {
@@ -21,15 +27,83 @@ public abstract class AbstractValueFactory implements ValueFactory {
     protected final boolean throwExceptionOnOOB;
     protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
     protected final Function<Sbool, Sbool> tryGetSymFromSbool;
+    private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedConstructor;
+    private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors;
+    private final BiFunction<Class<?>, Object[], Sarray.PartnerClassSarray<?>> getSarrayConstructor;
+    private final BiFunction<Class<?>, Object[], Sarray.SarraySarray> getMultiDimensionalSarraySarrayConstructor;
+    private final boolean transformationRequired;
 
 
     protected final MulibConfig config;
 
-    public AbstractValueFactory(MulibConfig config) {
+    @SuppressWarnings("unchecked")
+    protected AbstractValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+        this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
         this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECTS;
         this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
+        // Generate the initializers for, statically unknown, Sarray subclasses.
+        // TODO In the future, we might directly call the constructors in-code to avoid this. We might have callbacks in
+        // the constructors to inform the ValueFactories about initialized Sarrays.
+        this.arrayTypesToSpecializedConstructor = new HashMap<>();
+        this.arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors = new HashMap<>();
+        if (transformationRequired) {
+            for (Map.Entry<Class<?>, Class<?>> entry : arrayTypesToSpecializedSarrayClass.entrySet()) {
+                try {
+                    Class<?> componentType = entry.getKey().getComponentType();
+                    Class<?> specializedSarrayType = entry.getValue();
+                    Constructor<?> constructor;
+                    if (Sarray.SarraySarray.class.isAssignableFrom(specializedSarrayType)) {
+                        Constructor<?> multiDimConstructor = specializedSarrayType.getConstructor(Sint[].class, SymbolicExecution.class, Class.class);
+                        MethodHandle mh = MethodHandles.lookup().unreflectConstructor(multiDimConstructor);
+                        arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors.put(componentType, mh);
+                        constructor = specializedSarrayType.getConstructor(Sint.class, SymbolicExecution.class, boolean.class, Class.class, Sbool.class);
+                    } else {
+                        constructor = specializedSarrayType.getConstructor(Class.class, Sint.class, SymbolicExecution.class, boolean.class, Sbool.class);
+                    }
+                    MethodHandle mh = MethodHandles.lookup().unreflectConstructor(constructor);
+                    arrayTypesToSpecializedConstructor.put(componentType, mh);
+                } catch (NoSuchMethodException | IllegalAccessException e) {
+                    throw new MulibRuntimeException(e);
+                }
+            }
+            getSarrayConstructor = (clazz, args) -> {
+                MethodHandle mh = arrayTypesToSpecializedConstructor.get(clazz);
+                assert args.length == 5;
+                assert mh != null;
+                try {
+                    return (Sarray.PartnerClassSarray<?>) mh.invokeWithArguments(args);
+                } catch (Throwable e) {
+                    throw new MulibRuntimeException(e);
+                }
+            };
+            getMultiDimensionalSarraySarrayConstructor = (clazz, args) -> {
+                MethodHandle mh = arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors.get(clazz);
+                assert args.length == 3;
+                assert mh != null;
+                try {
+                    return (Sarray.SarraySarray) mh.invokeWithArguments(args);
+                } catch (Throwable e) {
+                    throw new MulibRuntimeException(e);
+                }
+            };
+        } else {
+            getSarrayConstructor = (clazz, args) -> {
+                assert args.length == 5;
+                if (clazz.isArray()) {
+                    return new Sarray.SarraySarray((Sint) args[0], (SymbolicExecution) args[1], (boolean) args[2], (Class<?>) args[3], (Sbool) args[4]);
+                } else {
+                    return new Sarray.PartnerClassSarray((Class<?>) args[0], (Sint) args[1], (SymbolicExecution) args[2], (boolean) args[3], (Sbool) args[4]);
+                }
+            };
+            getMultiDimensionalSarraySarrayConstructor = (clazz, args) -> {
+                assert clazz.isArray();
+                assert args.length == 3;
+                return new Sarray.SarraySarray((Sint[]) args[0], (SymbolicExecution) args[1], (Class<?>) args[2]);
+            };
+
+        }
         this.config = config;
         if (config.CONCOLIC) {
             tryGetSymFromSnumber = ConcolicNumericContainer::tryGetSymFromConcolic;
@@ -164,7 +238,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        Sarray.PartnerClassSarray result = new Sarray.PartnerClassSarray(clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.PartnerClassSarray result = getSarrayConstructor.apply(clazz, new Object[] { clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE });
         decideOnAddToAliasingAndRepresentation(clazz, result, se);
         return result;
     }
@@ -172,7 +246,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
-        Sarray.SarraySarray result = new Sarray.SarraySarray(len, se, defaultIsSymbolic, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+        Sarray.SarraySarray result = (Sarray.SarraySarray) getSarrayConstructor.apply(clazz, new Object[] { len, se, defaultIsSymbolic, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE });
         decideOnAddToAliasingAndRepresentation(clazz, result, se);
         return result;
     }
@@ -181,7 +255,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     public final Sarray.SarraySarray sarrarySarray(SymbolicExecution se, Sint[] lengths, Class<?> clazz) {
         restrictLength(se, lengths[0]);
         // Never is part of aliasing
-        return new Sarray.SarraySarray(lengths, se, clazz);
+        return getMultiDimensionalSarraySarrayConstructor.apply(clazz, new Object[] { lengths, se, clazz });
     }
 
     @Override

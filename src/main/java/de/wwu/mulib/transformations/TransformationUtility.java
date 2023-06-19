@@ -26,13 +26,13 @@ public class TransformationUtility {
         return nestHostFieldName;
     }
 
-    public static Class<?> getClassForPath(String path) {
-        return getClassForName(classPathToType(path));
+    public static Class<?> getClassForPath(String path, ClassLoader classLoader) {
+        return getClassForName(classPathToType(path), classLoader);
     }
 
-    public static Class<?> getClassForName(String name) {
+    public static Class<?> getClassForName(String name, ClassLoader classLoader) {
         try {
-            return Class.forName(name);
+            return classLoader.loadClass(name);
         } catch (ClassNotFoundException e) {
             throw new MulibRuntimeException("Cannot locate class for String " + name, e);
         }
