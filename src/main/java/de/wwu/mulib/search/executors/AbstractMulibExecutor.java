@@ -257,16 +257,24 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private Object invokeSearchRegion() throws Throwable {
-        Object result;
-        if (searchRegionArgs.length == 0) {
-            result = searchRegionMethod.invoke();
-        } else {
-            Object[] args = copyArguments(searchRegionArgs, currentSymbolicExecution, config);
-            result = searchRegionMethod.invokeWithArguments(args);
+        try {
+            Object result;
+            if (searchRegionArgs.length == 0) {
+                result = searchRegionMethod.invoke();
+            } else {
+                Object[] args = copyArguments(searchRegionArgs, currentSymbolicExecution, config);
+                result = searchRegionMethod.invokeWithArguments(args);
+            }
+            staticVariables.renew();
+            AliasingInformation.resetAliasingTargets();
+            SymbolicExecution.remove();
+            return result;
+        } catch (Throwable t) {
+            staticVariables.renew();
+            AliasingInformation.resetAliasingTargets();
+            SymbolicExecution.remove();
+            throw t;
         }
-        staticVariables.renew();
-        AliasingInformation.resetAliasingTargets();
-        return result;
     }
 
     private Optional<SymbolicExecution> createExecution() {
