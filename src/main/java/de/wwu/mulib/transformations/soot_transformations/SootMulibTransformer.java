@@ -2516,7 +2516,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private static boolean isPrimitiveSarray(Type t) {
         return isSintSarray(t) || isSlongSarray(t) || isSdoubleSarray(t) || isSfloatSarray(t)
-                || isSshortSarray(t) || isSbyteSarray(t) || isSboolSarray(t);
+                || isSshortSarray(t) || isSbyteSarray(t) || isSboolSarray(t) || isScharSarray(t);
     }
 
     private static boolean isSintSarray(Type t) {
@@ -2545,6 +2545,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private static boolean isSboolSarray(Type t) {
         return (t instanceof RefType) && ((RefType) t).getClassName().equals(Sarray.SboolSarray.class.getName());
+    }
+
+    public static boolean isScharSarray(Type t) {
+        return (t instanceof RefType) && ((RefType) t).getClassName().equals(Sarray.ScharSarray.class.getName());
     }
 
     private static boolean isPrimitiveOrSprimitive(Type t) {
@@ -2756,7 +2760,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 invokeArgs.add(IntConstant.v(1)); // Default is symbolic!
             }
             result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeArgs);
-        } else if (methodName.equals(v.SM_MULIB_FREE_ALIASING_OBJECT_OF.getName())) {
+        } else if (methodName.equals(v.SM_MULIB_PICK_FROM_OBJS.getName())) {
             assert invokeExpr.getArgCount() == 1;
             Value arg = invokeExpr.getArg(0);
             SootMethod sm;
@@ -2786,32 +2790,53 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     sm = v.SM_SE_ALIASING_SYM_OBJECT_WITHIN_ARRAY;
                 }
             } else {
-                if (((ArrayType) arg.getType()).getElementType() instanceof PrimType) {
-                    PrimType pt = (PrimType) ((ArrayType) arg.getType()).getElementType();
-                    if (pt instanceof IntType) {
+                assert isSarray(arg.getType());
+                if (isPrimitiveSarray(arg.getType())) {
+                    if (isSintSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SINT_WITHIN_SARRAY;
-                    } else if (pt instanceof DoubleType) {
+                    } else if (isSdoubleSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SDOUBLE_WITHIN_SARRAY;
-                    } else if (pt instanceof FloatType) {
+                    } else if (isSfloatSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SFLOAT_WITHIN_SARRAY;
-                    } else if (pt instanceof LongType) {
+                    } else if (isSlongSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SLONG_WITHIN_SARRAY;
-                    } else if (pt instanceof ShortType) {
+                    } else if (isSshortSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY;
-                    } else if (pt instanceof ByteType) {
+                    } else if (isSbyteSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SBYTE_WITHIN_SARRAY;
-                    } else if (pt instanceof BooleanType) {
+                    } else if (isSboolSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SBOOL_WITHIN_SARRAY;
-                    } else if (pt instanceof CharType) {
+                    } else if (isScharSarray(arg.getType())) {
                         sm = v.SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY;
                     } else {
-                        throw new NotYetImplementedException(pt.toString());
+                        throw new NotYetImplementedException();
                     }
                 } else {
                     sm = v.SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY;
                 }
             }
             result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), sm.makeRef(), arg);
+        } else if (methodName.equals("check") || methodName.equals("assume") || methodName.equals("checkAssume")) {
+            SootMethod sm;
+            if (methodName.equals("check")) {
+                sm = v.SM_SE_CHECK;
+            } else if (methodName.equals("assume")) {
+                sm = v.SM_SE_ASSUME;
+            } else {
+                assert methodName.equals("checkAssume");
+                sm = v.SM_SE_CHECK_ASSUME;
+            }
+            Value val;
+            if (!args.isTainted(invokeExpr.getArg(0))) {
+                WrapPair wp = wrap(args, invokeExpr.getArgBox(0));
+                containingStmt.redirectJumpsToThisTo(wp.newFirstStmt);
+                val = wp.newValue;
+            } else {
+                val = invokeExpr.getArg(0);
+            }
+            result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), sm.makeRef(), val);
+        } else if (methodName.equals("isInSearch")) {
+            result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), v.SM_SE_IS_IN_SEARCH.makeRef());
         } else if (v.isIndicatorMethodName(methodName)) {
             // Is indicator method other than freeObject or rememberedFreeObject
             assert !v.SM_SE_PRIMITIVE_SARRAY_INITS.contains(frameworkMethod);

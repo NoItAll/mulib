@@ -174,9 +174,9 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_NAMED_FREE_BYTE;
     public final SootMethod SM_MULIB_NAMED_FREE_BOOL;
     public final SootMethod SM_MULIB_NAMED_FREE_OBJECT;
-    public final SootMethod SM_MULIB_FREE_ALIASING_OBJECT_OF;
     public final SootMethod SM_MULIB_ASSUME;
     public final SootMethod SM_MULIB_CHECK;
+    public final SootMethod SM_MULIB_IS_IN_SEARCH;
     public final SootMethod SM_MULIB_CHECK_ASSUME;
     public final SootMethod SM_MULIB_PICK_FROM_OBJS;
     public final SootMethod SM_MULIB_PICK_FROM_INTS;
@@ -259,6 +259,11 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_ALIASING_SYM_SSHORT_WITHIN_SARRAY;
     public final SootMethod SM_SE_ALIASING_SYM_SCHAR_WITHIN_SARRAY;
     public final List<SootMethod> SM_SE_PRIMITIVE_SARRAY_INITS;
+
+    public final SootMethod SM_SE_CHECK;
+    public final SootMethod SM_SE_ASSUME;
+    public final SootMethod SM_SE_CHECK_ASSUME;
+    public final SootMethod SM_SE_IS_IN_SEARCH;
 
     public final SootMethod SM_SINTSARRAY_COPY_CONSTR;
     public final SootMethod SM_SLONGSARRAY_COPY_CONSTR;
@@ -629,10 +634,10 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_NAMED_FREE_BYTE    = SC_MULIB.getMethod("rememberedFreeByte",   List.of(TYPE_STRING),               TYPE_BYTE);
         SM_MULIB_NAMED_FREE_BOOL    = SC_MULIB.getMethod("rememberedFreeBoolean",List.of(TYPE_STRING),               TYPE_BOOL);
         SM_MULIB_NAMED_FREE_OBJECT  = SC_MULIB.getMethod("rememberedFreeObject", List.of(TYPE_STRING, TYPE_CLASS),   TYPE_OBJECT);
-        SM_MULIB_FREE_ALIASING_OBJECT_OF = SC_MULIB.getMethod("pickFrom", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
         SM_MULIB_ASSUME             = SC_MULIB.getMethod("assume", List.of(TYPE_BOOL), TYPE_VOID);
         SM_MULIB_CHECK              = SC_MULIB.getMethod("check", List.of(TYPE_BOOL), TYPE_BOOL);
         SM_MULIB_CHECK_ASSUME       = SC_MULIB.getMethod("checkAssume", List.of(TYPE_BOOL), TYPE_BOOL);
+        SM_MULIB_IS_IN_SEARCH       = SC_MULIB.getMethod("isInSearch", List.of(), TYPE_BOOL);
         SM_MULIB_PICK_FROM_OBJS     = SC_MULIB.getMethod("pickFrom", List.of(TYPE_OBJECT.getArrayType()), TYPE_OBJECT);
         SM_MULIB_PICK_FROM_INTS     = SC_MULIB.getMethod("pickFrom", List.of(TYPE_INT.getArrayType()), TYPE_INT);
         SM_MULIB_PICK_FROM_DOUBLES  = SC_MULIB.getMethod("pickFrom", List.of(TYPE_DOUBLE.getArrayType()), TYPE_DOUBLE);
@@ -739,6 +744,11 @@ public class SootMulibClassesAndMethods {
                 SM_SE_NAMED_SLONGSARRAY, SM_SE_NAMED_SDOUBLESARRAY, SM_SE_NAMED_SFLOATSARRAY,
                 SM_SE_NAMED_SSHORTSARRAY, SM_SE_NAMED_SBYTESARRAY, SM_SE_NAMED_SBOOLSARRAY,
                 SM_SE_NAMED_SCHARSARRAY);
+
+        SM_SE_CHECK         = SC_SE.getMethod("check", List.of(TYPE_SBOOL), TYPE_CONCSBOOL);
+        SM_SE_ASSUME        = SC_SE.getMethod("assume", List.of(TYPE_SBOOL), TYPE_VOID);
+        SM_SE_CHECK_ASSUME  = SC_SE.getMethod("checkAssume", List.of(TYPE_SBOOL), TYPE_SBOOL);
+        SM_SE_IS_IN_SEARCH  = SC_SE.getMethod("isInSearch", List.of(), TYPE_SBOOL);
 
         SM_SINT_CONCSINT = SC_SINT.getMethod("concSint", List.of(TYPE_INT), TYPE_CONCSINT);
         SM_SDOUBLE_CONCSDOUBLE = SC_SDOUBLE.getMethod("concSdouble", List.of(TYPE_DOUBLE), TYPE_CONCSDOUBLE);
@@ -983,6 +993,10 @@ public class SootMulibClassesAndMethods {
             case "pickFrom":
             case "remember":
             case "rememberedFreeObject":
+            case "check":
+            case "assume":
+            case "checkAssume":
+            case "isInSearch":
                 return true;
             default:
                 return false;
@@ -1027,6 +1041,14 @@ public class SootMulibClassesAndMethods {
                 return SM_SE_NAMED_FREE_SBOOL;
             case "rememberedFreeChar":
                 return SM_SE_NAMED_FREE_SCHAR;
+            case "check":
+                return SM_SE_CHECK;
+            case "assume":
+                return SM_SE_ASSUME;
+            case "checkAssume":
+                return SM_SE_CHECK_ASSUME;
+            case "isInSearch":
+                return SM_SE_IS_IN_SEARCH;
             case "freeObject": {
                 Value potentiallyUsedClassConstant = argsToMethod.get(0);
                 return getFreeObjectTransformedMethod(

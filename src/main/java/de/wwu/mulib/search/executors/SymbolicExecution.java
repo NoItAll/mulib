@@ -259,6 +259,23 @@ public final class SymbolicExecution {
         mulibExecutor.addNewPartnerClassObjectConstraint(ic);
     }
 
+    public Sbool.ConcSbool check(Sbool s) {
+        return Sbool.concSbool(mulibExecutor.checkWithNewConstraint(s));
+    }
+
+    public void assume(Sbool s) {
+        addNewConstraint(s);
+    }
+
+    public Sbool checkAssume(Sbool s) {
+        if (check(s).isTrue()) {
+            assume(s);
+            return Sbool.ConcSbool.TRUE;
+        }
+        return Sbool.ConcSbool.FALSE;
+    }
+
+
     /* FREE ARRAY OPERATIONS */
 
     public Sint select(Sarray.SintSarray sarray, Sint index) {
@@ -1340,5 +1357,9 @@ public final class SymbolicExecution {
 
     public Object getStaticField(String fieldName) {
         return mulibExecutor.getStaticVariables().getStaticField(fieldName, this);
+    }
+
+    public Sbool isInSearch() {
+        return Sbool.concSbool(get() == this);
     }
 }

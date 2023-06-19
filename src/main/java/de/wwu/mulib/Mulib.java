@@ -242,6 +242,10 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
+    public static boolean isInSearch() {
+        throw _shouldHaveBeenReplaced();
+    }
+
     private static MulibRuntimeException _shouldHaveBeenReplaced() {
         return new MulibRuntimeException("This method should always be replaced by a code transformation.");
     }
