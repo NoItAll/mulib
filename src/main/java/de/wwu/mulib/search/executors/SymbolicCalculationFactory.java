@@ -24,6 +24,14 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
+    public Sbool implies(SymbolicExecution se, Sbool lhs, Sbool rhs) {
+        if (lhs instanceof Sbool.ConcSbool && rhs instanceof Sbool.ConcSbool) {
+            return Sbool.concSbool(((Sbool.ConcSbool) lhs).isFalse() || ((Sbool.ConcSbool) rhs).isTrue());
+        }
+        return valueFactory.wrappingSymSbool(se, Implication.newInstance(lhs, rhs));
+    }
+
+    @Override
     public Sint add(SymbolicExecution se, Sint lhs, Sint rhs) {
         if (lhs instanceof ConcSnumber && rhs instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) lhs).intVal() + ((ConcSnumber) rhs).intVal());

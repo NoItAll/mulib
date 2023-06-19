@@ -41,6 +41,19 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     }
 
     @Override
+    public Sbool implies(SymbolicExecution se, Sbool lhs, Sbool rhs) {
+        Sbool potentiallySymbolic = scf.implies(se, tryGetSymFromConcolic(lhs), tryGetSymFromConcolic(rhs));
+        if (potentiallySymbolic instanceof Sbool.ConcSbool) {
+            return potentiallySymbolic;
+        }
+        Sbool.ConcSbool lhsExpr = getConcSboolFromConcolic(lhs);
+        Sbool.ConcSbool rhsExpr = getConcSboolFromConcolic(rhs);
+        Sbool.ConcSbool result = Sbool.concSbool(lhsExpr.isFalse() || rhsExpr.isTrue());
+        ConcolicConstraintContainer container = new ConcolicConstraintContainer((Sbool.SymSbool) potentiallySymbolic, result);
+        return Sbool.newConstraintSbool(container);
+    }
+
+    @Override
     public Sint add(SymbolicExecution se, Sint lhs, Sint rhs) {
         Sint potentiallySymbolic = scf.add(se,(Sint) tryGetSymFromConcolic(lhs), (Sint) tryGetSymFromConcolic(rhs));
         if (potentiallySymbolic instanceof ConcSnumber) {

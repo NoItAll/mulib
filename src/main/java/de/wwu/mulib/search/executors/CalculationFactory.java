@@ -18,6 +18,8 @@ public interface CalculationFactory {
         }
     }
 
+    Sbool implies(SymbolicExecution se, Sbool lhs, Sbool rhs);
+
     Sint add(SymbolicExecution se, Sint lhs, Sint rhs);
     
     Sint sub(SymbolicExecution se, Sint lhs, Sint rhs);
