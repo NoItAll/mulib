@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.Utility;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -552,7 +553,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if ((array = checkForAlreadyLabeledRepresentation(arrayId)) != null) {
             return array;
         }
-        ArrayConstraint[] constraints = getArrayConstraintsForSarray(arrayId);
+        ArrayConstraint[] constraints = getArrayConstraintsForSarrayAndAliases(arrayId);
         assert constraints.length > 0;
         assert constraints[0] instanceof ArrayInitializationConstraint;
         ArrayInitializationConstraint aic = (ArrayInitializationConstraint) constraints[0];
@@ -608,7 +609,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if ((object = checkForAlreadyLabeledRepresentation(partnerClassObjectId)) != null) {
             return object;
         }
-        PartnerClassObjectConstraint[] constraints = getConstraintsForPartnerClassObject(partnerClassObjectId);
+        PartnerClassObjectConstraint[] constraints = getConstraintsForPartnerClassObjectAndAliases(partnerClassObjectId);
         assert constraints.length > 0;
         assert constraints[0] instanceof PartnerClassObjectInitializationConstraint;
         PartnerClassObjectInitializationConstraint pic = (PartnerClassObjectInitializationConstraint) constraints[0];
@@ -618,18 +619,41 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (partnerClassObjectId instanceof Sint.SymSint) {
             registerLabelPair(Sint.concSint(_labelSintToInt(partnerClassObjectId)), object);
         }
-        Field[] fields = originalType.getDeclaredFields(); // TODO Merge into label-method
-        Arrays.stream(fields).forEach(f -> f.setAccessible(true));
-        for (PartnerClassObjectFieldConstraint g : pic.getInitialGetfields()) {
-            setFieldInLabelObject(object, fields, g);
+        List<Field> fields = Utility.getDeclaredFieldsIncludingInheritedFieldsExcludingPartnerClassFields(originalType); // TODO Merge into label-method
+        Utility.setAllAccessible(fields);
+        Map<String, SubstitutedVar> latestValues = PartnerClassObjectConstraint.getLastValues(constraints);
+        if (latestValues.size() != fields.size()) {
+            throw new LabelingNotPossibleException("Number of fields does not match: " + fields + " vs. " + latestValues);
         }
-        for (int i = 1; i < constraints.length; i++) {
-            if (constraints[i] instanceof PartnerClassObjectInitializationConstraint) {
-                continue; // Can happen during aliasing; - we just take the first initialization constraint in this case
+        for (Map.Entry<String, SubstitutedVar> entry : latestValues.entrySet()) {
+            String classAndFieldName = entry.getKey();
+            SubstitutedVar value = entry.getValue();
+            Field f = null;
+            for (Field fo : fields) {
+                // TODO Think about better way of identifying fields in constraints
+                if ((fo.getDeclaringClass().getName() + "." + fo.getName()).equals(classAndFieldName.replace("__mulib__", ""))) {
+                    f = fo;
+                    break;
+                }
             }
-            assert constraints[i] instanceof PartnerClassObjectFieldConstraint;
-            PartnerClassObjectFieldConstraint g = (PartnerClassObjectFieldConstraint) constraints[i];
-            setFieldInLabelObject(object, fields, g);
+            if (f == null) {
+                throw new LabelingNotPossibleException("Field for field constraint not found: " + classAndFieldName);
+            }
+            Object val;
+            if (f.getType().isArray()) {
+                assert value instanceof Sint;
+                val = labelRepresentedArray((Sint) value);
+            } else if (f.getType().isPrimitive()) {
+                val = labelSprimitive((Sprimitive) value);
+            } else {
+                val = labelPartnerClassObject((Sint) value);
+            }
+            try {
+                f.set(object, val);
+            } catch (Exception e) {
+                e.printStackTrace();
+                throw new LabelingNotPossibleException("Setting value failed for field " + f.getName());
+            }
         }
         return object;
     }
@@ -675,36 +699,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
-    private void setFieldInLabelObject(Object object, Field[] fields, PartnerClassObjectFieldConstraint g) {
-        Field f = null;
-        for (Field fo : fields) {
-            // TODO Think about better way of identifying fields in constraints
-            if ((fo.getDeclaringClass().getName() + "." + fo.getName()).equals(g.getFieldName().replace("__mulib__", ""))) {
-                f = fo;
-                break;
-            }
-        }
-        if (f == null) {
-            throw new LabelingNotPossibleException("Field for field constraint not found: " + g.getFieldName());
-        }
-        Object val;
-        if (f.getType().isArray()) {
-            assert g.getValue() instanceof Sint;
-            val = labelRepresentedArray((Sint) g.getValue());
-        } else if (f.getType().isPrimitive()) {
-            val = labelSprimitive(g.getValue());
-        } else {
-            assert g.getValue() instanceof Sint;
-            val = labelPartnerClassObject((Sint) g.getValue());
-        }
-        try {
-            f.set(object, val);
-        } catch (Exception e) {
-            e.printStackTrace();
-            throw new LabelingNotPossibleException("Setting value failed");
-        }
-    }
-
     private Class<?> transformNonArrayPartnerClassTypeToJavaType(Class<?> c) {
         assert !Sarray.class.isAssignableFrom(c) && (PartnerClass.class.isAssignableFrom(c) || !c.getName().contains(StringConstants._TRANSFORMATION_PREFIX));
         String className = c.getName();
@@ -717,7 +711,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
 
-    private ArrayConstraint[] getArrayConstraintsForSarray(Sint id) {
+    private ArrayConstraint[] getArrayConstraintsForSarrayAndAliases(Sint id) {
         int concId = _labelSintToInt(id); // TODO more performant way?
         return _getArrayConstraints().stream()
                 .filter(ac -> _labelSintToInt(ac.getPartnerClassObjectId()) == concId)
@@ -728,7 +722,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return ((Number) labelSprimitive(i)).intValue();
     }
 
-    private PartnerClassObjectConstraint[] getConstraintsForPartnerClassObject(Sint id) {
+    private PartnerClassObjectConstraint[] getConstraintsForPartnerClassObjectAndAliases(Sint id) {
         int concId = _labelSintToInt(id); // TODO more performant way?
         return _getNonArrayPartnerClassObjectConstraints().stream()
                 .filter(pc -> _labelSintToInt(pc.getPartnerClassObjectId()) == concId)
@@ -825,7 +819,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     protected Constraint getNeq(SubstitutedVar sv, Object value) {
-        if (sv instanceof Conc) {
+        if (sv instanceof Conc || sv == null) {
             return Sbool.ConcSbool.FALSE;
         }
         if (sv instanceof Sbool) {
@@ -835,6 +829,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
 
         if (sv instanceof Snumber) {
+            sv = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv);
             Snumber wrappedPreviousValue;
             if (value instanceof Integer) {
                 wrappedPreviousValue = Sint.concSint((Integer) value);
@@ -853,7 +848,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             } else {
                 throw new NotYetImplementedException(sv.getClass().toString());
             }
-            return Not.newInstance(Eq.newInstance(ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv), wrappedPreviousValue));
+            return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
         } if (sv instanceof Sarray) {
             Constraint result = Sbool.ConcSbool.FALSE;
             Sarray sarray = (Sarray) sv;
@@ -867,26 +862,71 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                     result = Or.newInstance(result, disjunctionConstraint);
                 }
             } else {
-                ArrayConstraint[] acs = getArrayConstraintsForSarray(((Sarray) sv).__mulib__getId());
-                for (ArrayConstraint ac : acs) {
+                result = Or.newInstance(
+                        result,
+                        Not.newInstance(
+                                Eq.newInstance(
+                                        ConcolicNumericContainer.tryGetSymFromConcolic(sarray.__mulib__getId()),
+                                        Sint.concSint((Integer) getLabel(sarray.__mulib__getId()))
+                                )
+                        )
+                );
+                ArrayConstraint[] acs = getArrayConstraintsForSarrayAndAliases(sarray.__mulib__getId());
+                ArrayInitializationConstraint aic = (ArrayInitializationConstraint) acs[0];
+                for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
+                    result = getNeqConstraintFromArrayAccessConstraint(result, aac);
+                }
+                for (int i = 1; i < acs.length; i++) {
+                    ArrayConstraint ac = acs[i];
                     if (ac instanceof ArrayInitializationConstraint) {
                         continue;
                     }
                     ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
-                    SubstitutedVar val = aac.getValue();
-                    Object label = getLabel(val);
-                    Sint index = aac.getIndex();
-                    Object indexLabel = getLabel(index);
-                    disjunctionConstraint = getNeq(val, label);
-                    result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel));
+                    result = getNeqConstraintFromArrayAccessConstraint(result, aac);
                 }
             }
             return result;
         } else if (sv instanceof PartnerClass) {
-            return Sbool.ConcSbool.FALSE; // TODO Not yet capable of doing this
+            Constraint result = Sbool.ConcSbool.FALSE;
+            PartnerClass pc = (PartnerClass) sv;
+            if (pc.__mulib__isRepresentedInSolver()) {
+                PartnerClassObjectConstraint[] constraints = getConstraintsForPartnerClassObjectAndAliases(pc.__mulib__getId());
+                assert constraints.length > 0;
+                assert constraints[0] instanceof PartnerClassObjectInitializationConstraint;
+                Map<String, SubstitutedVar> lastValues = PartnerClassObjectConstraint.getLastValues(constraints);
+                for (Map.Entry<String, SubstitutedVar> entry : lastValues.entrySet()) {
+                    Constraint neq = getNeq(entry.getValue(), getLabel(entry.getValue()));
+                    result = Or.newInstance(result, neq);
+                }
+                Sint id = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(((PartnerClass) sv).__mulib__getId());
+                Sint labeledId;
+                if (value == null) {
+                    labeledId = Sint.ConcSint.MINUS_ONE;
+                } else {
+                    labeledId = Sint.concSint((Integer) getLabel(id));
+                }
+                return Or.newInstance(result, Not.newInstance(Eq.newInstance(id, labeledId)));
+            } else {
+                Map<String, SubstitutedVar> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
+                for (Map.Entry<String, SubstitutedVar> entry : fieldNamesToSubstitutedVars.entrySet()) {
+                    result = Or.newInstance(result, getNeq(entry.getValue(), getLabel(entry.getValue())));
+                }
+                return result;
+            }
         } else {
             throw new NotYetImplementedException(sv.getClass().toString());
         }
+    }
+
+    private Constraint getNeqConstraintFromArrayAccessConstraint(Constraint result, ArrayAccessConstraint aac) {
+        Constraint disjunctionConstraint;
+        SubstitutedVar val = aac.getValue();
+        Object label = getLabel(val);
+        Sint index = aac.getIndex();
+        Object indexLabel = getLabel(index);
+        disjunctionConstraint = getNeq(val, label);
+        result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel));
+        return result;
     }
 
     protected final M getCurrentModel() {

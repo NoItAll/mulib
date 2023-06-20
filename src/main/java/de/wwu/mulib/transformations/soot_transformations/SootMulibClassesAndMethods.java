@@ -1122,7 +1122,10 @@ public class SootMulibClassesAndMethods {
                         return SM_SE_ALIASING_SYM_SCHAR_WITHIN_ARRAY;
                     }
                 } else {
-                    assert v.getType() instanceof ArrayType && ((ArrayType) v.getType()).getElementType() instanceof RefLikeType;
+                    assert (v.getType() instanceof ArrayType && ((ArrayType) v.getType()).getElementType() instanceof RefLikeType)
+                            || (v.getType() instanceof RefType
+                                    && (((RefType) v.getType()).getClassName().endsWith(StringConstants._SARRAYSARRAY_POSTFIX)
+                                            || (((RefType) v.getType()).getClassName().endsWith(StringConstants._PARTNER_CLASSSARRAY_POSTFIX))));
                     if (args.isTainted(v)) {
                         return SM_SE_ALIASING_SYM_OBJECT_WITHIN_SARRAY;
                     } else {

@@ -19,6 +19,7 @@ public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpre
         if (rhsExpr instanceof SymNumericExpressionSprimitive) {
             rhsExpr = ((SymNumericExpressionSprimitive) rhsExpr).getRepresentedExpression();
         }
+        assert !(lhsExpr instanceof ConcolicNumericContainer) && !(rhsExpr instanceof ConcolicNumericContainer);
         this.lhsExpr = lhsExpr;
         this.rhsExpr = rhsExpr;
     }

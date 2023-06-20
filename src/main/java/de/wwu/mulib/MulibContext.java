@@ -59,7 +59,8 @@ public final class MulibContext {
 
     private void _throwExceptionOnArgumentMismatch(Object[] providedArgs) {
         if (providedArgs == null || providedArgs.length != transformedArgTypes.length) {
-            throw new MulibRuntimeException("The calls to MulibContext must contain the arguments you which to use!");
+            throw new MulibRuntimeException("The calls to MulibContext must contain the arguments you wish to use! Expected length: "
+                    + transformedArgTypes.length + ", provided: " + (providedArgs == null ? "null" : providedArgs.length));
         }
     }
 

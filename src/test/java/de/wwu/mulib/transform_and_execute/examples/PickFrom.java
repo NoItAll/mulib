@@ -36,4 +36,12 @@ public class PickFrom {
         return Mulib.pickFrom(is);
     }
 
+    public static GraphEdge check(GraphEdge[] graphEdges) {
+        return Mulib.pickFrom(graphEdges);
+    }
+
+    public static GraphEdge[] check(GraphEdge[][] graphEdges) {
+        return Mulib.pickFrom(graphEdges);
+    }
+
 }

@@ -134,7 +134,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Schar.SymSchar symSchar(SymbolicExecution se) {
         return numericConcolicWrapperCreator(
                 se,
-                this::symSchar,
+                svf::symSchar,
                 o -> Schar.concSchar((Character) o),
                 Schar::newExpressionSymbolicSchar
         );

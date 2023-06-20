@@ -26,8 +26,8 @@ public class StdLabels implements Labels {
             }
         }
         this.identifiersToSPrimitives = Collections.unmodifiableMap(identifiersToSPrimitives);
-        this.svariablesToValues = Map.copyOf(substitutedVarsToOriginalRepresentation);
-        this.identifiersToValues = Map.copyOf(identifiersToOriginalRepresentation);
+        this.svariablesToValues = Collections.unmodifiableMap(substitutedVarsToOriginalRepresentation);
+        this.identifiersToValues = Collections.unmodifiableMap(identifiersToOriginalRepresentation);
     }
 
     @Override

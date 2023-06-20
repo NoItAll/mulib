@@ -323,7 +323,7 @@ public final class SymbolicExecution {
     }
 
     public Schar select(Sarray.ScharSarray sarray, Sint index) {
-        return (Schar.SymSchar) calculationFactory.select(this, sarray, index);
+        return (Schar) calculationFactory.select(this, sarray, index);
     }
 
     public Sshort store(Sarray.SshortSarray sarray, Sint index, Sshort value) {

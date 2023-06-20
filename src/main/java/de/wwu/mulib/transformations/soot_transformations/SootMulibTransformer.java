@@ -451,6 +451,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             throw new MulibRuntimeException("This method can only be used to get the specialized array type for an array type. A non-array type was passed.");
         }
         SootClass specializedPartnerClassSarray = arrayTypeToSpecialPartnerClassSarray.get(c.getName());
+        if (specializedPartnerClassSarray == null) {
+            throw new MulibRuntimeException("Specialized sarray type for '" + c.getName() + "' not found.");
+        }
         try {
             // Load the class with the classLoader
             return classLoader.loadClass(specializedPartnerClassSarray.getName());

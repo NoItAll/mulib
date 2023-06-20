@@ -357,7 +357,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             } else if (n instanceof Snumber) {
                 result = transformSnumber((Snumber) n);
             } else {
-                throw new NotYetImplementedException();
+                throw new NotYetImplementedException(String.valueOf(n));
             }
             return result;
         }

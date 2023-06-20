@@ -126,7 +126,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    public Schar symSchar(SymbolicExecution se) {
+    public Schar.SymSchar symSchar(SymbolicExecution se) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSchars,
                 Schar::newInputSymbolicSchar,
