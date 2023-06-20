@@ -21,10 +21,7 @@ import java.util.function.Function;
 
 public final class MulibContext {
     private final MulibConfig config;
-    private static final Object[] emptyArgs = new Object[0];
-    private final Class<?>[] untransformedArgTypes;
     private final Class<?>[] transformedArgTypes;
-    private final String methodName;
     private final MulibTransformer mulibTransformer;
     private final Class<?> possiblyTransformedMethodClass;
     private final MethodHandle methodHandle;
@@ -36,12 +33,10 @@ public final class MulibContext {
             Class<?>[] untransformedArgTypes,
             Object... prototypicalArgs) {
         long start = System.nanoTime();
-        this.methodName = methodName;
         this.config = config;
         if (untransformedArgTypes == null) {
             untransformedArgTypes = findMethodFittingToArgs(prototypicalArgs, methodName, owningMethodClass);
         }
-        this.untransformedArgTypes = untransformedArgTypes;
         this.mulibTransformer = MulibTransformer.get(config);
         if (config.TRANSF_TRANSFORMATION_REQUIRED) {
             mulibTransformer.transformAndLoadClasses(owningMethodClass);
