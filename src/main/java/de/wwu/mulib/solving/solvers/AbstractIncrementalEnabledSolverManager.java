@@ -417,6 +417,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private List<Constraint> getNeqConstraints(Labels givenLabels) {
         SubstitutedVar[] namedVars = givenLabels.getNamedVars();
+        Set<PartnerClass> partnerClassObjectsAlreadyTreated = new HashSet<>(); //// TODO Rather use some identity-based set
         List<Constraint> disjunctionConstraints = new ArrayList<>();
         for (SubstitutedVar sv : namedVars) {
             if (sv instanceof Conc) {
@@ -426,7 +427,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             Constraint disjunctionConstraint;
             if (sv instanceof Sprimitive || sv instanceof PartnerClass) {
                 Object label = givenLabels.getLabelForNamedSubstitutedVar(sv);
-                disjunctionConstraint = getNeq(sv, label);
+                disjunctionConstraint = getNeq(sv, label, partnerClassObjectsAlreadyTreated);
                 disjunctionConstraints.add(disjunctionConstraint);
             } else {
                 throw new NotYetImplementedException();
@@ -818,7 +819,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return classToZeroArgsConstructor.get(toGenerateFor);
     }
 
-    protected Constraint getNeq(SubstitutedVar sv, Object value) {
+    protected Constraint getNeq(SubstitutedVar sv, Object value, Set<PartnerClass> partnerClassIdsAlreadyTreated) {
         if (sv instanceof Conc || sv == null) {
             return Sbool.ConcSbool.FALSE;
         }
@@ -849,7 +850,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 throw new NotYetImplementedException(sv.getClass().toString());
             }
             return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
-        } if (sv instanceof Sarray) {
+        }
+        if (partnerClassIdsAlreadyTreated.contains(sv)) {
+            return Sbool.ConcSbool.TRUE;
+        } else if (sv instanceof Sarray) {
+            partnerClassIdsAlreadyTreated.add((PartnerClass) sv);
             Constraint result = Sbool.ConcSbool.FALSE;
             Sarray sarray = (Sarray) sv;
             Constraint disjunctionConstraint;
@@ -858,7 +863,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 for (Sint index : indices) {
                     SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
                     Object label = getLabel(cachedValue);
-                    disjunctionConstraint = getNeq(cachedValue, label);
+                    disjunctionConstraint = getNeq(cachedValue, label, partnerClassIdsAlreadyTreated);
                     result = Or.newInstance(result, disjunctionConstraint);
                 }
             } else {
@@ -874,7 +879,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 ArrayConstraint[] acs = getArrayConstraintsForSarrayAndAliases(sarray.__mulib__getId());
                 ArrayInitializationConstraint aic = (ArrayInitializationConstraint) acs[0];
                 for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
-                    result = getNeqConstraintFromArrayAccessConstraint(result, aac);
+                    result = getNeqConstraintFromArrayAccessConstraint(result, aac, partnerClassIdsAlreadyTreated);
                 }
                 for (int i = 1; i < acs.length; i++) {
                     ArrayConstraint ac = acs[i];
@@ -882,11 +887,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         continue;
                     }
                     ArrayAccessConstraint aac = (ArrayAccessConstraint) ac;
-                    result = getNeqConstraintFromArrayAccessConstraint(result, aac);
+                    result = getNeqConstraintFromArrayAccessConstraint(result, aac, partnerClassIdsAlreadyTreated);
                 }
             }
             return result;
         } else if (sv instanceof PartnerClass) {
+            partnerClassIdsAlreadyTreated.add((PartnerClass) sv);
             Constraint result = Sbool.ConcSbool.FALSE;
             PartnerClass pc = (PartnerClass) sv;
             if (pc.__mulib__isRepresentedInSolver()) {
@@ -895,7 +901,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 assert constraints[0] instanceof PartnerClassObjectInitializationConstraint;
                 Map<String, SubstitutedVar> lastValues = PartnerClassObjectConstraint.getLastValues(constraints);
                 for (Map.Entry<String, SubstitutedVar> entry : lastValues.entrySet()) {
-                    Constraint neq = getNeq(entry.getValue(), getLabel(entry.getValue()));
+                    Constraint neq = getNeq(entry.getValue(), getLabel(entry.getValue()), partnerClassIdsAlreadyTreated);
                     result = Or.newInstance(result, neq);
                 }
                 Sint id = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(((PartnerClass) sv).__mulib__getId());
@@ -909,7 +915,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             } else {
                 Map<String, SubstitutedVar> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
                 for (Map.Entry<String, SubstitutedVar> entry : fieldNamesToSubstitutedVars.entrySet()) {
-                    result = Or.newInstance(result, getNeq(entry.getValue(), getLabel(entry.getValue())));
+                    result = Or.newInstance(result, getNeq(entry.getValue(), getLabel(entry.getValue()), partnerClassIdsAlreadyTreated));
                 }
                 return result;
             }
@@ -918,14 +924,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
-    private Constraint getNeqConstraintFromArrayAccessConstraint(Constraint result, ArrayAccessConstraint aac) {
+    private Constraint getNeqConstraintFromArrayAccessConstraint(Constraint result, ArrayAccessConstraint aac, Set<PartnerClass> partnerClassObjectsAlreadyTreated) {
         Constraint disjunctionConstraint;
         SubstitutedVar val = aac.getValue();
         Object label = getLabel(val);
         Sint index = aac.getIndex();
         Object indexLabel = getLabel(index);
-        disjunctionConstraint = getNeq(val, label);
-        result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel));
+        disjunctionConstraint = getNeq(val, label, partnerClassObjectsAlreadyTreated);
+        result = Or.newInstance(result, disjunctionConstraint, getNeq(index, indexLabel, partnerClassObjectsAlreadyTreated));
         return result;
     }
 
