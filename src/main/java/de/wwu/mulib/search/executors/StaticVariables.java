@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.reflect.Field;
@@ -12,8 +13,11 @@ public class StaticVariables {
 
     private final Map<String, Object> fieldNamesToInitialValues;
     private Map<String, Object> staticFieldsToValues;
+    private MulibValueCopier mulibValueCopier;
 
-    public StaticVariables(MulibValueTransformer mulibValueTransformer, Map<Field, Field> transformedToOriginalStaticFields) {
+    public StaticVariables(
+            MulibValueTransformer mulibValueTransformer,
+            Map<Field, Field> transformedToOriginalStaticFields) {
         this.staticFieldsToValues = new HashMap<>();
         this.fieldNamesToInitialValues = new HashMap<>();
         for (Map.Entry<Field, Field> entry : transformedToOriginalStaticFields.entrySet()) {
@@ -36,14 +40,18 @@ public class StaticVariables {
         this.fieldNamesToInitialValues = fieldNamesToInitialValues;
     }
 
-    public Object getStaticField(String fieldName, SymbolicExecution se) {
+    public Object getStaticField(String fieldName) {
         if (staticFieldsToValues == null) {
             staticFieldsToValues = new HashMap<>();
         }
         return staticFieldsToValues.computeIfAbsent(
                 fieldName,
-                k -> se.getMulibValueCopier().copy(fieldNamesToInitialValues.get(fieldName))
+                k -> mulibValueCopier.copy(fieldNamesToInitialValues.get(fieldName))
         );
+    }
+
+    public void setMulibValueCopier(MulibValueCopier mulibValueCopier) {
+        this.mulibValueCopier = mulibValueCopier;
     }
 
     public void setStaticField(String fieldName, Object value) {

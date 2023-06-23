@@ -55,6 +55,8 @@ public interface MulibExecutor {
 
     ArrayInformation getAvailableInformationOnArray(Sint id);
 
-    StaticVariables getStaticVariables();
+    Object getStaticField(String fieldName);
+
+    void setStaticField(String fieldName, Object value);
 
 }

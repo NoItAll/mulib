@@ -15,7 +15,6 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformations.MulibValueCopier;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -33,7 +32,6 @@ public final class SymbolicExecution {
     // The current choice option. This will also be set to choice options on the known path.
     private Choice.ChoiceOption currentChoiceOption;
     private final ExecutionBudgetManager executionBudgetManager;
-    private final MulibValueCopier mulibValueCopier;
     private Map<String, SubstitutedVar> _namedVariables;
     private int nextNumberInitializedAtomicSymSints = 0;
     private int nextNumberInitializedAtomicSymSdoubles = 0;
@@ -63,7 +61,6 @@ public final class SymbolicExecution {
         this.currentChoiceOption = predeterminedPath.peek();
         assert currentChoiceOption != null;
         this.executionBudgetManager = executionBudgetManager.copyFromPrototype();
-        this.mulibValueCopier = new MulibValueCopier(this, config);
         set();
     }
 
@@ -76,10 +73,6 @@ public final class SymbolicExecution {
     
     public ValueFactory getValueFactory() {
         return valueFactory;
-    }
-
-    public MulibValueCopier getMulibValueCopier() {
-        return mulibValueCopier;
     }
 
     public CalculationFactory getCalculationFactory() {
@@ -1426,11 +1419,11 @@ public final class SymbolicExecution {
     }
 
     public void setStaticField(String fieldName, Object value) {
-        mulibExecutor.getStaticVariables().setStaticField(fieldName, value);
+        mulibExecutor.setStaticField(fieldName, value);
     }
 
     public Object getStaticField(String fieldName) {
-        return mulibExecutor.getStaticVariables().getStaticField(fieldName, this);
+        return mulibExecutor.getStaticField(fieldName);
     }
 
     public Sbool isInSearch() {

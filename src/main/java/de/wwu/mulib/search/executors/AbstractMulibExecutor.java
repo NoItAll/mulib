@@ -16,6 +16,7 @@ import de.wwu.mulib.solving.*;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
@@ -30,11 +31,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     // until the last ChoiceOption of the known path is reached
     protected Choice.ChoiceOption currentChoiceOption;
     // Statistics
-    protected long heuristicSatEvals = 0;
-    protected long satEvals = 0;
-    protected long unsatEvals = 0;
-    protected long addedAfterBacktrackingPoint = 0;
-    protected long solverBacktrack = 0;
+    protected long heuristicSatEvals = 0, satEvals = 0, unsatEvals = 0,
+            addedAfterBacktrackingPoint = 0, solverBacktrack = 0;
     // Manager
     protected final MulibExecutorManager mulibExecutorManager;
     protected boolean terminated = false;
@@ -225,7 +223,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private static Object[] copyArguments(
             Object[] searchRegionArgs,
-            SymbolicExecution se,
+            MulibValueCopier copier,
             MulibConfig config) {
         Map<Object, Object> replacedMap = new IdentityHashMap<>();
         Object[] arguments = new Object[searchRegionArgs.length];
@@ -240,14 +238,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 if (config.CONCOLIC
                         && arg instanceof SymNumericExpressionSprimitive) {
                     // Creation of wrapper SymSprimitive with concolic container required
-                    newArg = se.getMulibValueCopier().copySprimitive((Sprimitive) arg);
+                    newArg = copier.copySprimitive((Sprimitive) arg);
                 } else {
                     // Keep value
                     newArg = arg;
                 }
             } else {
                 // Is null, Sarray, PartnerClass, or should have custom copying behavior
-                newArg = se.getMulibValueCopier().copyNonSprimitive(arg);
+                newArg = copier.copyNonSprimitive(arg);
             }
             replacedMap.put(arg, newArg);
             arguments[i] = newArg;
@@ -256,13 +254,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private Object invokeSearchRegion() throws Throwable {
+        MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
+        staticVariables.setMulibValueCopier(mulibValueCopier);
         try {
             solverManager.resetLabels();
             Object result;
             if (searchRegionArgs.length == 0) {
                 result = searchRegionMethod.invoke();
             } else {
-                Object[] args = copyArguments(searchRegionArgs, currentSymbolicExecution, config);
+                Object[] args = copyArguments(searchRegionArgs, mulibValueCopier, config);
                 result = searchRegionMethod.invokeWithArguments(args);
             }
             staticVariables.renew();
@@ -271,6 +271,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             return result;
         } catch (Throwable t) {
             staticVariables.renew();
+            staticVariables.setMulibValueCopier(mulibValueCopier);
             AliasingInformation.resetAliasingTargets();
             SymbolicExecution.remove();
             throw t;
@@ -517,7 +518,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     protected abstract Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options);
 
-    public StaticVariables getStaticVariables() {
-        return staticVariables;
+    @Override
+    public Object getStaticField(String fieldName) {
+        return staticVariables.getStaticField(fieldName);
+    }
+
+    @Override
+    public void setStaticField(String fieldName, Object value) {
+        staticVariables.setStaticField(fieldName, value);
     }
 }
