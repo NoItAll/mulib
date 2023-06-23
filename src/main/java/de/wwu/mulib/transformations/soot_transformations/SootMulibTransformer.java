@@ -2826,7 +2826,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else if (methodName.equals("assume")) {
                 sm = v.SM_SE_ASSUME;
             } else {
-                assert methodName.equals("checkAssume");
                 sm = v.SM_SE_CHECK_ASSUME;
             }
             Value val;
@@ -2843,12 +2842,47 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else if (v.isIndicatorMethodName(methodName)) {
             // Is indicator method other than freeObject or rememberedFreeObject
             assert !v.SM_SE_PRIMITIVE_SARRAY_INITS.contains(frameworkMethod);
+            if (invokeExpr.getArgs().size() == 2 || invokeExpr.getArgs().size() == 3) {
+                // Has arguments for lower bound and upper bound
+                ValueBox lb, ub;
+                if (invokeExpr.getArgs().size() == 2) {
+                    lb = invokeExpr.getArgBox(0);
+                    ub = invokeExpr.getArgBox(1);
+                } else {
+                    lb = invokeExpr.getArgBox(1);
+                    ub = invokeExpr.getArgBox(2);
+                }
+                Stmt newFirstStmt = null;
+                if (!args.isTainted(lb.getValue())) {
+                    WrapPair wp = wrap(args, lb);
+                    newFirstStmt = wp.newFirstStmt;
+                    if (invokeExpr.getArgCount() == 2) {
+                        invokeExpr.setArg(0, wp.newValue);
+                    } else {
+                        invokeExpr.setArg(1, wp.newValue);
+                    }
+                }
+                if (!args.isTainted(ub.getValue())) {
+                    WrapPair wp = wrap(args, ub);
+                    if (newFirstStmt == null) {
+                        newFirstStmt = wp.newFirstStmt;
+                    }
+                    if (invokeExpr.getArgCount() == 2) {
+                        invokeExpr.setArg(1, wp.newValue);
+                    } else {
+                        invokeExpr.setArg(2, wp.newValue);
+                    }
+                }
+                if (newFirstStmt != null) {
+                    containingStmt.redirectJumpsToThisTo(newFirstStmt);
+                }
+            }
             // Primitive
             if (methodNameImpliesRememberedInitialization(methodName)) {
-                assert invokeExpr.getArgs().size() == 1;
+                assert invokeExpr.getArgs().size() == 1 || invokeExpr.getArgs().size() == 3;
                 result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeExpr.getArgs());
             } else {
-                assert invokeExpr.getArgs().size() == 0;
+                assert invokeExpr.getArgs().size() == 0 || invokeExpr.getArgs().size() == 2;
                 result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef());
             }
         }

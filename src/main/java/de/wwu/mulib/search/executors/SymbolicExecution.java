@@ -259,7 +259,15 @@ public final class SymbolicExecution {
     }
 
     public void assume(Sbool s) {
-        addNewConstraint(s);
+        if (!nextIsOnKnownPath()) {
+            if (s instanceof Sbool.ConcSbool) {
+                if (((Sbool.ConcSbool) s).isFalse()) {
+                    throw Mulib.fail();
+                }
+            } else {
+                addNewConstraint(s);
+            }
+        }
     }
 
     public Sbool checkAssume(Sbool s) {
@@ -412,43 +420,43 @@ public final class SymbolicExecution {
     }
 
     public Sint namedSymSint(String identifier, Sint lb, Sint ub) {
-        Sint result = symSint();
+        Sint result = symSint(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sshort namedSymSshort(String identifier, Sshort lb, Sshort ub) {
-        Sshort result = symSshort();
+        Sshort result = symSshort(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sbyte namedSymSbyte(String identifier, Sbyte lb, Sbyte ub) {
-        Sbyte result = symSbyte();
+        Sbyte result = symSbyte(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Slong namedSymSlong(String identifier, Slong lb, Slong ub) {
-        Slong result = symSlong();
+        Slong result = symSlong(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sdouble namedSymSdouble(String identifier, Sdouble lb, Sdouble ub) {
-        Sdouble result = symSdouble();
+        Sdouble result = symSdouble(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sfloat namedSymSfloat(String identifier, Sfloat lb, Sfloat ub) {
-        Sfloat result = symSfloat();
+        Sfloat result = symSfloat(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Schar namedSymSchar(String identifier, Schar lb, Schar ub) {
-        Schar result = symSchar();
+        Schar result = symSchar(lb, ub);
         addNamedVariable(identifier, result);
         return result;
     }

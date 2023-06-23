@@ -166,6 +166,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_FREE_BYTE;
     public final SootMethod SM_MULIB_FREE_BOOL;
     public final SootMethod SM_MULIB_FREE_OBJECT;
+    public final SootMethod SM_MULIB_FREE_CHAR;
     public final SootMethod SM_MULIB_NAMED_FREE_INT;
     public final SootMethod SM_MULIB_NAMED_FREE_LONG;
     public final SootMethod SM_MULIB_NAMED_FREE_DOUBLE;
@@ -174,6 +175,23 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MULIB_NAMED_FREE_BYTE;
     public final SootMethod SM_MULIB_NAMED_FREE_BOOL;
     public final SootMethod SM_MULIB_NAMED_FREE_OBJECT;
+    public final SootMethod SM_MULIB_NAMED_FREE_CHAR;
+    public final SootMethod SM_MULIB_FREE_INT_LB_UB;
+    public final SootMethod SM_MULIB_FREE_LONG_LB_UB;
+    public final SootMethod SM_MULIB_FREE_DOUBLE_LB_UB;
+    public final SootMethod SM_MULIB_FREE_FLOAT_LB_UB;
+    public final SootMethod SM_MULIB_FREE_SHORT_LB_UB;
+    public final SootMethod SM_MULIB_FREE_BYTE_LB_UB;
+    public final SootMethod SM_MULIB_FREE_CHAR_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_INT_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_LONG_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_DOUBLE_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_FLOAT_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_SHORT_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_BYTE_LB_UB;
+    public final SootMethod SM_MULIB_NAMED_FREE_CHAR_LB_UB;
+    public final List<SootMethod> LB_UB_INDICATORS_WITHOUT_REMEMBER;
+    public final List<SootMethod> LB_UB_INDICATORS_REMEMBER;
     public final SootMethod SM_MULIB_ASSUME;
     public final SootMethod SM_MULIB_CHECK;
     public final SootMethod SM_MULIB_IS_IN_SEARCH;
@@ -215,6 +233,20 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SE_NAMED_FREE_SBYTE;
     public final SootMethod SM_SE_NAMED_FREE_SBOOL;
     public final SootMethod SM_SE_NAMED_FREE_SCHAR;
+    public final SootMethod SM_SE_FREE_SINT_LB_UB;
+    public final SootMethod SM_SE_FREE_SLONG_LB_UB;
+    public final SootMethod SM_SE_FREE_SDOUBLE_LB_UB;
+    public final SootMethod SM_SE_FREE_SFLOAT_LB_UB;
+    public final SootMethod SM_SE_FREE_SSHORT_LB_UB;
+    public final SootMethod SM_SE_FREE_SBYTE_LB_UB;
+    public final SootMethod SM_SE_FREE_SCHAR_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SINT_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SLONG_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SDOUBLE_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SFLOAT_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SSHORT_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SBYTE_LB_UB;
+    public final SootMethod SM_SE_NAMED_FREE_SCHAR_LB_UB;
     public final SootMethod SM_SE_SINTSARRAY;
     public final SootMethod SM_SE_SLONGSARRAY;
     public final SootMethod SM_SE_SDOUBLESARRAY;
@@ -634,6 +666,28 @@ public class SootMulibClassesAndMethods {
         SM_MULIB_NAMED_FREE_BYTE    = SC_MULIB.getMethod("rememberedFreeByte",   List.of(TYPE_STRING),               TYPE_BYTE);
         SM_MULIB_NAMED_FREE_BOOL    = SC_MULIB.getMethod("rememberedFreeBoolean",List.of(TYPE_STRING),               TYPE_BOOL);
         SM_MULIB_NAMED_FREE_OBJECT  = SC_MULIB.getMethod("rememberedFreeObject", List.of(TYPE_STRING, TYPE_CLASS),   TYPE_OBJECT);
+        SM_MULIB_FREE_CHAR          = SC_MULIB.getMethod("freeChar", List.of(), TYPE_CHAR);
+        SM_MULIB_NAMED_FREE_CHAR            = SC_MULIB.getMethod("rememberedFreeChar", List.of(TYPE_STRING), TYPE_CHAR);
+        SM_MULIB_FREE_INT_LB_UB             = SC_MULIB.getMethod("freeInt",     List.of(TYPE_INT, TYPE_INT), TYPE_INT);
+        SM_MULIB_FREE_LONG_LB_UB            = SC_MULIB.getMethod("freeLong",    List.of(TYPE_LONG, TYPE_LONG), TYPE_LONG);
+        SM_MULIB_FREE_DOUBLE_LB_UB          = SC_MULIB.getMethod("freeDouble",  List.of(TYPE_DOUBLE, TYPE_DOUBLE), TYPE_DOUBLE);
+        SM_MULIB_FREE_FLOAT_LB_UB           = SC_MULIB.getMethod("freeFloat",   List.of(TYPE_FLOAT, TYPE_FLOAT), TYPE_FLOAT);
+        SM_MULIB_FREE_SHORT_LB_UB           = SC_MULIB.getMethod("freeShort",   List.of(TYPE_SHORT, TYPE_SHORT), TYPE_SHORT);
+        SM_MULIB_FREE_BYTE_LB_UB            = SC_MULIB.getMethod("freeByte",    List.of(TYPE_BYTE, TYPE_BYTE), TYPE_BYTE);
+        SM_MULIB_FREE_CHAR_LB_UB            = SC_MULIB.getMethod("freeChar",    List.of(TYPE_CHAR, TYPE_CHAR), TYPE_CHAR);
+        SM_MULIB_NAMED_FREE_INT_LB_UB       = SC_MULIB.getMethod("rememberedFreeInt",   List.of(TYPE_STRING, TYPE_INT, TYPE_INT), TYPE_INT);
+        SM_MULIB_NAMED_FREE_LONG_LB_UB      = SC_MULIB.getMethod("rememberedFreeLong",  List.of(TYPE_STRING, TYPE_LONG, TYPE_LONG), TYPE_LONG);
+        SM_MULIB_NAMED_FREE_DOUBLE_LB_UB    = SC_MULIB.getMethod("rememberedFreeDouble",List.of(TYPE_STRING, TYPE_DOUBLE, TYPE_DOUBLE), TYPE_DOUBLE);
+        SM_MULIB_NAMED_FREE_FLOAT_LB_UB     = SC_MULIB.getMethod("rememberedFreeFloat", List.of(TYPE_STRING, TYPE_FLOAT, TYPE_FLOAT), TYPE_FLOAT);
+        SM_MULIB_NAMED_FREE_SHORT_LB_UB     = SC_MULIB.getMethod("rememberedFreeShort", List.of(TYPE_STRING, TYPE_SHORT, TYPE_SHORT), TYPE_SHORT);
+        SM_MULIB_NAMED_FREE_BYTE_LB_UB      = SC_MULIB.getMethod("rememberedFreeByte",  List.of(TYPE_STRING, TYPE_BYTE, TYPE_BYTE), TYPE_BYTE);
+        SM_MULIB_NAMED_FREE_CHAR_LB_UB      = SC_MULIB.getMethod("rememberedFreeChar",  List.of(TYPE_STRING, TYPE_CHAR, TYPE_CHAR), TYPE_CHAR);
+
+        LB_UB_INDICATORS_WITHOUT_REMEMBER = List.of(SM_MULIB_FREE_INT_LB_UB, SM_MULIB_FREE_LONG_LB_UB, SM_MULIB_FREE_DOUBLE_LB_UB,
+                SM_MULIB_FREE_FLOAT_LB_UB, SM_MULIB_FREE_SHORT_LB_UB, SM_MULIB_FREE_BYTE_LB_UB, SM_MULIB_FREE_CHAR_LB_UB);
+        LB_UB_INDICATORS_REMEMBER = List.of(SM_MULIB_NAMED_FREE_INT_LB_UB, SM_MULIB_NAMED_FREE_LONG_LB_UB, SM_MULIB_NAMED_FREE_DOUBLE_LB_UB,
+                SM_MULIB_NAMED_FREE_FLOAT_LB_UB, SM_MULIB_NAMED_FREE_SHORT_LB_UB, SM_MULIB_NAMED_FREE_BYTE_LB_UB, SM_MULIB_NAMED_FREE_CHAR_LB_UB);
+
         SM_MULIB_ASSUME             = SC_MULIB.getMethod("assume", List.of(TYPE_BOOL), TYPE_VOID);
         SM_MULIB_CHECK              = SC_MULIB.getMethod("check", List.of(TYPE_BOOL), TYPE_BOOL);
         SM_MULIB_CHECK_ASSUME       = SC_MULIB.getMethod("checkAssume", List.of(TYPE_BOOL), TYPE_BOOL);
@@ -676,6 +730,22 @@ public class SootMulibClassesAndMethods {
         SM_SE_NAMED_FREE_SBYTE      = SC_SE.getMethod("namedSymSbyte",      List.of(TYPE_STRING),    TYPE_SBYTE);
         SM_SE_NAMED_FREE_SBOOL      = SC_SE.getMethod("namedSymSbool",      List.of(TYPE_STRING),    TYPE_SBOOL);
         SM_SE_NAMED_FREE_SCHAR      = SC_SE.getMethod("namedSymSchar",      List.of(TYPE_STRING),    TYPE_SCHAR);
+
+        SM_SE_FREE_SINT_LB_UB           = SC_SE.getMethod("symSint", List.of(TYPE_SINT, TYPE_SINT), TYPE_SINT);
+        SM_SE_FREE_SLONG_LB_UB          = SC_SE.getMethod("symSlong", List.of(TYPE_SLONG, TYPE_SLONG), TYPE_SLONG);
+        SM_SE_FREE_SDOUBLE_LB_UB        = SC_SE.getMethod("symSdouble", List.of(TYPE_SDOUBLE, TYPE_SDOUBLE), TYPE_SDOUBLE);
+        SM_SE_FREE_SFLOAT_LB_UB         = SC_SE.getMethod("symSfloat", List.of(TYPE_SFLOAT, TYPE_SFLOAT), TYPE_SFLOAT);
+        SM_SE_FREE_SSHORT_LB_UB         = SC_SE.getMethod("symSshort", List.of(TYPE_SSHORT, TYPE_SSHORT), TYPE_SSHORT);
+        SM_SE_FREE_SBYTE_LB_UB          = SC_SE.getMethod("symSbyte", List.of(TYPE_SBYTE, TYPE_SBYTE), TYPE_SBYTE);
+        SM_SE_FREE_SCHAR_LB_UB          = SC_SE.getMethod("symSchar", List.of(TYPE_SCHAR, TYPE_SCHAR), TYPE_SCHAR);
+        SM_SE_NAMED_FREE_SINT_LB_UB     = SC_SE.getMethod("namedSymSint", List.of(TYPE_STRING, TYPE_SINT, TYPE_SINT), TYPE_SINT);
+        SM_SE_NAMED_FREE_SLONG_LB_UB    = SC_SE.getMethod("namedSymSlong", List.of(TYPE_STRING, TYPE_SLONG, TYPE_SLONG), TYPE_SLONG);
+        SM_SE_NAMED_FREE_SDOUBLE_LB_UB  = SC_SE.getMethod("namedSymSdouble", List.of(TYPE_STRING, TYPE_SDOUBLE, TYPE_SDOUBLE), TYPE_SDOUBLE);
+        SM_SE_NAMED_FREE_SFLOAT_LB_UB   = SC_SE.getMethod("namedSymSfloat", List.of(TYPE_STRING, TYPE_SFLOAT, TYPE_SFLOAT), TYPE_SFLOAT);
+        SM_SE_NAMED_FREE_SSHORT_LB_UB   = SC_SE.getMethod("namedSymSshort", List.of(TYPE_STRING, TYPE_SSHORT, TYPE_SSHORT), TYPE_SSHORT);
+        SM_SE_NAMED_FREE_SBYTE_LB_UB    = SC_SE.getMethod("namedSymSbyte", List.of(TYPE_STRING, TYPE_SBYTE, TYPE_SBYTE), TYPE_SBYTE);
+        SM_SE_NAMED_FREE_SCHAR_LB_UB    = SC_SE.getMethod("namedSymSchar", List.of(TYPE_STRING, TYPE_SCHAR, TYPE_SCHAR), TYPE_SCHAR);
+
         SM_SE_SINTSARRAY            = SC_SE.getMethod("sintSarray",         List.of(TYPE_SINT, TYPE_BOOL), TYPE_SINTSARRAY);
         SM_SE_SLONGSARRAY           = SC_SE.getMethod("slongSarray",        List.of(TYPE_SINT, TYPE_BOOL), TYPE_SLONGSARRAY);
         SM_SE_SDOUBLESARRAY         = SC_SE.getMethod("sdoubleSarray",      List.of(TYPE_SINT, TYPE_BOOL), TYPE_SDOUBLESARRAY);
@@ -1010,37 +1080,106 @@ public class SootMulibClassesAndMethods {
             SootMulibTransformer.TcArgs args) {
         switch (indicatorMethodName) {
             case "freeInt":
-                return SM_SE_FREE_SINT;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SINT;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SINT_LB_UB;
+                }
             case "freeLong":
-                return SM_SE_FREE_SLONG;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SLONG;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SLONG_LB_UB;
+                }
             case "freeDouble":
-                return SM_SE_FREE_SDOUBLE;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SDOUBLE;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SDOUBLE_LB_UB;
+                }
             case "freeFloat":
-                return SM_SE_FREE_SFLOAT;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SFLOAT;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SFLOAT_LB_UB;
+                }
             case "freeShort":
-                return SM_SE_FREE_SSHORT;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SSHORT;
+                } else {
+                    return SM_SE_FREE_SSHORT_LB_UB;
+                }
             case "freeByte":
-                return SM_SE_FREE_SBYTE;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SBYTE;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SBYTE_LB_UB;
+                }
             case "freeBoolean":
                 return SM_SE_FREE_SBOOL;
             case "freeChar":
-                return SM_SE_FREE_SCHAR;
+                if (argsToMethod.size() == 0) {
+                    return SM_SE_FREE_SCHAR;
+                } else {
+                    assert argsToMethod.size() == 2;
+                    return SM_SE_FREE_SCHAR_LB_UB;
+                }
             case "rememberedFreeInt":
-                return SM_SE_NAMED_FREE_SINT;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SINT;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SINT_LB_UB;
+                }
             case "rememberedFreeLong":
-                return SM_SE_NAMED_FREE_SLONG;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SLONG;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SLONG_LB_UB;
+                }
             case "rememberedFreeDouble":
-                return SM_SE_NAMED_FREE_SDOUBLE;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SDOUBLE;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SDOUBLE_LB_UB;
+                }
             case "rememberedFreeFloat":
-                return SM_SE_NAMED_FREE_SFLOAT;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SFLOAT;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SFLOAT_LB_UB;
+                }
             case "rememberedFreeShort":
-                return SM_SE_NAMED_FREE_SSHORT;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SSHORT;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SSHORT_LB_UB;
+                }
             case "rememberedFreeByte":
-                return SM_SE_NAMED_FREE_SBYTE;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SBYTE;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SBYTE_LB_UB;
+                }
             case "rememberedFreeBoolean":
                 return SM_SE_NAMED_FREE_SBOOL;
             case "rememberedFreeChar":
-                return SM_SE_NAMED_FREE_SCHAR;
+                if (argsToMethod.size() == 1) {
+                    return SM_SE_NAMED_FREE_SCHAR;
+                } else {
+                    assert argsToMethod.size() == 3;
+                    return SM_SE_NAMED_FREE_SCHAR_LB_UB;
+                }
             case "check":
                 return SM_SE_CHECK;
             case "assume":
