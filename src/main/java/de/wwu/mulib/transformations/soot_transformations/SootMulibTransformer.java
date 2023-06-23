@@ -2842,10 +2842,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else if (v.isIndicatorMethodName(methodName)) {
             // Is indicator method other than freeObject or rememberedFreeObject
             assert !v.SM_SE_PRIMITIVE_SARRAY_INITS.contains(frameworkMethod);
-            if (invokeExpr.getArgs().size() == 2 || invokeExpr.getArgs().size() == 3) {
+            if (v.LB_UB_INDICATORS_REMEMBER.contains(invokeExpr.getMethod()) || v.LB_UB_INDICATORS_WITHOUT_REMEMBER.contains(invokeExpr.getMethod())) {
+                assert invokeExpr.getArgCount() == 2 || invokeExpr.getArgCount() == 3;
                 // Has arguments for lower bound and upper bound
                 ValueBox lb, ub;
-                if (invokeExpr.getArgs().size() == 2) {
+                if (invokeExpr.getArgCount() == 2) {
                     lb = invokeExpr.getArgBox(0);
                     ub = invokeExpr.getArgBox(1);
                 } else {
@@ -2883,7 +2884,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeExpr.getArgs());
             } else {
                 assert invokeExpr.getArgs().size() == 0 || invokeExpr.getArgs().size() == 2;
-                result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef());
+                result = Jimple.v().newVirtualInvokeExpr(args.seLocal(), frameworkMethod.makeRef(), invokeExpr.getArgs());
             }
         }
         return result;
