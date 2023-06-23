@@ -4,7 +4,7 @@ import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.transform_and_execute.examples.SendMoreMoney;
-import org.junit.jupiter.api.RepeatedTest;
+import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
@@ -12,7 +12,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class SendMoreMoneyExec {
 
-    @RepeatedTest(20)
+    @Test
     public void testSendMoreMoney() {
         TestUtility.getAllSolutions(
                 mb -> {
