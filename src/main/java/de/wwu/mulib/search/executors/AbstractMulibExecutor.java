@@ -167,7 +167,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution();
             if (possibleSymbolicExecution.isPresent()) {
-                solverManager.resetLabels();
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 this.currentSymbolicExecution = symbolicExecution;
                 assert solverManager.isSatisfiable() : config.toString();
@@ -258,6 +257,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private Object invokeSearchRegion() throws Throwable {
         try {
+            solverManager.resetLabels();
             Object result;
             if (searchRegionArgs.length == 0) {
                 result = searchRegionMethod.invoke();
