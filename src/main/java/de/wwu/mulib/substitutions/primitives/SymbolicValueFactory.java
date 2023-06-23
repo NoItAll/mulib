@@ -137,6 +137,83 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
+    public Sint.SymSint symSint(SymbolicExecution se, Sint lb, Sint ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSints,
+                Sint::newInputSymbolicSint,
+                se.getNextNumberInitializedAtomicSymSints(),
+                atomicSymSintLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Sdouble.SymSdouble symSdouble(SymbolicExecution se, Sdouble lb, Sdouble ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSdoubles,
+                Sdouble::newInputSymbolicSdouble,
+                se.getNextNumberInitializedAtomicSymSdoubles(),
+                atomicSymSdoubleLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Sfloat.SymSfloat symSfloat(SymbolicExecution se, Sfloat lb, Sfloat ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSfloats,
+                Sfloat::newInputSymbolicSfloat,
+                se.getNextNumberInitializedAtomicSymSfloats(),
+                atomicSymSfloatLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Slong.SymSlong symSlong(SymbolicExecution se, Slong lb, Slong ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSlongs,
+                Slong::newInputSymbolicSlong,
+                se.getNextNumberInitializedAtomicSymSlongs(),
+                atomicSymSlongLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Sshort.SymSshort symSshort(SymbolicExecution se, Sshort lb, Sshort ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSshorts,
+                Sshort::newInputSymbolicSshort,
+                se.getNextNumberInitializedAtomicSymSshorts(),
+                atomicSymSshortLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Sbyte.SymSbyte symSbyte(SymbolicExecution se, Sbyte lb, Sbyte ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSbytes,
+                Sbyte::newInputSymbolicSbyte,
+                se.getNextNumberInitializedAtomicSymSbytes(),
+                atomicSymSbyteLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
+    public Schar.SymSchar symSchar(SymbolicExecution se, Schar lb, Schar ub) {
+        return returnIfExistsElseCreate(
+                createdAtomicSymSchars,
+                Schar::newInputSymbolicSchar,
+                se.getNextNumberInitializedAtomicSymSchars(),
+                atomicSymScharLock,
+                i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
+        );
+    }
+
+    @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         return returnWrapperIfExistsElseCreate(
                 Sint::newExpressionSymbolicSint,

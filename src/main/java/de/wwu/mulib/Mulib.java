@@ -113,6 +113,34 @@ public final class Mulib {
         throw _shouldHaveBeenReplaced();
     }
 
+    public static int freeInt(int lb, int ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static long freeLong(long lb, long ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double freeDouble(double lb, double ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float freeFloat(float lb, float ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static short freeShort(short lb, short ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static byte freeByte(byte lb, byte ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static char freeChar(char lb, char ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
     public static void assume(boolean b) {
         throw _shouldHaveBeenReplaced();
     }
@@ -235,6 +263,34 @@ public final class Mulib {
     }
 
     public static char rememberedFreeChar(String identifier) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static int rememberedFreeInt(String identifier, int lb, int ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static long rememberedFreeLong(String identifier, long lb, long ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static double rememberedFreeDouble(String identifier, double lb, double ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static float rememberedFreeFloat(String identifier, float lb, float ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static short rememberedFreeShort(String identifier, short lb, short ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static byte rememberedFreeByte(String identifier, byte lb, byte ub) {
+        throw _shouldHaveBeenReplaced();
+    }
+
+    public static char rememberedFreeChar(String identifier, char lb, char ub) {
         throw _shouldHaveBeenReplaced();
     }
 

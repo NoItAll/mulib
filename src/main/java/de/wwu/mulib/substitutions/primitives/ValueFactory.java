@@ -81,6 +81,20 @@ public interface ValueFactory {
 
     Schar symSchar(SymbolicExecution se);
 
+    Sint symSint(SymbolicExecution se, Sint lb, Sint ub);
+
+    Sdouble symSdouble(SymbolicExecution se, Sdouble lb, Sdouble ub);
+
+    Sfloat symSfloat(SymbolicExecution se, Sfloat lb, Sfloat ub);
+
+    Slong symSlong(SymbolicExecution se, Slong lb, Slong ub);
+
+    Sshort symSshort(SymbolicExecution se, Sshort lb, Sshort ub);
+
+    Sbyte symSbyte(SymbolicExecution se, Sbyte lb, Sbyte ub);
+
+    Schar symSchar(SymbolicExecution se, Schar lb, Schar ub);
+
     Sint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression);
 
     Sdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression);

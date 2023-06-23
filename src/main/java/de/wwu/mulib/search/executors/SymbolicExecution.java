@@ -4,7 +4,6 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -219,10 +218,6 @@ public final class SymbolicExecution {
             ((PartnerClass) value).__mulib__setIsNamed();
         }
         Map<String, SubstitutedVar> namedVars = _getNamedVariables();
-        if (namedVars.containsKey(key)) {
-            throw new MulibRuntimeException("Must not overwrite named variable.");
-        }
-
         namedVars.put(key, value);
     }
 
@@ -370,105 +365,147 @@ public final class SymbolicExecution {
 
     public Sint namedSymSint(String identifier) {
         Sint result = symSint();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sshort namedSymSshort(String identifier) {
         Sshort result = symSshort();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sbyte namedSymSbyte(String identifier) {
         Sbyte result = symSbyte();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Slong namedSymSlong(String identifier) {
         Slong result = symSlong();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sdouble namedSymSdouble(String identifier) {
         Sdouble result = symSdouble();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sfloat namedSymSfloat(String identifier) {
         Sfloat result = symSfloat();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sbool namedSymSbool(String identifier) {
         Sbool result = symSbool();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Schar namedSymSchar(String identifier) {
         Schar result = symSchar();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Sint namedSymSint(String identifier, Sint lb, Sint ub) {
+        Sint result = symSint();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Sshort namedSymSshort(String identifier, Sshort lb, Sshort ub) {
+        Sshort result = symSshort();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Sbyte namedSymSbyte(String identifier, Sbyte lb, Sbyte ub) {
+        Sbyte result = symSbyte();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Slong namedSymSlong(String identifier, Slong lb, Slong ub) {
+        Slong result = symSlong();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Sdouble namedSymSdouble(String identifier, Sdouble lb, Sdouble ub) {
+        Sdouble result = symSdouble();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Sfloat namedSymSfloat(String identifier, Sfloat lb, Sfloat ub) {
+        Sfloat result = symSfloat();
+        addNamedVariable(identifier, result);
+        return result;
+    }
+
+    public Schar namedSymSchar(String identifier, Schar lb, Schar ub) {
+        Schar result = symSchar();
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SintSarray result = valueFactory.sintSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SdoubleSarray namedSdoubleSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SdoubleSarray result = valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SfloatSarray namedSfloatSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SfloatSarray result = valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SlongSarray namedSlongSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SlongSarray result = valueFactory.slongSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SshortSarray namedSshortSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SshortSarray result = valueFactory.sshortSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SbyteSarray namedSbyteSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SbyteSarray result = valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SboolSarray result = valueFactory.sboolSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.ScharSarray namedScharSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.ScharSarray result = valueFactory.scharSarray(this, len, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
@@ -476,7 +513,7 @@ public final class SymbolicExecution {
             String identifier, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
         Sarray.PartnerClassSarray result = valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
@@ -484,7 +521,7 @@ public final class SymbolicExecution {
             String identifier, Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
         Sarray.SarraySarray result = valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
         result.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, result);
+        addNamedVariable(identifier, result);
         return result;
     }
 
@@ -629,7 +666,7 @@ public final class SymbolicExecution {
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
         PartnerClass symObject = symObject(clazz);
         symObject.__mulib__setIsNamed();
-        _getNamedVariables().put(identifier, symObject);
+        addNamedVariable(identifier, symObject);
         return symObject;
     }
 
@@ -664,6 +701,35 @@ public final class SymbolicExecution {
     public Schar symSchar() {
         return valueFactory.symSchar(this);
     }
+
+    public Sshort symSshort(Sshort lb, Sshort ub) {
+        return valueFactory.symSshort(this, lb, ub);
+    }
+
+    public Slong symSlong(Slong lb, Slong ub) {
+        return valueFactory.symSlong(this, lb, ub);
+    }
+
+    public Sbyte symSbyte(Sbyte lb, Sbyte ub) {
+        return valueFactory.symSbyte(this, lb, ub);
+    }
+
+    public Sint symSint(Sint lb, Sint ub) {
+        return valueFactory.symSint(this, lb, ub);
+    }
+
+    public Sdouble symSdouble(Sdouble lb, Sdouble ub) {
+        return valueFactory.symSdouble(this, lb, ub);
+    }
+
+    public Sfloat symSfloat(Sfloat lb, Sfloat ub) {
+        return valueFactory.symSfloat(this, lb, ub);
+    }
+
+    public Schar symSchar(Schar lb, Schar ub) {
+        return valueFactory.symSchar(this, lb, ub);
+    }
+
     public Sint concSint(int i) {
         return Sint.concSint(i);
     }
