@@ -21,9 +21,13 @@ public class CapacityAssignmentProblem {
     }
 
     public static int[] assign(int[] machineCapacities, int[] workloads) {
+        return _assign(machineCapacities, workloads, true);
+    }
+
+    private static int[] _assign(int[] machineCapacities, int[] workloads, boolean nameVariable) {
         int[] assignment = new int[workloads.length];
         for (int i = 0; i < workloads.length; i++) {
-            int assignedMachine = Mulib.rememberedFreeInt("workload_" + i);
+            int assignedMachine = nameVariable ? Mulib.rememberedFreeInt("workload_" + i) : Mulib.freeInt();
             if (machineCapacities[assignedMachine] < workloads[i]) {
                 throw Mulib.fail();
             }
@@ -58,7 +62,7 @@ public class CapacityAssignmentProblem {
         }
         int[][] assignmentsPerPeriod = new int[numberPeriods][];
         for (int i = 0; i < numberPeriods; i++) {
-            assignmentsPerPeriod[i] = assign(overallCapacities[i], workloadsPerPeriod[i]);
+            assignmentsPerPeriod[i] = _assign(overallCapacities[i], workloadsPerPeriod[i], false);
         }
         return assignmentsPerPeriod;
     }

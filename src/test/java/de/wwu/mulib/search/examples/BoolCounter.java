@@ -203,7 +203,7 @@ public class BoolCounter {
 
         for (int i = 0; i < 3; i++) {
             Sint i0 = se.symSint();
-            Sint i1 = se.namedSymSint("notImportant");
+            Sint i1 = se.symSint();
             // Check backtracking behavior also for long paths
             if (se.ltChoice(i0, i1)) {
                 throw new Fail();

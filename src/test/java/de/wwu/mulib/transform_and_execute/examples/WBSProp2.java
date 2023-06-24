@@ -12,8 +12,8 @@ public class WBSProp2 {
         boolean AutoBrake, Skid;
         for (int i = 0; i < 2; i++) {
             PedalPos = Mulib.freeInt();
-            AutoBrake = Mulib.rememberedFreeBoolean("AutoBrake");
-            Skid = Mulib.rememberedFreeBoolean("Skid");
+            AutoBrake = Mulib.freeBoolean();
+            Skid = Mulib.freeBoolean();
             wbs.update(PedalPos, AutoBrake, Skid);
             // This assertion should prove:
             assert ((PedalPos > 0 && PedalPos <= 4 && !Skid)
