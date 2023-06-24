@@ -18,7 +18,6 @@ public class StaticVariables {
     public StaticVariables(
             MulibValueTransformer mulibValueTransformer,
             Map<Field, Field> transformedToOriginalStaticFields) {
-        this.staticFieldsToValues = new HashMap<>();
         this.fieldNamesToInitialValues = new HashMap<>();
         for (Map.Entry<Field, Field> entry : transformedToOriginalStaticFields.entrySet()) {
             Field originalField = entry.getValue();

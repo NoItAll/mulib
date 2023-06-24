@@ -100,8 +100,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         for (Map.Entry<String, Class<?>> entry : fieldTypes.entrySet()) {
             ArrayAccessConstraint aac = arraySelects.get(entry.getKey());
             if (aac == null) {
-                if (!PartnerClass.class.isAssignableFrom(entry.getValue()) && !entry.getValue().isArray() // TODO Unify; - should be Sarray OR Java array
-                ) {
+                if (!PartnerClass.class.isAssignableFrom(entry.getValue())) {
                     // We generate an arbitrary primitive symbolic value
                     aac = generateSymForSprimitive(id, entry.getValue());
                 } else {
