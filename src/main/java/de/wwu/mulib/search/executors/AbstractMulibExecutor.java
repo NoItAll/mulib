@@ -353,7 +353,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private PathSolution getPathSolution(
-            Object solutionValue, // Not SubstitutedVar since it can be of type Throwable
+            Object solutionValue, // TODO Not SubstitutedVar since, for now, it can be of type Throwable
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
         if (solutionValue instanceof SubstitutedVar
