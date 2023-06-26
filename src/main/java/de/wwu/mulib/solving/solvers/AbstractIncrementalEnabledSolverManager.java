@@ -12,7 +12,10 @@ import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresenta
 import de.wwu.mulib.solving.object_representations.AliasingPartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
-import de.wwu.mulib.substitutions.*;
+import de.wwu.mulib.substitutions.Conc;
+import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.StringConstants;
 import sun.reflect.ReflectionFactory;
@@ -387,9 +390,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         l.getIdToNamedVar()
                 );
                 Object solutionValue = newLabels.getIdToLabel().get("return");
-                if (solutionValue instanceof Sym) {
-                    solutionValue = newLabels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
-                }
                 Solution newSolution = new Solution(
                         solutionValue,
                         newLabels
