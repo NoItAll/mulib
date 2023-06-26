@@ -353,7 +353,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private PathSolution getPathSolution(
-            Object solutionValue,
+            Object solutionValue, // Not SubstitutedVar since it can be of type Throwable
             SymbolicExecution symbolicExecution,
             boolean isThrownException) {
         if (solutionValue instanceof SubstitutedVar
@@ -367,25 +367,19 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         );
         PathSolution solution;
         if (labelResultValue) {
-            if (solutionValue != null && solutionValue.getClass().isArray()) {
-                solutionValue = solverManager.getLabel(solutionValue);
-            } else if (solutionValue instanceof SubstitutedVar) {
-                if (solutionValue instanceof Sbool) {
+            if (solutionValue instanceof SubstitutedVar) {
+                // Overwrite solutionValue
+                if (solutionValue instanceof Sbool.SymSbool) {
                     solutionValue = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) solutionValue);
-                } if (solutionValue instanceof Snumber) {
+                } else if (solutionValue instanceof Snumber) {
                     solutionValue = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) solutionValue);
                 }
                 solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
             }
-        } else {
-            if (isConcolic && solutionValue instanceof Sbool.SymSbool) {
-                if (((Sbool.SymSbool) solutionValue).getRepresentedConstraint() instanceof ConcolicConstraintContainer) {
-                    solutionValue = ((ConcolicConstraintContainer) ((Sbool.SymSbool) solutionValue).getRepresentedConstraint()).getSym();
-                }
-            } else if (isConcolic && solutionValue instanceof SymNumericExpressionSprimitive
-                    && ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression() instanceof ConcolicNumericContainer) {
-                solutionValue = ((ConcolicNumericContainer) ((SymNumericExpressionSprimitive) solutionValue).getRepresentedExpression()).getSym();
-            }
+        } else if (solutionValue instanceof Sbool.SymSbool) {
+            solutionValue = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) solutionValue);
+        } else if (solutionValue instanceof SymNumericExpressionSprimitive) {
+            solutionValue = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) solutionValue);
         }
 
         Solution s = new Solution(solutionValue, labels);
