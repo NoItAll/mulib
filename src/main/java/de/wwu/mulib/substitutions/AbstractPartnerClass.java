@@ -4,6 +4,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.transformations.MulibValueCopier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -16,6 +17,13 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     protected AbstractPartnerClass() {
         this.isNull = Sbool.ConcSbool.FALSE;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
+    }
+
+    protected AbstractPartnerClass(AbstractPartnerClass toCopy, MulibValueCopier mvc) {
+        mvc.registerCopy(toCopy, this);
+        this.representationState = toCopy.representationState;
+        this.id = toCopy.id;
+        this.isNull = toCopy.isNull;
     }
 
     @Override

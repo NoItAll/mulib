@@ -2,6 +2,7 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;
@@ -17,11 +18,12 @@ public class IncrementalSolverState<AR, PR> {
     // We need to know at which level an array has gained a new representation, so that we know when to add/remove
     // a array from the Map<Sint, ArrayDeque<AR>> above
     // We also want to preserve the order in which the constraints are added!
-    private final List<List<ArrayConstraint>> arrayConstraints = new ArrayList<>();
     private final List<List<PartnerClassObjectConstraint>> partnerClassObjectConstraints = new ArrayList<>();
 
     @SuppressWarnings("rawtypes")
     private final SymbolicPartnerClassObjectStates symbolicPartnerClassObjectStates;
+
+
     @SuppressWarnings("rawtypes")
     private IncrementalSolverState(MulibConfig config) {
         this.symbolicPartnerClassObjectStates = new SymbolicPartnerClassObjectStates(config);
@@ -45,7 +47,6 @@ public class IncrementalSolverState<AR, PR> {
     }
 
     public void clear() {
-        this.arrayConstraints.clear();
         this.constraints.clear();
         this.partnerClassObjectConstraints.clear();
     }
@@ -73,8 +74,7 @@ public class IncrementalSolverState<AR, PR> {
     }
 
     void popConstraint() {
-        // Check whether we need to update represented arrays
-        popArrayConstraintForLevel();
+        // Check whether we need to update represented partner class objects
         popPartnerClassConstraintsForLevel();
         constraints.poll();
         level--;
@@ -92,19 +92,19 @@ public class IncrementalSolverState<AR, PR> {
 
     public void addArrayConstraint(ArrayConstraint ac) {
         assert _getArrayRepresentation(ac.getPartnerClassObjectId()) != null;
-        addIdentityHavingSubstitutedVarConstraint(level, ac, arrayConstraints);
+        addIdentityHavingSubstitutedVarConstraint(level, ac);
     }
 
     public void addPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
-        assert _getPartnerClassObjectRepresentation(pc.getPartnerClassObjectId()) != null;
-        addIdentityHavingSubstitutedVarConstraint(level, pc, partnerClassObjectConstraints);
+        assert pc instanceof PartnerClassObjectRememberConstraint || _getPartnerClassObjectRepresentation(pc.getPartnerClassObjectId()) != null;
+        addIdentityHavingSubstitutedVarConstraint(level, pc);
     }
 
-    private static <T> void addIdentityHavingSubstitutedVarConstraint(int level, T add, List<List<T>> addTo) {
-        while (addTo.size() <= level) {
-            addTo.add(new ArrayList<>());
+    private void addIdentityHavingSubstitutedVarConstraint(int level, PartnerClassObjectConstraint add) {
+        while (partnerClassObjectConstraints.size() <= level) {
+            partnerClassObjectConstraints.add(new ArrayList<>());
         }
-        addTo.get(level).add(add);
+        partnerClassObjectConstraints.get(level).add(add);
     }
 
     @SuppressWarnings("unchecked")
@@ -142,18 +142,10 @@ public class IncrementalSolverState<AR, PR> {
         return constraints;
     }
 
-    public List<ArrayConstraint> getArrayConstraints() {
-        List<ArrayConstraint> result = new ArrayList<>();
-        for (List<ArrayConstraint> acs : arrayConstraints) {
-            result.addAll(acs);
-        }
-        return result;
-    }
-
-    public List<PartnerClassObjectConstraint> getNonArrayPartnerClassObjectConstraints() {
+    public List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraintsExcludingRememberConstraints() {
         List<PartnerClassObjectConstraint> result = new ArrayList<>();
-        for (List<PartnerClassObjectConstraint> acs : partnerClassObjectConstraints) {
-            result.addAll(acs);
+        for (List<PartnerClassObjectConstraint> pcocs : partnerClassObjectConstraints) {
+            result.addAll(pcocs);
         }
         return result;
     }
@@ -165,13 +157,6 @@ public class IncrementalSolverState<AR, PR> {
     @SuppressWarnings("rawtypes")
     public static IncrementalSolverState newInstance(MulibConfig config) {
         return new IncrementalSolverState(config);
-    }
-
-    private void popArrayConstraintForLevel() {
-        // Check if popped level contains array constraints
-        if (arrayConstraints.size() > level) {
-            arrayConstraints.get(level).clear();
-        }
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -254,6 +239,69 @@ public class IncrementalSolverState<AR, PR> {
 
         R getNewestRepresentation() {
             return this.representationsOfLevel.peek();
+        }
+    }
+
+    // Get all PUTFIELD- and GETFIELD-constraints and XALOAD- and XASTORE-constraints before the RememberConstraint
+    // has been issued.
+    public RememberedPartnerClassObjectContainer[] getContainersForLabelingRememberedValue() {
+        List<RememberedPartnerClassObjectContainer> result = new ArrayList<>();
+        List<PartnerClassObjectConstraint> constraints = this.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
+
+        PartnerClassObjectRememberConstraint[] rememberConstraints =
+                constraints.stream()
+                        .filter(ac -> ac instanceof PartnerClassObjectRememberConstraint)
+                        .toArray(PartnerClassObjectRememberConstraint[]::new);
+        for (PartnerClassObjectRememberConstraint rememberConstraint : rememberConstraints) {
+            List<PartnerClassObjectConstraint> relevantConstraints = new ArrayList<>();
+            for (PartnerClassObjectConstraint ac : constraints) {
+                if (ac == rememberConstraint) {
+                    break;
+                } else if (ac instanceof PartnerClassObjectRememberConstraint) {
+                    // We do not care about other remember constraints
+                    continue;
+                }
+
+                // If it is not a remember constraint and the respective remember constraint has not been seen beforehand
+                // add the constraint
+                relevantConstraints.add(ac);
+            }
+
+            result.add(new RememberedPartnerClassObjectContainer(
+                    rememberConstraint.getName(),
+                    rememberConstraint.getRememberedValue(),
+                    relevantConstraints
+            ));
+        }
+
+
+        return result.toArray(RememberedPartnerClassObjectContainer[]::new);
+    }
+
+    public static class RememberedPartnerClassObjectContainer {
+        private final String name;
+        private final List<PartnerClassObjectConstraint> partnerClassObjectConstraintsBeforeRemember;
+        private final PartnerClass copiedAtState;
+
+        RememberedPartnerClassObjectContainer(
+                String name,
+                PartnerClass copiedAtState,
+                List<PartnerClassObjectConstraint> partnerClassObjectConstraintsBeforeRemember) {
+            this.name = name;
+            this.partnerClassObjectConstraintsBeforeRemember = partnerClassObjectConstraintsBeforeRemember;
+            this.copiedAtState = copiedAtState;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public List<PartnerClassObjectConstraint> getPartnerClassObjectConstraintsBeforeRemember() {
+            return partnerClassObjectConstraintsBeforeRemember;
+        }
+
+        public PartnerClass getCopiedAtRemember() {
+            return copiedAtState;
         }
     }
 }

@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -206,12 +207,12 @@ public final class SymbolicExecution {
         return Collections.unmodifiableMap(_getNamedVariables());
     }
 
-    public void addNamedVariable(String key, SubstitutedVar value) {
-        if (value instanceof PartnerClass) {
-            ((PartnerClass) value).__mulib__setIsNamed();
-        }
+    private void addNamedVariable(String key, SubstitutedVar value) {
         Map<String, SubstitutedVar> namedVars = _getNamedVariables();
-        namedVars.put(key, value);
+        if (namedVars.put(key, value) != null) {
+            throw new MulibRuntimeException("Name '" + key + "' was already used to remember a value!");
+        }
+        mulibExecutor.remember(key, value);
     }
 
     public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {

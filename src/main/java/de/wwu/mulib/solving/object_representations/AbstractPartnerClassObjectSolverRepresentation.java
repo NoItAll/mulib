@@ -96,14 +96,16 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     protected void initializeFields(
             PartnerClassObjectFieldConstraint[] initialGetfields,
             Map<String, Class<?>> fieldTypes) {
+        // We treat single fields as arrays of length 1
         Map<String, ArrayAccessConstraint> arraySelects = initialGetfieldsToArraySelects(initialGetfields);
         for (Map.Entry<String, Class<?>> entry : fieldTypes.entrySet()) {
             ArrayAccessConstraint aac = arraySelects.get(entry.getKey());
             if (aac == null) {
                 if (!PartnerClass.class.isAssignableFrom(entry.getValue())) {
-                    // We generate an arbitrary primitive symbolic value
+                    // We generate an arbitrary primitive symbolic value for the field of the correct type
                     aac = generateSymForSprimitive(id, entry.getValue());
                 } else {
+                    // PartnerClass fields will be lazily initialized
                     continue;
                 }
             }

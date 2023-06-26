@@ -79,13 +79,11 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
 
     /** Copy constructor for SarraySarrays */
     protected Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
+        super(s, mvt);
         mvt.registerCopy(s, this);
-        this.id = s.__mulib__getId();
-        this.representationState = s.representationState;
         this.clazz = s.clazz;
         this.cachedElements = cachedElements;
         this.len = s.len;
-        this.isNull = s.isNull;
     }
 
     @Override

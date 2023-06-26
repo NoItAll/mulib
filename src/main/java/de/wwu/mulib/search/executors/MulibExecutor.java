@@ -7,6 +7,7 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.LinkedHashMap;
@@ -48,6 +49,8 @@ public interface MulibExecutor {
     void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic);
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
+
+    void remember(String name, SubstitutedVar remembered);
 
     boolean isSatisfiable();
 

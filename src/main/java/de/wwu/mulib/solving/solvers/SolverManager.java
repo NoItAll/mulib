@@ -5,10 +5,13 @@ import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.ArrayDeque;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 public interface SolverManager {
@@ -33,8 +36,6 @@ public interface SolverManager {
 
     void resetLabels();
 
-    void registerLabelPair(Object searchRegionRepresentation, Object labeled);
-
     /**
      * Transforms the search space-representation of an object into the original representation useable by a usual
      * Java program.
@@ -44,9 +45,12 @@ public interface SolverManager {
      */
     Object getLabel(Object var);
 
+    // TODO Get rid of Map<String, Sprimitive> rememberedSprimitives parameter
+    Solution labelSolution(SubstitutedVar returnValue, Map<String, Sprimitive> rememberedSprimitives);
+
     ArrayDeque<Constraint> getConstraints();
 
-    List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints();
+    List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraints();
 
     int getLevel();
 

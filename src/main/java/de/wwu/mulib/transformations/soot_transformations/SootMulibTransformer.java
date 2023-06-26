@@ -692,16 +692,26 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else {
             upc.add(Jimple.v().newIdentityStmt(seOrMvtLocal, Jimple.v().newParameterRef(mulibValueTransformerOrCopierIfAny, localNumber++)));
         }
+        SootClass superClass = result.getSuperclass();
+        InvokeStmt invokeSuperConstructorStmt;
         // Add super-constructor call
-        SootMethodRef refOfInit =
-                result.getSuperclass().getMethod(init, superData.getParameterTypesOfConstr(cc)).makeRef();
-        SpecialInvokeExpr initExpr =
-                Jimple.v().newSpecialInvokeExpr(
-                        thisLocal,
-                        refOfInit,
-                        superData.getParameterValuesOfConstrExceptThis(cc, additionalLocal, thisOuterLocal, seOrMvtLocal)
-                );
-        InvokeStmt invokeSuperConstructorStmt = Jimple.v().newInvokeStmt(initExpr);
+        // TODO Clean up
+        if (cc == ChosenConstructor.COPY_CONSTR && (superClass.equals(v.SC_ABSTRACT_PARTNER_CLASS) || shouldBeTransformed(superClass.getName().replace(_TRANSFORMATION_PREFIX, "")))) {
+            // Call super-constructor
+            invokeSuperConstructorStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(
+                    thisLocal, Scene.v().makeConstructorRef(superClass, List.of(superClass.getType(), v.TYPE_MULIB_VALUE_COPIER)), additionalLocal, seOrMvtLocal
+            ));
+        } else {
+            SootMethodRef refOfInit =
+                    result.getSuperclass().getMethod(init, superData.getParameterTypesOfConstr(cc)).makeRef();
+            SpecialInvokeExpr initExpr =
+                    Jimple.v().newSpecialInvokeExpr(
+                            thisLocal,
+                            refOfInit,
+                            superData.getParameterValuesOfConstrExceptThis(cc, additionalLocal, thisOuterLocal, seOrMvtLocal)
+                    );
+            invokeSuperConstructorStmt = Jimple.v().newInvokeStmt(initExpr);
+        }
         upc.add(invokeSuperConstructorStmt);
 
         if (cc == ChosenConstructor.TRANSFORMATION_CONSTR || cc == ChosenConstructor.COPY_CONSTR) {

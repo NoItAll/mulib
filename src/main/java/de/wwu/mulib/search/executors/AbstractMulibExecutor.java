@@ -14,6 +14,7 @@ import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.solving.*;
 import de.wwu.mulib.solving.solvers.SolverManager;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
@@ -49,6 +50,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final MethodHandle searchRegionMethod;
     private final StaticVariables staticVariables;
     private final Object[] searchRegionArgs;
+    private final Map<String, Sprimitive> rememberedSprimitives;
 
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
@@ -73,6 +75,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.searchRegionMethod = searchRegionMethod;
         this.staticVariables = staticVariables.copyFromPrototype();
         this.searchRegionArgs = searchRegionArgs;
+        this.rememberedSprimitives = new HashMap<>();
     }
 
     @Override
@@ -221,10 +224,30 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return Optional.empty();
     }
 
+    @Override
+    public void remember(String name, SubstitutedVar remembered) {
+        if (remembered == null) { // TODO Should we remember explicit nulls?
+            return;
+        }
+        if (remembered instanceof PartnerClass) {
+            if (currentSymbolicExecution.nextIsOnKnownPath()) {
+                // Only add constraint if this has not already been dealt with in the past
+                return;
+            }
+            // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
+            //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
+            MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
+            PartnerClass copied = (PartnerClass) ((PartnerClass) remembered).copy(mulibValueCopier);
+            solverManager.addPartnerClassObjectConstraint(new PartnerClassObjectRememberConstraint(name, copied));
+        } else {
+            assert remembered instanceof Snumber;
+            rememberedSprimitives.put(name, ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) remembered));
+        }
+    }
+
     private static Object[] copyArguments(
             Object[] searchRegionArgs,
-            MulibValueCopier copier,
-            MulibConfig config) {
+            MulibValueCopier copier) {
         Map<Object, Object> replacedMap = new IdentityHashMap<>();
         Object[] arguments = new Object[searchRegionArgs.length];
         for (int i = 0; i < searchRegionArgs.length; i++) {
@@ -235,14 +258,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 continue;
             }
             if (arg instanceof Sprimitive) {
-                if (config.CONCOLIC
-                        && arg instanceof SymNumericExpressionSprimitive) {
-                    // Creation of wrapper SymSprimitive with concolic container required
-                    newArg = copier.copySprimitive((Sprimitive) arg);
-                } else {
-                    // Keep value
-                    newArg = arg;
-                }
+                newArg = copier.copySprimitive((Sprimitive) arg);
             } else {
                 // Is null, Sarray, PartnerClass, or should have custom copying behavior
                 newArg = copier.copyNonSprimitive(arg);
@@ -262,16 +278,17 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (searchRegionArgs.length == 0) {
                 result = searchRegionMethod.invoke();
             } else {
-                Object[] args = copyArguments(searchRegionArgs, mulibValueCopier, config);
+                Object[] args = copyArguments(searchRegionArgs, mulibValueCopier);
                 result = searchRegionMethod.invokeWithArguments(args);
             }
             staticVariables.renew();
+            rememberedSprimitives.clear();
             AliasingInformation.resetAliasingTargets();
             SymbolicExecution.remove();
             return result;
         } catch (Throwable t) {
             staticVariables.renew();
-            staticVariables.setMulibValueCopier(mulibValueCopier);
+            rememberedSprimitives.clear();
             AliasingInformation.resetAliasingTargets();
             SymbolicExecution.remove();
             throw t;
@@ -341,7 +358,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             boolean isThrownException) {
         if (solutionValue instanceof SubstitutedVar
                 && labelResultValue) {
-            symbolicExecution.addNamedVariable("return", (SubstitutedVar) solutionValue);
+            symbolicExecution.nameSubstitutedVar((SubstitutedVar) solutionValue, "return");
         }
         pathSolutionCallback.accept(solverManager);
         Labels labels = LabelUtility.getLabels(
@@ -376,14 +393,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     (Throwable) solutionValue,
                     labels,
                     solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
+                    solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
         } else {
             solution = currentChoiceOption.setSolution(
                     solutionValue,
                     labels,
                     solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
+                    solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
         }
         return solution;
