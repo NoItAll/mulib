@@ -2,7 +2,6 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.solving.Labels;
 
 public class PathSolution extends TreeNode {
 
@@ -10,11 +9,11 @@ public class PathSolution extends TreeNode {
     private final PartnerClassObjectConstraint[] partnerClassObjectConstraints;
     private final Solution solution;
 
-    public PathSolution(Choice.ChoiceOption parent, Object value, Labels labels, Constraint[] pathConstraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
+    public PathSolution(Choice.ChoiceOption parent, Solution s, Constraint[] pathConstraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
         super(parent);
         this.pathConstraints = pathConstraints;
         this.partnerClassObjectConstraints = partnerClassObjectConstraints;
-        this.solution = new Solution(value, labels);
+        this.solution = s;
     }
 
     public final Constraint[] getPathConstraints() {

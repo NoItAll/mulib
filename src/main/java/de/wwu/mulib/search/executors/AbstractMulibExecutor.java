@@ -388,17 +388,17 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             }
         }
 
+        Solution s = new Solution(solutionValue, labels);
+
         if (isThrownException) {
             solution = currentChoiceOption.setExceptionSolution(
-                    (Throwable) solutionValue,
-                    labels,
+                    s,
                     solverManager.getConstraints().toArray(new Constraint[0]),
                     solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
         } else {
             solution = currentChoiceOption.setSolution(
-                    solutionValue,
-                    labels,
+                    s,
                     solverManager.getConstraints().toArray(new Constraint[0]),
                     solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
