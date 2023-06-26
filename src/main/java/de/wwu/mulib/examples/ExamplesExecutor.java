@@ -136,6 +136,9 @@ public final class ExamplesExecutor {
                             args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
+                case "SMM":
+                    pathSolutions = runSendMoreMoney(b);
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -150,6 +153,20 @@ public final class ExamplesExecutor {
                 NQueens.class,
                 builder
         );
+    }
+
+    private static List<PathSolution> runSendMoreMoney(MulibConfig.MulibConfigBuilder builder) {
+        List<PathSolution> ps = Mulib.executeMulib("search", SendMoreMoney.class, builder);
+        Solution sol = ps.get(0).getSolution();
+        String s = "'s' should be 9: " + sol.labels.getLabelForId("s");
+        String e = "\r\n'e' should be 5: " + sol.labels.getLabelForId("e");
+        String n = "\r\n'n' should be 6: " + sol.labels.getLabelForId("n");
+        String d = "\r\n'd' should be 7: " + sol.labels.getLabelForId("d");
+        String m = "\r\n'm' should be 1: " + sol.labels.getLabelForId("m");
+        String o = "\r\n'o' should be 0: " + sol.labels.getLabelForId("o");
+        String r = "\r\n'r' should be 8: " + sol.labels.getLabelForId("r");
+        System.out.println(s + e + n + d + m + o + r);
+        return ps;
     }
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
