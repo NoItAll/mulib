@@ -415,7 +415,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             Labels givenLabels,
             IncrementalSolverState.RememberedPartnerClassObjectContainer[] containers,
             List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints) {
-        Set<PartnerClass> partnerClassObjectsAlreadyTreated = new HashSet<>(); // TODO Rather use some identity-based set
+        Set<PartnerClass> partnerClassObjectsAlreadyTreated = Collections.newSetFromMap(new IdentityHashMap<>());
         List<Constraint> disjunctionConstraints = new ArrayList<>();
 
         for (Map.Entry<String, SubstitutedVar> e : givenLabels.getIdToNamedVar().entrySet()) {
