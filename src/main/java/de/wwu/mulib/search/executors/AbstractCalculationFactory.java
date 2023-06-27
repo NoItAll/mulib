@@ -218,10 +218,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     public void initializeLazyFields(SymbolicExecution se, PartnerClass pco) {
         assert pco.__mulib__defaultIsSymbolic();
         assert !pco.__mulib__isLazilyInitialized();
-        pco.__mulib__setAsLazilyInitialized();
         if (!pco.__mulib__isRepresentedInSolver()) {
             pco.__mulib__initializeLazyFields(se);
         }
+        pco.__mulib__setAsLazilyInitialized();
     }
 
     @Override

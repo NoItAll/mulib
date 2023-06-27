@@ -127,6 +127,7 @@ public abstract class AbstractPartnerClass implements PartnerClass {
 
     @Override
     public final void __mulib__setAsLazilyInitialized() {
+        assert !(this instanceof Sarray);
         representationState |= IS_LAZILY_INITIALIZED;
     }
 
