@@ -70,7 +70,6 @@ public final class Choice extends TreeNode {
         // Separate ArrayConstraints. These are added after the fact.
         @SuppressWarnings("unchecked")
         private List<PartnerClassObjectConstraint> partnerClassObjectConstraints = Collections.EMPTY_LIST;
-
         // The possible child of this ChoiceOption is set after evaluating the option.
         private TreeNode child = null;
 
@@ -119,7 +118,7 @@ public final class Choice extends TreeNode {
 
         public void addPartnerClassConstraintConstraint(PartnerClassObjectConstraint ic) {
             if (isIllegalConstraintModification()) {
-                throw new IllegalTreeModificationException("The array constraint must not be added to already evaluated" +
+                throw new IllegalTreeModificationException("The partner class object constraint must not be added to already evaluated" +
                         " choice options");
             }
             if (partnerClassObjectConstraints == Collections.EMPTY_LIST) {

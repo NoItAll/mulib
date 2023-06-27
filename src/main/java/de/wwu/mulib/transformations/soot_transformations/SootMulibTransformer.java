@@ -2102,7 +2102,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 // If transformedValue is not null, jump to after getField
                 // Else push neutral element
                 // And GOTO firstStmtOfSettingValue
-                //// TODO Is this necessary? should not be labeled like that!!!
                 PrimType pt = (PrimType) ot;
                 Unit stmtAfterGetField = upc.getSuccOf(getField);
                 Stmt ifStmt =
