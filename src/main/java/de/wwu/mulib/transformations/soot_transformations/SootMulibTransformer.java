@@ -2106,7 +2106,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Unit stmtAfterGetField = upc.getSuccOf(getField);
                 Stmt ifStmt =
                         Jimple.v().newIfStmt(Jimple.v().newNeExpr(NullConstant.v(), transformedValue), stmtAfterGetField);
-                Value wrappedOrPrimitive = reflectionRequired ? getPrimitiveWrapperNeutralValueForType(pt) : getPrimitiveNeutralValueForType(pt);
+                Value wrappedOrPrimitive = reflectionRequiredToSetField ? getPrimitiveWrapperNeutralValueForType(pt) : getPrimitiveNeutralValueForType(pt);
                 AssignStmt pushNeutralElement =
                         Jimple.v().newAssignStmt(labeledValue, wrappedOrPrimitive);
                 GotoStmt gotoSet = Jimple.v().newGotoStmt(firstStmtOfSettingValue);
