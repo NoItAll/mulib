@@ -3,6 +3,7 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
+import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.Mul;
 import de.wwu.mulib.expressions.Neg;
 import de.wwu.mulib.expressions.NumericExpression;
