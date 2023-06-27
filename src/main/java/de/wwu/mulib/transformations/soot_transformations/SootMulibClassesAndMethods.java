@@ -493,7 +493,6 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SCHARSARRAY_SELECT;
     public final SootMethod SM_SCHARSARRAY_STORE;
     public final List<SootMethodRef> SARRAY_TYPE_STORES;
-    public final SootMethod SM_SARRAY_STORE_CONCRETE;
     public final SootMethod SM_SARRAY_LENGTH;
     public final SootMethod SM_PARTNER_CLASSSARRAY_SELECT;
     public final SootMethod SM_PARTNER_CLASSSARRAY_STORE;
@@ -979,7 +978,6 @@ public class SootMulibClassesAndMethods {
         SM_SFLOAT_F2L               = SC_SFLOAT.getMethod("f2l",          List.of(TYPE_SE),              TYPE_SLONG);
         SM_SFLOAT_F2I               = SC_SFLOAT.getMethod("f2i",          List.of(TYPE_SE),              TYPE_SINT);
         SM_SFLOAT_CMP               = SC_SFLOAT.getMethod("cmp",          List.of(TYPE_SFLOAT, TYPE_SE), TYPE_SINT);
-        SM_SARRAY_STORE_CONCRETE = SC_SARRAY.getMethod("storeConcrete", List.of(TYPE_SINT, TYPE_SUBSTITUTED_VAR, TYPE_SE), TYPE_VOID);
         SM_SARRAY_LENGTH    = SC_SARRAY.getMethod("length", List.of(),                                    TYPE_SINT);
         SM_SARRAY_SELECT    = SC_SARRAY.getMethod("select", List.of(TYPE_SINT, TYPE_SE),                  TYPE_SUBSTITUTED_VAR);
         SM_SARRAY_STORE     = SC_SARRAY.getMethod("store", List.of(TYPE_SINT, TYPE_SUBSTITUTED_VAR, TYPE_SE),     TYPE_VOID);

@@ -1,7 +1,6 @@
 package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.ArrayInformation;
@@ -222,16 +221,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     @Override
     public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
         throw new MulibIllegalStateException("Should not be called for Sarrays");
-    }
-
-    public void storeConcrete(Sint i, T val, SymbolicExecution se) {
-        if (!(i instanceof ConcSnumber)) {
-            throw new MulibRuntimeException("Must be a concrete index");
-        } else if (__mulib__isLazilyInitialized() || __mulib__defaultIsSymbolic() || __mulib__cacheIsBlocked()
-                || __mulib__isNull() != Sbool.ConcSbool.FALSE || __mulib__isRepresentedInSolver()) {
-            throw new MulibIllegalStateException("Must not be of state " + representationState);
-        }
-        cachedElements.put(i, val);
     }
 
     @Override
