@@ -24,6 +24,6 @@ public class PartnerClassObjectRememberConstraint implements PartnerClassObjectC
 
     @Override
     public Sint getPartnerClassObjectId() {
-        throw new MulibIllegalStateException("Should not be called"); //// TODO Refactor
+        throw new MulibIllegalStateException("Should not be called"); // TODO Refactor
     }
 }
