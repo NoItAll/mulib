@@ -68,7 +68,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         for (int i = 0; i < arrayElements.length; i++) {
             cachedElements.put(Sint.concSint(i), arrayElements[i]);
         }
-        this.isNull = Sbool.ConcSbool.FALSE;
     }
 
     /** Copy constructor for all Sarrays but SarraySarray */
