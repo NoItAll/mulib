@@ -5,7 +5,6 @@ import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
@@ -46,7 +45,8 @@ public interface SolverManager {
     Object getLabel(Object var);
 
     // TODO Get rid of Map<String, Sprimitive> rememberedSprimitives parameter
-    Solution labelSolution(SubstitutedVar returnValue, Map<String, Sprimitive> rememberedSprimitives);
+    // TODO returnValue should be of type SubstitutedVar. For now, it is Object until we model Throwable
+    Solution labelSolution(Object returnValue, Map<String, Sprimitive> rememberedSprimitives);
 
     ArrayDeque<Constraint> getConstraints();
 

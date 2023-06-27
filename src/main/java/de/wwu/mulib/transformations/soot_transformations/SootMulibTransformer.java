@@ -1174,7 +1174,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
     }
 
-    private void addInstructionsToInitializeFieldAndSetAccessible(
+    private Stmt addInstructionsToInitializeFieldAndSetAccessible(
             Local classLocal, Local fieldLocal, SootField field, UnitPatchingChain upc) {
         ClassConstant classConstant = getWrapperAwareClassConstantForType(field.getDeclaringClass().getType());
         AssignStmt initClassVar = Jimple.v().newAssignStmt(
@@ -1191,6 +1191,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 fieldLocal, v.SM_FIELD_SET_ACCESSIBLE.makeRef(), IntConstant.v(1)
         ));
         upc.add(setAccessible);
+        return initClassVar;
     }
     
     private void initializeObjectFieldInSpecialConstructor(
@@ -2016,7 +2017,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             assert !(transformedField.getType() instanceof PrimType) : "Fields should always be transformed or be ignored objects";
             assert !(transformedField.getType() instanceof ArrayType) : "Array fields should have been transformed";
             Type ot = oldField.getType();
-            if (isPrimitiveOrSprimitive(ot)) {
+            boolean originalFieldIsPrimitive = isPrimitiveOrSprimitive(ot);
+            if (originalFieldIsPrimitive) {
                 assert ot instanceof PrimType;
                 Local toCastPrimitiveValueWrapper = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
                 AssignStmt labelPrimitiveValue = Jimple.v().newAssignStmt(
@@ -2056,9 +2058,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 }
             } else {
                 // Is sarray or partner class
-                Local toCastPrimitiveValueWrapper = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
+                Local toCastLabeledLocal = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
                 AssignStmt labelValue = Jimple.v().newAssignStmt(
-                        toCastPrimitiveValueWrapper,
+                        toCastLabeledLocal,
                         Jimple.v().newInterfaceInvokeExpr(
                                 smLocal,
                                 v.SM_SOLVER_MANAGER_GET_LABEL.makeRef(),
@@ -2069,15 +2071,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 labeledValue = localSpawner.spawnNewStackLocal(oldField.getType());
                 AssignStmt castValue = Jimple.v().newAssignStmt(
                         labeledValue,
-                        Jimple.v().newCastExpr(toCastPrimitiveValueWrapper, ot)
+                        Jimple.v().newCastExpr(toCastLabeledLocal, ot)
                 );
                 upc.add(castValue);
             }
 
             /* SET FIELD */
+            Stmt firstStmtOfSettingValue;
             if (reflectionRequiredToSetField) {
                 // Get field and class local, set field accessible
-                addInstructionsToInitializeFieldAndSetAccessible(classLocal, fieldLocal, oldField, upc);
+                firstStmtOfSettingValue =
+                        addInstructionsToInitializeFieldAndSetAccessible(classLocal, fieldLocal, oldField, upc);
                 // Set via Field.set(Object, Object)
                 InvokeStmt setViaField = Jimple.v().newInvokeStmt(
                         Jimple.v().newVirtualInvokeExpr(fieldLocal, v.SM_FIELD_SET.makeRef(), castedToLabelTo, labeledValue)
@@ -2085,15 +2089,31 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 upc.add(setViaField);
             } else {
                 // Simply add the field
-                AssignStmt assignToField = Jimple.v().newAssignStmt(
+                firstStmtOfSettingValue = Jimple.v().newAssignStmt(
                         Jimple.v().newInstanceFieldRef(castedToLabelTo, oldField.makeRef()),
                         labeledValue
                 );
-                upc.add(assignToField);
+                upc.add(firstStmtOfSettingValue);
+            }
+
+            if (originalFieldIsPrimitive) {
+                // Can be null for objects that are represented in the solver or that are initialized lazily...
+                // Add check for null of transformed value; - if Sprimitive is null, add respective neutral element
+                // If transformedValue is not null, jump to after getField
+                // Else push neutral element
+                // And GOTO firstStmtOfSettingValue
+                //// TODO Is this necessary? should not be labeled like that!!!
+                PrimType pt = (PrimType) ot;
+                Unit stmtAfterGetField = upc.getSuccOf(getField);
+                Stmt ifStmt =
+                        Jimple.v().newIfStmt(Jimple.v().newNeExpr(NullConstant.v(), transformedValue), stmtAfterGetField);
+                Value wrappedOrPrimitive = reflectionRequired ? getPrimitiveWrapperNeutralValueForType(pt) : getPrimitiveNeutralValueForType(pt);
+                AssignStmt pushNeutralElement =
+                        Jimple.v().newAssignStmt(labeledValue, wrappedOrPrimitive);
+                GotoStmt gotoSet = Jimple.v().newGotoStmt(firstStmtOfSettingValue);
+                upc.insertAfter(List.of(ifStmt, pushNeutralElement, gotoSet), getField);
             }
         }
-
-
 
         ReturnStmt returnStmt = Jimple.v().newReturnStmt(castedToLabelTo);
         // For transformation constructor: If reflection is required, we must catch the exceptions
@@ -2127,6 +2147,45 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         upc.add(returnStmt);
         labelMethod.setDeclaringClass(result);
         result.addMethod(labelMethod);
+    }
+
+    private static Value getPrimitiveWrapperNeutralValueForType(PrimType pt) {
+        Value neutral = getPrimitiveNeutralValueForType(pt);
+        SootMethod wrapperCall;
+        if (pt instanceof IntType) {
+            wrapperCall = v.SM_INTEGER_VALUE_OF;
+        } else if (pt instanceof LongType) {
+            wrapperCall = v.SM_LONG_VALUE_OF;
+        } else if (pt instanceof DoubleType) {
+            wrapperCall = v.SM_DOUBLE_VALUE_OF;
+        } else if (pt instanceof FloatType) {
+            wrapperCall = v.SM_FLOAT_VALUE_OF;
+        } else if (pt instanceof ShortType) {
+            wrapperCall = v.SM_SHORT_VALUE_OF;
+        } else if (pt instanceof ByteType) {
+            wrapperCall = v.SM_BYTE_VALUE_OF;
+        } else if (pt instanceof BooleanType) {
+            wrapperCall = v.SM_BOOLEAN_VALUE_OF;
+        } else {
+            assert pt instanceof CharType;
+            wrapperCall = v.SM_CHARACTER_VALUE_OF;
+        }
+        return Jimple.v().newStaticInvokeExpr(wrapperCall.makeRef(), neutral);
+    }
+
+    private static Value getPrimitiveNeutralValueForType(PrimType pt) {
+        if (pt instanceof IntType || pt instanceof ShortType
+                || pt instanceof ByteType || pt instanceof BooleanType
+                || pt instanceof CharType) {
+            return IntConstant.v(0);
+        } else if (pt instanceof LongType) {
+            return LongConstant.ZERO;
+        } else if (pt instanceof DoubleType) {
+            return DoubleConstant.ZERO;
+        } else {
+            assert pt instanceof FloatType;
+            return FloatConstant.ZERO;
+        }
     }
 
     @Override

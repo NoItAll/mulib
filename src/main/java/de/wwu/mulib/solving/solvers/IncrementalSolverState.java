@@ -142,7 +142,7 @@ public class IncrementalSolverState<AR, PR> {
         return constraints;
     }
 
-    public List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraintsExcludingRememberConstraints() {
+    public List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraintsConstraints() {
         List<PartnerClassObjectConstraint> result = new ArrayList<>();
         for (List<PartnerClassObjectConstraint> pcocs : partnerClassObjectConstraints) {
             result.addAll(pcocs);
@@ -246,7 +246,7 @@ public class IncrementalSolverState<AR, PR> {
     // has been issued.
     public RememberedPartnerClassObjectContainer[] getContainersForLabelingRememberedValue() {
         List<RememberedPartnerClassObjectContainer> result = new ArrayList<>();
-        List<PartnerClassObjectConstraint> constraints = this.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
+        List<PartnerClassObjectConstraint> constraints = this.getAllPartnerClassObjectConstraintsConstraints();
 
         PartnerClassObjectRememberConstraint[] rememberConstraints =
                 constraints.stream()
@@ -302,6 +302,17 @@ public class IncrementalSolverState<AR, PR> {
 
         public PartnerClass getCopiedAtRemember() {
             return copiedAtState;
+        }
+
+        public static RememberedPartnerClassObjectContainer findContainerForName(
+                String name,
+                RememberedPartnerClassObjectContainer[] containers) {
+            for (RememberedPartnerClassObjectContainer c : containers) {
+                if (c.name.equals(name)) {
+                    return c;
+                }
+            }
+            return null;
         }
     }
 }

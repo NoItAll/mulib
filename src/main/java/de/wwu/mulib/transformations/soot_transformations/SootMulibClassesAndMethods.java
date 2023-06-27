@@ -157,6 +157,14 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_BYTE_GETVAL;
     public final SootMethod SM_BOOLEAN_GETVAL;
     public final SootMethod SM_CHARACTER_GETVAL;
+    public final SootMethod SM_INTEGER_VALUE_OF;
+    public final SootMethod SM_LONG_VALUE_OF;
+    public final SootMethod SM_DOUBLE_VALUE_OF;
+    public final SootMethod SM_FLOAT_VALUE_OF;
+    public final SootMethod SM_SHORT_VALUE_OF;
+    public final SootMethod SM_BYTE_VALUE_OF;
+    public final SootMethod SM_BOOLEAN_VALUE_OF;
+    public final SootMethod SM_CHARACTER_VALUE_OF;
     // Indicator methods
     public final SootMethod SM_MULIB_FREE_INT;
     public final SootMethod SM_MULIB_FREE_LONG;
@@ -649,6 +657,15 @@ public class SootMulibClassesAndMethods {
         SM_BYTE_GETVAL      = SC_BYTE.getMethod("byteValue", List.of(), TYPE_BYTE);
         SM_BOOLEAN_GETVAL   = SC_BOOLEAN.getMethod("booleanValue", List.of(), TYPE_BOOL);
         SM_CHARACTER_GETVAL = SC_CHARACTER.getMethod("charValue", List.of(), TYPE_CHAR);
+        SM_INTEGER_VALUE_OF     = SC_INTEGER.getMethod("valueOf", List.of(TYPE_INT), SC_INTEGER.getType());
+        SM_LONG_VALUE_OF        = SC_LONG.getMethod("valueOf", List.of(TYPE_LONG), SC_LONG.getType());
+        SM_DOUBLE_VALUE_OF      = SC_DOUBLE.getMethod("valueOf", List.of(TYPE_DOUBLE), SC_DOUBLE.getType());
+        SM_FLOAT_VALUE_OF       = SC_FLOAT.getMethod("valueOf", List.of(TYPE_FLOAT), SC_FLOAT.getType());
+        SM_SHORT_VALUE_OF       = SC_SHORT.getMethod("valueOf", List.of(TYPE_SHORT), SC_SHORT.getType());
+        SM_BYTE_VALUE_OF        = SC_BYTE.getMethod("valueOf", List.of(TYPE_BYTE), SC_BYTE.getType());
+        SM_BOOLEAN_VALUE_OF     = SC_BOOLEAN.getMethod("valueOf", List.of(TYPE_BOOL), SC_BOOLEAN.getType());
+        SM_CHARACTER_VALUE_OF   = SC_CHARACTER.getMethod("valueOf", List.of(TYPE_CHAR), SC_CHARACTER.getType());
+
 
         SM_MULIB_FREE_INT           = SC_MULIB.getMethod("freeInt",         Collections.emptyList(), TYPE_INT);
         SM_MULIB_FREE_LONG          = SC_MULIB.getMethod("freeLong",        Collections.emptyList(), TYPE_LONG);

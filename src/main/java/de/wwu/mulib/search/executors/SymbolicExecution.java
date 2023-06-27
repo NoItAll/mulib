@@ -4,7 +4,6 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -33,16 +32,11 @@ public final class SymbolicExecution {
     // The current choice option. This will also be set to choice options on the known path.
     private Choice.ChoiceOption currentChoiceOption;
     private final ExecutionBudgetManager executionBudgetManager;
-    private Map<String, SubstitutedVar> _namedVariables;
-    private int nextNumberInitializedAtomicSymSints = 0;
-    private int nextNumberInitializedAtomicSymSdoubles = 0;
-    private int nextNumberInitializedAtomicSymSfloats = 0;
-    private int nextNumberInitializedAtomicSymSbools = 0;
-    private int nextNumberInitializedAtomicSymSlongs = 0;
-    private int nextNumberInitializedAtomicSymSshorts = 0;
-    private int nextNumberInitializedAtomicSymSbytes = 0;
-    private int nextNumberInitializedAtomicSymSchars = 0;
-    private int nextIdentitiyHavingObjectNr;
+    private int nextNumberInitializedAtomicSymSints = 0, nextNumberInitializedAtomicSymSdoubles = 0,
+            nextNumberInitializedAtomicSymSfloats = 0, nextNumberInitializedAtomicSymSbools = 0,
+            nextNumberInitializedAtomicSymSlongs = 0, nextNumberInitializedAtomicSymSshorts = 0,
+            nextNumberInitializedAtomicSymSbytes = 0, nextNumberInitializedAtomicSymSchars = 0,
+            nextIdentitiyHavingObjectNr;
 
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
@@ -63,13 +57,6 @@ public final class SymbolicExecution {
         assert currentChoiceOption != null;
         this.executionBudgetManager = executionBudgetManager.copyFromPrototype();
         set();
-    }
-
-    private Map<String, SubstitutedVar> _getNamedVariables() {
-        if (_namedVariables == null) {
-            _namedVariables = new LinkedHashMap<>();
-        }
-        return _namedVariables;
     }
     
     public ValueFactory getValueFactory() {
@@ -203,15 +190,7 @@ public final class SymbolicExecution {
         return currentChoiceOption;
     }
 
-    public Map<String, SubstitutedVar> getNamedVariables() {
-        return Collections.unmodifiableMap(_getNamedVariables());
-    }
-
     private void addNamedVariable(String key, SubstitutedVar value) {
-        Map<String, SubstitutedVar> namedVars = _getNamedVariables();
-        if (namedVars.put(key, value) != null) {
-            throw new MulibRuntimeException("Name '" + key + "' was already used to remember a value!");
-        }
         mulibExecutor.remember(key, value);
     }
 

@@ -12,7 +12,9 @@ import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.*;
-import de.wwu.mulib.solving.*;
+import de.wwu.mulib.solving.ArrayInformation;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -180,7 +182,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     }
                     PathSolution solution;
                     try {
-                        solution = getPathSolution(solutionValue, symbolicExecution, false);
+                        solution = getPathSolution(solutionValue, false);
                     } catch (Throwable t) {
                         t.printStackTrace();
 
@@ -210,7 +212,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         continue;
                     }
                     if (config.ALLOW_EXCEPTIONS) {
-                        PathSolution solution = getPathSolution(e, symbolicExecution, true);
+                        PathSolution solution = getPathSolution(e, true);
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
                         return Optional.of(solution);
                     } else {
@@ -272,6 +274,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private Object invokeSearchRegion() throws Throwable {
         MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
         staticVariables.setMulibValueCopier(mulibValueCopier);
+        rememberedSprimitives.clear();
         try {
             solverManager.resetLabels();
             Object result;
@@ -282,13 +285,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 result = searchRegionMethod.invokeWithArguments(args);
             }
             staticVariables.renew();
-            rememberedSprimitives.clear();
             AliasingInformation.resetAliasingTargets();
             SymbolicExecution.remove();
             return result;
         } catch (Throwable t) {
             staticVariables.renew();
-            rememberedSprimitives.clear();
             AliasingInformation.resetAliasingTargets();
             SymbolicExecution.remove();
             throw t;
@@ -354,50 +355,23 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private PathSolution getPathSolution(
             Object solutionValue, // TODO Not SubstitutedVar since, for now, it can be of type Throwable
-            SymbolicExecution symbolicExecution,
             boolean isThrownException) {
-        if (solutionValue instanceof SubstitutedVar
-                && labelResultValue) {
-            symbolicExecution.nameSubstitutedVar((SubstitutedVar) solutionValue, "return");
-        }
         pathSolutionCallback.accept(solverManager);
-        Labels labels = LabelUtility.getLabels(
-                solverManager,
-                symbolicExecution.getNamedVariables()
-        );
-        PathSolution solution;
-        if (labelResultValue) {
-            if (solutionValue instanceof SubstitutedVar) {
-                // Overwrite solutionValue
-                if (solutionValue instanceof Sbool.SymSbool) {
-                    solutionValue = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) solutionValue);
-                } else if (solutionValue instanceof Snumber) {
-                    solutionValue = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) solutionValue);
-                }
-                solutionValue = labels.getLabelForNamedSubstitutedVar((SubstitutedVar) solutionValue);
-            }
-        } else if (solutionValue instanceof Sbool.SymSbool) {
-            solutionValue = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) solutionValue);
-        } else if (solutionValue instanceof SymNumericExpressionSprimitive) {
-            solutionValue = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) solutionValue);
-        }
-
-        Solution s = new Solution(solutionValue, labels);
+        Solution s = solverManager.labelSolution(solutionValue, rememberedSprimitives);
 
         if (isThrownException) {
-            solution = currentChoiceOption.setExceptionSolution(
+            return currentChoiceOption.setExceptionSolution(
                     s,
                     solverManager.getConstraints().toArray(new Constraint[0]),
                     solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
         } else {
-            solution = currentChoiceOption.setSolution(
+            return currentChoiceOption.setSolution(
                     s,
                     solverManager.getConstraints().toArray(new Constraint[0]),
                     solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
             );
         }
-        return solution;
     }
 
     private void _addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {

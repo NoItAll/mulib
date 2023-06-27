@@ -7,7 +7,10 @@ import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.trees.Solution;
-import de.wwu.mulib.solving.*;
+import de.wwu.mulib.solving.ArrayInformation;
+import de.wwu.mulib.solving.Labels;
+import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.solving.StdLabels;
 import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.AliasingPartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
@@ -136,7 +139,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     @Override
     public final List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraints() {
-        return incrementalSolverState.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
+        return incrementalSolverState.getAllPartnerClassObjectConstraintsConstraints();
     }
 
     @Override
@@ -370,11 +373,22 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
         List<Solution> solutions = new ArrayList<>();
         solutions.add(initialSolution);
+        Map<String, Sprimitive> rememberedSprimitives = new HashMap<>();
+        SubstitutedVar unlabeledReturn = initialSolution.labels.getNamedVar("return");
+        List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
+                incrementalSolverState.getAllPartnerClassObjectConstraintsConstraints(); //// TODO Cache
+        IncrementalSolverState.RememberedPartnerClassObjectContainer[] containers =
+                incrementalSolverState.getContainersForLabelingRememberedValue(); //// TODO Cache
+        for (Map.Entry<String, SubstitutedVar> e : initialSolution.labels.getIdToNamedVar().entrySet()) {
+            if (e.getValue() instanceof Sprimitive) {
+                rememberedSprimitives.put(e.getKey(), (Sprimitive) e.getValue());
+            }
+        }
         int backtrackAfterwards = 0;
         while (currentN > 0) {
             Labels l = latestSolution.labels;
 
-            List<Constraint> disjunctionConstraints = getNeqConstraints(l);
+            List<Constraint> disjunctionConstraints = getNeqConstraints(l, containers, allPartnerClassObjectConstraints);
             if (disjunctionConstraints.isEmpty()) {
                 // Nothing to negate
                 break;
@@ -385,15 +399,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
                 resetLabels();
-                Labels newLabels = LabelUtility.getLabels(
-                        this,
-                        l.getIdToNamedVar()
-                );
-                Object solutionValue = newLabels.getIdToLabel().get("return");
-                Solution newSolution = new Solution(
-                        solutionValue,
-                        newLabels
-                );
+                Solution newSolution = labelSolution(unlabeledReturn, rememberedSprimitives);
                 currentN = N.decrementAndGet();
                 solutions.add(newSolution);
                 latestSolution = newSolution;
@@ -405,21 +411,37 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return solutions;
     }
 
-    private List<Constraint> getNeqConstraints(Labels givenLabels) {
-        SubstitutedVar[] namedVars = givenLabels.getNamedVars();
+    private List<Constraint> getNeqConstraints(
+            Labels givenLabels,
+            IncrementalSolverState.RememberedPartnerClassObjectContainer[] containers,
+            List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints) {
         Set<PartnerClass> partnerClassObjectsAlreadyTreated = new HashSet<>(); // TODO Rather use some identity-based set
         List<Constraint> disjunctionConstraints = new ArrayList<>();
-        for (SubstitutedVar sv : namedVars) {
+
+        for (Map.Entry<String, SubstitutedVar> e : givenLabels.getIdToNamedVar().entrySet()) {
+            SubstitutedVar sv = e.getValue();
             if (sv instanceof Conc) {
                 // It does not help to negate concrete values
                 continue;
             }
-            Constraint disjunctionConstraint;
             assert sv instanceof Sprimitive || sv instanceof PartnerClass;
             Object label = givenLabels.getLabelForNamedSubstitutedVar(sv);
             //// TODO Adapt this to use the specific subset of constraints
-            List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints = incrementalSolverState.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
-            disjunctionConstraint = getNeq(sv, label, partnerClassObjectsAlreadyTreated, allPartnerClassObjectConstraints);
+            //// TODO Potentially just cache the containers?
+            Constraint disjunctionConstraint;
+            if (sv instanceof Sprimitive) {
+                disjunctionConstraint = getNeqFromSprimitive((Sprimitive) sv, label);
+            } else {
+                IncrementalSolverState.RememberedPartnerClassObjectContainer containerForName =
+                        IncrementalSolverState.RememberedPartnerClassObjectContainer.findContainerForName(e.getKey(), containers);
+                List<PartnerClassObjectConstraint> relevantPartnerClassObjectConstraints;
+                if (containerForName == null) {
+                    relevantPartnerClassObjectConstraints = allPartnerClassObjectConstraints;
+                } else {
+                    relevantPartnerClassObjectConstraints = containerForName.getPartnerClassObjectConstraintsBeforeRemember();
+                }
+                disjunctionConstraint = getNeq(sv, label, partnerClassObjectsAlreadyTreated, relevantPartnerClassObjectConstraints);
+            }
             disjunctionConstraints.add(disjunctionConstraint);
         }
         return disjunctionConstraints;
@@ -436,26 +458,21 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     public Object getLabel(Object var) {
         //// TODO Cache in incrementalSolverState!
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
-                incrementalSolverState.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
+                incrementalSolverState.getAllPartnerClassObjectConstraintsConstraints();
         return _getLabel(var, allPartnerClassObjectConstraints);
     }
 
     @Override
-    public Solution labelSolution(SubstitutedVar returnValue, Map<String, Sprimitive> rememberedSprimitives) {
+    public Solution labelSolution(Object returnValue, Map<String, Sprimitive> rememberedSprimitives) {
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
-                incrementalSolverState.getAllPartnerClassObjectConstraintsExcludingRememberConstraints();
+                incrementalSolverState.getAllPartnerClassObjectConstraintsConstraints();
         Map<String, SubstitutedVar> identifierToSubstitutedVars  = new HashMap<>();
         Map<SubstitutedVar, Object> substitutedVarsToOriginalRepresentation = new IdentityHashMap<>();
         Map<String, Object> identifiersToOriginalRepresentation = new HashMap<>();
-        // Label return value: All updates are relevant!
-        Object labeledReturnValue = _getLabel(returnValue, allPartnerClassObjectConstraints);
-        identifierToSubstitutedVars.put("return", returnValue);
-        identifiersToOriginalRepresentation.put("return", labeledReturnValue);
-        substitutedVarsToOriginalRepresentation.put(returnValue, labeledReturnValue);
         // Label remembered Sprimitives
         for (Map.Entry<String, Sprimitive> entry : rememberedSprimitives.entrySet()) {
             if (identifierToSubstitutedVars.put(entry.getKey(), entry.getValue()) != null) {
-                throw new MulibRuntimeException("Must not overwrite names for remembering values! Overwritten: " + entry.getValue());
+                throw new MulibRuntimeException("Must not overwrite names for remembering values! Overwritten: " + entry.getKey());
             }
             Object labeled = labelSprimitive(entry.getValue());
             identifiersToOriginalRepresentation.put(entry.getKey(), labeled);
@@ -466,14 +483,27 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         IncrementalSolverState.RememberedPartnerClassObjectContainer[] containers =
                 incrementalSolverState.getContainersForLabelingRememberedValue();
         for (IncrementalSolverState.RememberedPartnerClassObjectContainer container : containers) {
-                PartnerClass copy = container.getCopiedAtRemember();
-                Object label = _getLabel(copy, container.getPartnerClassObjectConstraintsBeforeRemember());
-                if (identifierToSubstitutedVars.put(container.getName(), copy) != null) {
-                    throw new MulibRuntimeException("Must not overwrite names for remembering values! Overwritten: " + container.getName());
-                }
-                identifiersToOriginalRepresentation.put(container.getName(), label);
-                substitutedVarsToOriginalRepresentation.put(copy, labeledReturnValue);
+            PartnerClass copy = container.getCopiedAtRemember();
+            Object label = _getLabel(copy, container.getPartnerClassObjectConstraintsBeforeRemember());
+            if (identifierToSubstitutedVars.put(container.getName(), copy) != null) {
+                throw new MulibRuntimeException("Must not overwrite names for remembering values! Overwritten: " + container.getName());
+            }
+            identifiersToOriginalRepresentation.put(container.getName(), label);
+            substitutedVarsToOriginalRepresentation.put(copy, label);
         }
+
+        // Label return value: All updates are relevant!
+        Object labeledReturnValue = config.LABEL_RESULT_VALUE
+                ?
+                _getLabel(returnValue, allPartnerClassObjectConstraints)
+                :
+                returnValue;
+
+        if (returnValue instanceof SubstitutedVar) { // TODO
+            identifierToSubstitutedVars.put("return", (SubstitutedVar) returnValue);
+            substitutedVarsToOriginalRepresentation.put((SubstitutedVar) returnValue, labeledReturnValue);
+        }
+        identifiersToOriginalRepresentation.put("return", labeledReturnValue);
 
         Labels labels = new StdLabels(
                 identifierToSubstitutedVars,
@@ -503,7 +533,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             } else if (var instanceof PartnerClass) {
                 result = labelPartnerClassObject((PartnerClass) var, allRelevantPartnerClassObjectConstraints);
             } else if (var.getClass().isArray()) {
-                result = labelArray(var);
+                result = labelArray(var, allRelevantPartnerClassObjectConstraints);
             } else {
                 result = customLabelObject(var);
             }
@@ -573,7 +603,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             for (Sint index : sarray.getCachedIndices()) {
                 int labeledIndex = _labelSintToInt(index);
                 SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
-                Object labeledValue = getLabel(cachedValue);
+                Object labeledValue = _getLabel(cachedValue, allRelevantPartnerClassObjectConstraints);
                 Array.set(array, labeledIndex, labeledValue);
             }
             result = array;
@@ -812,12 +842,12 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
-    protected Object labelArray(Object array) {
+    protected Object labelArray(Object array, List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
         int length = Array.getLength(array);
         Object result = Array.newInstance(transformNonSarrayMulibTypeToJavaType(array.getClass().getComponentType()), length);
         registerLabelPair(array, result);
         for (int i = 0; i < length; i++) {
-            Array.set(result, i, getLabel(Array.get(array, i)));
+            Array.set(result, i, _getLabel(Array.get(array, i), allRelevantPartnerClassObjectConstraints));
         }
         return result;
     }
@@ -890,35 +920,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (sv instanceof Conc || sv == null) {
             return Sbool.ConcSbool.FALSE;
         }
-        if (sv instanceof Sbool) {
-            Sbool bv = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) sv);
-            Sbool bvv = Sbool.concSbool((boolean) value);
-            return Xor.newInstance(bv, bvv);
-        }
-
-        if (sv instanceof Snumber) {
-            sv = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv);
-            Snumber wrappedPreviousValue;
-            if (value instanceof Integer) {
-                wrappedPreviousValue = Sint.concSint((Integer) value);
-            } else if (value instanceof Double) {
-                wrappedPreviousValue = Sdouble.concSdouble((Double) value);
-            } else if (value instanceof Float) {
-                wrappedPreviousValue = Sfloat.concSfloat((Float) value);
-            } else if (value instanceof Long) {
-                wrappedPreviousValue = Slong.concSlong((Long) value);
-            } else if (value instanceof Short) {
-                wrappedPreviousValue = Sshort.concSshort((Short) value);
-            } else if (value instanceof Byte) {
-                wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
-            } else if (value instanceof Character) {
-                wrappedPreviousValue = Schar.concSchar((Character) value);
-            } else {
-                throw new NotYetImplementedException(sv.getClass().toString());
-            }
-            return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
-        }
-        if (alreadyTreatedPartnerClasses.contains(sv)) {
+        if (sv instanceof Sprimitive) {
+            return getNeqFromSprimitive((Sprimitive) sv, value);
+        } else if (alreadyTreatedPartnerClasses.contains(sv)) {
             return Sbool.ConcSbool.TRUE;
         } else if (sv instanceof Sarray) {
             alreadyTreatedPartnerClasses.add((PartnerClass) sv);
@@ -929,7 +933,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 Set<Sint> indices = sarray.getCachedIndices();
                 for (Sint index : indices) {
                     SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
-                    Object label = getLabel(cachedValue);
+                    Object label = _getLabel(cachedValue, allRelevantPartnerClassObjectConstraints);
                     disjunctionConstraint = getNeq(cachedValue, label, alreadyTreatedPartnerClasses, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, disjunctionConstraint);
                 }
@@ -939,7 +943,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         Not.newInstance(
                                 Eq.newInstance(
                                         ConcolicNumericContainer.tryGetSymFromConcolic(sarray.__mulib__getId()),
-                                        Sint.concSint((Integer) getLabel(sarray.__mulib__getId()))
+                                        Sint.concSint((Integer) _getLabel(sarray.__mulib__getId(), allRelevantPartnerClassObjectConstraints))
                                 )
                         )
                 );
@@ -968,7 +972,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 assert constraints[0] instanceof PartnerClassObjectInitializationConstraint;
                 Map<String, SubstitutedVar> lastValues = PartnerClassObjectConstraint.getLastValues(constraints);
                 for (Map.Entry<String, SubstitutedVar> entry : lastValues.entrySet()) {
-                    Constraint neq = getNeq(entry.getValue(), getLabel(entry.getValue()), alreadyTreatedPartnerClasses, allRelevantPartnerClassObjectConstraints);
+                    Constraint neq = getNeq(entry.getValue(), _getLabel(entry.getValue(), allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neq);
                 }
                 Sint id = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(((PartnerClass) sv).__mulib__getId());
@@ -976,13 +980,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 if (value == null) {
                     labeledId = Sint.ConcSint.MINUS_ONE;
                 } else {
-                    labeledId = Sint.concSint((Integer) getLabel(id));
+                    labeledId = Sint.concSint((Integer) _getLabel(id, allRelevantPartnerClassObjectConstraints));
                 }
                 return Or.newInstance(result, Not.newInstance(Eq.newInstance(id, labeledId)));
             } else {
                 Map<String, SubstitutedVar> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
                 for (Map.Entry<String, SubstitutedVar> entry : fieldNamesToSubstitutedVars.entrySet()) {
-                    Constraint neqForFieldValue = getNeq(entry.getValue(), getLabel(entry.getValue()), alreadyTreatedPartnerClasses,allRelevantPartnerClassObjectConstraints);
+                    Constraint neqForFieldValue = getNeq(entry.getValue(), _getLabel(entry.getValue(), allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neqForFieldValue);
                 }
                 return result;
@@ -992,6 +996,36 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
+    private Constraint getNeqFromSprimitive(Sprimitive sv, Object value) {
+        if (sv instanceof Sbool) {
+            Sbool bv = ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool) sv);
+            Sbool bvv = Sbool.concSbool((boolean) value);
+            return Xor.newInstance(bv, bvv);
+        }
+
+        assert sv instanceof Snumber;
+        sv = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv);
+        Snumber wrappedPreviousValue;
+        if (value instanceof Integer) {
+            wrappedPreviousValue = Sint.concSint((Integer) value);
+        } else if (value instanceof Double) {
+            wrappedPreviousValue = Sdouble.concSdouble((Double) value);
+        } else if (value instanceof Float) {
+            wrappedPreviousValue = Sfloat.concSfloat((Float) value);
+        } else if (value instanceof Long) {
+            wrappedPreviousValue = Slong.concSlong((Long) value);
+        } else if (value instanceof Short) {
+            wrappedPreviousValue = Sshort.concSshort((Short) value);
+        } else if (value instanceof Byte) {
+            wrappedPreviousValue = Sbyte.concSbyte((Byte) value);
+        } else if (value instanceof Character) {
+            wrappedPreviousValue = Schar.concSchar((Character) value);
+        } else {
+            throw new NotYetImplementedException(sv.getClass().toString());
+        }
+        return Not.newInstance(Eq.newInstance((Snumber) sv, wrappedPreviousValue));
+    }
+
     private Constraint getNeqConstraintFromArrayAccessConstraint(
             Constraint result,
             ArrayAccessConstraint aac,
@@ -999,9 +1033,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
         Constraint disjunctionConstraint;
         SubstitutedVar val = aac.getValue();
-        Object label = getLabel(val);
+        Object label = _getLabel(val, allRelevantPartnerClassObjectConstraints);
         Sint index = aac.getIndex();
-        Object indexLabel = getLabel(index);
+        Object indexLabel = _getLabel(index, allRelevantPartnerClassObjectConstraints);
         disjunctionConstraint = getNeq(val, label, partnerClassObjectsAlreadyTreated, allRelevantPartnerClassObjectConstraints);
         Constraint neqForIndex = getNeq(index, indexLabel, partnerClassObjectsAlreadyTreated, allRelevantPartnerClassObjectConstraints);
         result = Or.newInstance(result, disjunctionConstraint, neqForIndex);
@@ -1045,6 +1079,5 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     protected abstract B transformConstraint(Constraint c);
 
     protected abstract void solverSpecificShutdown();
-
 
 }
