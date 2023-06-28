@@ -496,6 +496,17 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 se.addNewPartnerClassObjectConstraint(initializationConstraint);
             }
         }
+
+        if (!(ihsr instanceof Sarray) || !config.CONCOLIC) {
+            // For concolic execution, in the current implementation,
+            // we need to evaluate the cached indices of Sarrays to see whether we still have a valid labeling
+            // or whether we need to relabel everything
+            ihsr.__mulib__blockCache();
+        }
+
+        if (ihsr instanceof Sarray) {
+            ((Sarray<?>) ihsr).clearCache();
+        }
     }
 
     private void representPartnerClassObjectViaConstraintsIfNeeded(SymbolicExecution se, PartnerClass ihsv, Sint newIndex) {
@@ -574,9 +585,17 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     protected abstract void _addIndexInBoundsConstraint(SymbolicExecution se, Sbool indexInBounds);
 
     private SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
-        SubstitutedVar result = sarray.getFromCacheForIndex(index);
-        if (result != null) {
-            return result;
+        SubstitutedVar result;
+        if (!sarray.__mulib__isRepresentedInSolver()) {
+            result = sarray.getFromCacheForIndex(index);
+            if (result != null) {
+                // Shortcut: SintSarray etc. should never contain nulls
+                return result;
+            } else if (sarray.getCachedIndices().contains(index)) {
+                assert sarray instanceof Sarray.PartnerClassSarray;
+                // If the index is known to store null, return null
+                return null;
+            }
         }
 
         representPartnerClassObjectViaConstraintsIfNeeded(se, sarray, index);
@@ -597,9 +616,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
         if (sarray.__mulib__isRepresentedInSolver()) {
-            // We must reset the cached elements, if a symbolic variable is present and store was used
-            // This is because we can't be sure which index-element pair was overwritten
-            sarray.clearCache();
             if (value instanceof PartnerClass) {
                 representPartnerClassObjectViaConstraintsIfNeeded(se, (PartnerClass) value, true);
             }
