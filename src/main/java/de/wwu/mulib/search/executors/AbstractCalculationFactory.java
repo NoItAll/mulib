@@ -257,10 +257,13 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
         assert pco.__mulib__isRepresentedInSolver();
         assert !(pco instanceof Sarray);
-        if (value instanceof PartnerClass && ((PartnerClass) value).__mulib__getId() == null) {
-            PartnerClass pcval = (PartnerClass) value;
-            pcval.__mulib__prepareToRepresentSymbolically(se);
-            representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
+        if (value instanceof PartnerClass) {
+            PartnerClass pcVal = (PartnerClass) value;
+            if (!pcVal.__mulib__isRepresentedInSolver()) {
+                PartnerClass pcval = (PartnerClass) value;
+                pcval.__mulib__prepareToRepresentSymbolically(se);
+            }
+            representPartnerClassObjectIfNeeded(se, pcVal, pco.__mulib__getId(), field);
         }
         if (!se.nextIsOnKnownPath()) {
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
