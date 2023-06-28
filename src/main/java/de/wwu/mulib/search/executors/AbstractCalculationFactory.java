@@ -218,6 +218,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     public void initializeLazyFields(SymbolicExecution se, PartnerClass pco) {
         assert pco.__mulib__defaultIsSymbolic();
         assert !pco.__mulib__isLazilyInitialized();
+        assert !(pco instanceof Sarray);
+        // If pco is representedInTheSolver, we get its field values from the SolverManager anyways
         if (!pco.__mulib__isRepresentedInSolver()) {
             pco.__mulib__initializeLazyFields(se);
         }
@@ -251,7 +253,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value) {
+    public void putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value) {
         assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
         assert pco.__mulib__isRepresentedInSolver();
         assert !(pco instanceof Sarray);
@@ -271,7 +273,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     )
             );
         }
-        return value;
     }
 
     private void _generateIdIfNeeded(
@@ -525,13 +526,13 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
-        assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver();
+        assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver() && pc.__mulib__isRepresentedInSolver();
         Map<String, SubstitutedVar> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar();
         List<PartnerClassObjectFieldConstraint> result = new ArrayList<>();
         for (Map.Entry<String, SubstitutedVar> e : fieldsToValues.entrySet()) {
             Sprimitive value = getValueToBeUsedForPartnerClassObjectConstraint(e.getValue());
             assert !(e.getValue() instanceof PartnerClass) || ((PartnerClass) e.getValue()).__mulib__isRepresentedInSolver();
-            if (e.getValue() == null && pc.__mulib__isSymbolicAndNotYetInitialized()) {
+            if (e.getValue() == null && pc.__mulib__isSymbolicAndNotYetLazilyInitialized()) {
                 continue;
             }
             result.add(new PartnerClassObjectFieldConstraint(
@@ -552,7 +553,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         List<ArrayAccessConstraint> initialConstraints = new ArrayList<>();
         for (Sint i : cachedIndices) {
             SubstitutedVar value = sarray.getFromCacheForIndex(i);
-            assert !(value instanceof PartnerClass) || ((PartnerClass) value).__mulib__isRepresentedInSolver();
+            assert !(value instanceof PartnerClass)
+                    // Value was represented beforehand
+                    || ((PartnerClass) value).__mulib__isRepresentedInSolver();
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
             ArrayAccessConstraint ac = new ArrayAccessConstraint(
                     (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),

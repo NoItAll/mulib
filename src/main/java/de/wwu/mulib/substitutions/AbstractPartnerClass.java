@@ -10,7 +10,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 public abstract class AbstractPartnerClass implements PartnerClass {
-    protected Sint id;
+    protected Sint id = null;
     protected byte representationState;
     protected Sbool isNull;
 
@@ -142,8 +142,13 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     }
 
     @Override
-    public final boolean __mulib__isSymbolicAndNotYetInitialized() {
+    public final boolean __mulib__isSymbolicAndNotYetLazilyInitialized() {
         return __mulib__defaultIsSymbolic() && !__mulib__isLazilyInitialized();
+    }
+
+    @Override
+    public final boolean __mulib__isToBeLazilyInitialized() {
+        return __mulib__isSymbolicAndNotYetLazilyInitialized() && !__mulib__isRepresentedInSolver();
     }
 
 }

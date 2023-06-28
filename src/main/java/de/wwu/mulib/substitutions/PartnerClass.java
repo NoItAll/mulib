@@ -62,5 +62,7 @@ public interface PartnerClass extends SubstitutedVar {
 
     void __mulib__setAsLazilyInitialized();
 
-    boolean __mulib__isSymbolicAndNotYetInitialized();
+    boolean __mulib__isSymbolicAndNotYetLazilyInitialized();
+
+    boolean __mulib__isToBeLazilyInitialized();
 }

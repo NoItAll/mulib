@@ -7,11 +7,11 @@ import de.wwu.mulib.substitutions.primitives.Sint;
 public class PartnerClassObjectRememberConstraint implements PartnerClassObjectConstraint {
 
     private final String name;
-    private final PartnerClass copied;
+    private final PartnerClass copy;
 
-    public PartnerClassObjectRememberConstraint(String name, PartnerClass copied) {
+    public PartnerClassObjectRememberConstraint(String name, PartnerClass copy) {
         this.name = name;
-        this.copied = copied;
+        this.copy = copy;
     }
 
     public String getName() {
@@ -19,7 +19,7 @@ public class PartnerClassObjectRememberConstraint implements PartnerClassObjectC
     }
 
     public PartnerClass getRememberedValue() {
-        return copied;
+        return copy;
     }
 
     @Override

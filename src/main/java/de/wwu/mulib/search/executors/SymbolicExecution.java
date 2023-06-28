@@ -338,8 +338,8 @@ public final class SymbolicExecution {
         return calculationFactory.getField(this, partnerClassObject, field, typeOfField);
     }
 
-    public SubstitutedVar putField(PartnerClass partnerClassObject, String field, SubstitutedVar value) {
-        return calculationFactory.putField(this, partnerClassObject, field, value);
+    public void putField(PartnerClass partnerClassObject, String field, SubstitutedVar value) {
+        calculationFactory.putField(this, partnerClassObject, field, value);
     }
 
     /* SYMBOLIC VARIABLE CREATION */

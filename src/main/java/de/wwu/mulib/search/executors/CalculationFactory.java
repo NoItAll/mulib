@@ -161,7 +161,7 @@ public interface CalculationFactory {
     Slong land(SymbolicExecution se, Slong l0, Slong l1);
     SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);
 
-    SubstitutedVar putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);
+    void putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);
 
     Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index);
 
