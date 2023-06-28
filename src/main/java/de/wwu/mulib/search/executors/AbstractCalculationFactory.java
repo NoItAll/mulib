@@ -193,7 +193,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // We will now add a constraint indicating to the solver that at position i a value can be found that previously
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
-        if (sarray.__mulib__shouldBeRepresentedInSolver()) {
+        if (sarray.__mulib__isRepresentedInSolver()) {
             if (result instanceof PartnerClass) {
                 assert sarray instanceof Sarray.PartnerClassSarray;
                 representPartnerClassObjectIfNeeded(se, (PartnerClass) result, sarray.__mulib__getId());
@@ -499,7 +499,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         representPartnerClassObjectViaConstraintsIfNeeded(se, ihsv, newIndex instanceof Sym);
     }
     private void representPartnerClassObjectViaConstraintsIfNeeded(SymbolicExecution se, PartnerClass ihsv, boolean additionalConstraintToPrepare) {
-        if (!ihsv.__mulib__shouldBeRepresentedInSolver() && additionalConstraintToPrepare) {
+        if (!ihsv.__mulib__isRepresentedInSolver() && additionalConstraintToPrepare) {
             ihsv.__mulib__prepareToRepresentSymbolically(se);
         }
         representPartnerClassObjectIfNeeded(se, ihsv, null);
@@ -593,7 +593,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
         // Similarly to select, we will notify the solver, if needed, that the representation of the array has changed.
-        if (sarray.__mulib__shouldBeRepresentedInSolver()) {
+        if (sarray.__mulib__isRepresentedInSolver()) {
             // We must reset the cached elements, if a symbolic variable is present and store was used
             // This is because we can't be sure which index-element pair was overwritten
             sarray.clearCache();
