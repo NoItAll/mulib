@@ -511,7 +511,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
-    public final SootMethod SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED;
+    public final SootMethod SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
@@ -1019,7 +1019,7 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
-        SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED                    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isSymbolicAndNotYetLazilyInitialized", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
         SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
 

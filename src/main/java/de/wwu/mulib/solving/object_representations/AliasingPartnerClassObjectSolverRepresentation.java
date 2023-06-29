@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.*;
@@ -116,13 +117,14 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
     @Override
     public Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName) {
         assert PartnerClass.class.isAssignableFrom(fieldToType.get(fieldName));
-        return _getPartnerClassIdsKnownToBePossiblyContainedInField(fieldName, true);
+        return _getPartnerClassIdsKnownToBePossiblyContainedInField(fieldName, false);
     }
 
     @SuppressWarnings("unchecked")
     public Set<Sint> _getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName, boolean initalizeLazily) {
         Set<Sint> result;
         if (!cannotBeNewInstance) {
+            // Can be new instance
             if (initalizeLazily) {
                 lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
             }
@@ -178,7 +180,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                 Sbool.newInputSymbolicSbool()
                 :
                 Sbool.ConcSbool.FALSE;
-        ArraySolverRepresentation result = typeOfField.getComponentType().isArray() ?
+        ArraySolverRepresentation result = Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ?
                 new AliasingPartnerClassArraySolverRepresentation(
                         config,
                         id,

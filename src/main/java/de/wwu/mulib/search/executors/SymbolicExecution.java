@@ -436,56 +436,48 @@ public final class SymbolicExecution {
 
     public Sarray.SintSarray namedSintSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SintSarray result = valueFactory.sintSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SdoubleSarray namedSdoubleSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SdoubleSarray result = valueFactory.sdoubleSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SfloatSarray namedSfloatSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SfloatSarray result = valueFactory.sfloatSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SlongSarray namedSlongSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SlongSarray result = valueFactory.slongSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SshortSarray namedSshortSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SshortSarray result = valueFactory.sshortSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SbyteSarray namedSbyteSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SbyteSarray result = valueFactory.sbyteSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.SboolSarray namedSboolSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.SboolSarray result = valueFactory.sboolSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
 
     public Sarray.ScharSarray namedScharSarray(String identifier, Sint len, boolean defaultIsSymbolic) {
         Sarray.ScharSarray result = valueFactory.scharSarray(this, len, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
@@ -493,7 +485,6 @@ public final class SymbolicExecution {
     public Sarray.PartnerClassSarray namedPartnerClassSarray(
             String identifier, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
         Sarray.PartnerClassSarray result = valueFactory.partnerClassSarray(this, len, clazz, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
@@ -501,7 +492,6 @@ public final class SymbolicExecution {
     public Sarray.SarraySarray namedSarraySarray(
             String identifier, Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
         Sarray.SarraySarray result = valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
-        result.__mulib__setIsNamed();
         addNamedVariable(identifier, result);
         return result;
     }
@@ -646,7 +636,6 @@ public final class SymbolicExecution {
 
     public PartnerClass namedSymObject(String identifier, Class<? extends PartnerClass> clazz) {
         PartnerClass symObject = symObject(clazz);
-        symObject.__mulib__setIsNamed();
         addNamedVariable(identifier, symObject);
         return symObject;
     }
@@ -824,9 +813,6 @@ public final class SymbolicExecution {
     }
 
     public void nameSubstitutedVar(SubstitutedVar sv, String name) {
-        if (sv instanceof PartnerClass) {
-            ((PartnerClass) sv).__mulib__setIsNamed();
-        }
         addNamedVariable(name, sv);
     }
 

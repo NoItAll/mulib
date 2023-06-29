@@ -239,7 +239,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
         Sarray.PartnerClassSarray result = getSarrayConstructor.apply(clazz, new Object[] { clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE });
-        decideOnAddToAliasingAndRepresentation(clazz, result, se);
+        decideOnAddToAliasingAndRepresentation(result.getClass(), result, se);
         return result;
     }
 
@@ -247,7 +247,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
         Sarray.SarraySarray result = (Sarray.SarraySarray) getSarrayConstructor.apply(clazz, new Object[] { len, se, defaultIsSymbolic, clazz, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE });
-        decideOnAddToAliasingAndRepresentation(clazz, result, se);
+        decideOnAddToAliasingAndRepresentation(result.getClass(), result, se);
         return result;
     }
 

@@ -181,8 +181,8 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
 
     @Override
     public String toString() {
-        return String.format("POInit{type=%s, clazz=%s, id=%s, reservedId=%s, potentialIds=%s," +
-                "initialGetFields=%s, containingPartnerClassObjectId=%s, isNull=%s" +
+        return String.format("POInit{type=%s, clazz=%s, id=%s, reservedId=%s, potentialIds=%s, " +
+                "initialGetFields=%s, containingPartnerClassObjectId=%s, isNull=%s, " +
                 "defaultIsSymbolic=%s, fieldName=%s}",
                 type.toString(), clazz.getSimpleName(), partnerClassObjectId.toString(),
                 reservedId == null ? "{}" : reservedId.toString(),

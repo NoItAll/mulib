@@ -5,6 +5,7 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectInitializationConstraint;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -63,24 +64,9 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
     @Override
     protected ArraySolverRepresentation lazilyGenerateArrayForField(String field) {
         Class<?> typeOfField = fieldToType.get(field);
-        assert typeOfField.isArray();
+        assert Sarray.class.isAssignableFrom(typeOfField);
         Sint id = Sint.concSint(getNextUntrackedReservedId());
-        ArraySolverRepresentation result = typeOfField.getComponentType().isArray() ?
-                new PrimitiveValuedArraySolverRepresentation(
-                        config,
-                        id,
-                        Sint.newInputSymbolicSint(),
-                        config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
-                                Sbool.newInputSymbolicSbool()
-                                :
-                                Sbool.ConcSbool.FALSE,
-                        typeOfField,
-                        true,
-                        level,
-                        false,
-                        false
-                )
-                :
+        ArraySolverRepresentation result = Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ?
                 new SimplePartnerClassArraySolverRepresentation(
                         config,
                         id,
@@ -96,7 +82,23 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         false,
                         sps,
                         asr
+                )
+                :
+                new PrimitiveValuedArraySolverRepresentation(
+                        config,
+                        id,
+                        Sint.newInputSymbolicSint(),
+                        config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
+                                Sbool.newInputSymbolicSbool()
+                                :
+                                Sbool.ConcSbool.FALSE,
+                        typeOfField,
+                        true,
+                        level,
+                        false,
+                        false
                 );
+
         asr.addRepresentationForId(id, result, level);
         return result;
     }
@@ -132,6 +134,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
     public Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName) {
         assert PartnerClass.class.isAssignableFrom(fieldToType.get(fieldName));
         lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        // We know that the array is of fixed size since we represent each field by an array of size 1
         return (Set<Sint>) fieldToRepresentation.get(fieldName).getValuesKnownToPossiblyBeContainedInArray(true);
     }
 }

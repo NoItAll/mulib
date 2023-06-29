@@ -220,7 +220,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         assert !pco.__mulib__isLazilyInitialized();
         assert !(pco instanceof Sarray);
         // If pco is representedInTheSolver, we get its field values from the SolverManager anyways
-        if (!pco.__mulib__isRepresentedInSolver()) {
+        if (pco.__mulib__isToBeLazilyInitialized()) {
             pco.__mulib__initializeLazyFields(se);
         }
         pco.__mulib__setAsLazilyInitialized();
@@ -235,7 +235,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         SubstitutedVar fieldValue = getValueForFieldInPartnerClass(se, pco, field, fieldClass);
         if (fieldValue instanceof PartnerClass && ((PartnerClass) fieldValue).__mulib__getId() == null) {
             PartnerClass pcval = (PartnerClass) fieldValue;
-            pcval.__mulib__prepareForAliasingAndBlockCache(se); // No concrete index since this might be accessed multiple times
+            // No concrete index since pco might be accessed multiple times
+            pcval.__mulib__prepareForAliasingAndBlockCache(se);
             representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
         }
         if (!se.nextIsOnKnownPath()) {

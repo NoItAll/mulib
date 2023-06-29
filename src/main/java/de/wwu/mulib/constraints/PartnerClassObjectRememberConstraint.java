@@ -8,10 +8,12 @@ public class PartnerClassObjectRememberConstraint implements PartnerClassObjectC
 
     private final String name;
     private final PartnerClass copy;
+    private final boolean isUninitializedLazyInit;
 
-    public PartnerClassObjectRememberConstraint(String name, PartnerClass copy) {
+    public PartnerClassObjectRememberConstraint(String name, PartnerClass copy, boolean isUninitializedLazyInit) {
         this.name = name;
         this.copy = copy;
+        this.isUninitializedLazyInit = isUninitializedLazyInit;
     }
 
     public String getName() {
@@ -20,6 +22,10 @@ public class PartnerClassObjectRememberConstraint implements PartnerClassObjectC
 
     public PartnerClass getRememberedValue() {
         return copy;
+    }
+
+    public boolean isUninitializedLazyInit() {
+        return isUninitializedLazyInit;
     }
 
     @Override

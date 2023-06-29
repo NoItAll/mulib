@@ -185,7 +185,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         solution = getPathSolution(solutionValue, false);
                     } catch (Throwable t) {
                         t.printStackTrace();
-
                         throw new MulibRuntimeException(t);
                     }
                     this.mulibExecutorManager.addToPathSolutions(solution, this);
@@ -207,7 +206,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     Mulib.log.warning(config.toString());
                     throw e;
                 } catch (Throwable e) {
-                    if (!solverManager.isSatisfiable()) {
+                    if (isConcolic && !solverManager.isSatisfiable()) {
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
@@ -232,15 +231,26 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             return;
         }
         if (remembered instanceof PartnerClass) {
-            if (currentSymbolicExecution.nextIsOnKnownPath()) {
-                // Only add constraint if this has not already been dealt with in the past
-                return;
-            }
+            PartnerClass pc = (PartnerClass) remembered;
+            pc.__mulib__setIsNamed();
             // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
             //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
             MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
-            PartnerClass copied = (PartnerClass) ((PartnerClass) remembered).copy(mulibValueCopier);
-            solverManager.addPartnerClassObjectConstraint(new PartnerClassObjectRememberConstraint(name, copied));
+            boolean isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = false;
+            if (pc.__mulib__isToBeLazilyInitialized()) {
+                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = true;
+                pc.__mulib__prepareToRepresentSymbolically(currentSymbolicExecution);
+                getCalculationFactory().representPartnerClassObjectIfNeeded(currentSymbolicExecution, pc, null);
+            }
+            PartnerClass copied = (PartnerClass) pc.copy(mulibValueCopier);
+            if (!currentSymbolicExecution.nextIsOnKnownPath()) {
+                solverManager.addPartnerClassObjectConstraint(
+                        new PartnerClassObjectRememberConstraint(
+                                name,
+                                copied,
+                                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically)
+                );
+            }
         } else {
             assert remembered instanceof Snumber;
             rememberedSprimitives.put(name, ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) remembered));

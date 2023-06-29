@@ -1488,7 +1488,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(
                     Jimple.v().newAssignStmt(
                             mustBeLazilyInitialized,
-                            Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_IS_SYMBOLIC_AND_NOT_YET_INITIALIZED.makeRef())
+                            Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED.makeRef())
                     )
             );
 

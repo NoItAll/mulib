@@ -121,7 +121,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
         @Override
         public String toString() {
-            return "ConcSbool{value=" + value + "}";
+            return String.valueOf(value);
         }
     }
 

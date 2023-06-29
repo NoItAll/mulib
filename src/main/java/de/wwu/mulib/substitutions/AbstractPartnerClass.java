@@ -148,7 +148,7 @@ public abstract class AbstractPartnerClass implements PartnerClass {
 
     @Override
     public final boolean __mulib__isToBeLazilyInitialized() {
-        return __mulib__isSymbolicAndNotYetLazilyInitialized() && !__mulib__isRepresentedInSolver();
+        return __mulib__defaultIsSymbolic() && !__mulib__isLazilyInitialized() && !__mulib__isRepresentedInSolver();
     }
 
 }

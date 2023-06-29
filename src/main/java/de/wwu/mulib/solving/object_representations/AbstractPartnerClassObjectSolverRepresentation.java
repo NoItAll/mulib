@@ -120,6 +120,10 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     }
 
     private static ArrayAccessConstraint generateSymForSprimitive(Sint id, Class<?> c) {
+        return new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, generateSymSprimitive(c), ArrayAccessConstraint.Type.SELECT);
+    }
+
+    private static Sprimitive generateSymSprimitive(Class<?> c) {
         Sprimitive val;
         if (Sint.class.isAssignableFrom(c)) {
             if (Sbool.class.isAssignableFrom(c)) {
@@ -143,7 +147,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         } else {
             throw new NotYetImplementedException();
         }
-        return new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, val, ArrayAccessConstraint.Type.SELECT);
+        return val;
     }
 
     private static Map<String, ArrayAccessConstraint> initialGetfieldsToArraySelects(PartnerClassObjectFieldConstraint[] getfields) {
@@ -198,20 +202,31 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     public final void lazilyGenerateAndSetPartnerClassFieldIfNeeded(String fieldName) {
         assert fieldToType.containsKey(fieldName);
         if (!fieldToRepresentation.containsKey(fieldName)) {
-            if (Sarray.class.isAssignableFrom(fieldToType.get(fieldName))) {
+            Class<?> typeOfField = fieldToType.get(fieldName);
+            if (Sarray.class.isAssignableFrom(typeOfField)) {
                 ArraySolverRepresentation fieldVal = lazilyGenerateArrayForField(fieldName);
+                assert fieldVal.getArrayId() != null;
                 ArrayAccessConstraint aac = new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, fieldVal.getArrayId(), ArrayAccessConstraint.Type.SELECT);
                 fieldToRepresentation.put(
                         fieldName,
-                        new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[] { aac }, fieldToType.get(fieldName))
+                        new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[] { aac }, typeOfField)
                 );
-            } else {
+            } else if (PartnerClass.class.isAssignableFrom(typeOfField)) {
                 PartnerClassObjectSolverRepresentation fieldVal = lazilyGeneratePartnerClassObjectForField(fieldName);
+                assert fieldVal.getId() != null;
                 sps.addRepresentationForId(fieldVal.getId(), fieldVal, level);
                 ArrayAccessConstraint aac = new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, fieldVal.getId(), ArrayAccessConstraint.Type.SELECT);
                 fieldToRepresentation.put(
                         fieldName,
-                        new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[] { aac }, fieldToType.get(fieldName))
+                        new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[] { aac }, typeOfField)
+                );
+            } else {
+                assert Sprimitive.class.isAssignableFrom(typeOfField);
+                Sprimitive val = generateSymSprimitive(typeOfField);
+                ArrayAccessConstraint aac = new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, val, ArrayAccessConstraint.Type.SELECT);
+                fieldToRepresentation.put(
+                        fieldName,
+                        new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[]{ aac }, typeOfField)
                 );
             }
         }
