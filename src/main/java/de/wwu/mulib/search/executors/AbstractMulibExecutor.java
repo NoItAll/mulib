@@ -240,7 +240,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (pc.__mulib__isToBeLazilyInitialized()) {
                 isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = true;
                 pc.__mulib__prepareToRepresentSymbolically(currentSymbolicExecution);
-                getCalculationFactory().representPartnerClassObjectIfNeeded(currentSymbolicExecution, pc, null);
+                getCalculationFactory().representPartnerClassObjectIfNeeded(currentSymbolicExecution, pc, null, null, null);
             }
             PartnerClass copied = (PartnerClass) pc.copy(mulibValueCopier);
             if (!currentSymbolicExecution.nextIsOnKnownPath()) {

@@ -175,9 +175,7 @@ public interface CalculationFactory {
 
     PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
 
-    void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingSarraySarray);
-
-    void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingPartnerClassObject, String fieldName);
+    void representPartnerClassObjectIfNeeded(SymbolicExecution se, PartnerClass ihsr, Sint idOfContainingPartnerClassObject, String fieldName, Sint index);
 
     void initializeLazyFields(SymbolicExecution se, PartnerClass partnerClassObject);
 

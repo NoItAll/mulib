@@ -120,7 +120,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             sarray.setInCacheForIndexForSelect(index, result);
             return result;
         }
-        result = sarray.getNewValueForSelect(se);
+        result = sarray.getNewValueForSelect(se, index);
         sarray.setInCacheForIndexForSelect(concsIndex, result);
         sarray.setInCacheForIndexForSelect(index, result);
         return result;
@@ -196,7 +196,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (sarray.__mulib__isRepresentedInSolver()) {
             if (result instanceof PartnerClass) {
                 assert sarray instanceof Sarray.PartnerClassSarray;
-                representPartnerClassObjectIfNeeded(se, (PartnerClass) result, sarray.__mulib__getId());
+                representPartnerClassObjectIfNeeded(se, (PartnerClass) result, sarray.__mulib__getId(), null, index);
             }
             if (!se.nextIsOnKnownPath()) {
                 Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(result);
@@ -237,7 +237,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             PartnerClass pcval = (PartnerClass) fieldValue;
             // No concrete index since pco might be accessed multiple times
             pcval.__mulib__prepareForAliasingAndBlockCache(se);
-            representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field);
+            representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field, null);
         }
         if (!se.nextIsOnKnownPath()) {
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(fieldValue);
@@ -264,7 +264,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 PartnerClass pcval = (PartnerClass) value;
                 pcval.__mulib__prepareToRepresentSymbolically(se);
             }
-            representPartnerClassObjectIfNeeded(se, pcVal, pco.__mulib__getId(), field);
+            representPartnerClassObjectIfNeeded(se, pcVal, pco.__mulib__getId(), field, null);
         }
         if (!se.nextIsOnKnownPath()) {
             Sprimitive val = getValueToBeUsedForPartnerClassObjectConstraint(value);
@@ -375,7 +375,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             SymbolicExecution se,
             PartnerClass ihsr,
             Sint idOfContainingPartnerClassObject,
-            String fieldName) {
+            String fieldName,
+            Sint index) {
+        assert fieldName == null || index == null;
         if (!ihsr.__mulib__shouldBeRepresentedInSolver() || ihsr.__mulib__isRepresentedInSolver()) {
             return;
         }
@@ -388,7 +390,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // If needed, represent complex-typed entries in solver
         if (ihsr instanceof Sarray.PartnerClassSarray) {
             // Includes SarraySarrays
-            for (Object objectEntry : ((Sarray) ihsr).getCachedElements()) {
+            for (Sint i : ((Sarray<?>) ihsr).getCachedIndices()) {
+                Object objectEntry = ((Sarray.PartnerClassSarray<?>) ihsr).getFromCacheForIndex(i);
                 if (objectEntry == null) {
                     continue;
                 }
@@ -397,7 +400,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     assert !entry.__mulib__shouldBeRepresentedInSolver();
                     entry.__mulib__prepareToRepresentSymbolically(se);
                     // Is a Sarray, i.e., we do not have a field here
-                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), null);
+                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), null, i);
                 }
                 if (entry instanceof Sarray) {
                     assert entry.__mulib__cacheIsBlocked();
@@ -417,7 +420,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 }
                 PartnerClass pc = (PartnerClass) val;
                 _generateIdIfNeeded(se, ihsr, pc);
-                representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), entry.getKey());
+                representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), entry.getKey(), null);
             }
         }
         // Represent array OR partnerclass object in constraint solver, if needed
@@ -454,7 +457,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         } else {
             // Id is symbolic
             // In this case we must initialize the Sarray with the possibility of aliasing the elements in the sarray
-            Sint nextNumberInitializedSymObject = se.concSint(se.getNextNumberInitializedSymObject());
+            Sint reservedId = se.concSint(se.getNextNumberInitializedSymObject());
             if (!se.nextIsOnKnownPath()) {
                 PartnerClassObjectConstraint initializationConstraint;
                 if (ihsr instanceof Sarray) {
@@ -464,9 +467,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                             (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
                             tryGetSymFromSbool.apply(sarray.__mulib__isNull()),
                             // Id reserved for this Sarray, if needed
-                            nextNumberInitializedSymObject,
+                            reservedId,
                             (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                             fieldName, // Is null if container is sarray
+                            (Sint) tryGetSymFromSnumber.apply(index), // Is null if container is partner class object
                             sarray.getElementType(),
                             collectInitialArrayAccessConstraints(sarray, se),
                             sarray.__mulib__defaultIsSymbolic()
@@ -482,9 +486,10 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                     ihsr.getClass(),
                                     (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
                                     tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
-                                    nextNumberInitializedSymObject,
+                                    reservedId,
                                     (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                                     fieldName, // Is null if container is sarray
+                                    (Sint) tryGetSymFromSnumber.apply(index), // Is null if container is partner class object
                                     collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
                                     ihsr.__mulib__defaultIsSymbolic()
                             );
@@ -517,16 +522,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (!ihsv.__mulib__isRepresentedInSolver() && additionalConstraintToPrepare) {
             ihsv.__mulib__prepareToRepresentSymbolically(se);
         }
-        representPartnerClassObjectIfNeeded(se, ihsv, null);
-    }
-
-    @Override
-    public void representPartnerClassObjectIfNeeded(
-            SymbolicExecution se,
-            PartnerClass ihsr,
-            // null if sarray does not belong to a SarraySarray or PartnerClass object that is to be represented:
-            Sint idOfContainingSarraySarray) {
-        representPartnerClassObjectIfNeeded(se, ihsr, idOfContainingSarraySarray, null);
+        representPartnerClassObjectIfNeeded(se, ihsv, null, null, null);
     }
 
     @Override
@@ -602,7 +598,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         representPartnerClassObjectViaConstraintsIfNeeded(se, sarray, index);
         checkIndexAccess(sarray, index, se);
 
-        result = sarray.getNewValueForSelect(se);
+        result = sarray.getNewValueForSelect(se, index);
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setInCacheForIndexForSelect(index, result);
         // Needed for concolic execution

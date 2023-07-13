@@ -51,7 +51,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         if (len instanceof ConcSnumber) {
             int length = ((ConcSnumber) len).intVal();
             for (int i = 0; i < length; i++) {
-                cachedElements.put(Sint.concSint(i), getNewValueForSelect(se));
+                Sint index = Sint.concSint(i);
+                cachedElements.put(index, getNewValueForSelect(se, index));
             }
         }
     }
@@ -89,7 +90,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         return "Sarray[" + id + "]{repState=" + representationState + ",elements=" + cachedElements + "}";
     }
 
-    protected abstract T symbolicDefault(SymbolicExecution se);
+    protected abstract T symbolicDefault(SymbolicExecution se, Sint index);
 
     protected abstract T nonSymbolicDefaultElement();
 
@@ -201,13 +202,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
-    public T getNewValueForSelect(SymbolicExecution se) {
+    public T getNewValueForSelect(SymbolicExecution se, Sint index) {
         T result;
         if (!__mulib__defaultIsSymbolic() && !__mulib__shouldBeRepresentedInSolver()) {
             result = nonSymbolicDefaultElement();
         } else {
             // If symbolic is required, optional aliasing etc. is handled here
-            result = symbolicDefault(se);
+            result = symbolicDefault(se, index);
         }
         return result;
     }
@@ -261,7 +262,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sint symbolicDefault(SymbolicExecution se) {
+        protected Sint symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSint();
         }
 
@@ -316,7 +317,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sdouble symbolicDefault(SymbolicExecution se) {
+        protected Sdouble symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSdouble();
         }
 
@@ -371,7 +372,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sfloat symbolicDefault(SymbolicExecution se) {
+        protected Sfloat symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSfloat();
         }
 
@@ -426,7 +427,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Slong symbolicDefault(SymbolicExecution se) {
+        protected Slong symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSlong();
         }
 
@@ -481,7 +482,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sshort symbolicDefault(SymbolicExecution se) {
+        protected Sshort symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSshort();
         }
 
@@ -536,7 +537,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Schar symbolicDefault(SymbolicExecution se) {
+        protected Schar symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSchar();
         }
 
@@ -591,7 +592,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sbyte symbolicDefault(SymbolicExecution se) {
+        protected Sbyte symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSbyte();
         }
 
@@ -645,7 +646,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sbool symbolicDefault(SymbolicExecution se) {
+        protected Sbool symbolicDefault(SymbolicExecution se, Sint index) {
             return se.symSbool();
         }
 
@@ -754,7 +755,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected T symbolicDefault(SymbolicExecution se) {
+        protected T symbolicDefault(SymbolicExecution se, Sint index) {
             assert __mulib__defaultIsSymbolic() || __mulib__isRepresentedInSolver();
             // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
             //  sarrays are allowed to be initialized to null
@@ -768,7 +769,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                 // This can happen if we allow for aliasing
                 result.__mulib__prepareForAliasingAndBlockCache(se);
             }
-            se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId());
+            se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId(), null, index);
             return result;
         }
 
