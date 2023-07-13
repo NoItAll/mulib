@@ -55,7 +55,7 @@ public abstract class MulibExecutorManager {
         this.choicePointFactory = choicePointFactory;
         this.valueFactory = valueFactory;
         this.calculationFactory = calculationFactory;
-        this.mulibExecutors = mulibExecutorsList;
+        this.mulibExecutors = Collections.synchronizedList(mulibExecutorsList);
         this.mulibValueTransformer = mulibValueTransformer;
         this.searchRegionMethod = searchRegionMethod;
         this.staticVariables = staticVariables;
