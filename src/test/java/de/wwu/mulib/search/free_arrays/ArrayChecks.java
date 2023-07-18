@@ -2984,10 +2984,10 @@ public class ArrayChecks {
         if (sbyteSarrayLength0.notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
-        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[]
+        Sarray.SbyteSarray sbyteSarray0 = se.sbyteSarray(sbyteSarrayLength0, false); // byte[1]
         sarraySarray0.store(se.concSint(0), sbyteSarray0, se);
         sbyteSarray0.store(se.concSint(0), se.concSbyte((byte) 2), se);
-        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), false); // byte[]
+        Sarray.SbyteSarray sbyteSarray1 = se.sbyteSarray(se.concSint(1), false); // byte[1]
         sarraySarray0.store(se.concSint(1), sbyteSarray1, se);
         sbyteSarray1.store(se.concSint(0), se.concSbyte((byte) 3), se);
         Sint index = se.symSint();
@@ -3003,9 +3003,11 @@ public class ArrayChecks {
         sarraySarraySarray.store(firstIndex, null, se);
         sarraySarraySarray.store(otherIndex, null, se);
 
-        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(se.symSint(), se); // Must be null
+        Sint sint0 = se.symSint();
+        Sarray.SarraySarray selectFromSarraySarray = (Sarray.SarraySarray) sarraySarraySarray.select(sint0, se); // Must be null
 
-        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(se.symSint(), se); // Produces NPE
+        Sint sint1 = se.symSint();
+        Sarray.SbyteSarray symSelected = (Sarray.SbyteSarray) selectFromSarraySarray.select(sint1, se); // Produces NPE
         throw new MulibIllegalStateException("Should be unreachable");
     }
 

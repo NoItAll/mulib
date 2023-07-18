@@ -25,6 +25,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     private static int NEXT_UNTRACKED_RESERVED_ID = -2;
 
     public static int getNextUntrackedReservedId() {
+        // See SymbolicExecution.getNextNumberInitializedSymObject
         return NEXT_UNTRACKED_RESERVED_ID--;
     }
 
@@ -39,7 +40,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     protected final int level;
     protected final Class<?> clazz;
     protected final boolean defaultIsSymbolic;
-    protected final boolean isAliasing;
     protected AbstractPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
@@ -52,7 +52,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
                 pic.isNull(),
                 pic.getClazz(),
                 pic.isDefaultIsSymbolic(),
-                pic.getPartnerClassObjectId() instanceof Sym,
                 sps,
                 asr,
                 level
@@ -69,7 +68,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
             Sbool isNull,
             Class<?> clazz,
             boolean defaultIsSymbolic,
-            boolean isAliasing,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
             int level) {
@@ -84,7 +82,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         this.sps = sps;
         this.asr = asr;
         this.fieldToType = new HashMap<>();
-        this.isAliasing = isAliasing;
         Field[] fields = clazz.getDeclaredFields();
         for (Field f : fields) {
             if (!f.getName().contains(StringConstants._TRANSFORMATION_PREFIX) && !Modifier.isStatic(f.getModifiers())) {
@@ -103,7 +100,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
             if (aac == null) {
                 if (!PartnerClass.class.isAssignableFrom(entry.getValue())) {
                     // We generate an arbitrary primitive symbolic value for the field of the correct type
-                    aac = generateSymForSprimitive(id, entry.getValue());
+                    aac = generateArrayAccessConstraintForIndexWithSymbolicValue(id, entry.getValue());
                 } else {
                     // PartnerClass fields will be lazily initialized
                     continue;
@@ -119,7 +116,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         }
     }
 
-    private static ArrayAccessConstraint generateSymForSprimitive(Sint id, Class<?> c) {
+    private static ArrayAccessConstraint generateArrayAccessConstraintForIndexWithSymbolicValue(Sint id, Class<?> c) {
         return new ArrayAccessConstraint(id, Sint.ConcSint.ZERO, generateSymSprimitive(c), ArrayAccessConstraint.Type.SELECT);
     }
 
@@ -176,7 +173,6 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
             this.fieldToRepresentation.put(entry.getKey(), entry.getValue().copy());
         }
         this.fieldToType = new HashMap<>(apcor.fieldToType);
-        this.isAliasing = apcor.isAliasing;
         this.sps = apcor.sps;
         this.asr = apcor.asr;
     }
@@ -201,7 +197,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     @Override
     public final void lazilyGenerateAndSetPartnerClassFieldIfNeeded(String fieldName) {
         assert fieldToType.containsKey(fieldName);
-        if (!fieldToRepresentation.containsKey(fieldName)) {
+        if (!_fieldIsSet(fieldName)) {
             Class<?> typeOfField = fieldToType.get(fieldName);
             if (Sarray.class.isAssignableFrom(typeOfField)) {
                 ArraySolverRepresentation fieldVal = lazilyGenerateArrayForField(fieldName);
@@ -282,7 +278,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
                     IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>
                             pcosr = sps.getRepresentationForId(s);
                     if (!typeOfField.isArray()
-                    && !Sarray.class.isAssignableFrom(typeOfField) // TODO Fix derivision from PartnerClass to be more expressive
+                    && !Sarray.class.isAssignableFrom(typeOfField)
                     ) {
                         PartnerClassObjectSolverRepresentation partnerClassObjectConstraint =
                                 pcosr.getNewestRepresentation();

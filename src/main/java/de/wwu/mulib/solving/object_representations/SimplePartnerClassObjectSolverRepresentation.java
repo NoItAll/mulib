@@ -29,11 +29,10 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
             Sbool isNull,
             Class<?> clazz,
             boolean defaultIsSymbolic,
-            boolean isAliasing,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
             int level) {
-        super(config, id, isNull, clazz, defaultIsSymbolic, isAliasing, sps, asr, level);
+        super(config, id, isNull, clazz, defaultIsSymbolic, sps, asr, level);
     }
 
     protected SimplePartnerClassObjectSolverRepresentation(SimplePartnerClassObjectSolverRepresentation apcor, int level) {
@@ -51,8 +50,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         :
                         Sbool.ConcSbool.FALSE,
                 fieldToType.get(field),
-                true,
-                isAliasing,
+                defaultIsSymbolic,
                 sps,
                 asr,
                 level
@@ -66,7 +64,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
         Class<?> typeOfField = fieldToType.get(field);
         assert Sarray.class.isAssignableFrom(typeOfField);
         Sint id = Sint.concSint(getNextUntrackedReservedId());
-        ArraySolverRepresentation result = Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ?
+        ArraySolverRepresentation result = Sarray.PartnerClassSarray.class.isAssignableFrom(typeOfField) ?
                 new SimplePartnerClassArraySolverRepresentation(
                         config,
                         id,

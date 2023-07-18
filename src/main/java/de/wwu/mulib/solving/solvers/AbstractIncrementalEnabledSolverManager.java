@@ -776,7 +776,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 throw new LabelingNotPossibleException("Field for field constraint not found: " + classAndFieldName);
             }
             Object val;
-            if (f.getType().isArray()) {
+            if (value == null) {
+                assert !f.getType().isPrimitive();
+                val = null;
+            } else if (f.getType().isArray()) {
                 assert value instanceof Sint;
                 val = labelRepresentedArray((Sint) value, rememberUntil, allRelevantPartnerClassObjectConstraints);
             } else if (f.getType().isPrimitive()) {

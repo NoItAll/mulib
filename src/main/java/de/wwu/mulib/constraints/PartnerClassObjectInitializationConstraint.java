@@ -1,5 +1,6 @@
 package de.wwu.mulib.constraints;
 
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
@@ -58,6 +59,8 @@ public class PartnerClassObjectInitializationConstraint implements PartnerClassO
             String fieldName,
             Sint index) {
         assert clazz != null;
+        assert !Sarray.class.isAssignableFrom(clazz);
+        assert !clazz.isArray();
         assert partnerClassObjectId != null;
         assert potentialIds == null || containingPartnerClassObjectId == null;
         assert initialGetfields != null;

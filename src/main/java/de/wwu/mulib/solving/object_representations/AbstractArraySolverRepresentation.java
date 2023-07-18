@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.object_representations;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -90,6 +91,7 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
         this.valueType = valueType;
         this.defaultIsSymbolic = defaultIsSymbolic;
         this.level = level;
+        this.currentRepresentation = new ArrayHistorySolverRepresentation(new ArrayAccessConstraint[0], valueType);
     }
 
 

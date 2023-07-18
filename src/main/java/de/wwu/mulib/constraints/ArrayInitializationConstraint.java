@@ -1,5 +1,6 @@
 package de.wwu.mulib.constraints;
 
+import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -64,6 +65,7 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
             Sint index) {
         assert isNull != null;
         assert valueType != null;
+        assert !Sarray.class.isAssignableFrom(valueType);
         assert arrayId != null;
         assert arrayLength != null;
         assert fieldName == null || index == null;

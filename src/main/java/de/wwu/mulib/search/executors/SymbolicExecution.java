@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -101,6 +102,10 @@ public final class SymbolicExecution {
 
     public int getNextNumberInitializedSymObject() {
         int result = nextIdentitiyHavingObjectNr++;
+        if (result < 0) {
+            // See AbstractPartnerClassObjectSolverRepresentation.getNextUntrackedReservedId
+            throw new MulibIllegalStateException("Currently, negative integers are reserved for lazy initialization, see ");
+        }
         if (result == -1) { // Reserved for null-representation
             result = nextIdentitiyHavingObjectNr++;
         }

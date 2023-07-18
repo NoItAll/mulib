@@ -47,7 +47,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
             int level,
             Sint reservedId,
             Set<Sint> potentialIds) {
-        super(config, id, isNull, clazz, true, true, sps, asr, level);
+        super(config, id, isNull, clazz, true, sps, asr, level);
         this.reservedId = reservedId;
         assert getId() instanceof SymNumericExpressionSprimitive;
         assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
@@ -180,6 +180,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                 Sbool.newInputSymbolicSbool()
                 :
                 Sbool.ConcSbool.FALSE;
+        assert !typeOfField.isArray();
         ArraySolverRepresentation result = Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ?
                 new AliasingPartnerClassArraySolverRepresentation(
                         config,
