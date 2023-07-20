@@ -3,7 +3,6 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
-import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -523,17 +522,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             ihsv.__mulib__prepareToRepresentSymbolically(se);
         }
         representPartnerClassObjectIfNeeded(se, ihsv, null, null, null);
-    }
-
-    @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field) {
-        assert !(var instanceof Sarray);
-        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()), field);
-    }
-
-    @Override
-    public ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray var) {
-        return se.getAvailableInformationOnArray((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
     }
 
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
