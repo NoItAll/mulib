@@ -54,9 +54,9 @@ public interface MulibExecutor {
 
     boolean isSatisfiable();
 
-    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field, int depth);
 
-    ArrayInformation getAvailableInformationOnArray(Sint id);
+    ArrayInformation getAvailableInformationOnArray(Sint id, int depth);
 
     Object getStaticField(String fieldName);
 

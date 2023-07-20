@@ -56,9 +56,9 @@ public interface SolverManager {
 
     List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
 
-    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field, int depth);
 
-    ArrayInformation getAvailableInformationOnArray(Sint id);
+    ArrayInformation getAvailableInformationOnArray(Sint id, int depth);
 
     void shutdown();
 }

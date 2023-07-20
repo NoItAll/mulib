@@ -97,13 +97,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
-        return solverManager.getAvailableInformationOnPartnerClassObject(id, field);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field, int depth) {
+        return solverManager.getAvailableInformationOnPartnerClassObject(id, field, depth);
     }
 
     @Override
-    public ArrayInformation getAvailableInformationOnArray(Sint id) {
-        return solverManager.getAvailableInformationOnArray(id);
+    public ArrayInformation getAvailableInformationOnArray(Sint id, int depth) {
+        return solverManager.getAvailableInformationOnArray(id, depth);
     }
 
     @Override
@@ -244,12 +244,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             }
             PartnerClass copied = (PartnerClass) pc.copy(mulibValueCopier);
             if (!currentSymbolicExecution.nextIsOnKnownPath()) {
-                solverManager.addPartnerClassObjectConstraint(
-                        new PartnerClassObjectRememberConstraint(
-                                name,
-                                copied,
-                                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically)
+                PartnerClassObjectConstraint rememberConstraint = new PartnerClassObjectRememberConstraint(
+                        name,
+                        copied,
+                        isToBeLazilyInitializedButIsInsteadRepresentedSymbolically
                 );
+                solverManager.addPartnerClassObjectConstraint(rememberConstraint);
+                currentChoiceOption.addPartnerClassConstraintConstraint(rememberConstraint);
             }
         } else {
             assert remembered instanceof Snumber;
@@ -368,18 +369,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             boolean isThrownException) {
         pathSolutionCallback.accept(solverManager);
         Solution s = solverManager.labelSolution(solutionValue, rememberedSprimitives);
-
+        SearchTree.AccumulatedChoiceOptionConstraints constraintContainer = SearchTree.getAllConstraintsForChoiceOption(currentChoiceOption);
         if (isThrownException) {
             return currentChoiceOption.setExceptionSolution(
                     s,
-                    solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
+                    constraintContainer.constraints,
+                    constraintContainer.partnerClassObjectConstraints
             );
         } else {
             return currentChoiceOption.setSolution(
                     s,
-                    solverManager.getConstraints().toArray(new Constraint[0]),
-                    solverManager.getAllPartnerClassObjectConstraints().toArray(new PartnerClassObjectConstraint[0])
+                    constraintContainer.constraints,
+                    constraintContainer.partnerClassObjectConstraints
             );
         }
     }

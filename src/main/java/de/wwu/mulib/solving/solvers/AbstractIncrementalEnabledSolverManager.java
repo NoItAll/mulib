@@ -57,9 +57,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
-        this.incrementalSolverState = IncrementalSolverState.newInstance(config);
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         this.classesToLabelFunction = config.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+        this.incrementalSolverState = IncrementalSolverState.newInstance(config, this);
     }
 
     @Override
@@ -109,25 +109,27 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field, int depth) {
+        assert id != null : "Must not be null";
         if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
         IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps =
                 incrementalSolverState.getSymbolicPartnerClassObjectStates();
-        return new PartnerClassObjectInformation(sps, sps.getRepresentationForId(id).getNewestRepresentation(), field);
+        return new PartnerClassObjectInformation(sps.getRepresentationForId(id).getRepresentationForDepth(depth), field);
     }
 
     @Override
-    public ArrayInformation getAvailableInformationOnArray(Sint id) {
+    public ArrayInformation getAvailableInformationOnArray(Sint id, int depth) {
+        assert id != null : "Must not be null";
         if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
         IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas =
                 incrementalSolverState.getSymbolicArrayStates();
-        return new ArrayInformation(sas, sas.getRepresentationForId(id).getNewestRepresentation());
+        return new ArrayInformation(sas, sas.getRepresentationForId(id).getRepresentationForDepth(depth));
     }
 
     protected final void registerLabelPair(Object searchRegionRepresentation, Object labeled) {

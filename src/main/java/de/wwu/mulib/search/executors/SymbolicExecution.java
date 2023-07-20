@@ -144,12 +144,12 @@ public final class SymbolicExecution {
         nextIdentitiyHavingObjectNr += i;
     }
 
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
-        return mulibExecutor.getAvailableInformationOnPartnerClassObject(id, field);
+    PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
+        return mulibExecutor.getAvailableInformationOnPartnerClassObject(id, field, currentChoiceOption.getDepth());
     }
 
-    public ArrayInformation getAvailableInformationOnArray(Sint id) {
-        return mulibExecutor.getAvailableInformationOnArray(id);
+    ArrayInformation getAvailableInformationOnArray(Sint id) {
+        return mulibExecutor.getAvailableInformationOnArray(id, currentChoiceOption.getDepth());
     }
 
     private void set() {

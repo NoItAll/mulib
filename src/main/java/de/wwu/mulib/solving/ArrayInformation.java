@@ -8,7 +8,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 public class ArrayInformation {
     public final Sbool isNull;
     public final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
-    public final boolean canContainExplicitNull;
+    public final boolean arrayCanPotentiallyContainNull;
 
     public ArrayInformation(
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas,
@@ -17,7 +17,7 @@ public class ArrayInformation {
         this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault =
                 asr.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault();
 
-        this.canContainExplicitNull =
+        this.arrayCanPotentiallyContainNull =
                 asr instanceof PartnerClassArraySolverRepresentation
                         && ((PartnerClassArraySolverRepresentation) asr).canContainNull(sas);
     }

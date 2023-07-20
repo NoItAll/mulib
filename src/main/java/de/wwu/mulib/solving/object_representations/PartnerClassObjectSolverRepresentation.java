@@ -65,7 +65,7 @@ public interface PartnerClassObjectSolverRepresentation {
 
     void lazilyGenerateAndSetPartnerClassFieldIfNeeded(String field);
 
-    boolean partnerClassFieldCanContainNull(String field);
+    boolean partnerClassFieldCanPotentiallyContainNull(String field);
 
     boolean _fieldIsSet(String field);
 }

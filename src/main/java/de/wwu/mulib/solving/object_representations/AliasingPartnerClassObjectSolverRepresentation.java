@@ -156,7 +156,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                 new AliasingPartnerClassObjectSolverRepresentation(
                         config,
                         id,
-                        partnerClassFieldCanContainNull(field) ?
+                        partnerClassFieldCanPotentiallyContainNull(field) ?
                                 Sbool.newInputSymbolicSbool()
                                 :
                                 Sbool.ConcSbool.FALSE,
@@ -176,7 +176,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
         Class<?> typeOfField = fieldToType.get(field);
         Sint id = Sint.newInputSymbolicSint();
         Set<Sint> potentialIds = _getPartnerClassIdsKnownToBePossiblyContainedInField(field, false);
-        Sbool isNull = partnerClassFieldCanContainNull(field) ?
+        Sbool isNull = partnerClassFieldCanPotentiallyContainNull(field) ?
                 Sbool.newInputSymbolicSbool()
                 :
                 Sbool.ConcSbool.FALSE;

@@ -3,6 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -319,11 +320,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             fieldValue = se.symSfloat();
         } else if (fieldClass.isArray() || PartnerClass.class.isAssignableFrom(fieldClass)) {
             PartnerClassObjectInformation pcoi =
-                    se.getAvailableInformationOnPartnerClassObject(
-                            (Sint) tryGetSymFromSnumber.apply(pco.__mulib__getId()),
+                    getAvailableInformationOnPartnerClassObject(
+                            se,
+                            pco,
                             field
                     );
-            boolean canBeNull = pcoi.canContainExplicitNull;
+            boolean canBeNull = pcoi.fieldCanPotentiallyContainExplicitNull;
             boolean defaultIsSymbolic = pco.__mulib__defaultIsSymbolic();
             // TODO refactor with SarraySarray
             if (fieldClass.isArray()) {
@@ -523,6 +525,18 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
         representPartnerClassObjectIfNeeded(se, ihsv, null, null, null);
     }
+
+    @Override
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field) {
+        assert !(var instanceof Sarray);
+        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()), field);
+    }
+
+    @Override
+    public ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray var) {
+        return se.getAvailableInformationOnArray((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
+    }
+
 
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
         assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver() && pc.__mulib__isRepresentedInSolver();

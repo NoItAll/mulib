@@ -1,6 +1,8 @@
 package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
@@ -101,6 +103,29 @@ public final class SearchTree {
         }
 
         return result;
+    }
+
+    public static AccumulatedChoiceOptionConstraints getAllConstraintsForChoiceOption(Choice.ChoiceOption co) {
+        ArrayDeque<Choice.ChoiceOption> cos = getPathTo(co);
+        List<Constraint> constraints = new ArrayList<>();
+        List<PartnerClassObjectConstraint> partnerClassObjectConstraints = new ArrayList<>();
+        while (!cos.isEmpty()) {
+            Choice.ChoiceOption current = cos.poll();
+            constraints.add(current.getOptionConstraint());
+            partnerClassObjectConstraints.addAll(current.getPartnerClassObjectConstraints());
+        }
+        return new AccumulatedChoiceOptionConstraints(constraints.toArray(Constraint[]::new), partnerClassObjectConstraints.toArray(PartnerClassObjectConstraint[]::new));
+    }
+
+    public static class AccumulatedChoiceOptionConstraints {
+        public final Constraint[] constraints;
+        public final PartnerClassObjectConstraint[] partnerClassObjectConstraints;
+
+        AccumulatedChoiceOptionConstraints(Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
+            this.constraints = constraints;
+            this.partnerClassObjectConstraints = partnerClassObjectConstraints;
+        }
+
     }
 
     @Override

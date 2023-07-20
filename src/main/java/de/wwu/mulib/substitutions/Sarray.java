@@ -760,8 +760,8 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
             //  sarrays are allowed to be initialized to null
             ArrayInformation info =
-                    se.getAvailableInformationOnArray(__mulib__getId());
-            boolean canBeNull = info.canContainExplicitNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+                    se.getCalculationFactory().getAvailableInformationOnArray(se, this);
+            boolean canBeNull = info.arrayCanPotentiallyContainNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
 
             T result = generateSymbolicDefault(se, info, canBeNull);
 

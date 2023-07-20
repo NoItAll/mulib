@@ -267,7 +267,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     }
 
     @Override
-    public boolean partnerClassFieldCanContainNull(String field) {
+    public boolean partnerClassFieldCanPotentiallyContainNull(String field) {
         Class<?> typeOfField = fieldToType.get(field);
         Set<Sint> relevantValues = getPartnerClassIdsKnownToBePossiblyContainedInField(field);
         return relevantValues.stream()

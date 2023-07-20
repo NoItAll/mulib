@@ -24,13 +24,15 @@ public class IncrementalSolverState<AR, PR> {
 
 
     @SuppressWarnings("rawtypes")
-    private IncrementalSolverState(MulibConfig config) {
-        this.symbolicPartnerClassObjectStates = new SymbolicPartnerClassObjectStates(config);
+    private IncrementalSolverState(MulibConfig config, SolverManager sm) {
+        this.symbolicPartnerClassObjectStates = new SymbolicPartnerClassObjectStates<>(config, sm);
     }
 
     public static class SymbolicPartnerClassObjectStates<R> {
+        final SolverManager solverManager;
         final Map<Sint, PartnerClassObjectRepresentation<R>> idToMostRecentRepresentation = new HashMap<>();
-        SymbolicPartnerClassObjectStates(MulibConfig mc) {
+        SymbolicPartnerClassObjectStates(MulibConfig mc, SolverManager sm) {
+            this.solverManager = sm;
         }
 
         public void addRepresentationForId(Sint id, R r, int level) {
@@ -42,6 +44,10 @@ public class IncrementalSolverState<AR, PR> {
 
         public PartnerClassObjectRepresentation<R> getRepresentationForId(Sint id) {
             return idToMostRecentRepresentation.get(id);
+        }
+
+        public void addMetadataConstraint(Constraint metadataConstraint) {
+            solverManager.addConstraint(metadataConstraint);
         }
     }
 
@@ -154,8 +160,8 @@ public class IncrementalSolverState<AR, PR> {
     }
 
     @SuppressWarnings("rawtypes")
-    public static IncrementalSolverState newInstance(MulibConfig config) {
-        return new IncrementalSolverState(config);
+    public static IncrementalSolverState newInstance(MulibConfig config, SolverManager sm) {
+        return new IncrementalSolverState(config, sm);
     }
 
     @SuppressWarnings({"unchecked", "rawtypes"})
@@ -198,11 +204,24 @@ public class IncrementalSolverState<AR, PR> {
             return resultWrapper.getNewestRepresentation();
         }
 
-        public void addNewRepresentation(R newRepresentation, int level) {
-            assert representationsForLevels.isEmpty() || representationsForLevels.peek().depth <= level;
+        public R getRepresentationForDepth(int depth) {
+            R current = null;
+            Iterator<PartnerClassObjectRepresentationForLevel<R>> it = representationsForLevels.descendingIterator();
+            while (it.hasNext()) {
+                PartnerClassObjectRepresentationForLevel<R> r = it.next();
+                if (r.depth > depth) {
+                    break;
+                }
+                current = r.getNewestRepresentation();
+            }
+            return current;
+        }
+
+        public void addNewRepresentation(R newRepresentation, int depth) {
+            assert representationsForLevels.isEmpty() || representationsForLevels.peek().depth <= depth;
             PartnerClassObjectRepresentationForLevel<R> ar = representationsForLevels.peek();
-            if (ar == null || ar.depth < level) {
-                representationsForLevels.push(produceRepresentationForLevel(newRepresentation, level));
+            if (ar == null || ar.depth < depth) {
+                representationsForLevels.push(produceRepresentationForLevel(newRepresentation, depth));
             } else {
                 ar.addRepresentation(newRepresentation);
             }
