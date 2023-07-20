@@ -780,14 +780,16 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
 
         @Override
         public void __mulib__blockCache() {
-            for (Map.Entry<Sint, T> entry : cachedElements.entrySet()) {
-                T val = entry.getValue();
-                if (val == null) {
-                    continue;
+            if (!__mulib__cacheIsBlocked()) {
+                super.__mulib__blockCache();
+                for (Map.Entry<Sint, T> entry : cachedElements.entrySet()) {
+                    T val = entry.getValue();
+                    if (val == null) {
+                        continue;
+                    }
+                    val.__mulib__blockCache();
                 }
-                val.__mulib__blockCache();
             }
-            super.__mulib__blockCache();
         }
 
         @Override

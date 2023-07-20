@@ -59,8 +59,10 @@ public abstract class AbstractPartnerClass implements PartnerClass {
 
     @Override
     public void __mulib__blockCache() {
-        representationState |= CACHE_IS_BLOCKED;
-        this.__mulib__blockCacheInPartnerClassFields();
+        if (!__mulib__cacheIsBlocked()) {
+            representationState |= CACHE_IS_BLOCKED;
+            this.__mulib__blockCacheInPartnerClassFields();
+        }
     }
 
     protected abstract void __mulib__blockCacheInPartnerClassFields();

@@ -235,6 +235,17 @@ public class MulibConfig {
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = new HashMap<>();
+            this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS.put(
+                    ArrayList.class,
+                    (sm, toLabel) -> {
+                        ArrayList<Object> result = new ArrayList<>();
+                        ArrayList<?> arrayList = (ArrayList<?>) toLabel;
+                        for (Object o : arrayList) {
+                            result.add(sm.getLabel(o));
+                        }
+                        return result;
+                    }
+            );
             this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = false;
             this.TRANSF_TRANSFORMATION_REQUIRED = true;
             this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = Collections.emptyList();
