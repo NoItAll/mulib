@@ -20,6 +20,7 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.Solvers;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
@@ -139,6 +140,9 @@ public final class ExamplesExecutor {
                 case "SMM":
                     pathSolutions = runSendMoreMoney(b);
                     break;
+                case "KS":
+                    pathSolutions = runKnapsack(b);
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -165,8 +169,26 @@ public final class ExamplesExecutor {
         String m = "\r\n'm' should be 1: " + sol.labels.getLabelForId("m");
         String o = "\r\n'o' should be 0: " + sol.labels.getLabelForId("o");
         String r = "\r\n'r' should be 8: " + sol.labels.getLabelForId("r");
-        System.out.println(s + e + n + d + m + o + r);
+        Mulib.log.info(s + e + n + d + m + o + r);
         return ps;
+    }
+
+    public static List<PathSolution> runKnapsack(MulibConfig.MulibConfigBuilder builder) {
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
+        List<PathSolution> result = Mulib.executeMulib("findKnapsack", Knapsack.class, builder);
+        StringBuilder sb = new StringBuilder();
+        for (PathSolution ps : result) {
+            ArrayList<Knapsack.Item> items = (ArrayList<Knapsack.Item>) ps.getSolution().returnValue;
+            if (items.size() > 8) {
+                for (Knapsack.Item it : items) {
+                    sb.append(it.item).append(", weight: ").append(it.weight).append(", benefit: ").append(it.benefit).append("\r\n");
+                }
+                sb.append("####END OF KNAPSACK####").append("\r\n");
+            }
+        }
+        Mulib.log.info(sb.toString());
+
+        return result;
     }
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
