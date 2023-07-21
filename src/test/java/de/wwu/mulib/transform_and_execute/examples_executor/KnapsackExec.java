@@ -28,6 +28,7 @@ public class KnapsackExec {
                 ArrayList<Knapsack2.Item> returnValue = (ArrayList<Knapsack2.Item>) ps.getSolution().returnValue;
                 int accWeight = 0;
                 for (Knapsack2.Item it : returnValue) {
+                    assertTrue(it.weight > 0);
                     accWeight += it.weight;
                 }
                 assertTrue(accWeight <= 4600);
@@ -51,6 +52,7 @@ public class KnapsackExec {
                 ArrayList<KnapsackAlt.Item> returnValue = (ArrayList<KnapsackAlt.Item>) ps.getSolution().returnValue;
                 int accWeight = 0;
                 for (KnapsackAlt.Item it : returnValue) {
+                    assertTrue(it.weight > 0);
                     accWeight += it.weight;
                 }
                 assertTrue(accWeight <= 4600);
