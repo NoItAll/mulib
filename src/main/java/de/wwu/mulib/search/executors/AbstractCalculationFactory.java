@@ -232,11 +232,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         assert pco.__mulib__isNull() == Sbool.ConcSbool.FALSE;
         assert pco.__mulib__isRepresentedInSolver();
         // Initialize value that is to be retrieved from a field
-        SubstitutedVar fieldValue = getValueForFieldInPartnerClass(se, pco, field, fieldClass);
-        if (fieldValue instanceof PartnerClass && ((PartnerClass) fieldValue).__mulib__getId() == null) {
+        SubstitutedVar fieldValue = getSymValueForFieldInRepresentedPartnerClassObject(se, pco, field, fieldClass);
+        if (fieldValue instanceof PartnerClass) {
             PartnerClass pcval = (PartnerClass) fieldValue;
-            // No concrete index since pco might be accessed multiple times
-            pcval.__mulib__prepareForAliasingAndBlockCache(se);
             representPartnerClassObjectIfNeeded(se, pcval, pco.__mulib__getId(), field, null);
         }
         if (!se.nextIsOnKnownPath()) {
@@ -297,76 +295,135 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
     }
 
-    private SubstitutedVar getValueForFieldInPartnerClass(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass) {
+    private SubstitutedVar getSymValueForFieldInRepresentedPartnerClassObject(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass) {
+        assert pco.__mulib__isRepresentedInSolver();
         SubstitutedVar fieldValue;
-        if (Sint.class.isAssignableFrom(fieldClass)) { // TODO get value more efficiently
-            if (Sbool.class.isAssignableFrom(fieldClass)) {
-                fieldValue = se.symSbool();
-            } else if (Sbyte.class.isAssignableFrom(fieldClass)) {
-                fieldValue = se.symSbyte();
-            } else if (Sshort.class.isAssignableFrom(fieldClass)) {
-                fieldValue = se.symSshort();
-            } else if (Schar.class.isAssignableFrom(fieldClass)) {
-                fieldValue = se.symSchar();
-            } else {
-                assert fieldClass == Sint.class;
-                fieldValue = se.symSint();
-            }
-        } else if (Sdouble.class.isAssignableFrom(fieldClass)) {
-            fieldValue = se.symSdouble();
-        } else if (Slong.class.isAssignableFrom(fieldClass)) {
-            fieldValue = se.symSlong();
-        } else if (Sfloat.class.isAssignableFrom(fieldClass)) {
-            fieldValue = se.symSfloat();
+        if (Sprimitive.class.isAssignableFrom(fieldClass)) {
+            fieldValue = getSymValueForSprimitiveClass(se, fieldClass);
         } else if (fieldClass.isArray() || PartnerClass.class.isAssignableFrom(fieldClass)) {
-            PartnerClassObjectInformation pcoi =
-                    getAvailableInformationOnPartnerClassObject(
-                            se,
-                            pco,
-                            field
-                    );
-            boolean canBeNull = pcoi.fieldCanPotentiallyContainExplicitNull;
-            boolean defaultIsSymbolic = pco.__mulib__defaultIsSymbolic();
-            // TODO refactor with SarraySarray
-            if (fieldClass.isArray()) {
-                Sint len = se.symSint();
-                Class<?> fieldClassComponentType = fieldClass.getComponentType();
-                if (fieldClass.getComponentType().isArray()) {
-                    fieldValue = se.sarraySarray(len, fieldClassComponentType, defaultIsSymbolic, canBeNull);
-                } else if (Sprimitive.class.isAssignableFrom(fieldClassComponentType)) {
-                    if (fieldClassComponentType == Sint.class) {
-                        fieldValue = se.sintSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Slong.class) {
-                        fieldValue = se.slongSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Sdouble.class) {
-                        fieldValue = se.sdoubleSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Sfloat.class) {
-                        fieldValue = se.sfloatSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Sshort.class) {
-                        fieldValue = se.sshortSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Sbyte.class) {
-                        fieldValue = se.sbyteSarray(len, defaultIsSymbolic, canBeNull);
-                    } else if (fieldClassComponentType == Sbool.class) {
-                        fieldValue = se.sboolSarray(len, defaultIsSymbolic, canBeNull);
-                    } else {
-                        throw new NotYetImplementedException();
-                    }
-                } else if (PartnerClass.class.isAssignableFrom(fieldClassComponentType)) {
-                    fieldValue = se.partnerClassSarray(
-                            len,
-                            (Class<? extends PartnerClass>) fieldClassComponentType,
-                            defaultIsSymbolic,
-                            canBeNull
-                    );
-                } else {
-                    throw new NotYetImplementedException(fieldClass.getTypeName());
-                }
+            boolean canBeNull;
+            boolean defaultIsSymbolic;
+            // Determine nullability:
+            if (!se.nextIsOnKnownPath()) {
+                // If this is a new choice option, we discover nullability by looking at the containing object
+                // at its current state
+                PartnerClassObjectInformation pcoi =
+                        getAvailableInformationOnPartnerClassObject(
+                                se,
+                                pco,
+                                field
+                        );
+                canBeNull = pcoi.fieldCanPotentiallyContainExplicitNull;
             } else {
-                fieldValue = se.symObject((Class<PartnerClass>) fieldClass);
-                ((PartnerClass) fieldValue).__mulib__setIsNull(canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
+                // For now, we assume that the object cannot be null
+                // It is not represented in the solver from here anyway, so this
+                // does not alter the trail of PartnerClassObjectConstraints
+                // In the code block guarded bei se.nextIsOnKnownPath() this is rectified
+                canBeNull = false;
             }
+            defaultIsSymbolic = pco.__mulib__defaultIsSymbolic();
+            PartnerClass fieldValuePco = getSymValueForPartnerClassClass(se, defaultIsSymbolic, canBeNull, fieldClass);
+
+            if (!fieldValuePco.__mulib__isRepresentedInSolver()) {
+                fieldValuePco.__mulib__prepareForAliasingAndBlockCache(se);
+            }
+
+            if (se.nextIsOnKnownPath()) {
+                // If this is not a new choice option, we determine nullability by looking at the representation of the object
+                // for the solver that was already initialized via a trail
+                // We need to do this since the object might be altered since the first time, it was seen. For instance,
+                // a null might be stored in a field directly after accessing this current field
+                Sbool nullVal;
+                assert !Sarray.class.isAssignableFrom(fieldClass);
+                if (fieldClass.isArray()) {
+                    nullVal = getAvailableInformationOnArray(se, (Sarray) fieldValuePco).isNull;
+                } else {
+                    nullVal = getAvailableInformationOnPartnerClassObject(se, fieldValuePco, /* No info on fields is required */null).isNull;
+                }
+                canBeNull = nullVal instanceof Sbool.SymSbool || ((Sbool.ConcSbool) nullVal).isTrue();
+                if (canBeNull) {
+                    Sbool isNull = se.symSbool();
+                    // Now we actually set isNull to its value
+                    fieldValuePco.__mulib__setIsNull(isNull);
+                    // Check whether the trail has been correctly set
+                    assert nullVal == tryGetSymFromSbool.apply(isNull) : "We assume that no symSbool is taken in between the initialization";
+                }
+            }
+            fieldValue = fieldValuePco;
         } else {
             throw new NotYetImplementedException();
+        }
+        return fieldValue;
+    }
+
+    private Sprimitive getSymValueForSprimitiveClass(SymbolicExecution se, Class<?> clazz) {
+        assert Sprimitive.class.isAssignableFrom(clazz);
+        Sprimitive fieldValue;
+        if (Sint.class.isAssignableFrom(clazz)) { // TODO get value more efficiently
+            if (Sbool.class.isAssignableFrom(clazz)) {
+                fieldValue = se.symSbool();
+            } else if (Sbyte.class.isAssignableFrom(clazz)) {
+                fieldValue = se.symSbyte();
+            } else if (Sshort.class.isAssignableFrom(clazz)) {
+                fieldValue = se.symSshort();
+            } else if (Schar.class.isAssignableFrom(clazz)) {
+                fieldValue = se.symSchar();
+            } else {
+                assert clazz == Sint.class;
+                fieldValue = se.symSint();
+            }
+        } else if (Sdouble.class.isAssignableFrom(clazz)) {
+            fieldValue = se.symSdouble();
+        } else if (Slong.class.isAssignableFrom(clazz)) {
+            fieldValue = se.symSlong();
+        } else if (Sfloat.class.isAssignableFrom(clazz)) {
+            fieldValue = se.symSfloat();
+        } else {
+            throw new NotYetImplementedException(clazz.toString());
+        }
+        return fieldValue;
+    }
+
+    private PartnerClass getSymValueForPartnerClassClass(SymbolicExecution se, boolean defaultIsSymbolic, boolean canBeNull, Class<?> clazz) {
+        assert !Sarray.class.isAssignableFrom(clazz);
+        PartnerClass fieldValue;
+        // TODO refactor with SarraySarray
+        if (clazz.isArray()) {
+            Sint len = se.symSint();
+            Class<?> fieldClassComponentType = clazz.getComponentType();
+            if (clazz.getComponentType().isArray()) {
+                fieldValue = se.sarraySarray(len, fieldClassComponentType, defaultIsSymbolic, canBeNull);
+            } else if (Sprimitive.class.isAssignableFrom(fieldClassComponentType)) {
+                if (fieldClassComponentType == Sint.class) {
+                    fieldValue = se.sintSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Slong.class) {
+                    fieldValue = se.slongSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Sdouble.class) {
+                    fieldValue = se.sdoubleSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Sfloat.class) {
+                    fieldValue = se.sfloatSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Sshort.class) {
+                    fieldValue = se.sshortSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Sbyte.class) {
+                    fieldValue = se.sbyteSarray(len, defaultIsSymbolic, canBeNull);
+                } else if (fieldClassComponentType == Sbool.class) {
+                    fieldValue = se.sboolSarray(len, defaultIsSymbolic, canBeNull);
+                } else {
+                    throw new NotYetImplementedException();
+                }
+            } else if (PartnerClass.class.isAssignableFrom(fieldClassComponentType)) {
+                fieldValue = se.partnerClassSarray(
+                        len,
+                        (Class<? extends PartnerClass>) fieldClassComponentType,
+                        defaultIsSymbolic,
+                        canBeNull
+                );
+            } else {
+                throw new NotYetImplementedException(clazz.getTypeName());
+            }
+        } else {
+            fieldValue = se.symObject((Class<PartnerClass>) clazz);
+            fieldValue.__mulib__setIsNull(canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
         }
         return fieldValue;
     }
@@ -533,7 +590,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray var) {
+    public ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray var) {
         return se.getAvailableInformationOnArray((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
     }
 

@@ -1,5 +1,6 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -757,18 +758,43 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         @Override
         protected T symbolicDefault(SymbolicExecution se, Sint index) {
             assert __mulib__defaultIsSymbolic() || __mulib__isRepresentedInSolver();
-            // TODO Performance enhancement: only check info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault if
-            //  sarrays are allowed to be initialized to null
-            ArrayInformation info =
-                    se.getCalculationFactory().getAvailableInformationOnArray(se, this);
-            boolean canBeNull = info.arrayCanPotentiallyContainNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
-
+            boolean canBeNull;
+            if (!se.nextIsOnKnownPath()) {
+                ArrayInformation info =
+                        se.getCalculationFactory().getAvailableInformationOnArray(se, this);
+                canBeNull = info.arrayCanPotentiallyContainNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+            } else {
+                canBeNull = false;
+            }
             T result = generateSymbolicDefault(se, canBeNull);
 
             if (!result.__mulib__isRepresentedInSolver()) {
                 // This can happen if we allow for aliasing
                 result.__mulib__prepareForAliasingAndBlockCache(se);
             }
+
+            if (se.nextIsOnKnownPath()) {
+                // If this is not a new choice option, we determine nullability by looking at the representation of the object
+                // for the solver that was already initialized via a trail
+                // We need to do this since the object might be altered since the first time, it was seen. For instance,
+                // a null might be stored in the array directly after accessing this current field
+                Sbool nullVal;
+                assert !Sarray.class.isAssignableFrom(this.getElementType());
+                if (result instanceof Sarray) {
+                    nullVal = se.getCalculationFactory().getAvailableInformationOnArray(se, (Sarray) result).isNull;
+                } else {
+                    nullVal = se.getCalculationFactory().getAvailableInformationOnPartnerClassObject(se, result, /* No info on fields is required */null).isNull;
+                }
+                canBeNull = nullVal instanceof Sbool.SymSbool || ((Sbool.ConcSbool) nullVal).isTrue();
+                if (canBeNull) {
+                    Sbool isNull = se.symSbool();
+                    // Now we actually setIsNull to its value
+                    result.__mulib__setIsNull(isNull);
+                    // Check whether the trail has been correctly set
+                    assert nullVal == ConcolicConstraintContainer.tryGetSymFromConcolic(isNull) : "We assume that no symSbool is taken in between the initializations";
+                }
+            }
+
             se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, result, __mulib__getId(), null, index);
             return result;
         }
