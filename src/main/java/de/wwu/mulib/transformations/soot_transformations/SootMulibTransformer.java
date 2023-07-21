@@ -18,6 +18,7 @@ import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
 import soot.util.Chain;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.*;
@@ -339,7 +340,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     static {
         JAVA_CLASS_PATH = System.getProperty("java.class.path").replace("build/resources/test", "build");
         DEFAULT_SOOT_JCP = Scene.defaultJavaClassPath();
-        Options.v().set_soot_classpath(JAVA_CLASS_PATH + ":" + DEFAULT_SOOT_JCP);
+        Options.v().set_soot_classpath(JAVA_CLASS_PATH + File.pathSeparator + DEFAULT_SOOT_JCP);
         Options.v().set_drop_bodies_after_load(false);
         v = new SootMulibClassesAndMethods();
     }
