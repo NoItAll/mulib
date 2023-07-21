@@ -19,7 +19,8 @@ public class RememberSupportExec {
     public void testCheck() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true); // This test uses aliasing in some parts
+                    // TODO If support for solver-internal theories for symbolic aliasing is introduced, get rid of this config:
+                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true); // This test uses aliasing and free objects in some parts
                     List<PathSolution> result0 = TestUtility.executeMulib(
                             "check0",
                             RememberSupport.class,
@@ -124,6 +125,16 @@ public class RememberSupportExec {
                     D d5Return = (D) result5.get(0).getSolution().returnValue;
                     assertEquals(200, d5Return.getVal());
                     assertEquals(22, d5Return.getA().getVal());
+                    List<PathSolution> result6_0 = TestUtility.executeMulib(
+                            "check6",
+                            RememberSupport.class,
+                            mb,
+                            true,
+                            new Class[]{ },
+                            new Object[] { }
+                    );
+                    // Only possible with aliasing
+                    assertEquals(0, result6_0.size());
                 },
                 "RememberSupport.check0"
         );
@@ -139,6 +150,8 @@ public class RememberSupportExec {
         assertNotSame(da, dabca);
         assertEquals(42, da.getVal());
         assertEquals(1338d, dab.getVal());
+        assertEquals(1, dab.getCAr().length);
+        assertEquals(1, dab.getCAr()[0].length);
         assertTrue(dabc.isVal());
         assertEquals(43, dabca.getVal());
     }

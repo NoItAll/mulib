@@ -52,7 +52,13 @@ public class RememberSupport {
         return d;
     }
 
-
+    public static C[][] check6() {
+        C[][] c = Mulib.rememberedFreeObject("d", C[][].class);
+        if (c[0][0].b.c != c) {
+            throw Mulib.fail();
+        }
+        return c;
+    }
 
     private static void setupD(D d) {
         d.a = new A();
