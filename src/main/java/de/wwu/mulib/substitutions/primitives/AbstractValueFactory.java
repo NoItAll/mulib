@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.AliasingInformation;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -14,6 +15,7 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Modifier;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
@@ -267,6 +269,9 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf, boolean canBeNull) {
         try {
+            if (toGetInstanceOf.getEnclosingClass() != null && !Modifier.isStatic(toGetInstanceOf.getModifiers())) {
+                throw new NotYetImplementedException("Symbolic initialization of inner non-static class not yet supported");
+            }
             Constructor<T> cons = toGetInstanceOf.getDeclaredConstructor(SymbolicExecution.class);
             T result = cons.newInstance(se);
             result.__mulib__setIsNull(canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE);
