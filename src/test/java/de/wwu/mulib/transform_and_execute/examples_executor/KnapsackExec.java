@@ -38,6 +38,8 @@ public class KnapsackExec {
     @Test
     public void testKnapsackWithFreeArrays() {
         TestUtility.getAllSolutions((mb) -> {
+            // TODO If we also enable symbolic aliasing without the high-level approach, remove
+            mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "findKnapsack",
                     KnapsackAlt.class,
