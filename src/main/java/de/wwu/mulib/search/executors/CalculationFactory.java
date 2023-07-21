@@ -181,6 +181,6 @@ public interface CalculationFactory {
 
     PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field);
 
-    ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray.PartnerClassSarray<?> var);
+    ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray<?> var);
 
 }
