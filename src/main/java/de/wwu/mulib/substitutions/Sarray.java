@@ -763,7 +763,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                     se.getCalculationFactory().getAvailableInformationOnArray(se, this);
             boolean canBeNull = info.arrayCanPotentiallyContainNull || info.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
 
-            T result = generateSymbolicDefault(se, info, canBeNull);
+            T result = generateSymbolicDefault(se, canBeNull);
 
             if (!result.__mulib__isRepresentedInSolver()) {
                 // This can happen if we allow for aliasing
@@ -773,7 +773,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             return result;
         }
 
-        protected T generateSymbolicDefault(SymbolicExecution se, ArrayInformation info, boolean canBeNull) {
+        protected T generateSymbolicDefault(SymbolicExecution se, boolean canBeNull) {
             T result = se.getValueFactory().symObject(se, this.getClazz(), canBeNull);
             return result;
         }
@@ -1026,7 +1026,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         @Override
-        protected Sarray generateSymbolicDefault(SymbolicExecution se, ArrayInformation info, boolean canBeNull) {
+        protected Sarray generateSymbolicDefault(SymbolicExecution se, boolean canBeNull) {
             Sarray result;
             if (elementsAreSarraySarrays()) {
                 assert elementType.getComponentType().isArray();
