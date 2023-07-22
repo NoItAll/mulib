@@ -199,6 +199,9 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
             SymbolicExecution se,
             Constraint constraint,
             Choice.ChoiceOption currentChoiceOption) {
+        if (constraint instanceof Sbool.SymSbool) {
+            constraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
+        }
         // Create Choice with ChoiceOptions (true false)
         Choice newChoice = new Choice(currentChoiceOption, constraint, Not.newInstance(constraint));
         // First, let the Executor of the current SymbolicExecution decide which choice is to be.
