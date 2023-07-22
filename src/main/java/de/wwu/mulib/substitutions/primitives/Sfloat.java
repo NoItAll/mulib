@@ -176,7 +176,7 @@ public abstract class Sfloat extends Sfpnumber {
 
         @Override
         public String toString() {
-            return "ConcSfloat{value=" + value + "}";
+            return String.valueOf(value);
         }
     }
 

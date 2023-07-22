@@ -65,7 +65,7 @@ public abstract class Schar extends Sint {
 
         @Override
         public String toString() {
-            return "ConcSchar{value=" + value + "}";
+            return String.valueOf(value);
         }
 
         @Override

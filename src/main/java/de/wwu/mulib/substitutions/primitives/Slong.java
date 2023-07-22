@@ -204,7 +204,7 @@ public abstract class Slong extends AbstractSnumber {
 
         @Override
         public String toString() {
-            return "ConcSlong{value=" + value + "}";
+            return String.valueOf(value);
         }
 
         @Override
