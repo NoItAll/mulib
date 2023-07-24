@@ -60,6 +60,22 @@ public class RememberSupport {
         return c;
     }
 
+    public static D check7() {
+        D d = Mulib.rememberedFreeObject("d", D.class);
+        // Verify that all kinds of values can be remembered
+        if (d.val != 200
+                || d.a.val != 201
+                || d.a.b.val != 202d
+                || d.a.b.c[0][0].a.val != 203d
+                || !d.a.b.c[0][0].val
+                || d.a.b.c[0][0].b.val != 204
+                || d.a.b.c[0][0].b.c != d.a.b.c) {
+            throw Mulib.fail();
+        }
+        setupD(d);
+        return d;
+    }
+
     private static void setupD(D d) {
         d.a = new A();
         d.a.b = new B();

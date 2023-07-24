@@ -50,12 +50,12 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         :
                         Sbool.ConcSbool.FALSE,
                 fieldToType.get(field),
-                defaultIsSymbolic,
+                true,
                 sps,
                 asr,
-                level
+                sps.getCurrentLevel()
         );
-        sps.addRepresentationForId(id, result, level);
+        sps.addRepresentationForId(id, result, sps.getCurrentLevel());
         return result;
     }
 
@@ -74,10 +74,10 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                                 :
                                 Sbool.ConcSbool.FALSE,
                         typeOfField,
-                        true,
-                        level,
+                        defaultIsSymbolic,
+                        sps.getCurrentLevel(),
                         false,
-                        false,
+                        Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ? config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL : config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
                         sps,
                         asr
                 )
@@ -92,18 +92,22 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                                 Sbool.ConcSbool.FALSE,
                         typeOfField,
                         true,
-                        level,
+                        sps.getCurrentLevel(),
                         false,
                         false
                 );
 
-        asr.addRepresentationForId(id, result, level);
+        asr.addRepresentationForId(id, result, sps.getCurrentLevel());
         return result;
     }
 
     @Override
     protected Constraint _getField(Constraint guard, String fieldName, Sprimitive value) {
-        lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        SimplePartnerClassObjectSolverRepresentation potentiallyNewThis =
+                (SimplePartnerClassObjectSolverRepresentation) lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        if (potentiallyNewThis != this) {
+            return potentiallyNewThis._getField(guard, fieldName, value);
+        }
         ArrayHistorySolverRepresentation currentRepresentation = fieldToRepresentation.get(fieldName);
         return currentRepresentation.select(
                 guard,
@@ -116,7 +120,12 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
 
     @Override
     protected void _putField(Constraint guard, String fieldName, Sprimitive value) {
-        lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        SimplePartnerClassObjectSolverRepresentation potentiallyNewThis =
+                (SimplePartnerClassObjectSolverRepresentation) lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        if (potentiallyNewThis != this) {
+            potentiallyNewThis._getField(guard, fieldName, value);
+            return;
+        }
         ArrayHistorySolverRepresentation currentRepresentation = fieldToRepresentation.get(fieldName);
         ArrayHistorySolverRepresentation newRepresentation = currentRepresentation.store(guard, Sint.ConcSint.ZERO, value);
         fieldToRepresentation.put(fieldName, newRepresentation);
@@ -129,10 +138,19 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
 
     @Override
     @SuppressWarnings("unchecked")
-    public Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName) {
+    public Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName, boolean initializeSelfIfCanBeNew) {
         assert PartnerClass.class.isAssignableFrom(fieldToType.get(fieldName));
-        lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        SimplePartnerClassObjectSolverRepresentation potentiallyNewThis =
+                (SimplePartnerClassObjectSolverRepresentation) lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        if (potentiallyNewThis != this) {
+            return potentiallyNewThis.getPartnerClassIdsKnownToBePossiblyContainedInField(fieldName, initializeSelfIfCanBeNew);
+        }
         // We know that the array is of fixed size since we represent each field by an array of size 1
         return (Set<Sint>) fieldToRepresentation.get(fieldName).getValuesKnownToPossiblyBeContainedInArray(true);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("SimplePCORep[%s]{%s}", id, fieldToRepresentation);
     }
 }

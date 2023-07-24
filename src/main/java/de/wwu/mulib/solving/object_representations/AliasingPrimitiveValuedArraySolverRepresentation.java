@@ -36,7 +36,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         this.reservedId = aic.getReservedId();
         assert arrayId instanceof SymNumericExpressionSprimitive;
         assert reservedId instanceof ConcSnumber;
-        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
+//        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>(); // Is filled in getMetadataConstraintForPotentialIds
         this.metadataConstraintForPotentialIds =
                 getMetadataConstraintForPotentialIds(potentialIds, symbolicArrayStates);
@@ -156,7 +156,8 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     );
         }
 
-
+        assert metadataEqualsDependingOnId != Sbool.ConcSbool.FALSE;
+        symbolicArrayStates.addMetadataConstraint(metadataEqualsDependingOnId);
         return metadataEqualsDependingOnId;
     }
 
@@ -242,5 +243,15 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
     @Override
     public Collection<Sint> getAliasedIds() {
         return aliasedArrays.stream().map(a -> a.getNewestRepresentation().getArrayId()).collect(Collectors.toList());
+    }
+
+    @Override
+    public String toString() {
+        return String.format("AliasingArrayRep[%s]{reservedId=%s, length=%s, isNull=%s, aliasingTargets=%s" +
+                        ", currentRepresentation=%s, isPrimitive=%s, cannotBeNewInstance=%s}",
+                arrayId, reservedId, length, isNull, getAliasedIds(),
+                currentRepresentation, this instanceof AliasingPartnerClassArraySolverRepresentation,
+                cannotBeNewInstance
+        );
     }
 }

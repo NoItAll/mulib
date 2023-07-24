@@ -65,4 +65,9 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 this, level
         );
     }
+
+    @Override
+    public String toString() {
+        return String.format("PrimArrayRep[%s]{length=%s, isNull=%s, currentRepresentation=%s}", arrayId, length, isNull, currentRepresentation);
+    }
 }
