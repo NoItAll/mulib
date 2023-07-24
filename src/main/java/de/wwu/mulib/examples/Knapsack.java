@@ -1,10 +1,7 @@
 package de.wwu.mulib.examples;
 
-import de.wwu.mulib.Mulib;
-
 import java.util.ArrayList;
-import static de.wwu.mulib.Mulib.assume;
-import static de.wwu.mulib.Mulib.freeInt;
+import static de.wwu.mulib.Mulib.*;
 
 public class Knapsack {
     Item[] items = {new Item("bread",750,10),
@@ -33,7 +30,7 @@ public class Knapsack {
         ArrayList<Item> result = new ArrayList<>();
         for (Item item : items) {
             if (weight == capacity) break;
-            boolean take = Mulib.freeBoolean();
+            boolean take = freeBoolean();
             if (weight + item.weight <= capacity && take) {
                 result.add(item);
                 weight += item.weight;

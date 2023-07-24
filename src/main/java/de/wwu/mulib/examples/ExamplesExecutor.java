@@ -38,7 +38,8 @@ public final class ExamplesExecutor {
     public static void main(String[] args) {
         // TODO Change SMM for other
         // args = new String[] {"SMM", "DFS", "1"};
-        args = new String[] {"KS", "DFS", "1"};
+        // args = new String[] {"KS", "DFS", "1"};
+        args = new String[] {"Schedule", "DFS", "1"};
 
         Mulib.setLogLevel(Level.FINE);
         Mulib.log.info("Starting...");
@@ -96,7 +97,7 @@ public final class ExamplesExecutor {
                 case "TSP":
                     pathSolutions = runTsp(b);
                     break;
-                case "GC":
+                case "GC": // graph coloring
                     pathSolutions = runGraphColoring(b);
                     break;
                 case "PCAP":
@@ -144,11 +145,14 @@ public final class ExamplesExecutor {
                             args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
-                case "SMM":
+                case "SMM": // send more money
                     pathSolutions = runSendMoreMoney(b);
                     break;
                 case "KS":   // Knapsack
                     pathSolutions = runKnapsack(b);
+                    break;
+                case "Schedule":   // Scheduling of teachers to courses and time slots
+                    pathSolutions = runScheduling(b);
                     break;
 
                 default:
@@ -196,6 +200,23 @@ public final class ExamplesExecutor {
 
         return result;
     }
+
+    public static List<PathSolution> runScheduling(MulibConfig.MulibConfigBuilder builder) {
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
+        List<PathSolution> result = Mulib.executeMulib("schedule", Courses.class, builder);
+        StringBuilder sb = new StringBuilder();
+        for (PathSolution ps : result) {
+            ArrayList<Courses.Assignment> assignments = (ArrayList<Courses.Assignment>) ps.getSolution().returnValue;
+            for (Courses.Assignment asgmt : assignments) {
+                sb.append(asgmt.teacher).append(" teaches ").append(asgmt.course).append(" at ").append(asgmt.time).append(" h\r\n");
+            }
+            sb.append("####END OF Schedule####").append("\r\n");
+        }
+        Mulib.log.info(sb.toString());
+
+        return result;
+    }
+
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
         return Mulib.executeMulib("exec", Partition3.class, builder);
