@@ -21,6 +21,10 @@ public class RememberSupportExec {
                 mb -> {
                     // TODO If support for solver-internal theories for symbolic aliasing is introduced, get rid of this config:
                     mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true); // This test uses aliasing and free objects in some parts
+                    // No nulls or aliasing
+                    mb.setENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(false)
+                            .setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(false)
+                            .setALIASING_FOR_FREE_OBJECTS(false);
                     List<PathSolution> result0 = TestUtility.executeMulib(
                             "check0",
                             RememberSupport.class,
@@ -89,10 +93,6 @@ public class RememberSupportExec {
                     D d3Return = (D) result3.get(0).getSolution().returnValue;
                     checkDIsAfterSetup(d3Return);
 
-                    // No nulls or aliasing
-                    mb.setENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(false)
-                            .setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(false)
-                            .setALIASING_FOR_FREE_OBJECTS(false);
                     List<PathSolution> result4 = TestUtility.executeMulib(
                             "check4",
                             RememberSupport.class,
@@ -135,6 +135,17 @@ public class RememberSupportExec {
                     );
                     // Only possible with aliasing
                     assertEquals(0, result6_0.size());
+
+                    List<PathSolution> result7_0 = TestUtility.executeMulib(
+                            "check7",
+                            RememberSupport.class,
+                            mb,
+                            true,
+                            new Class[]{ },
+                            new Object[] { }
+                    );
+                    // Only possible with aliasing
+                    assertEquals(0, result7_0.size());
                 },
                 "RememberSupport.check0"
         );

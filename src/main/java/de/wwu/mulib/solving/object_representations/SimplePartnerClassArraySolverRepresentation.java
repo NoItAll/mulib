@@ -11,7 +11,7 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import java.util.Set;
 
 /**
- * Is used to symbolically represent an array of arrays
+ * Is used to symbolically represent an array of arrays or an array of partner class objects
  * using the IDs of the respective Sarrays.
  */
 public class SimplePartnerClassArraySolverRepresentation extends PrimitiveValuedArraySolverRepresentation implements PartnerClassArraySolverRepresentation {
@@ -60,7 +60,8 @@ public class SimplePartnerClassArraySolverRepresentation extends PrimitiveValued
 
     @Override @SuppressWarnings("unchecked")
     public Set<Sint> getValuesKnownToPossiblyBeContainedInArray() {
-        return (Set<Sint>) currentRepresentation.getValuesKnownToPossiblyBeContainedInArray(isCompletelyInitialized);
+        Set<Sint> result = (Set<Sint>) currentRepresentation.getValuesKnownToPossiblyBeContainedInArray(isCompletelyInitialized);
+        return result;
     }
 
     @Override

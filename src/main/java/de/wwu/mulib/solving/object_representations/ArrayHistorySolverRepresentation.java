@@ -247,23 +247,27 @@ public class ArrayHistorySolverRepresentation {
         // The guard will typically be if the arrayId belonging to this ArrayHistorySolverRepresentation
         // is equal to some other symbolic ID
         final Constraint guard;
+        final Sint index;
         final Function<Sint, Constraint> indexIsValid;
         final Sprimitive value;
         final boolean isConcrete;
         ArrayAccessSolverRepresentation(Constraint guard, Sint index, Sprimitive value) {
             assert guard != null && index != null && value != null;
             this.guard = guard;
+            this.index = index;
             this.indexIsValid = i -> And.newInstance(guard, Eq.newInstance(index, i));
             this.value = value;
             this.isConcrete = guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isTrue() && index instanceof ConcSnumber;
         }
 
-        ArrayAccessSolverRepresentation(Constraint guard, Function<Sint, Constraint> indexIsValid, Sprimitive value) {
-            assert guard != null && indexIsValid != null && value != null;
-            this.guard = guard;
-            this.indexIsValid = indexIsValid;
-            this.value = value;
-            this.isConcrete = true;
+        @Override
+        public String toString() {
+            return String.format("{guard=%s, i=%s, val=%s}", guard, index, value);
         }
+    }
+
+    @Override
+    public String toString() {
+        return String.format("ArrayHistory{store=%s, selects=%s, beforeStore=[%s]}", store, selects, beforeStore);
     }
 }

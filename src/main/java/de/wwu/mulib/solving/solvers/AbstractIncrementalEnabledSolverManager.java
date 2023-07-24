@@ -11,8 +11,6 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.StdLabels;
-import de.wwu.mulib.solving.object_representations.AliasingArraySolverRepresentation;
-import de.wwu.mulib.solving.object_representations.AliasingPartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.Conc;
@@ -197,9 +195,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         partnerClassObjectSolverRepresentation
                 );
                 incrementalSolverState.addPartnerClassObjectConstraint(pic);
-                if (partnerClassObjectSolverRepresentation instanceof AliasingPartnerClassObjectSolverRepresentation) {
-                    addConstraint(((AliasingPartnerClassObjectSolverRepresentation) partnerClassObjectSolverRepresentation).getMetadataConstraintForPotentialIds());
-                }
             } else {
                 throw new NotYetImplementedException();
             }
@@ -252,10 +247,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         arraySolverRepresentation
                 );
                 incrementalSolverState.addArrayConstraint(aic);
-                if (arraySolverRepresentation instanceof AliasingArraySolverRepresentation) {
-                    // Restrict length, isNull, and id of aliasing array
-                    addConstraint(((AliasingArraySolverRepresentation) arraySolverRepresentation).getMetadataConstraintForPotentialIds());
-                }
             }
         } else {
             if (ac instanceof ArrayAccessConstraint) {

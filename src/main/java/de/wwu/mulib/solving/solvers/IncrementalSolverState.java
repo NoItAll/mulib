@@ -49,6 +49,15 @@ public class IncrementalSolverState<AR, PR> {
         public void addMetadataConstraint(Constraint metadataConstraint) {
             solverManager.addConstraint(metadataConstraint);
         }
+
+        public int getCurrentLevel() {
+            return solverManager.getLevel();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("SymbolicPartnerClassObjectStates{idToMostRecentRepresentation=%s}", idToMostRecentRepresentation);
+        }
     }
 
     public void clear() {
@@ -239,6 +248,11 @@ public class IncrementalSolverState<AR, PR> {
         protected PartnerClassObjectRepresentationForLevel<R> produceRepresentationForLevel(R newRepresentation, int level) {
             return new PartnerClassObjectRepresentationForLevel<>(newRepresentation, level);
         }
+
+        @Override
+        public String toString() {
+            return String.format("SolverRep[%s]{reps=%s}", id, representationsForLevels);
+        }
     }
 
 
@@ -257,6 +271,11 @@ public class IncrementalSolverState<AR, PR> {
 
         R getNewestRepresentation() {
             return this.representationsOfLevel.peek();
+        }
+
+        @Override
+        public String toString() {
+            return String.format("RepForLevel[%s]{reps=%s}", depth, representationsOfLevel);
         }
     }
 }

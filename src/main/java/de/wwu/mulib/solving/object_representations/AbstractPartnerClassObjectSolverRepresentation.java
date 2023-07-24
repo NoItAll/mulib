@@ -195,8 +195,14 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     }
 
     @Override
-    public final void lazilyGenerateAndSetPartnerClassFieldIfNeeded(String fieldName) {
+    public final PartnerClassObjectSolverRepresentation lazilyGenerateAndSetPartnerClassFieldIfNeeded(String fieldName) {
         assert fieldToType.containsKey(fieldName);
+        int level = sps.getCurrentLevel();
+        if (this.level != level) {
+            PartnerClassObjectSolverRepresentation partnerClassObjectSolverRepresentation = copyForNewLevel(level);
+            sps.getRepresentationForId(id).addNewRepresentation(partnerClassObjectSolverRepresentation, level);
+            return partnerClassObjectSolverRepresentation.lazilyGenerateAndSetPartnerClassFieldIfNeeded(fieldName);
+        }
         if (!_fieldIsSet(fieldName)) {
             Class<?> typeOfField = fieldToType.get(fieldName);
             if (Sarray.class.isAssignableFrom(typeOfField)) {
@@ -227,6 +233,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
             }
         }
         assert !fieldToRepresentation.get(fieldName).isEmpty();
+        return this;
     }
 
     protected abstract PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field);
@@ -269,7 +276,8 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     @Override
     public boolean partnerClassFieldCanPotentiallyContainNull(String field) {
         Class<?> typeOfField = fieldToType.get(field);
-        Set<Sint> relevantValues = getPartnerClassIdsKnownToBePossiblyContainedInField(field);
+        Set<Sint> relevantValues = getPartnerClassIdsKnownToBePossiblyContainedInField(field, false); //// TODO change to true or...
+        //// TODO ...if symbolic init to null is allowed, regard this here
         return relevantValues.stream()
                 .anyMatch(s -> {
                     if (s == Sint.ConcSint.MINUS_ONE) {

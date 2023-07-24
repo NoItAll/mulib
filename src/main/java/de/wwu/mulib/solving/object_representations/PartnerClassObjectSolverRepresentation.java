@@ -38,8 +38,9 @@ public interface PartnerClassObjectSolverRepresentation {
                     symbolicPartnerClassObjectStates
                             .getRepresentationForId(pc.getContainingPartnerClassObjectId())
                             .getNewestRepresentation();
-            Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(pc.getFieldName());
-            result = new AliasingPartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, ids, true);
+            assert psr != null;
+            Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(pc.getFieldName(), true);
+            result = new AliasingPartnerClassObjectSolverRepresentation(mc, symbolicPartnerClassObjectStates, symbolicArrayStates, pc, level, ids, false); //// TODO is false sufficient or how to determine whether new instance or not?
         }
         return result;
     }
@@ -61,9 +62,9 @@ public interface PartnerClassObjectSolverRepresentation {
 
     PartnerClassObjectSolverRepresentation copyForNewLevel(int level);
 
-    Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName);
+    Set<Sint> getPartnerClassIdsKnownToBePossiblyContainedInField(String fieldName, boolean initializeSelfIfCanBeNew);
 
-    void lazilyGenerateAndSetPartnerClassFieldIfNeeded(String field);
+    PartnerClassObjectSolverRepresentation lazilyGenerateAndSetPartnerClassFieldIfNeeded(String field);
 
     boolean partnerClassFieldCanPotentiallyContainNull(String field);
 

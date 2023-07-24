@@ -43,6 +43,7 @@ public interface ArraySolverRepresentation {
             assert asr instanceof PartnerClassArraySolverRepresentation;
             PartnerClassArraySolverRepresentation aasr = (PartnerClassArraySolverRepresentation) asr;
             Set<Sint> aliasedArrays = aasr.getValuesKnownToPossiblyBeContainedInArray();
+//            assert !aliasedArrays.isEmpty();
             result =
                     isArray || isPartnerClass ?
                             new AliasingPartnerClassArraySolverRepresentation(
@@ -91,7 +92,7 @@ public interface ArraySolverRepresentation {
                     symbolicPartnerClassObjectStates
                             .getRepresentationForId(ac.getContainingPartnerClassObjectId())
                             .getNewestRepresentation();
-            Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(ac.getFieldName());
+            Set<Sint> ids = psr.getPartnerClassIdsKnownToBePossiblyContainedInField(ac.getFieldName(), true);
             result = isArray || isPartnerClass ?
                     new AliasingPartnerClassArraySolverRepresentation(
                             config,
