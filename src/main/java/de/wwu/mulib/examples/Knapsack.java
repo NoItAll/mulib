@@ -4,6 +4,8 @@ import de.wwu.mulib.Mulib;
 
 import java.util.ArrayList;
 
+import static de.wwu.mulib.Mulib.assume;
+
 public class Knapsack {
     Item[] items = {new Item("bread",750,10),
             new Item("jam",500,5),
@@ -34,11 +36,12 @@ public class Knapsack {
                 break;
             }
             boolean take = Mulib.freeBoolean();
-            if (take && weight + item.weight <= capacity) {
+            if (weight + item.weight <= capacity && take) {
                 result.add(item);
                 weight += item.weight;
             }
         }
+        assume(weight == capacity);
         return result;
     }
 

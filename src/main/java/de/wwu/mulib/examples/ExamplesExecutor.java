@@ -179,12 +179,10 @@ public final class ExamplesExecutor {
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Knapsack.Item> items = (ArrayList<Knapsack.Item>) ps.getSolution().returnValue;
-            if (items.size() > 8) {
-                for (Knapsack.Item it : items) {
-                    sb.append(it.item).append(", weight: ").append(it.weight).append(", benefit: ").append(it.benefit).append("\r\n");
-                }
-                sb.append("####END OF KNAPSACK####").append("\r\n");
+            for (Knapsack.Item it : items) {
+                sb.append(it.item).append(", weight: ").append(it.weight).append(", benefit: ").append(it.benefit).append("\r\n");
             }
+            sb.append("####END OF KNAPSACK####").append("\r\n");
         }
         Mulib.log.info(sb.toString());
 
