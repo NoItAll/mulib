@@ -14,6 +14,7 @@ import de.wwu.mulib.examples.sac22_mulib_benchmark.TspSolver;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
@@ -35,6 +36,10 @@ public final class ExamplesExecutor {
     private static final boolean runChecks = false;
 
     public static void main(String[] args) {
+        // TODO Change SMM for other
+        // args = new String[] {"SMM", "DFS", "1"};
+        args = new String[] {"KS", "DFS", "1"};
+
         Mulib.setLogLevel(Level.FINE);
         Mulib.log.info("Starting...");
         String chosenMethod = args[0];
@@ -46,6 +51,8 @@ public final class ExamplesExecutor {
                     // they are only loaded and used.
                     .setTRANSF_VALIDATE_TRANSFORMATION(false)
                     .setTRANSF_WRITE_TO_FILE(false);
+            //b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING);
+            //b.setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS).setINCR_ACTUAL_CP_BUDGET(32);
             switch (chosenConfig) {
                 case "DFSN":
                     b.setGLOBAL_SEARCH_STRATEGY(DFS)
@@ -140,9 +147,10 @@ public final class ExamplesExecutor {
                 case "SMM":
                     pathSolutions = runSendMoreMoney(b);
                     break;
-                case "KS":
+                case "KS":   // Knapsack
                     pathSolutions = runKnapsack(b);
                     break;
+
                 default:
                     throw new IllegalStateException();
             }
@@ -179,12 +187,10 @@ public final class ExamplesExecutor {
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Knapsack.Item> items = (ArrayList<Knapsack.Item>) ps.getSolution().returnValue;
-            if (items.size() > 8) {
-                for (Knapsack.Item it : items) {
-                    sb.append(it.item).append(", weight: ").append(it.weight).append(", benefit: ").append(it.benefit).append("\r\n");
-                }
-                sb.append("####END OF KNAPSACK####").append("\r\n");
+            for (Knapsack.Item it : items) {
+                sb.append(it.item).append(", weight: ").append(it.weight).append(", benefit: ").append(it.benefit).append("\r\n");
             }
+            sb.append("####END OF KNAPSACK####").append("\r\n");
         }
         Mulib.log.info(sb.toString());
 

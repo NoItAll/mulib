@@ -4,6 +4,8 @@ import de.wwu.mulib.Mulib;
 
 import java.util.ArrayList;
 
+import static de.wwu.mulib.Mulib.assume;
+
 // Mirrors GraphColoring in https://github.com/wwu-pi/muli/tree/master/examples/sac22_mulib_benchmark
 public class GraphColoring {
 
@@ -26,9 +28,8 @@ public class GraphColoring {
     public void generateColoring(){
         for(int i=0; i<n; i++) {
             int color = Mulib.rememberedFreeInt("" + i);
-            if (!(color > 0 && color <= c))
-                throw Mulib.fail();
-            else colors[i] = color; } }
+            assume(color > 0 && color <= c);
+            colors[i] = color; } }
 
     public void checkColoring(){
         for(GraphEdge e: edges) {

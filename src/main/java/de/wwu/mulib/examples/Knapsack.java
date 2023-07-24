@@ -3,6 +3,8 @@ package de.wwu.mulib.examples;
 import de.wwu.mulib.Mulib;
 
 import java.util.ArrayList;
+import static de.wwu.mulib.Mulib.assume;
+import static de.wwu.mulib.Mulib.freeInt;
 
 public class Knapsack {
     Item[] items = {new Item("bread",750,10),
@@ -30,20 +32,19 @@ public class Knapsack {
         int weight = 0;
         ArrayList<Item> result = new ArrayList<>();
         for (Item item : items) {
-            if (weight >= capacity) {
-                break;
-            }
+            if (weight == capacity) break;
             boolean take = Mulib.freeBoolean();
-            if (take && weight + item.weight <= capacity) {
+            if (weight + item.weight <= capacity && take) {
                 result.add(item);
                 weight += item.weight;
             }
         }
+        assume(weight == capacity);
         return result;
     }
 
     public static ArrayList<Item> findKnapsack() {
         Knapsack knapsack = new Knapsack();
-        return knapsack.fillKnapsack(4600); // capacity 4600 g
+        return knapsack.fillKnapsack(4600); // capacity
     }
 }

@@ -21,7 +21,7 @@ dependencies {
         exclude group: "uuverifiers", module: "princess_2.13"
     }
     // z3
-    implementation files('lib/z3-4.8.8-x64-ubuntu-16.04/bin/com.microsoft.z3.jar')
+    implementation files('lib/z3-4.8.8-x64-win/bin/com.microsoft.z3.jar')
 }
 
 mainClassName = 'de.wwu.mulib.examples.ExamplesExecutor'
