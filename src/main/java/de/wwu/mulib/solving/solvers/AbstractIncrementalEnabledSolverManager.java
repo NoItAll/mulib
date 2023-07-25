@@ -130,7 +130,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return new ArrayInformation(sas, sas.getRepresentationForId(id).getRepresentationForDepth(depth));
     }
 
-    protected final void registerLabelPair(Object searchRegionRepresentation, Object labeled) {
+    @Override
+    public final void registerLabelPair(Object searchRegionRepresentation, Object labeled) {
         if (searchRegionRepresentation instanceof PartnerClass && ((PartnerClass) searchRegionRepresentation).__mulib__getId() != null) {
             searchRegionRepresentation = ((PartnerClass) searchRegionRepresentation).__mulib__getId();
         }
@@ -1031,16 +1032,20 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     protected Object customLabelObject(Object o) {
+        Object result;
+        if ((result = checkForAlreadyLabeledRepresentation(o)) != null) {
+            return result;
+        }
         BiFunction<SolverManager, Object, Object> labelMethod =
                 this.classesToLabelFunction.get(o.getClass());
         if (labelMethod == null) {
-            registerLabelPair(o, o);
-            return o;
-        } else {
-            Object result = labelMethod.apply(this, o);
+            result = o;
             registerLabelPair(o, result);
-            return result;
+        } else {
+            result = labelMethod.apply(this, o);
         }
+        assert checkForAlreadyLabeledRepresentation(o) != null;
+        return result;
     }
 
     private Object createEmptyLabelObject(Class<?> clazz) {

@@ -240,6 +240,7 @@ public class MulibConfig {
                     (sm, toLabel) -> {
                         ArrayList<Object> result = new ArrayList<>();
                         ArrayList<?> arrayList = (ArrayList<?>) toLabel;
+                        sm.registerLabelPair(toLabel, result);
                         for (Object o : arrayList) {
                             result.add(sm.getLabel(o));
                         }

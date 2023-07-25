@@ -61,4 +61,6 @@ public interface SolverManager {
     ArrayInformation getAvailableInformationOnArray(Sint id, int depth);
 
     void shutdown();
+
+    void registerLabelPair(Object toLabel, Object label);
 }
