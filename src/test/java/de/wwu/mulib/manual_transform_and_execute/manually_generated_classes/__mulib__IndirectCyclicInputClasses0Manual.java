@@ -6,6 +6,7 @@ import de.wwu.mulib.substitutions.AbstractPartnerClass;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.transform_and_execute.examples.generated_methods_check.IndirectCyclicInputClasses0;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -22,9 +23,10 @@ public class __mulib__IndirectCyclicInputClasses0Manual extends AbstractPartnerC
         }
 
     }
-    public __mulib__IndirectCyclicInputClasses0Manual(IndirectCyclicInputClasses0Manual __mulib__originalObject, MulibValueTransformer var2) {
+    public __mulib__IndirectCyclicInputClasses0Manual(Object __mulib__originalObjectWithoutCast, MulibValueTransformer var2) {
+        IndirectCyclicInputClasses0Manual __mulib__originalObject = (IndirectCyclicInputClasses0Manual) __mulib__originalObjectWithoutCast;
         var2.registerTransformedObject(__mulib__originalObject, this);
-        this.c = __mulib__originalObject.c != null ? (!var2.alreadyTransformed(__mulib__originalObject.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__originalObject.c, var2) : (__mulib__IndirectCyclicInputClasses1Manual)var2.getTransformedObject(__mulib__originalObject)) : null;
+        this.c = __mulib__originalObject.c != null ? (!var2.alreadyTransformed(__mulib__originalObject.c) ? new __mulib__IndirectCyclicInputClasses1Manual(__mulib__originalObject.c, var2) : (__mulib__IndirectCyclicInputClasses1Manual)var2.getTransformedObject(__mulib__originalObjectWithoutCast)) : null;
     }
 
     public __mulib__IndirectCyclicInputClasses0Manual(__mulib__IndirectCyclicInputClasses0Manual __mulib__toCopy, MulibValueCopier __mulib__valueTransformer) {

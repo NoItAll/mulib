@@ -115,7 +115,7 @@ public final class MulibValueTransformer {
             Constructor<?> constr;
             try {
                 // Use transformation constructor
-                constr = possiblyTransformed.getConstructor(beforeTransformation, MulibValueTransformer.class);
+                constr = possiblyTransformed.getConstructor(Object.class, MulibValueTransformer.class);
                 result = constr.newInstance(currentValue, this);
                 assert alreadyTransformedObjects.get(currentValue) == result;
                 return result;

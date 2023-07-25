@@ -512,6 +512,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR;
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED;
+    public final SootMethod SM_PARTNER_CLASS_GET_ORIGINAL_CLASS;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
     public final SootMethod SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
@@ -521,6 +522,7 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_MAP_PUT;
 
     public final SootMethod SM_CLASS_GET_DECLARED_FIELD;
+    public final SootMethod SM_CLASS_FOR_NAME;
     public final SootMethod SM_FIELD_SET_ACCESSIBLE;
     public final SootMethod SM_FIELD_GET;
     public final SootMethod SM_FIELD_SET;
@@ -1020,6 +1022,7 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_GET_ORIGINAL_CLASS                                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), TYPE_CLASS);
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
         SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
 
@@ -1051,6 +1054,7 @@ public class SootMulibClassesAndMethods {
         SM_SARRAYSARRAY_TRANSFORMATION_CONSTR       = SC_SARRAYSARRAY.getMethod("<init>", List.of(ArrayType.v(TYPE_SARRAY, 1), TYPE_CLASS), TYPE_VOID);
 
         SM_CLASS_GET_DECLARED_FIELD  = SC_CLASS.getMethod("getDeclaredField", List.of(TYPE_STRING), TYPE_FIELD);
+        SM_CLASS_FOR_NAME            = SC_CLASS.getMethod("forName", List.of(TYPE_STRING), TYPE_CLASS);
         SM_FIELD_SET_ACCESSIBLE      = SC_FIELD.getMethod("setAccessible", List.of(TYPE_BOOL), TYPE_VOID);
         SM_FIELD_GET = SC_FIELD.getMethod("get", List.of(TYPE_OBJECT), TYPE_OBJECT);
         SM_FIELD_SET = SC_FIELD.getMethod("set", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_VOID);

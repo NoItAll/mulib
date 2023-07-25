@@ -119,7 +119,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // We treat the outer class field as a regular field. Thus, we do not need to add it as a parameter.
             parameterTypesOfTransfConstructor =
                     shouldBeTransformed ?
-                            List.of(getOriginalOrModelType(original), v.TYPE_MULIB_VALUE_TRANSFORMER)
+                            List.of(v.TYPE_OBJECT, v.TYPE_MULIB_VALUE_TRANSFORMER)
                             :
                             List.of();
             parameterTypesOfCopyConstructor =
@@ -146,10 +146,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else if (cc == ChosenConstructor.COPY_CONSTR) {
                 return localSpawner.spawnNewLocal(transformed.getType());
             } else if (cc == ChosenConstructor.TRANSFORMATION_CONSTR) {
-                return localSpawner.spawnNewLocal(original.getType());
+                return localSpawner.spawnNewLocal(v.TYPE_OBJECT);
             } else {
                 throw new NotYetImplementedException();
             }
+        }
+
+        Local getAdditionalTransformedLocal(LocalSpawner localSpawner) {
+            return localSpawner.spawnNewLocal(original.getType());
         }
 
         private boolean isInnerNonStatic() {
@@ -759,6 +763,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(assignSeLocal);
         }
 
+        if (!reflectionRequiredSinceClassIsNotVisible(old) && cc == ChosenConstructor.TRANSFORMATION_CONSTR) {
+            Local castedAdditionalLocal = resultData.getAdditionalTransformedLocal(localSpawner);
+            upc.add(Jimple.v().newAssignStmt(castedAdditionalLocal, Jimple.v().newCastExpr(additionalLocal, castedAdditionalLocal.getType())));
+            additionalLocal = castedAdditionalLocal;
+        }
+
         if (cc == ChosenConstructor.SE_CONSTR) {
             // Set representationState to DEFAULT_IS_SYMBOLIC
             upc.add(Jimple.v().newInvokeStmt(
@@ -1030,6 +1040,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         );
         /* GET VALUE FROM ORIGINAL FIELD */
         addInstructionsToGetFieldPotentiallyWithReflection(
+                thisLocal,
                 classLocal, fieldLocal, localSpawner,
                 originalLocal, originalValue,
                 originalField, transformedField,
@@ -1101,6 +1112,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private void addInstructionsToGetFieldPotentiallyWithReflection(
+            Local thisLocal,
             Local classLocal, Local fieldLocal, LocalSpawner localSpawner,
             Local toGetFromLocal, Local toStoreInLocal,
             SootField originalField, SootField transformedField,
@@ -1109,7 +1121,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if (reflectionRequiredToGetFromField) {
             Type originalType = originalField.getType();
             // Get field, store in fieldLocal, set accessible
-            addInstructionsToInitializeFieldAndSetAccessible(classLocal, fieldLocal, originalField, upc);
+            addInstructionsToInitializeFieldAndSetAccessible(thisLocal, classLocal, fieldLocal, originalField, upc);
             // Then, we execute Field.get(originalObject) to get the value (if there is a wrapper object involved, we still
             // need to unpack)
             Local tempFieldObjectLocal = localSpawner.spawnNewStackLocal(v.TYPE_OBJECT);
@@ -1176,11 +1188,10 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private Stmt addInstructionsToInitializeFieldAndSetAccessible(
-            Local classLocal, Local fieldLocal, SootField field, UnitPatchingChain upc) {
-        ClassConstant classConstant = getWrapperAwareClassConstantForType(field.getDeclaringClass().getType());
+            Local thisLocal, Local classLocal, Local fieldLocal, SootField field, UnitPatchingChain upc) {
         AssignStmt initClassVar = Jimple.v().newAssignStmt(
                 classLocal,
-                classConstant
+                Jimple.v().newInterfaceInvokeExpr(thisLocal, v.SM_PARTNER_CLASS_GET_ORIGINAL_CLASS.makeRef())
         );
         upc.add(initClassVar);
         AssignStmt initFieldVar = Jimple.v().newAssignStmt(
@@ -1247,7 +1258,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         (RefType) resultType,
                         localSpawner,
                         upc,
-                        List.of(originValue.getType(), isTransformation ? v.TYPE_MULIB_VALUE_TRANSFORMER : v.TYPE_MULIB_VALUE_COPIER),
+                        List.of(isTransformation ? v.TYPE_OBJECT : originValue.getType(), isTransformation ? v.TYPE_MULIB_VALUE_TRANSFORMER : v.TYPE_MULIB_VALUE_COPIER),
                         List.of(originValue, mvtLocal)
                 );
         upc.add(Jimple.v().newAssignStmt(resultValue, stackLocalOfNewObject));
@@ -1890,6 +1901,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     protected final boolean calculateReflectionRequiredForField(SootField originalField) {
+        if (reflectionRequiredSinceClassIsNotVisible(originalField.getDeclaringClass())) {
+            return true;
+        }
         if (originalField.getDeclaringClass().getPackageName().startsWith("java")) {
             return true;
         }
@@ -1980,13 +1994,19 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Create identity statement for parameter locals
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
         upc.add(Jimple.v().newIdentityStmt(labelTo, Jimple.v().newParameterRef(v.TYPE_OBJECT, 0)));
-        upc.add(Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 1)));
-        Local castedToLabelTo = localSpawner.spawnNewLocal(old.getType());
-        AssignStmt castObjectToActualType = Jimple.v().newAssignStmt(
-                castedToLabelTo,
-                Jimple.v().newCastExpr(labelTo, old.getType())
-        );
-        upc.add(castObjectToActualType);
+        Stmt lastIdentity = Jimple.v().newIdentityStmt(smLocal, Jimple.v().newParameterRef(v.TYPE_SOLVER_MANAGER, 1));
+        upc.add(lastIdentity);
+        Local castedToLabelTo;
+        if (!reflectionRequiredSinceClassIsNotVisible(old)) {
+            castedToLabelTo = localSpawner.spawnNewLocal(old.getType());
+            AssignStmt castObjectToActualType = Jimple.v().newAssignStmt(
+                    castedToLabelTo,
+                    Jimple.v().newCastExpr(labelTo, old.getType())
+            );
+            upc.add(castObjectToActualType);
+        } else {
+            castedToLabelTo = labelTo;
+        }
 
         boolean reflectionRequired = calculateReflectionRequired(old);
         Local classLocal = null, fieldLocal = null, exceptionLocal = null;
@@ -2069,12 +2089,19 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         )
                 );
                 upc.add(labelValue);
-                labeledValue = localSpawner.spawnNewStackLocal(oldField.getType());
-                AssignStmt castValue = Jimple.v().newAssignStmt(
-                        labeledValue,
-                        Jimple.v().newCastExpr(toCastLabeledLocal, ot)
-                );
-                upc.add(castValue);
+                if (oldField.getType() instanceof PrimType
+                        || (oldField.getType() instanceof ArrayType && !((((ArrayType) oldField.getType()).baseType instanceof RefType)
+                                && reflectionRequiredSinceClassIsNotVisible(((RefType) ((ArrayType) oldField.getType()).baseType).getSootClass())))
+                        || (oldField.getType() instanceof RefType && !reflectionRequiredSinceClassIsNotVisible(((RefType) oldField.getType()).getSootClass()))) {
+                    labeledValue = localSpawner.spawnNewStackLocal(oldField.getType());
+                    AssignStmt castValue = Jimple.v().newAssignStmt(
+                            labeledValue,
+                            Jimple.v().newCastExpr(toCastLabeledLocal, ot)
+                    );
+                    upc.add(castValue);
+                } else {
+                    labeledValue = toCastLabeledLocal;
+                }
             }
 
             /* SET FIELD */
@@ -2082,7 +2109,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (reflectionRequiredToSetField) {
                 // Get field and class local, set field accessible
                 firstStmtOfSettingValue =
-                        addInstructionsToInitializeFieldAndSetAccessible(classLocal, fieldLocal, oldField, upc);
+                        addInstructionsToInitializeFieldAndSetAccessible(thisLocal, classLocal, fieldLocal, oldField, upc);
                 // Set via Field.set(Object, Object)
                 InvokeStmt setViaField = Jimple.v().newInvokeStmt(
                         Jimple.v().newVirtualInvokeExpr(fieldLocal, v.SM_FIELD_SET.makeRef(), castedToLabelTo, labeledValue)
@@ -2121,7 +2148,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             upc.add(Jimple.v().newGotoStmt(returnStmt));
             // We start the trap first thing after the last identity statement (i.e. the first "real" instruction)
             try {
-                Unit successorOfSuperInit = upc.getSuccOf(castObjectToActualType);
+                Unit successorOfSuperInit = upc.getSuccOf(lastIdentity);
                 IdentityStmt exceptionStmt = Jimple.v().newIdentityStmt(exceptionLocal, Jimple.v().newCaughtExceptionRef());
                 Local mulibExceptionStackLocal = localSpawner.spawnNewStackLocal(v.TYPE_MULIB_RUNTIME_EXCEPTION);
                 AssignStmt newMulibRuntimeException =
@@ -2190,6 +2217,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     @Override
     protected void generateAndAddOriginalClassMethod(SootClass old, SootClass result) {
+        boolean reflectionRequiredToGetOriginalClass = reflectionRequiredSinceClassIsNotVisible(old);
         // Create method
         SootMethod originalClassMethod = new SootMethod(_TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), v.TYPE_CLASS, Modifier.PUBLIC);
         // Create body
@@ -2202,10 +2230,31 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         UnitPatchingChain upc = b.getUnits();
         // Create identity statement for SymbolicExecution parameter
         upc.add(Jimple.v().newIdentityStmt(thisLocal, Jimple.v().newThisRef(result.getType())));
-        // Return class constant
-        upc.add(Jimple.v().newReturnStmt(ClassConstant.fromType(old.getType())));
+        if (!reflectionRequiredToGetOriginalClass) {
+            // Return class constant
+            upc.add(Jimple.v().newReturnStmt(ClassConstant.fromType(old.getType())));
+        } else {
+            // Return via Class.forName(String)
+            Local classLocal = localSpawner.spawnNewStackLocal(v.TYPE_CLASS);
+            upc.add(Jimple.v().newAssignStmt(
+                    classLocal,
+                    Jimple.v().newStaticInvokeExpr(v.SM_CLASS_FOR_NAME.makeRef(), StringConstant.v(old.getName())))
+            );
+            upc.add(Jimple.v().newReturnStmt(classLocal));
+        }
         originalClassMethod.setDeclaringClass(result);
         result.addMethod(originalClassMethod);
+    }
+
+    private boolean reflectionRequiredSinceClassIsNotVisible(SootClass old) {
+        int access = old.getModifiers();
+        if (tryUseSystemClassLoader) {
+            return Modifier.isPrivate(access);
+        } else {
+            // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
+            // without reflection
+            return !Modifier.isPublic(access);
+        }
     }
 
     @Override

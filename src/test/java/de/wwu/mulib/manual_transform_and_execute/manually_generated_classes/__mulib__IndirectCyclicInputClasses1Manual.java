@@ -19,7 +19,8 @@ public class __mulib__IndirectCyclicInputClasses1Manual extends AbstractPartnerC
 
     }
 
-    public __mulib__IndirectCyclicInputClasses1Manual(IndirectCyclicInputClasses1Manual __mulib__originalObject, MulibValueTransformer var2) {
+    public __mulib__IndirectCyclicInputClasses1Manual(Object __mulib__originalObjectWithoutCast, MulibValueTransformer var2) {
+        IndirectCyclicInputClasses1Manual __mulib__originalObject = (IndirectCyclicInputClasses1Manual) __mulib__originalObjectWithoutCast;
         var2.registerTransformedObject(__mulib__originalObject, this);
         this.c = __mulib__originalObject.c != null ? (!var2.alreadyTransformed(__mulib__originalObject.c) ? new __mulib__IndirectCyclicInputClasses0Manual(__mulib__originalObject.c, var2) : (__mulib__IndirectCyclicInputClasses0Manual)var2.getTransformedObject(__mulib__originalObject.c)) : null;
     }
