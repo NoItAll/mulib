@@ -2246,6 +2246,65 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         result.addMethod(originalClassMethod);
     }
 
+    @Override
+    protected void treatSpecialMethodCallsInClassNodesMethods(SootClass sc) {
+        // TODO Hardcoded for now
+        final String methodOwnerToTreatIn = "dacite.core.defuse.DefUseAnalyser";
+        final List<String> methodNamesToAccountFor = List.of(
+                "visitDef", "visitUse", "visitStaticFieldUse", "visitStaticFieldDef",
+                "visitFieldDef", "visitFieldUse",
+                "visitArrayUse", // two different signatures (int/Sint)
+                "visitArrayDef", // two different signatures (int/Sint)
+                "visitParameter",
+                "registerInterMethod" // two different signatures (one value/multiple values)
+        );
+        final List<String> arrayDefAndUse = List.of("visitArrayUse", "visitArrayDef");
+        String registerInterMethod = "registerInterMethod";
+        for (SootMethod sm : sc.getMethods()) {
+            UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
+            Stmt[] stmts = upc.toArray(Stmt[]::new);
+            for (Stmt s : stmts) {
+                if (!s.containsInvokeExpr()) {
+                    continue;
+                }
+                if (s instanceof AssignStmt) {
+                    continue;
+                }
+                InvokeStmt invokeStmt = (InvokeStmt) s;
+                InvokeExpr invokeExpr = invokeStmt.getInvokeExpr();
+                SootMethodRef smr = invokeExpr.getMethodRef();
+                String methodName = smr.getName();
+                if (!smr.getDeclaringClass().getName().equals(methodOwnerToTreatIn)) {
+                    continue;
+                }
+                if (!methodNamesToAccountFor.contains(methodName)) {
+                    continue;
+                }
+                if (methodName.startsWith("visitArray")) {
+                    //// TODO Switch int to Sint if necessary
+                    throw new NotYetImplementedException();
+                } else if (registerInterMethod.equals(methodName)) {
+                    //// TODO unwrap all or one value, if needed
+                    throw new NotYetImplementedException();
+                } else if (methodName.startsWith("visitField")) {
+                    //// TODO unwrap field value, if needed
+                    throw new NotYetImplementedException();
+                } else if (methodName.startsWith("visitStaticField")) {
+                    //// TODO unwrap static field value, if needed
+                    throw new NotYetImplementedException();
+                } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
+                    //// TODO unwrap value, if needed
+                    throw new NotYetImplementedException();
+                } else if (methodName.equals("visitParameter")) {
+                    //// TODO unwrap value, if needed
+                    throw new NotYetImplementedException();
+                } else {
+                    throw new NotYetImplementedException(methodName);
+                }
+            }
+        }
+    }
+
     private boolean reflectionRequiredSinceClassIsNotVisible(SootClass old) {
         int access = old.getModifiers();
         if (tryUseSystemClassLoader) {

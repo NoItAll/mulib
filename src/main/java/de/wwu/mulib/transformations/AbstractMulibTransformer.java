@@ -150,6 +150,13 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 }
             }
 
+            if (config.TRANSF_TREAT_SPECIAL_METHOD_CALLS) {
+                // Treat defined method calls
+                for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+                    treatSpecialMethodCallsInClassNodesMethods(entry.getValue());
+                }
+            }
+
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 if (transformedClasses.get(entry.getKey()) != null) {
                     // Is already loaded
@@ -167,6 +174,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             maybeCheckAreValidInitializedClasses(transformedClasses.values());
         }
     }
+
+    protected abstract void treatSpecialMethodCallsInClassNodesMethods(T classNode);
 
     private Map<Field, Field> getFieldsOfTransformedClassesToOriginalClasses(
             Collection<Field> accessibleStaticFieldsOfTransformedClasses) {

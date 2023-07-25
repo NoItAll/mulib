@@ -109,6 +109,7 @@ public class MulibConfig {
     // folder of the usual system classes.
     public final boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
     public final boolean TRANSF_INCLUDE_PACKAGE_NAME;
+    public final boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
 
     public static MulibConfigBuilder builder() {
         return new MulibConfigBuilder();
@@ -158,6 +159,7 @@ public class MulibConfig {
         private boolean TRANSF_VALIDATE_TRANSFORMATION;
         private boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         private boolean TRANSF_INCLUDE_PACKAGE_NAME;
+        private boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
         private boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         private boolean TRANSF_TRANSFORMATION_REQUIRED;
         private long PARALLEL_TIMEOUT_IN_MS;
@@ -230,6 +232,7 @@ public class MulibConfig {
             this.TRANSF_WRITE_TO_FILE = true;
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
             this.TRANSF_INCLUDE_PACKAGE_NAME = false;
+            this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = false;
             this.TRANSF_VALIDATE_TRANSFORMATION = false;
             this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = false;
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = new HashMap<>();
@@ -645,6 +648,11 @@ public class MulibConfig {
             addModelClass(Integer.class, IntegerReplacement.class);
         }
 
+        public MulibConfigBuilder setTRANSF_TREAT_SPECIAL_METHOD_CALLS(boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS) {
+            this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
+            return this;
+        }
+
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -748,7 +756,8 @@ public class MulibConfig {
                     TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                     TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                     TRANSF_USE_DEFAULT_MODEL_CLASSES,
-                    PATH_SOLUTION_CALLBACK
+                    PATH_SOLUTION_CALLBACK,
+                    TRANSF_TREAT_SPECIAL_METHOD_CALLS
             );
         }
     }
@@ -815,7 +824,8 @@ public class MulibConfig {
                         boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
-                        Consumer<SolverManager> PATH_SOLUTION_CALLBACK
+                        Consumer<SolverManager> PATH_SOLUTION_CALLBACK,
+                        boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.ENLIST_LEAVES = ENLIST_LEAVES;
@@ -881,6 +891,7 @@ public class MulibConfig {
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
         this.PATH_SOLUTION_CALLBACK = PATH_SOLUTION_CALLBACK;
+        this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
     }
 
     @Override
