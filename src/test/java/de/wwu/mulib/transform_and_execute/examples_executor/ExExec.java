@@ -4,6 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.transform_and_execute.examples.*;
 import de.wwu.mulib.transform_and_execute.examples.apache2_examples.*;
 import de.wwu.mulib.transform_and_execute.examples.mit_examples.InfiniteLoop;
@@ -12,8 +13,7 @@ import org.junit.jupiter.api.Test;
 
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class ExExec {
 
@@ -491,6 +491,32 @@ public class ExExec {
                     assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
                 },
                 "testInfiniteLoopExec0"
+        );
+    }
+
+    @Test
+    public void testSort() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setFIXED_ACTUAL_CP_BUDGET(12);
+                    List<PathSolution> result = TestUtility.executeMulib(
+                            "sort",
+                            Sort.class,
+                            mb,
+                            true
+                    );
+                    assertFalse(result.isEmpty());
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    Sort sort = new Sort();
+                    for (PathSolution ps : result) {
+                        Solution s = ps.getSolution();
+                        int[] input = (int[]) s.labels.getLabelForId("input");
+                        int[] output = (int[]) s.returnValue;
+                        int[] sortedInput = sort.sort(input);
+                        assertArrayEquals(output, sortedInput);
+                    }
+                },
+                "sort"
         );
     }
 
