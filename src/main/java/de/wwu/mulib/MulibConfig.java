@@ -3,19 +3,21 @@ package de.wwu.mulib;
 import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
+import de.wwu.mulib.search.executors.MulibExecutor;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
+import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.util.TriConsumer;
 
 import java.io.PrintStream;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.BiFunction;
-import java.util.function.Consumer;
 import java.util.function.Function;
 
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
@@ -35,7 +37,7 @@ public class MulibConfig {
     public final boolean ALLOW_EXCEPTIONS;
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
     public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
-    public final Consumer<SolverManager> PATH_SOLUTION_CALLBACK;
+    public final TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -184,7 +186,7 @@ public class MulibConfig {
         private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
         private boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
-        private Consumer<SolverManager> PATH_SOLUTION_CALLBACK;
+        private TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
 
         private MulibConfigBuilder() {
             // Defaults
@@ -275,7 +277,7 @@ public class MulibConfig {
             this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
             this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = false;
-            this.PATH_SOLUTION_CALLBACK = (sm) -> {};
+            this.PATH_SOLUTION_CALLBACK = (me, ps, sm) -> {};
         }
 
         public MulibConfigBuilder setENLIST_LEAVES(boolean ENLIST_LEAVES) {
@@ -638,7 +640,7 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setPATH_SOLUTION_CALLBACK(Consumer<SolverManager> callback) {
+        public MulibConfigBuilder setPATH_SOLUTION_CALLBACK(TriConsumer<MulibExecutor, PathSolution, SolverManager> callback) {
             this.PATH_SOLUTION_CALLBACK = callback;
             return this;
         }
@@ -824,7 +826,7 @@ public class MulibConfig {
                         boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
-                        Consumer<SolverManager> PATH_SOLUTION_CALLBACK,
+                        TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK,
                         boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;

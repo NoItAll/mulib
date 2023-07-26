@@ -1,4 +1,4 @@
-package de.wwu.mulib;
+package de.wwu.mulib.util;
 
 import de.wwu.mulib.substitutions.AbstractPartnerClass;
 

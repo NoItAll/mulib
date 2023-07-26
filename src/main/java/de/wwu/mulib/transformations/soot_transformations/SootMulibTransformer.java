@@ -1,7 +1,6 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MisconfigurationException;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
@@ -342,7 +341,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private static final String DEFAULT_SOOT_JCP;
     private final Map<String, SootClass> resolvedClasses = new HashMap<>();
     static {
-        JAVA_CLASS_PATH = System.getProperty("java.class.path").replace("build/resources/test", "build");
+        JAVA_CLASS_PATH = System.getProperty("java.class.path").replace("build/resources/test", "build").replace("build/resources/main", "build");
         DEFAULT_SOOT_JCP = Scene.defaultJavaClassPath();
         Options.v().set_soot_classpath(JAVA_CLASS_PATH + File.pathSeparator + DEFAULT_SOOT_JCP);
         Options.v().set_drop_bodies_after_load(false);
@@ -2258,12 +2257,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 "visitParameter",
                 "registerInterMethod" // two different signatures (one value/multiple values)
         );
-        final List<String> arrayDefAndUse = List.of("visitArrayUse", "visitArrayDef");
         String registerInterMethod = "registerInterMethod";
         for (SootMethod sm : sc.getMethods()) {
             UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
             Stmt[] stmts = upc.toArray(Stmt[]::new);
-            for (Stmt s : stmts) {
+            for (int i = 0; i < stmts.length; i++) {
+                Stmt s = stmts[i];
                 if (!s.containsInvokeExpr()) {
                     continue;
                 }
@@ -2280,12 +2279,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 if (!methodNamesToAccountFor.contains(methodName)) {
                     continue;
                 }
+                Value[] values;
                 if (methodName.startsWith("visitArray")) {
                     //// TODO Switch int to Sint if necessary
                     throw new NotYetImplementedException();
                 } else if (registerInterMethod.equals(methodName)) {
-                    //// TODO unwrap all or one value, if needed
-                    throw new NotYetImplementedException();
+                    Value value = invokeExpr.getArg(0);
+                    if (value.getType() instanceof ArrayType) {
+                        values = findValuesStoredInArray(stmts, i).toArray(Value[]::new);
+                    } else {
+                        values = new Value[] { value };
+                    }
                 } else if (methodName.startsWith("visitField")) {
                     //// TODO unwrap field value, if needed
                     throw new NotYetImplementedException();
@@ -2293,16 +2297,79 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     //// TODO unwrap static field value, if needed
                     throw new NotYetImplementedException();
                 } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
-                    //// TODO unwrap value, if needed
-                    throw new NotYetImplementedException();
+                    values = new Value[] { invokeExpr.getArg(0) };
                 } else if (methodName.equals("visitParameter")) {
-                    //// TODO unwrap value, if needed
-                    throw new NotYetImplementedException();
+                    values = new Value[] { invokeExpr.getArg(0) };
                 } else {
                     throw new NotYetImplementedException(methodName);
                 }
+                for (Value value : values) {
+                    if (!isWrapperType(value.getType())) {
+                        continue;
+                    }
+                    // Is a wrapper type; - we want to replace the respective valueOf-call
+                    // Find source of value, i.e., the wrapping valueOf-call
+                    for (Stmt z : stmts) {
+                        if (z == s) {
+                            // Cannot be defined hereafter
+                            break;
+                        }
+                        if (!z.getDefBoxes().stream().anyMatch(vb -> vb.getValue().equals(value))) {
+                            continue;
+                        }
+                        // Is source; - must be an assign statement
+                        AssignStmt source = (AssignStmt) z;
+                        // Must contain invokeExpr
+                        InvokeExpr sourceInvokeExpr = source.getInvokeExpr();
+                        Value wrapped = sourceInvokeExpr.getArg(0);
+                        if (!isPrimitiveOrSprimitive(wrapped.getType())) {
+                            continue;
+                        }
+                        assert sourceInvokeExpr.getMethodRef().getName().equals("valueOf");
+                        source.setRightOp(wrapped);
+                        ((Local) source.getLeftOp()).setType(v.TYPE_OBJECT);
+                    }
+                }
             }
         }
+        return;
+    }
+
+    private Collection<Value> findValuesStoredInArray(Stmt[] stmts, int positionOfInterMethodStmt) {
+        Collection<Value> result = new HashSet<>();
+        boolean foundSetParameter = false;
+        // Find previous setParameter-method
+        for (int i = positionOfInterMethodStmt - 1; i >= 0; i--) {
+            Stmt s = stmts[i];
+            if (!s.containsInvokeExpr()) {
+                continue;
+            }
+            InvokeExpr invokeExpr = s.getInvokeExpr();
+            SootMethodRef smr = invokeExpr.getMethodRef();
+            String declaringClassName = smr.getDeclaringClass().getName();
+            String methodName = smr.getName();
+            if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("setParameter")) {
+                foundSetParameter = true;
+                break;
+            } else if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("push")) {
+                Value arg = invokeExpr.getArg(0);
+                result.add(arg);
+            }
+        }
+        assert foundSetParameter : "setParameter-call indicating start of parameter collection not found";
+        return result;
+    }
+
+    private static boolean isWrapperType(Type t) {
+        if (!(t instanceof RefType)) {
+            return false;
+        }
+        RefType rt = (RefType) t;
+        String cn = rt.getClassName();
+        return cn.equals(Integer.class.getName()) || cn.equals(Long.class.getName())
+                || cn.equals(Double.class.getName()) || cn.equals(Float.class.getName())
+                || cn.equals(Short.class.getName()) || cn.equals(Byte.class.getName())
+                || cn.equals(Boolean.class.getName()) || cn.equals(Character.class.getName());
     }
 
     private boolean reflectionRequiredSinceClassIsNotVisible(SootClass old) {
@@ -3916,7 +3983,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             }
             if (shouldBeReplaced) {
                 if (alternativeSootMethods.isEmpty()) {
-                    throw new MisconfigurationException("There are no valid methods to generalize to for " + smr);
+                    // No-op for now
+//                    throw new MisconfigurationException("There are no valid methods to generalize to for " + smr);
                 } else {
                     // Pick any
                     invokeExpr.setMethodRef(alternativeSootMethods.get(0).makeRef());

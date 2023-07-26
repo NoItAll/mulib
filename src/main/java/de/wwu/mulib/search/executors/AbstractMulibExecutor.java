@@ -21,6 +21,7 @@ import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
+import de.wwu.mulib.util.TriConsumer;
 
 import java.lang.invoke.MethodHandle;
 import java.util.*;
@@ -43,12 +44,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected final SolverManager solverManager;
     // Config
     protected final SearchStrategy searchStrategy;
-    private final boolean labelResultValue;
     protected final boolean isConcolic;
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
-    private final Consumer<SolverManager> pathSolutionCallback;
+    private final TriConsumer<MulibExecutor, PathSolution, SolverManager> pathSolutionCallback;
     private final MethodHandle searchRegionMethod;
     private final StaticVariables staticVariables;
     private final Object[] searchRegionArgs;
@@ -68,7 +68,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.mulibExecutorManager = mulibExecutorManager;
         this.solverManager = Solvers.getSolverManager(config);
         this.searchStrategy = searchStrategy;
-        this.labelResultValue = config.LABEL_RESULT_VALUE;
         this.isConcolic = config.CONCOLIC;
         this.config = config;
         this.mulibValueTransformer = mulibValueTransformer;
@@ -367,22 +366,25 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private PathSolution getPathSolution(
             Object solutionValue, // TODO Not SubstitutedVar since, for now, it can be of type Throwable
             boolean isThrownException) {
-        pathSolutionCallback.accept(solverManager);
         Solution s = solverManager.labelSolution(solutionValue, rememberedSprimitives);
         SearchTree.AccumulatedChoiceOptionConstraints constraintContainer = SearchTree.getAllConstraintsForChoiceOption(currentChoiceOption);
+        PathSolution result;
         if (isThrownException) {
-            return currentChoiceOption.setExceptionSolution(
+            result = currentChoiceOption.setExceptionSolution(
                     s,
                     constraintContainer.constraints,
                     constraintContainer.partnerClassObjectConstraints
             );
         } else {
-            return currentChoiceOption.setSolution(
+            result = currentChoiceOption.setSolution(
                     s,
                     constraintContainer.constraints,
                     constraintContainer.partnerClassObjectConstraints
             );
         }
+
+        pathSolutionCallback.accept(this, result, solverManager);
+        return result;
     }
 
     private void _addAfterBacktrackingPoint(Choice.ChoiceOption choiceOption) {

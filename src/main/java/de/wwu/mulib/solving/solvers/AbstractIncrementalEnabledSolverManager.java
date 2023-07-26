@@ -1,7 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.Utility;
+import de.wwu.mulib.util.Utility;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;

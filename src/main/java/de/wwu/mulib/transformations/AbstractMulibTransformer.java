@@ -130,6 +130,13 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             Map<String, T> typeStringToGeneratedSpecificPartnerClassSarrayClass = getArrayTypeNameToGeneratedSpecializedPartnerClassSarrayClass();
             transformedClassNodes.putAll(typeStringToGeneratedSpecificPartnerClassSarrayClass);
 
+            if (config.TRANSF_TREAT_SPECIAL_METHOD_CALLS) {
+                // Treat defined method calls
+                for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
+                    treatSpecialMethodCallsInClassNodesMethods(entry.getValue());
+                }
+            }
+
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 maybeCheckIsValidWrittenClassNode(entry.getValue());
                 // Write class node to class file
@@ -147,13 +154,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                     }
                 } else {
                     maybeWriteToFile(entry.getValue());
-                }
-            }
-
-            if (config.TRANSF_TREAT_SPECIAL_METHOD_CALLS) {
-                // Treat defined method calls
-                for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
-                    treatSpecialMethodCallsInClassNodesMethods(entry.getValue());
                 }
             }
 
