@@ -2245,131 +2245,145 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         result.addMethod(originalClassMethod);
     }
 
+
     @Override
     protected void treatSpecialMethodCallsInClassNodesMethods(SootClass sc) {
-        // TODO Hardcoded for now
-        final String methodOwnerToTreatIn = "dacite.core.defuse.DefUseAnalyser";
-        final List<String> methodNamesToAccountFor = List.of(
-                "visitDef", "visitUse", "visitStaticFieldUse", "visitStaticFieldDef",
-                "visitFieldDef", "visitFieldUse",
-                "visitArrayUse", // two different signatures (int/Sint)
-                "visitArrayDef", // two different signatures (int/Sint)
-                "visitParameter",
-                "registerInterMethod" // two different signatures (one value/multiple values)
-        );
-        String registerInterMethod = "registerInterMethod";
-        for (SootMethod sm : sc.getMethods()) {
-            UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
-            Stmt[] stmts = upc.toArray(Stmt[]::new);
-            for (int i = 0; i < stmts.length; i++) {
+        new DaciteProcedure().treatSpecialMethodCallsInClassNodesMethods(sc);
+    }
+
+    final class DaciteProcedure {
+
+        void treatSpecialMethodCallsInClassNodesMethods(SootClass sc) {
+            // TODO Hardcoded for now
+            final String methodOwnerToTreatIn = "dacite.core.defuse.DefUseAnalyser";
+            final List<String> methodNamesToAccountFor = List.of(
+                    "visitDef", "visitUse", "visitStaticFieldUse", "visitStaticFieldDef",
+                    "visitFieldDef", "visitFieldUse",
+                    "visitArrayUse", // two different signatures (int/Sint)
+                    "visitArrayDef", // two different signatures (int/Sint)
+                    "visitParameter",
+                    "registerInterMethod" // two different signatures (one value/multiple values)
+            );
+            String registerInterMethod = "registerInterMethod";
+            for (SootMethod sm : sc.getMethods()) {
+                if (sm.isAbstract() || sm.isNative()) {
+                    continue;
+                }
+                UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
+                Stmt[] stmts = upc.toArray(Stmt[]::new);
+                for (int i = 0; i < stmts.length; i++) {
+                    Stmt s = stmts[i];
+                    if (!s.containsInvokeExpr()) {
+                        continue;
+                    }
+                    if (s instanceof AssignStmt) {
+                        continue;
+                    }
+                    InvokeStmt invokeStmt = (InvokeStmt) s;
+                    InvokeExpr invokeExpr = invokeStmt.getInvokeExpr();
+                    SootMethodRef smr = invokeExpr.getMethodRef();
+                    String methodName = smr.getName();
+                    if (!smr.getDeclaringClass().getName().equals(methodOwnerToTreatIn)) {
+                        continue;
+                    }
+                    if (!methodNamesToAccountFor.contains(methodName)) {
+                        continue;
+                    }
+                    Value[] values;
+                    if (methodName.startsWith("visitArray")) {
+                        //// TODO Switch int to Sint if necessary
+                        throw new NotYetImplementedException();
+                    } else if (registerInterMethod.equals(methodName)) {
+                        Value value = invokeExpr.getArg(0);
+                        if (value.getType() instanceof ArrayType) {
+                            values = findValuesStoredInArray(stmts, i).toArray(Value[]::new);
+                        } else {
+                            values = new Value[]{value};
+                        }
+                    } else if (methodName.startsWith("visitField")) {
+                        //// TODO unwrap field value, if needed
+                        throw new NotYetImplementedException();
+                    } else if (methodName.startsWith("visitStaticField")) {
+                        //// TODO unwrap static field value, if needed
+                        throw new NotYetImplementedException();
+                    } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
+                        values = new Value[]{invokeExpr.getArg(0)};
+                    } else if (methodName.equals("visitParameter")) {
+                        values = new Value[]{invokeExpr.getArg(0)};
+                    } else {
+                        throw new NotYetImplementedException(methodName);
+                    }
+                    for (Value value : values) {
+                        if (!isWrapperType(value.getType())) {
+                            continue;
+                        }
+                        // Is a wrapper type; - we want to replace the respective valueOf-call
+                        // Find source of value, i.e., the wrapping valueOf-call
+                        for (Stmt z : stmts) {
+                            if (z == s) {
+                                // Cannot be defined hereafter
+                                break;
+                            }
+                            if (!z.getDefBoxes().stream().anyMatch(vb -> vb.getValue().equals(value))) {
+                                continue;
+                            }
+                            // Is source; - must be an assign statement
+                            AssignStmt source = (AssignStmt) z;
+                            // Must contain invokeExpr
+                            InvokeExpr sourceInvokeExpr = source.getInvokeExpr();
+                            Value wrapped = sourceInvokeExpr.getArg(0);
+                            if (!isPrimitiveOrSprimitive(wrapped.getType())) {
+                                continue;
+                            }
+                            assert sourceInvokeExpr.getMethodRef().getName().equals("valueOf");
+                            source.setRightOp(wrapped);
+                            ((Local) source.getLeftOp()).setType(v.TYPE_OBJECT);
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
+        Collection<Value> findValuesStoredInArray(Stmt[] stmts, int positionOfInterMethodStmt) {
+            Collection<Value> result = new HashSet<>();
+            boolean foundSetParameter = false;
+            // Find previous setParameter-method
+            for (int i = positionOfInterMethodStmt - 1; i >= 0; i--) {
                 Stmt s = stmts[i];
                 if (!s.containsInvokeExpr()) {
                     continue;
                 }
-                if (s instanceof AssignStmt) {
-                    continue;
-                }
-                InvokeStmt invokeStmt = (InvokeStmt) s;
-                InvokeExpr invokeExpr = invokeStmt.getInvokeExpr();
+                InvokeExpr invokeExpr = s.getInvokeExpr();
                 SootMethodRef smr = invokeExpr.getMethodRef();
+                String declaringClassName = smr.getDeclaringClass().getName();
                 String methodName = smr.getName();
-                if (!smr.getDeclaringClass().getName().equals(methodOwnerToTreatIn)) {
-                    continue;
-                }
-                if (!methodNamesToAccountFor.contains(methodName)) {
-                    continue;
-                }
-                Value[] values;
-                if (methodName.startsWith("visitArray")) {
-                    //// TODO Switch int to Sint if necessary
-                    throw new NotYetImplementedException();
-                } else if (registerInterMethod.equals(methodName)) {
-                    Value value = invokeExpr.getArg(0);
-                    if (value.getType() instanceof ArrayType) {
-                        values = findValuesStoredInArray(stmts, i).toArray(Value[]::new);
-                    } else {
-                        values = new Value[] { value };
-                    }
-                } else if (methodName.startsWith("visitField")) {
-                    //// TODO unwrap field value, if needed
-                    throw new NotYetImplementedException();
-                } else if (methodName.startsWith("visitStaticField")) {
-                    //// TODO unwrap static field value, if needed
-                    throw new NotYetImplementedException();
-                } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
-                    values = new Value[] { invokeExpr.getArg(0) };
-                } else if (methodName.equals("visitParameter")) {
-                    values = new Value[] { invokeExpr.getArg(0) };
-                } else {
-                    throw new NotYetImplementedException(methodName);
-                }
-                for (Value value : values) {
-                    if (!isWrapperType(value.getType())) {
-                        continue;
-                    }
-                    // Is a wrapper type; - we want to replace the respective valueOf-call
-                    // Find source of value, i.e., the wrapping valueOf-call
-                    for (Stmt z : stmts) {
-                        if (z == s) {
-                            // Cannot be defined hereafter
-                            break;
-                        }
-                        if (!z.getDefBoxes().stream().anyMatch(vb -> vb.getValue().equals(value))) {
-                            continue;
-                        }
-                        // Is source; - must be an assign statement
-                        AssignStmt source = (AssignStmt) z;
-                        // Must contain invokeExpr
-                        InvokeExpr sourceInvokeExpr = source.getInvokeExpr();
-                        Value wrapped = sourceInvokeExpr.getArg(0);
-                        if (!isPrimitiveOrSprimitive(wrapped.getType())) {
-                            continue;
-                        }
-                        assert sourceInvokeExpr.getMethodRef().getName().equals("valueOf");
-                        source.setRightOp(wrapped);
-                        ((Local) source.getLeftOp()).setType(v.TYPE_OBJECT);
-                    }
+                if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("setParameter")) {
+                    foundSetParameter = true;
+                    break;
+                } else if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("push")) {
+                    Value arg = invokeExpr.getArg(0);
+                    result.add(arg);
                 }
             }
+            assert foundSetParameter : "setParameter-call indicating start of parameter collection not found";
+            return result;
         }
-        return;
-    }
 
-    private Collection<Value> findValuesStoredInArray(Stmt[] stmts, int positionOfInterMethodStmt) {
-        Collection<Value> result = new HashSet<>();
-        boolean foundSetParameter = false;
-        // Find previous setParameter-method
-        for (int i = positionOfInterMethodStmt - 1; i >= 0; i--) {
-            Stmt s = stmts[i];
-            if (!s.containsInvokeExpr()) {
-                continue;
+        boolean isWrapperType(Type t) {
+            if (!(t instanceof RefType)) {
+                return false;
             }
-            InvokeExpr invokeExpr = s.getInvokeExpr();
-            SootMethodRef smr = invokeExpr.getMethodRef();
-            String declaringClassName = smr.getDeclaringClass().getName();
-            String methodName = smr.getName();
-            if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("setParameter")) {
-                foundSetParameter = true;
-                break;
-            } else if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("push")) {
-                Value arg = invokeExpr.getArg(0);
-                result.add(arg);
+            RefType rt = (RefType) t;
+            String cn = rt.getClassName();
+            if (cn.startsWith("de.wwu.mulib.model.classes.java.lang")) {
+                cn = cn.replace("de.wwu.mulib.model.classes.", "").replace("Replacement", "").replace(_TRANSFORMATION_PREFIX, "");
             }
+            return cn.equals(Integer.class.getName()) || cn.equals(Long.class.getName())
+                    || cn.equals(Double.class.getName()) || cn.equals(Float.class.getName())
+                    || cn.equals(Short.class.getName()) || cn.equals(Byte.class.getName())
+                    || cn.equals(Boolean.class.getName()) || cn.equals(Character.class.getName());
         }
-        assert foundSetParameter : "setParameter-call indicating start of parameter collection not found";
-        return result;
-    }
-
-    private static boolean isWrapperType(Type t) {
-        if (!(t instanceof RefType)) {
-            return false;
-        }
-        RefType rt = (RefType) t;
-        String cn = rt.getClassName();
-        return cn.equals(Integer.class.getName()) || cn.equals(Long.class.getName())
-                || cn.equals(Double.class.getName()) || cn.equals(Float.class.getName())
-                || cn.equals(Short.class.getName()) || cn.equals(Byte.class.getName())
-                || cn.equals(Boolean.class.getName()) || cn.equals(Character.class.getName());
     }
 
     private boolean reflectionRequiredSinceClassIsNotVisible(SootClass old) {
