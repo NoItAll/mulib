@@ -2291,8 +2291,22 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     }
                     Value[] values;
                     if (methodName.startsWith("visitArray")) {
-                        //// TODO Switch int to Sint if necessary
-                        throw new NotYetImplementedException();
+                        Value value = invokeExpr.getArg(2);
+                        values = new Value[] { value };
+                        Value index = invokeExpr.getArg(1);
+                        if (index.getType().equals(v.TYPE_SINT)) {
+                            SootClass defUseAnalyzerClass = smr.getDeclaringClass();
+                            boolean use = methodName.contains("Use");
+                            SootMethodRef newSmr = Scene.v().makeMethodRef(
+                                    defUseAnalyzerClass,
+                                    "visitArray" + (use ? "Use" : "Def"),
+                                    List.of(v.TYPE_OBJECT, v.TYPE_SINT, v.TYPE_OBJECT, v.TYPE_INT, v.TYPE_INT, v.TYPE_STRING),
+                                    v.TYPE_VOID,
+                                    true
+                            );
+                            smr = newSmr;
+                            invokeExpr.setMethodRef(newSmr);
+                        }
                     } else if (registerInterMethod.equals(methodName)) {
                         Value value = invokeExpr.getArg(0);
                         if (value.getType() instanceof ArrayType) {
@@ -2301,11 +2315,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             values = new Value[]{value};
                         }
                     } else if (methodName.startsWith("visitField")) {
-                        //// TODO unwrap field value, if needed
-                        throw new NotYetImplementedException();
+                        values = new Value[] { invokeExpr.getArg(1) };
                     } else if (methodName.startsWith("visitStaticField")) {
-                        //// TODO unwrap static field value, if needed
-                        throw new NotYetImplementedException();
+                        values = new Value[] { invokeExpr.getArg(0) };
                     } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
                         values = new Value[]{invokeExpr.getArg(0)};
                     } else if (methodName.equals("visitParameter")) {
