@@ -2839,37 +2839,51 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
     private static boolean isIntOrSint(Type t) {
         return t instanceof IntType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sint.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sint.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sint.ConcSint.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sint.SymSint.class.getName()));
     }
 
     private static boolean isDoubleOrSdouble(Type t) {
         return t instanceof DoubleType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sdouble.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sdouble.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sdouble.ConcSdouble.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sdouble.SymSdouble.class.getName()));
     }
 
     private static boolean isFloatOrSfloat(Type t) {
         return t instanceof FloatType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sfloat.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sfloat.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sfloat.ConcSfloat.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sfloat.SymSfloat.class.getName()));
     }
 
     private static boolean isShortOrSshort(Type t) {
         return t instanceof ShortType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sshort.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sshort.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sshort.ConcSshort.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sshort.SymSshort.class.getName()));
     }
 
     private static boolean isByteOrSbyte(Type t) {
         return t instanceof ByteType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbyte.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbyte.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbyte.ConcSbyte.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbyte.SymSbyte.class.getName()));
     }
 
     private static boolean isBoolOrSbool(Type t) {
         return t instanceof BooleanType
-                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbool.class.getName()));
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbool.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbool.ConcSbool.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Sbool.SymSbool.class.getName()));
     }
 
     private static boolean isCharOrSchar(Type t) {
         return t instanceof CharType
-                || (t instanceof RefType) && ((RefType) t).getClassName().equals(Schar.class.getName());
+                || (t instanceof RefType) && ((RefType) t).getClassName().equals(Schar.class.getName())
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Schar.ConcSchar.class.getName()))
+                || ((t instanceof RefType) && ((RefType) t).getClassName().equals(Schar.SymSchar.class.getName()));
     }
 
     private void transform(GotoStmt g, TcArgs args) {
