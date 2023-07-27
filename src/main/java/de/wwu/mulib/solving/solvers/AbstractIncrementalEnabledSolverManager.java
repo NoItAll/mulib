@@ -947,7 +947,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                             shouldbeAdded = false;
                         }
                     } else if (pcoc instanceof PartnerClassObjectInitializationConstraint) {
-                        shouldbeAdded = false;
+                        shouldbeAdded = result.isEmpty(); // Should definitely be added, if the result is not represented otherwise
                         PartnerClassObjectInitializationConstraint pcoic = (PartnerClassObjectInitializationConstraint) pcoc;
                         for (PartnerClassObjectFieldConstraint pcofc : pcoic.getInitialGetfields()) {
                             // Add the constraint, if it is for a field we did not yet see
@@ -966,7 +966,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                     } else {
                         assert pcoc instanceof ArrayInitializationConstraint;
                         ArrayInitializationConstraint aic = (ArrayInitializationConstraint) pcoc;
-                        shouldbeAdded = false;
+                        shouldbeAdded = result.isEmpty(); // Should definitely be added, if the result is not represented otherwise
                         for (ArrayAccessConstraint aac : aic.getInitialSelectConstraints()) {
                             Integer index = _labelSintToInt(aac.getIndex());
                             // Add the constraint if it is for an index we did not yet see
