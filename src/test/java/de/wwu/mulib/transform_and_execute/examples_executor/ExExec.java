@@ -520,6 +520,39 @@ public class ExExec {
         );
     }
 
+    @Test
+    public void testTSPDriver() {
+        TestUtility.getAllSolutions(
+                mb -> {
+                    mb.setFIXED_ACTUAL_CP_BUDGET(24)
+                            // TODO If we implement representing objects symbolically not using the custom procedure,
+                            //  deactivate this.
+                            .setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    List<PathSolution> result = TestUtility.executeMulib(
+                            "driver",
+                            TSP.class,
+                            mb,
+                            true
+                    );
+                    assertFalse(result.isEmpty());
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    for (PathSolution ps : result) {
+                        Solution s = ps.getSolution();
+                        TSP input = (TSP) s.labels.getLabelForId("input");
+                        int output = (Integer) s.returnValue;
+                        int calculatedOutput = input.solve();
+                        TSP inputAfterExec = (TSP) s.labels.getLabelForId("inputAfterExec");
+                        assertEquals(output, calculatedOutput);
+                        assertEquals(input.nCalls, inputAfterExec.nCalls);
+                        assertArrayEquals(input.getD(), inputAfterExec.getD());
+                        assertEquals(input.getBest(), inputAfterExec.getBest());
+                        assertArrayEquals(input.getVisited(), inputAfterExec.getVisited());
+                    }
+                },
+                "driver"
+        );
+    }
+
     @Test @Disabled(value="Jump-back budget is not yet implemented") // TODO
     public void testInfiniteLoopExec1() {
         TestUtility.getAllSolutions(
