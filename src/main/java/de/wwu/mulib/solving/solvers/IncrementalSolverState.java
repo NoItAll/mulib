@@ -63,6 +63,7 @@ public class IncrementalSolverState<AR, PR> {
     public void clear() {
         this.constraints.clear();
         this.partnerClassObjectConstraints.clear();
+        this.allPartnerClassObjectConstraints = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -119,6 +120,7 @@ public class IncrementalSolverState<AR, PR> {
             partnerClassObjectConstraints.add(new ArrayList<>());
         }
         partnerClassObjectConstraints.get(level).add(add);
+        allPartnerClassObjectConstraints = null;
     }
 
     @SuppressWarnings("unchecked")
@@ -156,12 +158,17 @@ public class IncrementalSolverState<AR, PR> {
         return constraints;
     }
 
+    private List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints = null;
     public List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraints() {
+        if (allPartnerClassObjectConstraints != null) {
+            return allPartnerClassObjectConstraints;
+        }
         List<PartnerClassObjectConstraint> result = new ArrayList<>();
         for (List<PartnerClassObjectConstraint> pcocs : partnerClassObjectConstraints) {
             result.addAll(pcocs);
         }
-        return result;
+        this.allPartnerClassObjectConstraints = result;
+        return Collections.unmodifiableList(result);
     }
 
     public int getLevel() {
@@ -181,6 +188,7 @@ public class IncrementalSolverState<AR, PR> {
         }
         // Check if popped level contains partner class object constraints
         if (partnerClassObjectConstraints.size() > level) {
+            allPartnerClassObjectConstraints = null;
             partnerClassObjectConstraints.get(level).clear();
         }
     }
