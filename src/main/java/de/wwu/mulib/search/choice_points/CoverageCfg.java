@@ -145,6 +145,15 @@ public class CoverageCfg {
         this.trailOfDecisions.remove();
     }
 
+    public BitSet getCoverAndReset() { // 6
+        BitSet bitSet = new BitSet((int) this.totalNumberChoicePointsInSearchRegion);
+        for (CfgNodeDecision d : trailOfDecisions.get()) {
+            bitSet.set((int) d.cfgNode.id);
+        }
+        reset();
+        return bitSet;
+    }
+
     public synchronized List<Choice.ChoiceOption> getChoiceOptionsLeadingToUncoveredEdges() { // Decision procedure
         // Most likely too heavy weight for many search regions since we create too large lists
         if (!config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {

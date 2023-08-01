@@ -7,10 +7,7 @@ import de.wwu.mulib.exceptions.IllegalTreeModificationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 
 public final class Choice extends TreeNode {
     private final List<ChoiceOption> options;
@@ -156,9 +153,19 @@ public final class Choice extends TreeNode {
             return new PathSolution(this, s, constraints, partnerClassObjectConstraints);
         }
 
+        public PathSolution setSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
+            _checkChildIsUnset();
+            return new PathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
+        }
+
         public ExceptionPathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
             return new ExceptionPathSolution(this, s, constraints, partnerClassObjectConstraints);
+        }
+
+        public ExceptionPathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
+            _checkChildIsUnset();
+            return new ExceptionPathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
         }
 
         public ExceededBudget setBudgetExceeded(Budget budget) {
