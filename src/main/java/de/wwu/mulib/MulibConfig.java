@@ -112,6 +112,10 @@ public class MulibConfig {
     public final boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
     public final boolean TRANSF_INCLUDE_PACKAGE_NAME;
     public final boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
+    public final boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
+    public final boolean CFG_USE_GUIDANCE_DURING_EXECUTION;
+    public final boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
+    public final boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
 
     public static MulibConfigBuilder builder() {
         return new MulibConfigBuilder();
@@ -162,6 +166,10 @@ public class MulibConfig {
         private boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         private boolean TRANSF_INCLUDE_PACKAGE_NAME;
         private boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
+        private boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
+        private boolean CFG_USE_GUIDANCE_DURING_EXECUTION;
+        private boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
+        private boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
         private boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         private boolean TRANSF_TRANSFORMATION_REQUIRED;
         private long PARALLEL_TIMEOUT_IN_MS;
@@ -235,6 +243,10 @@ public class MulibConfig {
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
             this.TRANSF_INCLUDE_PACKAGE_NAME = false;
             this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = false;
+            this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = false;
+            this.CFG_USE_GUIDANCE_DURING_EXECUTION = false;
+            this.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE = false;
+            this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = false;
             this.TRANSF_VALIDATE_TRANSFORMATION = false;
             this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = false;
             this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = new HashMap<>();
@@ -655,6 +667,17 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(
+                boolean CFG_USE_HINTS_DURING_EXECUTION,
+                boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
+                boolean CFG_CHOOSE_NEXT_CHOICE_OPTION_BASED_ON_COVERAGE) {
+            this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = true;
+            this.CFG_USE_GUIDANCE_DURING_EXECUTION = CFG_USE_HINTS_DURING_EXECUTION;
+            this.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE = CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
+            this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = CFG_CHOOSE_NEXT_CHOICE_OPTION_BASED_ON_COVERAGE;
+            return this;
+        }
+        
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -759,7 +782,11 @@ public class MulibConfig {
                     TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                     TRANSF_USE_DEFAULT_MODEL_CLASSES,
                     PATH_SOLUTION_CALLBACK,
-                    TRANSF_TREAT_SPECIAL_METHOD_CALLS
+                    TRANSF_TREAT_SPECIAL_METHOD_CALLS,
+                    TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
+                    CFG_USE_GUIDANCE_DURING_EXECUTION,
+                    CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
+                    CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE
             );
         }
     }
@@ -827,7 +854,11 @@ public class MulibConfig {
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
                         TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK,
-                        boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS
+                        boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS,
+                        boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
+                        boolean CFG_USE_GUIDANCE_DURING_EXECUTION,
+                        boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
+                        boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE
     ) {
         this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
         this.ENLIST_LEAVES = ENLIST_LEAVES;
@@ -894,6 +925,10 @@ public class MulibConfig {
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
         this.PATH_SOLUTION_CALLBACK = PATH_SOLUTION_CALLBACK;
         this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
+        this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
+        this.CFG_USE_GUIDANCE_DURING_EXECUTION = CFG_USE_GUIDANCE_DURING_EXECUTION;
+        this.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE = CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
+        this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
     }
 
     @Override

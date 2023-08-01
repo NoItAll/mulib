@@ -60,7 +60,7 @@ public class StaticVariables {
         staticFieldsToValues.put(fieldName, value);
     }
 
-    public void renew() {
+    public void reset() {
         if (staticFieldsToValues == null) {
             return;
         }

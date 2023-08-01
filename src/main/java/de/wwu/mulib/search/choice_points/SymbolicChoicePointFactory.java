@@ -2,6 +2,7 @@ package de.wwu.mulib.search.choice_points;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.Choice;
@@ -10,16 +11,23 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Supplier;
 
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
     private final MulibConfig config;
-    SymbolicChoicePointFactory(MulibConfig config) {
+    private final CoverageCfg cfg;
+    SymbolicChoicePointFactory(MulibConfig config, CoverageCfg cfg) {
         this.config = config;
+        if ((cfg == null && config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID)
+                || (cfg != null && !config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID)) {
+            throw new MulibIllegalStateException("Must not set CFG if specified by configuration options");
+        }
+        this.cfg = cfg;
     }
 
-    public static SymbolicChoicePointFactory getInstance(MulibConfig config) {
-        return new SymbolicChoicePointFactory(config);
+    public static SymbolicChoicePointFactory getInstance(MulibConfig config, CoverageCfg cfg) {
+        return new SymbolicChoicePointFactory(config, cfg);
     }
 
     @Override
@@ -151,6 +159,149 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     public boolean boolChoice(final SymbolicExecution se, final Sbool b) {
         return threeCaseDistinctionTemplate(se, b);
     }
+
+    private boolean choiceTemplateWithId(SymbolicExecution se, Supplier<Boolean> booleanSupplier, long id) {
+        if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            cfg.setCurrentCfgNodeIfNecessary(id);
+            boolean result = booleanSupplier.get();
+            cfg.traverseCurrentNodeWithDecision(id, result);
+            cfg.addChoiceForCfgNode(se.getCurrentChoiceOption().getChoice(), id);
+            return result;
+        } else {
+            // Ignore CoverageCfg here
+            return booleanSupplier.get();
+        }
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> ltChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> gtChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> eqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> notEqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> gteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, long id, Sint lhs, Sint rhs) {
+        return choiceTemplateWithId(se, () -> lteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> ltChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> gtChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> eqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> notEqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> gteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, long id, Sdouble lhs, Sdouble rhs) {
+        return choiceTemplateWithId(se, () -> lteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> ltChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> gtChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> eqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> notEqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> gteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, long id, Sfloat lhs, Sfloat rhs) {
+        return choiceTemplateWithId(se, () -> lteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean ltChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> ltChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gtChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> gtChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean eqChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> eqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean notEqChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> notEqChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean gteChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> gteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean lteChoice(SymbolicExecution se, long id, Slong lhs, Slong rhs) {
+        return choiceTemplateWithId(se, () -> lteChoice(se, lhs, rhs), id);
+    }
+
+    @Override
+    public boolean boolChoice(SymbolicExecution se, long id, Sbool c) {
+        return choiceTemplateWithId(se, () -> boolChoice(se, c), id);
+    }
+
+    @Override
+    public boolean negatedBoolChoice(SymbolicExecution se, long id, Sbool b) {
+        return choiceTemplateWithId(se, () -> negatedBoolChoice(se, b), id);
+    }
     
     protected boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
@@ -206,8 +357,50 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         Choice newChoice = new Choice(currentChoiceOption, constraint, Not.newInstance(constraint));
         // First, let the Executor of the current SymbolicExecution decide which choice is to be.
         // This also adds the constraint to the SolverManager's stack
+        Optional<Choice.ChoiceOption> possibleNextChoiceOption;
+        if (config.CFG_USE_GUIDANCE_DURING_EXECUTION) {
+            possibleNextChoiceOption = decisionBasedOnCfg(se, newChoice, cfg);
+        } else {
+            possibleNextChoiceOption = decisionNotBasedOnCfg(se, newChoice);
+        }
+
+        if (possibleNextChoiceOption.isEmpty()) {
+            throw new Backtrack();
+        } else {
+            Choice.ChoiceOption newCo = possibleNextChoiceOption.get();
+            return newCo.choiceOptionNumber == 0;
+        }
+    }
+
+    private static Optional<Choice.ChoiceOption> decisionBasedOnCfg(SymbolicExecution se, Choice newChoice, CoverageCfg cfg) {
+        CoverageCfg.CoverageInformation coverageInformation = cfg.getCoverageInformationForCurrentNode();
+        if (coverageInformation == CoverageCfg.CoverageInformation.ALL_COVERED
+                || coverageInformation == CoverageCfg.CoverageInformation.BOTH_NOT_COVERED
+                || coverageInformation == CoverageCfg.CoverageInformation.NO_INFORMATION) {
+            return decisionNotBasedOnCfg(se, newChoice);
+        }
+        final List<Choice.ChoiceOption> allOptions = newChoice.getChoiceOptions();
+        Choice.ChoiceOption chosen;
+        Choice.ChoiceOption other;
+        if (coverageInformation == CoverageCfg.CoverageInformation.TRUE_BRANCH_NOT_COVERED) {
+            chosen = allOptions.get(0);
+            other = allOptions.get(1);
+        } else {
+            assert coverageInformation == CoverageCfg.CoverageInformation.FALSE_BRANCH_NOT_COVERED;
+            chosen = allOptions.get(1);
+            other = allOptions.get(0);
+        }
+        // We will simply reorder the list. The first choice option that is acceptable should be used
+        List<Choice.ChoiceOption> reordered = List.of(chosen, other);
+        Optional<Choice.ChoiceOption> possibleNewChoiceOption = se.decideOnNextChoiceOptionDuringExecution(reordered);
+        se.notifyNewChoice(newChoice.depth, possibleNewChoiceOption.map(chosenOption -> chosenOption == chosen ? List.of(other) : List.of(chosen)).orElse(reordered));
+        return possibleNewChoiceOption;
+    }
+
+    private static Optional<Choice.ChoiceOption> decisionNotBasedOnCfg(SymbolicExecution se, Choice newChoice) {
+        List<Choice.ChoiceOption> potentiallySublist = newChoice.getChoiceOptions();
         Optional<Choice.ChoiceOption> possibleNextChoiceOption =
-                se.decideOnNextChoiceOptionDuringExecution(newChoice.getChoiceOptions());
+                se.decideOnNextChoiceOptionDuringExecution(potentiallySublist);
 
         // Then, add the new ChoiceOptions to the ExecutionManager's deque.
         // This depends on the chosen ChoiceOption and whether the incremental budget is exceeded.
@@ -223,13 +416,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
             );
         }
         se.notifyNewChoice(newChoice.depth, notChosenOptions);
-
-        if (possibleNextChoiceOption.isEmpty()) {
-            throw new Backtrack();
-        } else {
-            Constraint newCpConstraint = possibleNextChoiceOption.get().getOptionConstraint();
-            return newCpConstraint == constraint;
-        }
+        return possibleNextChoiceOption;
     }
 
 }

@@ -39,6 +39,10 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         return se.not(this);
     }
 
+    public final Sbool isEqualTo(Sbool other, SymbolicExecution se) {
+        return se.or(se.and(this, other), se.and(se.not(this), se.not(other)));
+    }
+
     public final boolean boolChoice(SymbolicExecution se) {
         return se.boolChoice(this);
     }
@@ -47,16 +51,28 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         return se.negatedBoolChoice(this);
     }
 
-    public final Sbool isEqualTo(Sbool other, SymbolicExecution se) {
-        return se.or(se.and(this, other), se.and(se.not(this), se.not(other)));
-    }
-
     public final boolean boolChoice(Sbool other, SymbolicExecution se) {
         return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))));
     }
 
     public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se) {
         return se.boolChoice(isEqualTo(other, se));
+    }
+
+    public final boolean boolChoice(SymbolicExecution se, long id) {
+        return se.boolChoice(this, id);
+    }
+
+    public final boolean negatedBoolChoice(SymbolicExecution se, long id) {
+        return se.negatedBoolChoice(this, id);
+    }
+
+    public final boolean boolChoice(Sbool other, SymbolicExecution se, long id) {
+        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))), id);
+    }
+
+    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se, long id) {
+        return se.boolChoice(isEqualTo(other, se), id);
     }
 
     public static final class ConcSbool extends Sbool implements ConcSnumber {

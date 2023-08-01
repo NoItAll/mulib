@@ -3,6 +3,7 @@ package de.wwu.mulib;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
+import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
@@ -94,7 +95,13 @@ public final class MulibContext {
 
         Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass = mulibTransformer.getArrayTypesToSpecializedSarrayClass();
         assert arrayTypesToSpecializedSarrayClass.values().stream().allMatch(Sarray.PartnerClassSarray.class::isAssignableFrom) : "Specialized arrays should only be created for arrays of arrays and arrays of partner class objects";
-        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config);
+        CoverageCfg coverageCfg;
+        if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            coverageCfg = new CoverageCfg(config, mulibTransformer.getNumberNumberedChoicePoints());
+        } else {
+            coverageCfg = null;
+        }
+        ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config, coverageCfg);
         ValueFactory valueFactory = ValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
         CalculationFactory calculationFactory = CalculationFactory.getInstance(config, valueFactory);
         MulibExecutorManager result = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
@@ -107,7 +114,8 @@ public final class MulibContext {
                         mulibValueTransformer,
                         methodHandle,
                         staticVariables,
-                        searchRegionArgs
+                        searchRegionArgs,
+                        coverageCfg
                 )
                 :
                 new MultiExecutorsManager(
@@ -119,7 +127,8 @@ public final class MulibContext {
                         mulibValueTransformer,
                         methodHandle,
                         staticVariables,
-                        searchRegionArgs
+                        searchRegionArgs,
+                        coverageCfg
                 );
         long end = System.nanoTime();
         Mulib.log.finer("Took " + ((end - start) / 1e6) + "ms for " + config + " to set up MulibExecutorManager");

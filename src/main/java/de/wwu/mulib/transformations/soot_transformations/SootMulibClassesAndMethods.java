@@ -375,6 +375,18 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SINT_NOT_EQ_CHOICE;
     public final SootMethod SM_SINT_GT_CHOICE;
     public final SootMethod SM_SINT_GTE_CHOICE;
+    public final SootMethod SM_SINT_LT_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_LTE_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_EQ_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_NOT_EQ_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_GT_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_GTE_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SINT_LT_CHOICE_WITH_ID;
+    public final SootMethod SM_SINT_LTE_CHOICE_WITH_ID;
+    public final SootMethod SM_SINT_EQ_CHOICE_WITH_ID;
+    public final SootMethod SM_SINT_NOT_EQ_CHOICE_WITH_ID;
+    public final SootMethod SM_SINT_GT_CHOICE_WITH_ID;
+    public final SootMethod SM_SINT_GTE_CHOICE_WITH_ID;
     public final SootMethod SM_SINT_I2D;
     public final SootMethod SM_SINT_I2F;
     public final SootMethod SM_SINT_I2L;
@@ -519,6 +531,10 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE;
+    public final SootMethod SM_SBOOL_BOOL_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S_WITH_ID;
+    public final SootMethod SM_SBOOL_BOOL_CHOICE_WITH_ID;
+    public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_WITH_ID;
     public final SootMethod SM_MAP_PUT;
 
     public final SootMethod SM_CLASS_GET_DECLARED_FIELD;
@@ -890,6 +906,19 @@ public class SootMulibClassesAndMethods {
         SM_SINT_NOT_EQ_CHOICE       = SC_SINT.getMethod("notEqChoice",  List.of(TYPE_SINT, TYPE_SE),    TYPE_BOOL);
         SM_SINT_GT_CHOICE           = SC_SINT.getMethod("gtChoice",     List.of(TYPE_SINT, TYPE_SE),    TYPE_BOOL);
         SM_SINT_GTE_CHOICE          = SC_SINT.getMethod("gteChoice",    List.of(TYPE_SINT, TYPE_SE),    TYPE_BOOL);
+        SM_SINT_LT_CHOICE_S_WITH_ID     = SC_SINT.getMethod("ltChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_LTE_CHOICE_S_WITH_ID    = SC_SINT.getMethod("lteChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_EQ_CHOICE_S_WITH_ID     = SC_SINT.getMethod("eqChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_NOT_EQ_CHOICE_S_WITH_ID = SC_SINT.getMethod("notEqChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_GT_CHOICE_S_WITH_ID     = SC_SINT.getMethod("gtChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_GTE_CHOICE_S_WITH_ID    = SC_SINT.getMethod("gteChoice", List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_LT_CHOICE_WITH_ID       = SC_SINT.getMethod("ltChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_LTE_CHOICE_WITH_ID      = SC_SINT.getMethod("lteChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_EQ_CHOICE_WITH_ID       = SC_SINT.getMethod("eqChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_NOT_EQ_CHOICE_WITH_ID   = SC_SINT.getMethod("notEqChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_GT_CHOICE_WITH_ID       = SC_SINT.getMethod("gtChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SINT_GTE_CHOICE_WITH_ID      = SC_SINT.getMethod("gteChoice", List.of(TYPE_SINT, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+
         SM_SINT_I2D                 = SC_SINT.getMethod("i2d",          List.of(TYPE_SE),               TYPE_SDOUBLE);
         SM_SINT_I2F                 = SC_SINT.getMethod("i2f",          List.of(TYPE_SE),               TYPE_SFLOAT);
         SM_SINT_I2L                 = SC_SINT.getMethod("i2l",          List.of(TYPE_SE),               TYPE_SLONG);
@@ -1026,10 +1055,14 @@ public class SootMulibClassesAndMethods {
         SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
         SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
 
-        SM_SBOOL_BOOL_CHOICE = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
-        SM_SBOOL_NEGATED_BOOL_CHOICE = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);
-        SM_SBOOL_BOOL_CHOICE_S = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SE),                    TYPE_BOOL);
-        SM_SBOOL_NEGATED_BOOL_CHOICE_S = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SE),            TYPE_BOOL);
+        SM_SBOOL_BOOL_CHOICE                    = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
+        SM_SBOOL_NEGATED_BOOL_CHOICE            = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);
+        SM_SBOOL_BOOL_CHOICE_S                  = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SE),                    TYPE_BOOL);
+        SM_SBOOL_NEGATED_BOOL_CHOICE_S          = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SE),            TYPE_BOOL);
+        SM_SBOOL_BOOL_CHOICE_S_WITH_ID          = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SBOOL_NEGATED_BOOL_CHOICE_WITH_ID  = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SBOOL_BOOL_CHOICE_WITH_ID            = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE, TYPE_LONG), TYPE_BOOL);
+        SM_SBOOL_NEGATED_BOOL_CHOICE_S_WITH_ID    = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SE, TYPE_LONG), TYPE_BOOL);
 
         SM_MAP_PUT = SC_MAP.getMethod("put", List.of(TYPE_OBJECT, TYPE_OBJECT), TYPE_OBJECT);
 

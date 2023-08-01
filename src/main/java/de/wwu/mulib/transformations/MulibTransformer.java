@@ -37,4 +37,6 @@ public interface MulibTransformer {
         return new SootMulibTransformer(config);
     }
 
+    long getNumberNumberedChoicePoints();
+
 }

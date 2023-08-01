@@ -168,7 +168,7 @@ public final class SymbolicExecution {
     // If a ChoiceOption exists on the predeterminedPath, pop it and add its constraints to existingConstraints
     // These are then orderly polled during the execution.
     public boolean transitionToNextChoiceOptionAndCheckIfOnKnownPath() {
-        if (predeterminedPath.size() > 0) {
+        if (!predeterminedPath.isEmpty()) {
             predeterminedPath.pop();
         }
 
@@ -1387,6 +1387,206 @@ public final class SymbolicExecution {
 
     public boolean negatedBoolChoice(final Sbool b) {
         return choicePointFactory.negatedBoolChoice(this, b);
+    }
+
+    public boolean ltChoice(final Sint compareToZero, long id) {
+        return ltChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean gtChoice(final Sint compareToZero, long id) {
+        return gtChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean eqChoice(final Sint compareToZero, long id) {
+        return eqChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean notEqChoice(final Sint compareToZero, long id) {
+        return notEqChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean gteChoice(final Sint compareToZero, long id) {
+        return gteChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean lteChoice(final Sint compareToZero, long id) {
+        return lteChoice(compareToZero, Sint.ConcSint.ZERO, id);
+    }
+
+    public boolean ltChoice(final Slong compareToZero, long id) {
+        return ltChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean gtChoice(final Slong compareToZero, long id) {
+        return gtChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean eqChoice(final Slong compareToZero, long id) {
+        return eqChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean notEqChoice(final Slong compareToZero, long id) {
+        return notEqChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean gteChoice(final Slong compareToZero, long id) {
+        return gteChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean lteChoice(final Slong compareToZero, long id) {
+        return lteChoice(compareToZero, Slong.ConcSlong.ZERO, id);
+    }
+
+    public boolean ltChoice(final Sdouble compareToZero, long id) {
+        return ltChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean gtChoice(final Sdouble compareToZero, long id) {
+        return gtChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean eqChoice(final Sdouble compareToZero, long id) {
+        return eqChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean notEqChoice(final Sdouble compareToZero, long id) {
+        return notEqChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean gteChoice(final Sdouble compareToZero, long id) {
+        return gteChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean lteChoice(final Sdouble compareToZero, long id) {
+        return lteChoice(compareToZero, Sdouble.ConcSdouble.ZERO, id);
+    }
+
+    public boolean ltChoice(final Sfloat compareToZero, long id) {
+        return ltChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean gtChoice(final Sfloat compareToZero, long id) {
+        return gtChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean eqChoice(final Sfloat compareToZero, long id) {
+        return eqChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean notEqChoice(final Sfloat compareToZero, long id) {
+        return notEqChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean gteChoice(final Sfloat compareToZero, long id) {
+        return gteChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean lteChoice(final Sfloat compareToZero, long id) {
+        return lteChoice(compareToZero, Sfloat.ConcSfloat.ZERO, id);
+    }
+
+    public boolean ltChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.ltChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gtChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.gtChoice(this, id, lhs, rhs);
+    }
+
+    public boolean eqChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.eqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean notEqChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.notEqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gteChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.gteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean lteChoice(final Sint lhs, final Sint rhs, long id) {
+        return choicePointFactory.lteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean ltChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.ltChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gtChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.gtChoice(this, id, lhs, rhs);
+    }
+
+    public boolean eqChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.eqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean notEqChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.notEqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gteChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.gteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean lteChoice(final Sdouble lhs, final Sdouble rhs, long id) {
+        return choicePointFactory.lteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean ltChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.ltChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gtChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.gtChoice(this, id, lhs, rhs);
+    }
+
+    public boolean eqChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.eqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean notEqChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.notEqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gteChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.gteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean lteChoice(final Sfloat lhs, final Sfloat rhs, long id) {
+        return choicePointFactory.lteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean ltChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.ltChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gtChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.gtChoice(this, id, lhs, rhs);
+    }
+
+    public boolean eqChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.eqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean notEqChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.notEqChoice(this, id, lhs, rhs);
+    }
+
+    public boolean gteChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.gteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean lteChoice(final Slong lhs, final Slong rhs, long id) {
+        return choicePointFactory.lteChoice(this, id, lhs, rhs);
+    }
+
+    public boolean boolChoice(final Sbool b, long id) {
+        return choicePointFactory.boolChoice(this, id, b);
+    }
+
+    public boolean negatedBoolChoice(final Sbool b, long id) {
+        return choicePointFactory.negatedBoolChoice(this, id, b);
     }
 
     public void setStaticField(String fieldName, Object value) {

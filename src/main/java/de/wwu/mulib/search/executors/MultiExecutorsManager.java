@@ -4,6 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
+import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.SearchTree;
@@ -32,10 +33,11 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             MulibValueTransformer mulibValueTransformer,
             MethodHandle representedMethod,
             StaticVariables staticVariables,
-            Object[] searchRegionArgs) {
+            Object[] searchRegionArgs,
+            CoverageCfg coverageCfg) {
         super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
                 choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer,
-                representedMethod, staticVariables, searchRegionArgs);
+                representedMethod, staticVariables, searchRegionArgs, coverageCfg);
         this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
         this.idle = new SimpleSyncedQueue<>();

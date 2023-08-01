@@ -6,11 +6,12 @@ import de.wwu.mulib.substitutions.primitives.*;
 
 public interface ChoicePointFactory {
 
-    static ChoicePointFactory getInstance(MulibConfig config) {
+    static ChoicePointFactory getInstance(MulibConfig config, CoverageCfg coverageCfg) {
         if (config.CONCOLIC) {
+            assert coverageCfg == null : "Concolic execution cannot be guided by the coverage cfg";
             return ConcolicChoicePointFactory.getInstance(config);
         } else {
-            return SymbolicChoicePointFactory.getInstance(config);
+            return SymbolicChoicePointFactory.getInstance(config, coverageCfg);
         }
     }
 
@@ -65,4 +66,59 @@ public interface ChoicePointFactory {
     boolean boolChoice(SymbolicExecution se, final Sbool c);
 
     boolean negatedBoolChoice(SymbolicExecution se, final Sbool b);
+
+
+    /* For identification of choice point to ensure coverage */
+
+    boolean ltChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean gtChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean eqChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean notEqChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean gteChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean lteChoice(SymbolicExecution se, long id, final Sint lhs, final Sint rhs);
+
+    boolean ltChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean gtChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean eqChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean notEqChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean gteChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean lteChoice(SymbolicExecution se, long id, final Sdouble lhs, final Sdouble rhs);
+
+    boolean ltChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean gtChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean eqChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean notEqChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean gteChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean lteChoice(SymbolicExecution se, long id, final Sfloat lhs, final Sfloat rhs);
+
+    boolean ltChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean gtChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean eqChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean notEqChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean gteChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean lteChoice(SymbolicExecution se, long id, final Slong lhs, final Slong rhs);
+
+    boolean boolChoice(SymbolicExecution se, long id, final Sbool c);
+
+    boolean negatedBoolChoice(SymbolicExecution se, long id, final Sbool b);
 }

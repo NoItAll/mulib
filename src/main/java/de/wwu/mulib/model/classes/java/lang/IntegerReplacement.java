@@ -29,7 +29,7 @@ package de.wwu.mulib.model.classes.java.lang;
 import java.util.Objects;
 
 /**
- * HW: This file is a model of java.lang.Number to replace Number-instances in the bytecode.
+ * HW: This file is a model of java.lang.Integer to replace Integer-instances in the bytecode.
  * The source code has been adapted to minimize dependencies to JVM internals. The comments have been kept.
  * // ORIGINAL DOCS:
  * The {@code Integer} class wraps a value of the primitive type

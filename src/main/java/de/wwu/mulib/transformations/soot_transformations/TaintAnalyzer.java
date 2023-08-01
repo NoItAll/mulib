@@ -105,6 +105,16 @@ public class TaintAnalyzer {
             }
         }
 
+        if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            // If we use the CFG graph, each if-stmt must be transformed
+            for (Unit u : upc) {
+                Stmt s = (Stmt) u;
+                if (s instanceof IfStmt) {
+                    addTainted(s);
+                }
+            }
+        }
+
         // Taint methods statically (i.e. methods won't be tainted in the subsequent main loop)
         List<Stmt> methodCallsToPotentiallyTaint = upc.stream().filter(u -> this.isMethodCallStmt((Stmt) u)).map(Stmt.class::cast).collect(Collectors.toList());
         // Add taint of special Mulib-indicator methods

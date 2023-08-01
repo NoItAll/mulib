@@ -29,7 +29,7 @@ public final class SearchTree {
         this.enlistLeaves = config.ENLIST_LEAVES;
         this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
-        if (config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.size() > 0) {
+        if (!config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty()) {
             solutionsList = Collections.synchronizedList(new ArrayList<>());
             if (enlistLeaves) {
                 failsList = Collections.synchronizedList(new ArrayList<>());
@@ -114,7 +114,10 @@ public final class SearchTree {
             constraints.add(current.getOptionConstraint());
             partnerClassObjectConstraints.addAll(current.getPartnerClassObjectConstraints());
         }
-        return new AccumulatedChoiceOptionConstraints(constraints.toArray(Constraint[]::new), partnerClassObjectConstraints.toArray(PartnerClassObjectConstraint[]::new));
+        return new AccumulatedChoiceOptionConstraints(
+                constraints.toArray(Constraint[]::new),
+                partnerClassObjectConstraints.toArray(PartnerClassObjectConstraint[]::new)
+        );
     }
 
     public static class AccumulatedChoiceOptionConstraints {

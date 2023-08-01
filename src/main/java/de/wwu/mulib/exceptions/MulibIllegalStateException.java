@@ -1,8 +1,10 @@
 package de.wwu.mulib.exceptions;
 
-public class MulibIllegalStateException extends MulibException {
+public class MulibIllegalStateException extends MulibRuntimeException {
 
-    public MulibIllegalStateException() {}
+    public MulibIllegalStateException() {
+        super("Illegal state");
+    }
 
     public MulibIllegalStateException(String msg) {
         super(msg);

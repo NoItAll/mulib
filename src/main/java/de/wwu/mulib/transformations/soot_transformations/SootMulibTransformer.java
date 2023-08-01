@@ -297,32 +297,32 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         private Local _spawnNewLocal(String prefix, Type t) {
             Local result;
             if (t instanceof RefLikeType) {
-                result = Jimple.v().newLocal(prefix + "r" + nRefLocals, t);
                 nRefLocals++;
+                result = Jimple.v().newLocal(prefix + "r" + nRefLocals, t);
             } else if (t instanceof IntType) {
-                result = Jimple.v().newLocal(prefix + "i" + nIntLocals, t);
                 nIntLocals++;
+                result = Jimple.v().newLocal(prefix + "i" + nIntLocals, t);
             } else if (t instanceof LongType) {
-                result = Jimple.v().newLocal(prefix + "j" + nLongLocals, t);
                 nLongLocals++;
+                result = Jimple.v().newLocal(prefix + "j" + nLongLocals, t);
             } else if (t instanceof DoubleType) {
-                result = Jimple.v().newLocal(prefix + "d" + nDoubleLocals, t);
                 nDoubleLocals++;
+                result = Jimple.v().newLocal(prefix + "d" + nDoubleLocals, t);
             } else if (t instanceof FloatType) {
-                result = Jimple.v().newLocal(prefix + "f" + nFloatLocals, t);
                 nFloatLocals++;
+                result = Jimple.v().newLocal(prefix + "f" + nFloatLocals, t);
             } else if (t instanceof ShortType) {
-                result = Jimple.v().newLocal(prefix + "s" + nShortLocals, t);
                 nShortLocals++;
+                result = Jimple.v().newLocal(prefix + "s" + nShortLocals, t);
             } else if (t instanceof ByteType) {
-                result = Jimple.v().newLocal(prefix + "b" + nByteLocals, t);
                 nByteLocals++;
+                result = Jimple.v().newLocal(prefix + "b" + nByteLocals, t);
             } else if (t instanceof BooleanType) {
-                result = Jimple.v().newLocal(prefix + "z" + nBoolLocals, t);
                 nBoolLocals++;
+                result = Jimple.v().newLocal(prefix + "z" + nBoolLocals, t);
             } else if (t instanceof CharType) {
-                result = Jimple.v().newLocal(prefix + "c" + nCharLocals, t);
                 nCharLocals++;
+                result = Jimple.v().newLocal(prefix + "c" + nCharLocals, t);
             } else if (t instanceof VoidType) {
                 throw new MulibRuntimeException("Void type as local variable");
             } else {
@@ -337,6 +337,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
     }
 
+    private long nextIdOfChoicePoint = 0L;
     private static final String JAVA_CLASS_PATH;
     private static final String DEFAULT_SOOT_JCP;
     private final Map<String, SootClass> resolvedClasses = new HashMap<>();
@@ -388,6 +389,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             }
         }
         return result;
+    }
+
+    @Override
+    public long getNumberNumberedChoicePoints() {
+        if (!config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            throw new MulibRuntimeException("Must not call this method if choice points are not to be generated with an ID");
+        }
+        return nextIdOfChoicePoint;
     }
 
     private Class<?> transformToTransformedClass(Type t) {
@@ -2959,11 +2968,17 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // Wrap value
             args.addUnit(assign);
             Local boolResult = args.spawnStackLocal(v.TYPE_BOOL);
+            VirtualInvokeExpr virtualInvokeExpr;
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(wrapLocal, v.SM_SINT_EQ_CHOICE_WITH_ID.makeRef(), s.getKey(), args.seLocal(), LongConstant.v(nextIdOfChoicePoint++));
+            } else {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(wrapLocal, v.SM_SINT_EQ_CHOICE.makeRef(), s.getKey(), args.seLocal());
+            }
             // Call eq-method
             args.addUnit(Jimple.v().newAssignStmt(
                     boolResult,
-                    Jimple.v().newVirtualInvokeExpr(wrapLocal, v.SM_SINT_EQ_CHOICE.makeRef(), s.getKey(), args.seLocal()))
-            );
+                    virtualInvokeExpr
+            ));
             // Conditional jump
             args.addUnit(Jimple.v().newIfStmt(Jimple.v().newEqExpr(boolResult, IntConstant.v(1)), sw.target));
         }
@@ -3227,9 +3242,15 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             args.addUnit(assignRefEq);
             i.redirectJumpsToThisTo(assignRefEq);
             Local sboolToBoolLocal = args.spawnStackLocal(v.TYPE_BOOL);
+            VirtualInvokeExpr virtualInvokeExpr;
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(refEqLocal, v.SM_SBOOL_BOOL_CHOICE_S_WITH_ID.makeRef(), args.seLocal(), LongConstant.v(nextIdOfChoicePoint++));
+            } else {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr(refEqLocal, v.SM_SBOOL_BOOL_CHOICE_S.makeRef(), args.seLocal());
+            }
             Stmt assignBool = Jimple.v().newAssignStmt(
                     sboolToBoolLocal,
-                    Jimple.v().newVirtualInvokeExpr(refEqLocal, v.SM_SBOOL_BOOL_CHOICE_S.makeRef(), args.seLocal())
+                    virtualInvokeExpr
             );
             args.addUnit(assignBool);
             i.setCondition(
@@ -3246,8 +3267,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return;
         }
         // Since is tainted, one type must be Sbool
-        ValueBox lhsConditionExprBox = conditionExpr.getOp1Box();
-        ValueBox rhsConditionExprBox = conditionExpr.getOp2Box();
+        final ValueBox lhsConditionExprBox = conditionExpr.getOp1Box();
+        final ValueBox rhsConditionExprBox = conditionExpr.getOp2Box();
         Value lhsCondition = lhsConditionExprBox.getValue();
         Value rhsCondition = rhsConditionExprBox.getValue();
         boolean lhsIsBool = isBoolOrSbool(lhsCondition.getType());
@@ -3268,17 +3289,37 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 assert lhsCondition instanceof IntConstant;
                 assert ((IntConstant) lhsCondition).value == 0 || ((IntConstant) lhsCondition).value == 1;
             }
-            comparisonWithZero = ((IntConstant) rhsCondition).value == 0;
+            comparisonWithZero = lhsIsBool ? ((IntConstant) rhsCondition).value == 0 : ((IntConstant) lhsCondition).value == 0;
             // Invert comparisonWithZero if condition is NeExpr
             comparisonWithZero = (conditionExpr instanceof NeExpr) != comparisonWithZero;
-            used = comparisonWithZero ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_S.makeRef() : v.SM_SBOOL_BOOL_CHOICE_S.makeRef();
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                used = comparisonWithZero ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_S_WITH_ID.makeRef() : v.SM_SBOOL_BOOL_CHOICE_S_WITH_ID.makeRef();
+            } else {
+                used = comparisonWithZero ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_S.makeRef() : v.SM_SBOOL_BOOL_CHOICE_S.makeRef();
+            }
+            ValueBox nonConstantConditionExprBox = lhsIsBool ? lhsConditionExprBox : rhsConditionExprBox;
+            Value nonConstantCondition = nonConstantConditionExprBox.getValue();
+            if (!args.isTainted(nonConstantConditionExprBox.getValue())) {
+                WrapPair wp = wrap(args, nonConstantConditionExprBox);
+                firstStatement = wp.newFirstStmt;
+                nonConstantCondition = wp.newValue;
+            }
+
             // Must be Local since arg boxes used in J{Ne, Eq, ...}Expr only allow for subtypes of Immediate
-            virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) (lhsIsBool ? lhsCondition : rhsCondition), used, args.seLocal());
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) nonConstantCondition, used, args.seLocal(), LongConstant.v(nextIdOfChoicePoint++));
+            } else {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) nonConstantCondition, used, args.seLocal());
+            }
         } else if (bothBool) {
             assert conditionExpr instanceof NeExpr || conditionExpr instanceof EqExpr;
             // We choose the method comparing two Sbools if both are Sbools
-            used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_NEGATED_BOOL_CHOICE.makeRef() : v.SM_SBOOL_BOOL_CHOICE.makeRef();
-            assert args.isTainted(lhsCondition) || args.isTainted(rhsCondition);
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_WITH_ID.makeRef() : v.SM_SBOOL_BOOL_CHOICE_WITH_ID.makeRef();
+            } else {
+                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_NEGATED_BOOL_CHOICE.makeRef() : v.SM_SBOOL_BOOL_CHOICE.makeRef();
+            }
+//            assert args.isTainted(lhsCondition) || args.isTainted(rhsCondition);
             if (!args.isTainted(lhsCondition)) {
                 WrapPair wp = wrap(args, lhsConditionExprBox);
                 firstStatement = wp.newFirstStmt;
@@ -3289,7 +3330,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 firstStatement = firstStatement == null ? wp.newFirstStmt : firstStatement;
                 rhsCondition = wp.newValue;
             }
-            virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal());
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal(), LongConstant.v(nextIdOfChoicePoint++));
+            } else {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal());
+            }
         } else {
             // Two int numbers are compared
             // Wrap constants if necessary or replace by zero-constant
@@ -3308,7 +3353,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 zeroConstantType = -1;
             }
             if (!args.isTainted(lhsCondition)) {
-                assert zeroConstantType != 2;
+//                assert zeroConstantType != 2;
                 if (zeroConstantType == 1) {
                     lhsCondition = args.spawnStackLocal(IntType.v());
                     firstStatement = Jimple.v().newAssignStmt(lhsCondition, Jimple.v().newStaticFieldRef(v.SF_SINT_NEUTRAL.makeRef()));
@@ -3318,34 +3363,44 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     lhsCondition = wp.newValue;
                     firstStatement = wp.newFirstStmt;
                 }
-            } else if (!args.isTainted(rhsCondition)) {
-                assert zeroConstantType != 1;
+            }
+            if (!args.isTainted(rhsCondition)) {
+//                assert zeroConstantType != 1;
                 if (zeroConstantType == 2) {
                     rhsCondition = args.spawnStackLocal(IntType.v());
-                    firstStatement = Jimple.v().newAssignStmt(rhsCondition, Jimple.v().newStaticFieldRef(v.SF_SINT_NEUTRAL.makeRef()));
-                    args.addUnit(firstStatement);
+                    Stmt assignStmt = Jimple.v().newAssignStmt(rhsCondition, Jimple.v().newStaticFieldRef(v.SF_SINT_NEUTRAL.makeRef()));
+                    if (firstStatement == null) {
+                        firstStatement = assignStmt;
+                    }
+                    args.addUnit(assignStmt);
                 } else {
                     WrapPair wp = wrap(args, rhsConditionExprBox);
                     rhsCondition = wp.newValue;
-                    firstStatement = wp.newFirstStmt;
+                    if (firstStatement == null) {
+                        firstStatement = wp.newFirstStmt;
+                    }
                 }
             }
             if (conditionExpr instanceof NeExpr) {
-                used = v.SM_SINT_NOT_EQ_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_NOT_EQ_CHOICE_WITH_ID : v.SM_SINT_NOT_EQ_CHOICE).makeRef();
             } else if (conditionExpr instanceof EqExpr) {
-                used = v.SM_SINT_EQ_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_EQ_CHOICE_WITH_ID : v.SM_SINT_EQ_CHOICE).makeRef();
             } else if (conditionExpr instanceof GeExpr) {
-                used = v.SM_SINT_GTE_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_GTE_CHOICE_WITH_ID : v.SM_SINT_GTE_CHOICE).makeRef();
             } else if (conditionExpr instanceof GtExpr) {
-                used = v.SM_SINT_GT_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_GT_CHOICE_WITH_ID : v.SM_SINT_GT_CHOICE).makeRef();
             } else if (conditionExpr instanceof LeExpr) {
-                used = v.SM_SINT_LTE_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_LTE_CHOICE_WITH_ID : v.SM_SINT_LTE_CHOICE).makeRef();
             } else if (conditionExpr instanceof LtExpr) {
-                used = v.SM_SINT_LT_CHOICE.makeRef();
+                used = (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID ? v.SM_SINT_LT_CHOICE_WITH_ID : v.SM_SINT_LT_CHOICE).makeRef();
             } else {
                 throw new NotYetImplementedException(conditionExpr.toString());
             }
-            virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal());
+            if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal(), LongConstant.v(nextIdOfChoicePoint++));
+            } else {
+                virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhsCondition, used, rhsCondition, args.seLocal());
+            }
         }
         assignNewValueRedirectAndAdd(
                 virtualInvokeExpr,
@@ -4137,7 +4192,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         firstStatement = firstStatement == null ? assignStmt : firstStatement;
         // The new assigned value is now the stack local
         Value value = changeValueFor.getValue();
-        assert args.isToWrap() || (args.isTainted() && (args.isTainted(value) || value.getType() instanceof RefType));
+//        assert args.isToWrap() || (args.isTainted() && (args.isTainted(value) || value.getType() instanceof RefType));
         Value transformedStackLocal = transformStackLocal.apply(stackLocal);
         changeValueFor.setValue(transformedStackLocal);
         // Redirect jumps

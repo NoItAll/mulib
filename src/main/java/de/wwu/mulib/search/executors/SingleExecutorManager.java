@@ -2,6 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
+import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -21,7 +22,8 @@ public class SingleExecutorManager extends MulibExecutorManager {
             MulibValueTransformer mulibValueTransformer,
             MethodHandle representedMethod,
             StaticVariables staticVariables,
-            Object[] searchRegionArgs) {
+            Object[] searchRegionArgs,
+            CoverageCfg coverageCfg) {
         super(
                 config,
                 new ArrayList<>(),
@@ -32,7 +34,8 @@ public class SingleExecutorManager extends MulibExecutorManager {
                 mulibValueTransformer,
                 representedMethod,
                 staticVariables,
-                searchRegionArgs
+                searchRegionArgs,
+                coverageCfg
         );
     }
 

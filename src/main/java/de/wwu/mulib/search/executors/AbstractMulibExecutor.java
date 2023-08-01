@@ -26,7 +26,6 @@ import de.wwu.mulib.util.TriConsumer;
 import java.lang.invoke.MethodHandle;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
-import java.util.function.Consumer;
 
 public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected SymbolicExecution currentSymbolicExecution;
@@ -294,15 +293,33 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 Object[] args = copyArguments(searchRegionArgs, mulibValueCopier);
                 result = searchRegionMethod.invokeWithArguments(args);
             }
-            staticVariables.renew();
-            AliasingInformation.resetAliasingTargets();
-            SymbolicExecution.remove();
+            _resetExecutionSpecificState();
+            _manifestCfgAndReset(result);
             return result;
         } catch (Throwable t) {
-            staticVariables.renew();
-            AliasingInformation.resetAliasingTargets();
-            SymbolicExecution.remove();
+            _resetExecutionSpecificState();
+            _manifestCfgAndReset(t);
             throw t;
+        }
+    }
+
+    private void _resetExecutionSpecificState() {
+        // Reset static variables for this thread
+        staticVariables.reset();
+        // Remove symbolic execution for this thread;
+        SymbolicExecution.remove();
+        if (config.ALIASING_FOR_FREE_OBJECTS) {
+            // Reset aliasing information for this thread
+            AliasingInformation.resetAliasingTargets();
+        }
+    }
+
+    private void _manifestCfgAndReset(Object result) {
+        if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            if (!(result instanceof MulibException) || result instanceof Fail) {
+                getExecutorManager().getCoverageCfg().manifestTrail();
+            }
+            getExecutorManager().getCoverageCfg().reset();
         }
     }
 
@@ -433,6 +450,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
     }
 
+    protected Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
+        for (Choice.ChoiceOption choiceOption : options) {
+            if (checkIfSatisfiableAndSet(choiceOption)) {
+                return choiceOption;
+            }
+        }
+        return null;
+    }
+
     protected boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
         assert !choiceOption.isEvaluated() && !choiceOption.isBudgetExceeded() && !choiceOption.isUnsatisfiable()
                 && !choiceOption.isCutOff() && !choiceOption.isExplicitlyFailed() : choiceOption.stateToString();
@@ -513,8 +539,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     protected abstract boolean shouldContinueExecution();
-
-    protected abstract Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options);
 
     @Override
     public Object getStaticField(String fieldName) {

@@ -124,6 +124,54 @@ public abstract class Sint extends AbstractSnumber {
         return se.gteChoice(this, rhs);
     }
 
+    public final boolean ltChoice(SymbolicExecution se, long id) {
+        return se.ltChoice(this, id);
+    }
+
+    public final boolean lteChoice(SymbolicExecution se, long id) {
+        return se.lteChoice(this, id);
+    }
+
+    public final boolean eqChoice(SymbolicExecution se, long id) {
+        return se.eqChoice(this, id);
+    }
+
+    public final boolean notEqChoice(SymbolicExecution se, long id) {
+        return se.notEqChoice(this, id);
+    }
+
+    public final boolean gtChoice(SymbolicExecution se, long id) {
+        return se.gtChoice(this, id);
+    }
+
+    public final boolean gteChoice(SymbolicExecution se, long id) {
+        return se.gteChoice(this, id);
+    }
+
+    public final boolean ltChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.ltChoice(this, rhs, id);
+    }
+
+    public final boolean lteChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.lteChoice(this, rhs, id);
+    }
+
+    public final boolean eqChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.eqChoice(this, rhs, id);
+    }
+
+    public final boolean notEqChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.notEqChoice(this, rhs, id);
+    }
+
+    public final boolean gtChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.gtChoice(this, rhs, id);
+    }
+
+    public final boolean gteChoice(Sint rhs, SymbolicExecution se, long id) {
+        return se.gteChoice(this, rhs, id);
+    }
+
     public final Sdouble i2d(SymbolicExecution se) {
         return se.i2d(this);
     }

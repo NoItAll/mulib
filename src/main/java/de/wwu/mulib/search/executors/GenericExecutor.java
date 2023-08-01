@@ -2,6 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -29,24 +30,36 @@ public final class GenericExecutor extends AbstractMulibExecutor {
             Object[] searchRegionArgs) {
         super(mulibExecutorManager, mulibValueTransformer, config, rootChoiceOption, searchStrategy,
                 searchRegionMethod, staticVariables, searchRegionArgs);
+        Function<ChoiceOptionDeque, Optional<Choice.ChoiceOption>> choiceOptionDequeRetriever;
         if (searchStrategy == SearchStrategy.DFS) {
             this.continueExecution = () -> true;
-            this.choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;
+            choiceOptionDequeRetriever = GenericExecutor::dfsRetriever;
         } else if (searchStrategy == SearchStrategy.BFS) {
             this.continueExecution = () -> false;
-            this.choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
+            choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
         } else if (searchStrategy == SearchStrategy.IDDFS) {
             this.continueExecution = () -> true;
-            this.choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
+            choiceOptionDequeRetriever = GenericExecutor::bfsRetriever;
         } else if (searchStrategy == SearchStrategy.DSAS) {
             this.continueExecution = () -> true;
-            this.choiceOptionDequeRetriever = this::dsasRetriever;
+            choiceOptionDequeRetriever = this::dsasRetriever;
         } else if (searchStrategy == SearchStrategy.IDDSAS) {
             this.continueExecution = this::continueBasedOnGlobalIddfs;
-            this.choiceOptionDequeRetriever = this::dsasRetriever;
+            choiceOptionDequeRetriever = this::dsasRetriever;
         } else {
             throw new NotYetImplementedException();
         }
+        if (config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {
+            final Function<ChoiceOptionDeque, Optional<Choice.ChoiceOption>> fallback = choiceOptionDequeRetriever;
+            choiceOptionDequeRetriever = (coDeque) -> {
+                Optional<Choice.ChoiceOption> co = this.cfgRetriever(coDeque);
+                if (co.isEmpty()) {
+                    return fallback.apply(coDeque);
+                }
+                return co;
+            };
+        }
+        this.choiceOptionDequeRetriever = choiceOptionDequeRetriever;
     }
 
     private boolean continueBasedOnGlobalIddfs() {
@@ -64,16 +77,6 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         } else {
             return false;
         }
-    }
-
-    @Override
-    protected Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
-        for (Choice.ChoiceOption choiceOption : options) {
-            if (checkIfSatisfiableAndSet(choiceOption)) {
-                return choiceOption;
-            }
-        }
-        return null;
     }
 
     @Override
@@ -122,5 +125,33 @@ public final class GenericExecutor extends AbstractMulibExecutor {
         }
         dsasMissed++;
         return choiceOptionDeque.pollFirst();
+    }
+
+    private Optional<Choice.ChoiceOption> cfgRetriever(ChoiceOptionDeque choiceOptionDeque) {
+        final int maximumAttemptsToSearchForChoiceOptionWithUncoveredEdge = 6;
+        CoverageCfg cfg = mulibExecutorManager.getCoverageCfg();
+        Choice choiceOfPotentialDeepestSharedRoot = currentChoiceOption.getChoice();
+        int i = 0;
+        while (choiceOfPotentialDeepestSharedRoot != rootChoiceOfSearchTree
+                && i < maximumAttemptsToSearchForChoiceOptionWithUncoveredEdge) {
+            // Check the current Choice's choice options
+            for (Choice.ChoiceOption co : choiceOfPotentialDeepestSharedRoot.getChoiceOptions()) {
+                // We do not need to check the choice options in the Deque if the ChoiceOption already was evaluated.
+                if (co.isEvaluated()) {
+                    continue;
+                }
+                if (!cfg.hasUncoveredEdges(co)) {
+                    i++;
+                    continue;
+                }
+                // If we find the ChoiceOption in the Deque, we return it.
+                if (choiceOptionDeque.request(co)) {
+                    return Optional.of(co);
+                }
+            }
+            // Backtrack
+            choiceOfPotentialDeepestSharedRoot = choiceOfPotentialDeepestSharedRoot.parent.getChoice();
+        }
+        return Optional.empty();
     }
 }

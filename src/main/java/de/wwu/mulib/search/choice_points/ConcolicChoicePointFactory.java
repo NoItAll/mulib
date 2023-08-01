@@ -16,7 +16,8 @@ import java.util.Optional;
 public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
     ConcolicChoicePointFactory(MulibConfig config) {
-        super(config);
+        // No guidance via a Cfg for ConcolicChoicePointFactory
+        super(config, null);
     }
 
     public static ConcolicChoicePointFactory getInstance(MulibConfig config) {

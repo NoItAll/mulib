@@ -48,4 +48,8 @@ public class TestCase {
     public static TestCase fromPathSolution(PathSolution ps, BitSet cover) {
         return new TestCase(ps instanceof ExceptionPathSolution, ps.getSolution(), cover);
     }
+
+    public static TestCase fromSolution(boolean isExceptional, Solution s, BitSet cover) {
+        return new TestCase(isExceptional, s, cover);
+    }
 }

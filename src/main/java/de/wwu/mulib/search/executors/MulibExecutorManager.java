@@ -5,6 +5,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
+import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -35,6 +36,7 @@ public abstract class MulibExecutorManager {
 
     protected volatile boolean seenFirstPathSolution = false;
     protected final long startTime;
+    private final CoverageCfg coverageCfg;
 
     // Is null if no global incremental depth first search is used
     protected final GlobalIddfsSynchronizer globalIddfsSynchronizer;
@@ -49,7 +51,8 @@ public abstract class MulibExecutorManager {
             MulibValueTransformer mulibValueTransformer,
             MethodHandle searchRegionMethod,
             StaticVariables staticVariables,
-            Object[] searchRegionArgs) {
+            Object[] searchRegionArgs,
+            CoverageCfg coverageCfg) {
         this.config = config;
         this.observedTree = observedTree;
         this.choicePointFactory = choicePointFactory;
@@ -87,6 +90,7 @@ public abstract class MulibExecutorManager {
                 new GlobalIddfsSynchronizer(config.INCR_ACTUAL_CP_BUDGET.get().intValue())
                 :
                 null;
+        this.coverageCfg = coverageCfg;
     }
 
     public synchronized Optional<PathSolution> getPathSolution() {
@@ -168,11 +172,21 @@ public abstract class MulibExecutorManager {
     }
 
     public final boolean globalBudgetExceeded() {
+        if (config.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE && coverageCfg.fullCoverageAchieved()) {
+            return true;
+        }
         return globalExecutionManagerBudgetManager.timeBudgetIsExceeded()
                 || globalExecutionManagerBudgetManager.fixedFailBudgetIsExceeded()
                 || globalExecutionManagerBudgetManager.fixedPathSolutionBudgetIsExceeded()
                 || globalExecutionManagerBudgetManager.fixedExceededBudgetBudgetsIsExceeded()
                 || shouldStopSinceEnoughSolutionsWereFound();
+    }
+
+    public final CoverageCfg getCoverageCfg() {
+        if (!config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
+            throw new MulibIllegalStateException("Must not request CFG if it is not used according to the configuration");
+        }
+        return coverageCfg;
     }
 
     protected abstract void checkForFailure();

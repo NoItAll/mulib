@@ -10,7 +10,6 @@ import java.util.Map;
 public class StdLabels implements Labels {
 
     protected final Map<String, SubstitutedVar> identifiersToSVars;
-    protected final Map<String, Sprimitive> identifiersToSPrimitives;
     protected final Map<SubstitutedVar, Object> svariablesToValues;
     protected final Map<String, Object> identifiersToValues;
 
@@ -19,13 +18,6 @@ public class StdLabels implements Labels {
             Map<SubstitutedVar, Object> substitutedVarsToOriginalRepresentation,
             Map<String, Object> identifiersToOriginalRepresentation) {
         this.identifiersToSVars = Collections.unmodifiableMap(identifiersToSubstitutedVars);
-        Map<String, Sprimitive> identifiersToSPrimitives = new HashMap<>();
-        for (Map.Entry<String, SubstitutedVar> entry : identifiersToSVars.entrySet()) {
-            if (entry.getValue() instanceof Sprimitive) {
-                identifiersToSPrimitives.put(entry.getKey(), (Sprimitive) entry.getValue());
-            }
-        }
-        this.identifiersToSPrimitives = Collections.unmodifiableMap(identifiersToSPrimitives);
         this.svariablesToValues = Collections.unmodifiableMap(substitutedVarsToOriginalRepresentation);
         this.identifiersToValues = Collections.unmodifiableMap(identifiersToOriginalRepresentation);
     }
