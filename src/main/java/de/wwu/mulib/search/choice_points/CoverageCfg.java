@@ -138,6 +138,7 @@ public class CoverageCfg {
             if ((config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE || config.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE)
                     && ((trueTraversedAfter && falseTraversedAfter) && (trueTraversedBefore != trueTraversedAfter || falseTraversedBefore != falseTraversedAfter))) {
                 nodesWithUncoveredEdges.remove(node);
+                node.choices.clear(); // Not needed any longer
             }
         }
     }
