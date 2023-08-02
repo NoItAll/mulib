@@ -24,6 +24,7 @@ public final class TestUtility {
     private static final boolean longParallelExecutorsCheck =       false;
     private static final boolean quickParallelExecutorsCheck =      false;
     private static final boolean quickCheck =                       true;
+    private static final boolean runWithCfg =                       false;
 
     public static final long TEST_FIXED_ACTUAL_CP_BUDGET = 500;
     public static final String TEST_BUILD_PATH = "build/classes/java/test/";
@@ -273,6 +274,10 @@ public final class TestUtility {
             currentBatch.parallelStream().forEach(mcb -> {
                 MulibConfig.MulibConfigBuilder mb = adjustment.apply(mcb);
                 mb.setTRANSF_VALIDATE_TRANSFORMATION(true);
+                if (runWithCfg) {
+                    boolean useCfgGuidance = !mb.isConcolic();
+                    mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(useCfgGuidance, false, true);
+                }
                 Mulib.log.info("Started '" + testedMethodName + "' with config " + mb.build());
                 mulibConfigToList.accept(mb);
                 Mulib.log.info("Returns for '" + testedMethodName + "' with config " + mb.build());

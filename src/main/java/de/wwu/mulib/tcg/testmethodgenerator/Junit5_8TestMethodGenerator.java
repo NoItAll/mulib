@@ -97,19 +97,19 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String generateTestAnnotationForException(Exception e) {
-        return "@Test(expected=" + e.getClass().getName() + ".class)\r\n";
+        return "@Test(expected=" + e.getClass().getName() + ".class)" + System.lineSeparator();
     }
 
     protected String generateTestAnnotationForReturn(Object returnVal) {
-        return "@Test\r\n";
+        return "@Test" + System.lineSeparator();
     }
 
     protected String generateTestMethodDeclaration(TestCase tc) {
-        return "public void test_" + nameOfTestedMethod + "_" + numberOfTest + "() {\r\n";
+        return "public void test_" + nameOfTestedMethod + "_" + numberOfTest + "() {" + System.lineSeparator();
     }
 
     protected String generateTestMethodEnd() {
-        return "}\r\n";
+        return "}" + System.lineSeparator();
     }
 
     protected String generateStringsForInputs(TestCase tc) {
@@ -165,7 +165,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                 .append("[")
                 .append(Array.getLength(o))
                 .append("]")
-                .append(";\r\n");
+                .append(";")
+                .append(System.lineSeparator());
 
         return appendStoreInArray(o, sb, arrayName);
     }
@@ -186,7 +187,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                 .append("[")
                 .append(Array.getLength(Array.get(o, 0)))
                 .append("]")
-                .append(";\r\n");
+                .append(";")
+                .append(System.lineSeparator());
 
         return appendStoreInArray(o, sb, arrayName);
     }
@@ -209,7 +211,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                     .append(i)
                     .append("] = ")
                     .append(argumentNamesForObjects.get(arrayElement))
-                    .append(";\r\n");
+                    .append(";")
+                    .append(System.lineSeparator());
         }
 
         return sb;
@@ -253,7 +256,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
             Field valueField = o.getClass().getDeclaredField("value");
             valueField.setAccessible(true);
             sb.append(addCastIfNeeded(o.getClass()));
-            sb.append(valueField.get(o)).append(";\r\n");
+            sb.append(valueField.get(o)).append(";").append(System.lineSeparator());
             return sb;
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -341,7 +344,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
         String collectionName = argumentNamesForObjects.get(c);
         for (Object o : c) {
             sb.append(generateElementString(o));
-            sb.append(collectionName).append(".add(").append(argumentNamesForObjects.get(o)).append(");\r\n");
+            sb.append(collectionName).append(".add(").append(argumentNamesForObjects.get(o)).append(");").append(System.lineSeparator());
         }
         return sb;
     }
@@ -355,7 +358,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
             sb.append(generateElementString(e.getValue()));
             String keyName = argumentNamesForObjects.get(e.getKey());
             String valueName = argumentNamesForObjects.get(e.getValue());
-            sb.append(mapName).append(".put(").append(keyName).append(", ").append(valueName).append(");\r\n");
+            sb.append(mapName).append(".put(").append(keyName).append(", ").append(valueName).append(");").append(System.lineSeparator());
         }
         return sb;
     }
@@ -366,14 +369,14 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                 .append(argumentNamesForObjects.get(o))
                 .append(" = \"")
                 .append(o.toString())
-                .append("\";\r\n");
+                .append("\";").append(System.lineSeparator());
     }
 
     protected StringBuilder generateConstructionString(Object o) {
         StringBuilder sb = new StringBuilder();
         sb.append(o.getClass().getSimpleName()).append(" ");
         sb.append(argumentNamesForObjects.get(o)).append(" = ");
-        sb.append("new ").append(o.getClass().getSimpleName()).append("();\r\n");
+        sb.append("new ").append(o.getClass().getSimpleName()).append("();").append(System.lineSeparator());
         return sb;
     }
 
@@ -409,7 +412,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                         .append(toFirstUpper(fieldName))
                         .append("(")
                         .append(fieldValueArgumentName)
-                        .append(");\r\n");
+                        .append(");")
+                        .append(System.lineSeparator());
             } else {
                 sb.append(TcgUtility.REFLECTION_SETTER_METHOD_NAME)
                         .append("(")
@@ -418,7 +422,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
                         .append(f.getName())
                         .append("\", ")
                         .append(fieldValueArgumentName)
-                        .append(");\r\n");
+                        .append(");")
+                        .append(System.lineSeparator());
             }
             return sb.toString();
         } catch (IllegalAccessException e) {
@@ -470,7 +475,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
             }
             sb.append(")");
         }
-        sb.append(";\r\n");
+        sb.append(";").append(System.lineSeparator());
         return sb.toString();
     }
 

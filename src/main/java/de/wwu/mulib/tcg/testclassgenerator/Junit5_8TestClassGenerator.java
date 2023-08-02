@@ -36,23 +36,23 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
     }
 
     protected String generatePackageDeclaration(String packageName) {
-        return "package " + packageName + ";\r\n";
+        return "package " + packageName + ";" + System.lineSeparator();
     }
 
     protected String generateImports(Set<Class<?>> encounteredTypes) {
         StringBuilder sb = new StringBuilder();
 
-        sb.append("import org.junit.*;\r\n");
-        sb.append("import static org.junit.Assert.*;\r\n");
+        sb.append("import org.junit.*;").append(System.lineSeparator());
+        sb.append("import static org.junit.Assert.*;").append(System.lineSeparator());
 
         encounteredTypes = sortEncounteredTypes(encounteredTypes);
 
         for (Class<?> typeToImport : encounteredTypes) {
             if (!omitFromImport(typeToImport)) {
-                sb.append("import ").append(typeToImport.getName()).append(";\r\n");
+                sb.append("import ").append(typeToImport.getName()).append(";").append(System.lineSeparator());
             }
         }
-        sb.append("\r\n\r\n");
+        sb.append(System.lineSeparator().repeat(2));
         return sb.toString();
     }
 
@@ -67,11 +67,11 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
     }
 
     protected String generateTestClassAnnotations() {
-        return "@SuppressWarnings(\"all\")\r\n";
+        return "@SuppressWarnings(\"all\")" + System.lineSeparator();
     }
 
     protected String generateTestClassDeclaration(String testedClassName) {
-        return "public class Test" + testedClassName + " {\r\n";
+        return "public class Test" + testedClassName + " {" + System.lineSeparator();
     }
 
     protected String generateClassAttributes() {
@@ -82,19 +82,19 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
         if (assumeSetter) {
             return "";
         } else { // Utility method to use reflection instead of setters to set an object's field.
-            return indentBy + "protected void " + TcgUtility.REFLECTION_SETTER_METHOD_NAME + "(Object setFor, String fieldName, Object setTo) {\r\n" +
-                    indentBy.repeat(2) + "if (fieldName.startsWith(\"this$\")) {\r\n" +
-                    indentBy.repeat(3) + "return;\r\n" +
-                    indentBy.repeat(2) + "}\r\n" +
-                    indentBy.repeat(2) + "try { \r\n" +
-                    indentBy.repeat(3) + "Class<?> setForClass = setFor.getClass();\r\n" +
-                    indentBy.repeat(3) + "Field setForField = setForClass.getDeclaredField(fieldName);\r\n" +
-                    indentBy.repeat(3) + "setForField.setAccessible(true);\r\n" +
-                    indentBy.repeat(3) + "setForField.set(setFor, setTo);\r\n" +
-                    indentBy.repeat(2) + "} catch (Exception e) {\r\n" +
-                    indentBy.repeat(3) + "throw new RuntimeException(e);\r\n" +
-                    indentBy.repeat(2) + "}\r\n" +
-                    indentBy + "}\r\n";
+            return indentBy + "protected void " + TcgUtility.REFLECTION_SETTER_METHOD_NAME + "(Object setFor, String fieldName, Object setTo) {" + System.lineSeparator() +
+                    indentBy.repeat(2) + "if (fieldName.startsWith(\"this$\")) {" + System.lineSeparator() +
+                    indentBy.repeat(3) + "return;" + System.lineSeparator() +
+                    indentBy.repeat(2) + "}" + System.lineSeparator() +
+                    indentBy.repeat(2) + "try { " + System.lineSeparator() +
+                    indentBy.repeat(3) + "Class<?> setForClass = setFor.getClass();" + System.lineSeparator() +
+                    indentBy.repeat(3) + "Field setForField = setForClass.getDeclaredField(fieldName);" + System.lineSeparator() +
+                    indentBy.repeat(3) + "setForField.setAccessible(true);" + System.lineSeparator() +
+                    indentBy.repeat(3) + "setForField.set(setFor, setTo);" + System.lineSeparator() +
+                    indentBy.repeat(2) + "} catch (Exception e) {" + System.lineSeparator() +
+                    indentBy.repeat(3) + "throw new RuntimeException(e);" + System.lineSeparator() +
+                    indentBy.repeat(2) + "}" + System.lineSeparator() +
+                    indentBy + "}" + System.lineSeparator();
         }
     }
 
@@ -115,6 +115,6 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
     }
 
     protected String generateClassEnd() {
-        return "}\r\n";
+        return "}" + System.lineSeparator();
     }
 }

@@ -8,8 +8,7 @@ public interface ChoicePointFactory {
 
     static ChoicePointFactory getInstance(MulibConfig config, CoverageCfg coverageCfg) {
         if (config.CONCOLIC) {
-            assert coverageCfg == null : "Concolic execution cannot be guided by the coverage cfg";
-            return ConcolicChoicePointFactory.getInstance(config);
+            return ConcolicChoicePointFactory.getInstance(config, coverageCfg);
         } else {
             return SymbolicChoicePointFactory.getInstance(config, coverageCfg);
         }

@@ -15,13 +15,13 @@ import java.util.Optional;
 
 public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
-    ConcolicChoicePointFactory(MulibConfig config) {
+    ConcolicChoicePointFactory(MulibConfig config, CoverageCfg coverageCfg) {
         // No guidance via a Cfg for ConcolicChoicePointFactory
-        super(config, null);
+        super(config, coverageCfg);
     }
 
-    public static ConcolicChoicePointFactory getInstance(MulibConfig config) {
-        return new ConcolicChoicePointFactory(config);
+    public static ConcolicChoicePointFactory getInstance(MulibConfig config, CoverageCfg coverageCfg) {
+        return new ConcolicChoicePointFactory(config, coverageCfg);
     }
 
 

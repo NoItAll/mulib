@@ -6,7 +6,6 @@ import de.wwu.mulib.search.trees.Choice;
 
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.stream.Collectors;
 
 public class CoverageCfg {
     private final ThreadLocal<CfgNode> currentCfgNode = new ThreadLocal<>();
@@ -41,7 +40,7 @@ public class CoverageCfg {
             this.choices = new ArrayList<>();
         }
 
-        synchronized void traverseDecision(long id, boolean trueBranchTraversed) {
+        void traverseDecision(long id, boolean trueBranchTraversed) {
             if (this.id != id) {
                 throw new MulibIllegalStateException(String.format("ID %s expected but %s found", this.id, id));
             }
@@ -70,14 +69,19 @@ public class CoverageCfg {
         NO_INFORMATION
     }
 
-    public synchronized void setCurrentCfgNodeIfNecessary(long id) { // 1
+    public void setCurrentCfgNodeIfNecessary(long id) { // 1
         CfgNode node = idToNode.get(id);
         if (node == null) {
-            node = new CfgNode(id);
-            node.id = id;
-            putIdToNode(node);
-            if (config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE || config.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE) {
-                nodesWithUncoveredEdges.add(node);
+            synchronized (this) {
+                node = idToNode.get(id);
+                if (node == null) { // Re-check
+                    node = new CfgNode(id);
+                    node.id = id;
+                    putIdToNode(node);
+                    if (config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE || config.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE) {
+                        nodesWithUncoveredEdges.add(node);
+                    }
+                }
             }
         }
         currentCfgNode.set(node);
@@ -152,25 +156,6 @@ public class CoverageCfg {
         }
         reset();
         return bitSet;
-    }
-
-    public synchronized List<Choice.ChoiceOption> getChoiceOptionsLeadingToUncoveredEdges() { // Decision procedure
-        // Most likely too heavy weight for many search regions since we create too large lists
-        if (!config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {
-            throw new MulibIllegalStateException("Must not call if not configured");
-        }
-        List<Choice.ChoiceOption> result = new ArrayList<>();
-        for (CfgNode node : nodesWithUncoveredEdges) {
-            CoverageInformation ci = getCoverageInformation(node);
-            if (ci == CoverageInformation.BOTH_NOT_COVERED) {
-                result.addAll(node.choices.stream().flatMap(cs -> cs.getChoiceOptions().stream()).collect(Collectors.toList()));
-            } else if (ci == CoverageInformation.TRUE_BRANCH_NOT_COVERED) {
-                result.addAll(node.choices.stream().flatMap(cs -> cs.getChoiceOptions().stream()).filter(c -> c.choiceOptionNumber == 0).collect(Collectors.toList()));
-            } else if (ci == CoverageInformation.FALSE_BRANCH_NOT_COVERED) {
-                result.addAll(node.choices.stream().flatMap(cs -> cs.getChoiceOptions().stream()).filter(c -> c.choiceOptionNumber == 1).collect(Collectors.toList()));
-            }
-        }
-        return result;
     }
 
     public boolean hasUncoveredEdges(Choice.ChoiceOption co) {

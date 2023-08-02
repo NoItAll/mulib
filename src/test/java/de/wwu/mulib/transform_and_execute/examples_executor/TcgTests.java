@@ -21,12 +21,11 @@ public class TcgTests {
     }
 
     private void _testSatHanoi01(MulibConfig.MulibConfigBuilder mb) {
-        mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, true, true)
-                .setCONCOLIC(false)
+        mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(false, true, false)
                 .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                 .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH)
-                .setSECONDS_PER_INVOCATION(3)
-                .setFIXED_ACTUAL_CP_BUDGET(500000); // Dependent on time budget to terminate
+                .setSECONDS_PER_INVOCATION(2)
+                .setFIXED_ACTUAL_CP_BUDGET(100);
         String result = Mulib.generateTestCases(
                 "execForTcg",
                 SatHanoi01Transf.class,

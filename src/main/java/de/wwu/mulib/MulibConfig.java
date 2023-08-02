@@ -677,6 +677,10 @@ public class MulibConfig {
             this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = CFG_CHOOSE_NEXT_CHOICE_OPTION_BASED_ON_COVERAGE;
             return this;
         }
+
+        public boolean isConcolic() {
+            return CONCOLIC;
+        }
         
         public MulibConfig build() {
 
@@ -711,6 +715,12 @@ public class MulibConfig {
                 throw new MisconfigurationException("Since our way of representing free arrays of arrays or free arrays of objects " +
                         "is based on the assumption that we represent the contained arrays in the constraint solver, we cannot " +
                         "use eager indices for primitive elements but not for object elements.");
+            }
+
+            if (CONCOLIC && CFG_USE_GUIDANCE_DURING_EXECUTION) {
+                throw new MisconfigurationException("Concolic execution cannot be guided by the CFG; - the concrete values guide the" +
+                        " execution. Deactivate either the concolic mode or the hints using the CFG."
+                );
             }
 
             if (TRANSF_USE_DEFAULT_MODEL_CLASSES) {
