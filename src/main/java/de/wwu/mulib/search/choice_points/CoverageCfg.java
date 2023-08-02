@@ -114,16 +114,16 @@ public class CoverageCfg {
     }
 
     public void addChoiceForCfgNode(Choice choice, long id) { // 4
-        CfgNode node = currentCfgNode.get();
-        if (node != null) {
-            assert node.id == id;
-            if (config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE || config.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE) {
+        if (config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {
+            CfgNode node = currentCfgNode.get();
+            if (node != null) {
+                assert node.id == id;
                 synchronized (node) {
                     node.choices.add(choice);
                 }
             }
-            currentCfgNode.remove();
         }
+        currentCfgNode.remove();
     }
 
     public void manifestTrail() { // 5
@@ -159,6 +159,10 @@ public class CoverageCfg {
     }
 
     public boolean hasUncoveredEdges(Choice.ChoiceOption co) {
+        if (!config.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {
+            throw new MulibIllegalStateException("Must only call this method for checking whether a choice option belongs to an unevaluated edge in the CFG if" +
+                    " while creating a new execution");
+        }
         for (CfgNode n : nodesWithUncoveredEdges) {
             if (n.choices.contains(co.getChoice())
                     && ((!n.trueBranchCovered && co.choiceOptionNumber == 0) || (!n.falseBranchCovered && co.choiceOptionNumber == 1))) {
