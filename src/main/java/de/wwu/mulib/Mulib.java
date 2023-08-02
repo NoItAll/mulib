@@ -2,7 +2,9 @@ package de.wwu.mulib;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.tcg.TcgConfig;
 
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.Optional;
 import java.util.logging.ConsoleHandler;
@@ -44,6 +46,26 @@ public final class Mulib {
             Class<?>[] argTypes,
             Object... args) {
         return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getAllPathSolutions(args);
+    }
+
+    public static String generateTestCases(
+            String methodName,
+            Class<?> methodOwnerClass,
+            MulibConfig.MulibConfigBuilder mb,
+            Class<?>[] argTypes,
+            Object[] args,
+            Method methodUnderTest,
+            TcgConfig.TcgConfigBuilder tcgConfigBuilder) {
+        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).generateTestCases(methodUnderTest, tcgConfigBuilder, args);
+    }
+
+    public static String generateTestCases(
+            String methodName,
+            Class<?> methodOwnerClass,
+            MulibConfig.MulibConfigBuilder mb,
+            Method methodUnderTest,
+            TcgConfig.TcgConfigBuilder tcgConfigBuilder) {
+        return generateTestCases(methodName, methodOwnerClass, mb, new Class[0], new Object[0], methodUnderTest, tcgConfigBuilder);
     }
 
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
@@ -304,5 +326,23 @@ public final class Mulib {
 
     private static MulibRuntimeException _shouldHaveBeenReplaced() {
         return new MulibRuntimeException("This method should always be replaced by a code transformation.");
+    }
+
+
+    public static Method getMethodFromClass(Class<?> clazz, String methodName, Class<?>... parameterTypes) {
+        try {
+            return clazz.getDeclaredMethod(methodName, parameterTypes);
+        } catch (Exception e) {
+            throw new MulibRuntimeException("Cannot find method for class", e);
+        }
+    }
+
+    public static Method getMethodFromClass(String className, String methodName, Class<?>... parameterTypes) {
+        try {
+            Class<?> clazz = Class.forName(className);
+            return getMethodFromClass(clazz, methodName, parameterTypes);
+        } catch (Exception e) {
+            throw new MulibRuntimeException("Cannot find method for class", e);
+        }
     }
 }

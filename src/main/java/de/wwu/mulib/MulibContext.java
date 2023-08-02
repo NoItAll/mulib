@@ -5,11 +5,10 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.executors.*;
-import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.SearchTree;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.tcg.*;
 import de.wwu.mulib.transformations.MulibTransformer;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -17,8 +16,10 @@ import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.lang.reflect.Modifier;
 import java.util.*;
 import java.util.function.Function;
+import java.util.regex.Matcher;
 
 public final class MulibContext {
     private final MulibConfig config;
@@ -49,7 +50,7 @@ public final class MulibContext {
         }
         try {
             Method method = possiblyTransformedMethodClass.getDeclaredMethod(methodName, transformedArgTypes);
-            methodHandle = MethodHandles.lookup().unreflect(method);
+            this.methodHandle = MethodHandles.lookup().unreflect(method);
         } catch (NoSuchMethodException | IllegalAccessException | VerifyError e) {
             throw new MulibRuntimeException(e);
         }
@@ -167,6 +168,57 @@ public final class MulibContext {
         } else {
             return Optional.empty();
         }
+    }
+
+    public String generateTestCases(Method methodUnderTest, TcgConfig.TcgConfigBuilder tcgConfigBuilder, Object... args) {
+        // First get all path solutions
+        List<PathSolution> pathSolutions =
+                _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
+        List<TestCase> testCaseList = new ArrayList<>();
+        boolean checkedForCorrectLables = false;
+        for (PathSolution ps : pathSolutions) {
+            // Create a test case for each path solution
+            TestCase testCase = new TestCase(
+                    ps instanceof ExceptionPathSolution,
+                    ps.getSolution(),
+                    ps instanceof IPathSolutionWithBitSetCover ? ((IPathSolutionWithBitSetCover) ps).getCover() : new BitSet()
+            );
+            if (!checkedForCorrectLables) {
+                // We check for the correct naming of labels
+                Solution s = ps.getSolution();
+                int numberParameters = methodUnderTest.getParameterCount();
+                if (!Modifier.isStatic(methodUnderTest.getModifiers())) {
+                    // Must have an object; - this is treated as part of the input
+                    numberParameters++;
+                }
+                BitSet seenLabelsForPosition = new BitSet(numberParameters);
+                for (Map.Entry<String, Object> label : s.labels.getIdToLabel().entrySet()) {
+                    Matcher matcherForInput = TcgUtility.INPUT_ARGUMENT_NAME_PATTERN.matcher(label.getKey());
+                    if (matcherForInput.matches()) {
+                        Integer inputNumber = Integer.parseInt(matcherForInput.group(1));
+                        seenLabelsForPosition.set(inputNumber);
+                    }
+                }
+                List<Integer> missingParameterNumbers = new ArrayList<>();
+                for (int i = 0; i < numberParameters; i++) {
+                    if (!seenLabelsForPosition.get(i)) {
+                        missingParameterNumbers.add(i);
+                    }
+                }
+                if (!missingParameterNumbers.isEmpty()) {
+                    throw new MulibRuntimeException("All input parameters of the method under test must be specified (e.g. via Mulib.remember(...)). " +
+                            "Be sure that you name inputs following the scheme 'arg[0-9]+'. The parameters with the following numbers are uninitialized: " + missingParameterNumbers +
+                            ". Note that for non-static methods, the object calling the method under test must be named as 'arg0'.");
+                }
+                checkedForCorrectLables = true;
+            }
+            testCaseList.add(testCase);
+        }
+        TestCases testCases = new TestCases(testCaseList, methodUnderTest);
+
+        TestCasesStringGenerator tcg = new TestCasesStringGenerator(testCases, tcgConfigBuilder.build());
+        String result = tcg.generateTestClassStringRepresentation();
+        return result;
     }
 
     private static Object[] transformArguments(

@@ -9,8 +9,8 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
     protected final String indentBy = "    ";
     protected final boolean assumeSetter;
 
-    public Junit5_8TestClassGenerator() {
-        this.assumeSetter = true;
+    public Junit5_8TestClassGenerator(boolean assumeSetter) {
+        this.assumeSetter = assumeSetter;
     }
 
     @Override
@@ -30,6 +30,7 @@ public class Junit5_8TestClassGenerator implements TestClassGenerator {
         sb.append(generateAfterClassMethod());
         sb.append(generateBeforeMethod());
         sb.append(generateAfterMethod());
+        testMethodStringBuilders.forEach(sb::append);
         sb.append(generateClassEnd());
         return sb.toString();
     }

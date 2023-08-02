@@ -146,9 +146,9 @@ public class CoverageCfg {
     }
 
     public BitSet getCoverAndReset() { // 6
-        BitSet bitSet = new BitSet((int) this.totalNumberChoicePointsInSearchRegion);
+        BitSet bitSet = new BitSet((int) this.totalNumberChoicePointsInSearchRegion * 2); // true and false
         for (CfgNodeDecision d : trailOfDecisions.get()) {
-            bitSet.set((int) d.cfgNode.id);
+            bitSet.set((int) (d.cfgNode.id * 2) + (d.decision ? 0 : 1));
         }
         reset();
         return bitSet;

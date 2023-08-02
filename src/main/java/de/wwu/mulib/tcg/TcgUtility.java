@@ -1,8 +1,12 @@
 package de.wwu.mulib.tcg;
 
+import java.util.regex.Pattern;
+
 // Taken from https://github.com/wwu-pi/muli-classpath/blob/0fad44b5cd5898f1064c558820096c1d7ae85d8e/src/main/java/de/wwu/muli/tcg/utility/Utility.java
 public final class TcgUtility {
 
+    public static final Pattern INPUT_ARGUMENT_NAME_PATTERN = Pattern.compile("arg([0-9]+)");
+    public static final Pattern INPUT_OBJECT_ARGUMENT_POST_STATE_PATTERN = Pattern.compile("arg([0-9]+)AfterExec");
     public static final String REFLECTION_SETTER_METHOD_NAME = "setWithReflection";
     private TcgUtility() {}
 

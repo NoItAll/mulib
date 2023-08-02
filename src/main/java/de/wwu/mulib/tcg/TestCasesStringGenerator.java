@@ -1,6 +1,5 @@
 package de.wwu.mulib.tcg;
 
-import com.google.common.collect.Lists;
 import de.wwu.mulib.tcg.testclassgenerator.Junit5_8TestClassGenerator;
 import de.wwu.mulib.tcg.testclassgenerator.TestClassGenerator;
 import de.wwu.mulib.tcg.testmethodgenerator.Junit5_8TestMethodGenerator;
@@ -14,29 +13,46 @@ import java.util.Collection;
 import java.util.List;
 
 public class TestCasesStringGenerator {
-    public static final String REFLECTION_SETTER_METHOD_NAME = "setWithReflection";
-    protected TestClassGenerator testClassGenerator;
-    protected TestMethodGenerator testMethodGenerator;
+    protected final TestClassGenerator testClassGenerator;
+    protected final TestMethodGenerator testMethodGenerator;
     protected TestSetReducer testSetReducer;
     protected TestSetSorter testSetSorter;
     protected final TestCases testCases;
     protected final PrintStream printer;
 
-    private TestCasesStringGenerator(
+    public TestCasesStringGenerator(
+            TestCases testCases,
+            TcgConfig tcgConfig) {
+        this(
+                new Junit5_8TestClassGenerator(tcgConfig.ASSUME_SETTERS),
+                new Junit5_8TestMethodGenerator(
+                        testCases.getTestedMethod(),
+                        tcgConfig.INDENT,
+                        tcgConfig.ASSUME_SETTERS,
+                        String.valueOf(tcgConfig.MAX_FP_DELTA),
+                        tcgConfig.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED,
+                        tcgConfig.SPECIAL_CASES
+                ),
+                tcgConfig.TEST_SET_REDUCER,
+                tcgConfig.TEST_SET_SORTER,
+                testCases,
+                tcgConfig.PRINT_STREAM
+        );
+    }
+
+    protected TestCasesStringGenerator(
+            TestClassGenerator testClassGenerator,
+            TestMethodGenerator testMethodGenerator,
+            TestSetReducer testSetReducer,
+            TestSetSorter testSetSorter,
             TestCases testCases,
             PrintStream printer) {
+        this.testClassGenerator = testClassGenerator;
+        this.testMethodGenerator = testMethodGenerator;
+        this.testSetReducer = testSetReducer;
+        this.testSetSorter = testSetSorter;
         this.testCases = testCases;
-        testMethodGenerator = new Junit5_8TestMethodGenerator(testCases, true, "1e-8");
-        testClassGenerator = new Junit5_8TestClassGenerator();
         this.printer = printer;
-    }
-
-    public static TestCasesStringGenerator get(TestCases testCases) {
-        return get(testCases, System.out);
-    }
-
-    public static TestCasesStringGenerator get(TestCases testCases, PrintStream printer) {
-        return new TestCasesStringGenerator(testCases, printer);
     }
 
     public String generateTestClassStringRepresentation() {
@@ -50,30 +66,30 @@ public class TestCasesStringGenerator {
                 testMethodGenerator.getEncounteredTypes(),
                 stringsForTests
         );
-        printer.println(result);
+        if (printer != null) {
+            printer.println(result);
+        }
         return result;
     }
 
-    protected List<StringBuilder> generateStringRepresentation(Collection<TestCase> testCases) {
+    protected List<StringBuilder> generateStringRepresentation(List<TestCase> testCases) {
         ArrayList<StringBuilder> stringsForTests = new ArrayList<>();
-        while (testMethodGenerator.hasNextTestCase()) {
-            stringsForTests.add(testMethodGenerator.generateNextTestCaseRepresentation());
+        for (TestCase tc : testCases) {
+            stringsForTests.add(testMethodGenerator.generateTestCaseRepresentation(tc));
         }
         return stringsForTests;
     }
 
-    protected Collection<TestCase> reduceTestCases(Collection<TestCase> testCases) {
-        if (testSetReducer == null) {
-            testSetReducer = ts -> ts;
-        }
+    protected Collection<TestCase> reduceTestCases(List<TestCase> testCases) {
         return testSetReducer.apply(testCases);
     }
 
     protected List<TestCase> sortTestCases(Collection<TestCase> testCases) {
-        if (testSetSorter == null) {
-            testSetSorter = Lists::newArrayList;
-        }
         return testSetSorter.apply(testCases);
+    }
+
+    public void setTestSetSorter(TestSetSorter testSetSorter) {
+        this.testSetSorter = testSetSorter;
     }
 
     public void setTestSetReducer(TestSetReducer reducer){

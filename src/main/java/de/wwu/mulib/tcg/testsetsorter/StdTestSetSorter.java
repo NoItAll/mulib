@@ -20,7 +20,12 @@ public class StdTestSetSorter implements TestSetSorter {
 
     @Override
     public List<TestCase> apply(Collection<TestCase> testCases) {
-        List<TestCase> result = new ArrayList<>(testCases);
+        List<TestCase> result;
+        if (!(testCases instanceof List)) {
+            result = new ArrayList<>(testCases);
+        } else {
+            result = (List<TestCase>) testCases;
+        }
         result.sort(comparator);
         return result;
     }

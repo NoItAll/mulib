@@ -2,10 +2,10 @@ package de.wwu.mulib.tcg.testmethodgenerator;
 
 import de.wwu.mulib.tcg.TcgUtility;
 import de.wwu.mulib.tcg.TestCase;
-import de.wwu.mulib.tcg.TestCases;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
 
@@ -25,43 +25,48 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     protected int numberOfTest = 0;
     // Full name of class for which test cases are generated
     protected final boolean assumeSetter;
-    protected final TestCases testCases;
-    protected final Iterator<TestCase> it;
     protected String objectCalleeIdentifier;
-    protected final List<Object> inputObjects;
+    protected Object[] inputObjects;
     protected Object outputObject;
+    protected final String nameOfTestedClass;
+    protected final String nameOfTestedMethod;
+    protected final Method testedMethod;
+    protected final String indent;
+    protected final boolean generatePostStateChecksForObjectsIfSpecified;
 
-    public Junit5_8TestMethodGenerator(TestCases testCases, boolean assumeSetter, String assertEqualsDelta, Class<?>... specialCases) {
+    public Junit5_8TestMethodGenerator(
+            Method testedMethod,
+            String indent,
+            boolean assumeSetter,
+            String assertEqualsDelta,
+            boolean generatePostStateChecksForObjectsIfSpecified,
+            Class<?>... specialCases) {
+        this.indent = indent;
         this.assertEqualsDelta = assertEqualsDelta;
         this.specialCases = specialCases;
         this.encounteredTypes = new HashSet<>();
         this.assumeSetter = assumeSetter;
-        this.inputObjects = new ArrayList<>();
-        this.testCases = testCases;
-        this.it = testCases.iterator();
         this.argumentNamesForObjects = new IdentityHashMap<>();
         this.argumentNameToNumberOfOccurrences = new HashMap<>();
+        this.testedMethod = testedMethod;
+        this.nameOfTestedClass = testedMethod.getDeclaringClass().getSimpleName();
+        this.nameOfTestedMethod = testedMethod.getName();
+        this.generatePostStateChecksForObjectsIfSpecified = generatePostStateChecksForObjectsIfSpecified;
     }
 
     @Override
-    public StringBuilder generateNextTestCaseRepresentation() {
-        if (!it.hasNext()) {
-            throw new IllegalStateException("No test cases");
-        }
-        StringBuilder result = execute(it.next());
+    public StringBuilder generateTestCaseRepresentation(TestCase testCase) {
+        this.outputObject = testCase.getReturnValue();
+        this.inputObjects = testCase.getInputs();
+        StringBuilder result = execute(testCase);
         after();
         return result;
-    }
-
-    @Override
-    public boolean hasNextTestCase() {
-        return it.hasNext();
     }
 
     protected void after() {
         argumentNamesForObjects.clear();
         argumentNameToNumberOfOccurrences.clear();
-        inputObjects.clear();
+        inputObjects = null;
         objectCalleeIdentifier = null;
         outputObject = null;
         numberOfTest++;
@@ -74,12 +79,12 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
 
     protected StringBuilder execute(TestCase tc) {
         StringBuilder sb = new StringBuilder();
-        sb.append(generateTestMethodAnnotations(tc));
-        sb.append(generateTestMethodDeclaration(tc));
-        sb.append(generateStringsForInputs(tc));
-        sb.append(generateStringForOutput(tc));
-        sb.append(generateAssertionString());
-        sb.append(generateTestMethodEnd());
+        sb.append(indent).append(generateTestMethodAnnotations(tc))
+                .append(indent).append(generateTestMethodDeclaration(tc))
+                .append(generateStringsForInputs(tc)) // Initializes variables and values for inputs; indent occurs inside
+                .append(generateStringForOutput(tc.getReturnValue())) // Initializes variable and value for output; indent occurs inside
+                .append(generateAssertionString()) // Indent occurs inside
+                .append(indent).append(generateTestMethodEnd());
         return sb;
     }
 
@@ -100,7 +105,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String generateTestMethodDeclaration(TestCase tc) {
-        return "public void test_" + testCases.getNameOfTestedMethod() + "_" + numberOfTest + "() {\r\n";
+        return "public void test_" + nameOfTestedMethod + "_" + numberOfTest + "() {\r\n";
     }
 
     protected String generateTestMethodEnd() {
@@ -108,12 +113,12 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String generateStringsForInputs(TestCase tc) {
-        Object[] inputs = tc.getSolution().labels.getLabels();
+        Object[] inputs = tc.getInputs();
         StringBuilder sb = new StringBuilder();
         for (int i = 0; i < inputs.length; i++) {
             sb.append(generateElementString(inputs[i]));
             if (i == 0 && isObjectMethod()) {
-                objectCalleeIdentifier = argumentNamesForObjects.get(inputObjects.get(i));
+                objectCalleeIdentifier = argumentNamesForObjects.get(inputObjects[i]);
             }
         }
         return sb.toString();
@@ -130,7 +135,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
         Class<?> oc = o.getClass();
         addToEncounteredTypes(oc);
         generateNumberedArgumentName(o);
-        if (isPrimitiveClass(oc)) {
+        if (isPrimitiveClass(oc)) { // TODO Obviously not yet taken for int; - transmit type information via different mean
             return generatePrimitiveString(o);
         } else if (isWrappingClass(oc)) {
             return generateWrappingString(o);
@@ -151,7 +156,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
         String type = getInnerSimpleTypeForArrayOrSimpleType(o);
-        sb.append(o.getClass().getSimpleName())
+        sb.append(indent.repeat(2))
+                .append(o.getClass().getSimpleName())
                 .append(" ")
                 .append(arrayName)
                 .append(" = new ")
@@ -168,7 +174,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
         String type = getInnerSimpleTypeForArrayOrSimpleType(o);
-        sb.append(o.getClass().getSimpleName())
+        sb.append(indent.repeat(2))
+                .append(o.getClass().getSimpleName())
                 .append(" ")
                 .append(arrayName)
                 .append(" = new ")
@@ -229,25 +236,24 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
 
     protected StringBuilder generatePrimitiveString(Object o) {
         StringBuilder sb = new StringBuilder();
-        sb.append(o.getClass().getSimpleName());
-        sb.append(argumentNamesForObjects.get(o));
-        sb.append(" = ").append(o);
+        sb.append(indent.repeat(2))
+                .append(o.getClass().getSimpleName())
+                .append(argumentNamesForObjects.get(o))
+                .append(" = ").append(o);
         return sb;
     }
 
     protected StringBuilder generateWrappingString(Object o) {
         try {
             StringBuilder sb = new StringBuilder();
-            sb.append(o.getClass().getSimpleName());
-            sb.append(" ");
-            sb.append(argumentNamesForObjects.get(o));
-            sb.append(" = ");
+            sb.append(indent.repeat(2))
+                    .append(o.getClass().getSimpleName())
+                    .append(" ")
+                    .append(argumentNamesForObjects.get(o)).append(" = ");
             Field valueField = o.getClass().getDeclaredField("value");
-            boolean accessible = valueField.canAccess(o);
             valueField.setAccessible(true);
             sb.append(addCastIfNeeded(o.getClass()));
             sb.append(valueField.get(o)).append(";\r\n");
-            valueField.setAccessible(accessible);
             return sb;
         } catch (NoSuchFieldException | IllegalAccessException e) {
             throw new RuntimeException(e);
@@ -300,11 +306,13 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
 
     protected StringBuilder generateObjectString(Object o) {
         StringBuilder sb = new StringBuilder();
+        sb.append(indent.repeat(2));
         if (isSpecialCase(o.getClass())) {
-            return generateSpecialCaseString(o);
+            sb.append(generateSpecialCaseString(o));
+            return sb;
         }
-        sb.append(generateConstructionString(o));
-        sb.append(generateAttributesStrings(o));
+        sb.append(generateConstructionString(o))
+                .append(generateAttributesStrings(o));
         return sb;
     }
 
@@ -353,7 +361,12 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     protected StringBuilder generateStringString(Object o) {
-        return new StringBuilder("String ").append(argumentNamesForObjects.get(o)).append(" = \"").append(o.toString()).append("\";\r\n");
+        return new StringBuilder(indent.repeat(2))
+                .append("String ")
+                .append(argumentNamesForObjects.get(o))
+                .append(" = \"")
+                .append(o.toString())
+                .append("\";\r\n");
     }
 
     protected StringBuilder generateConstructionString(Object o) {
@@ -387,7 +400,8 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
             f.setAccessible(true);
             Object fieldValue = f.get(o);
             String fieldName = f.getName();
-            sb.append(generateElementString(fieldValue));
+            sb.append(generateElementString(fieldValue))
+                    .append(indent.repeat(2));
             String fieldValueArgumentName = argumentNamesForObjects.get(fieldValue);
             if (assumeSetter) {
                 sb.append(objectArgumentName)
@@ -417,12 +431,13 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     protected String generateAssertionString() {
-        String[] inputObjectNames = new String[inputObjects.size()];
+        String[] inputObjectNames = new String[inputObjects.length];
         for (int i = 0; i < inputObjectNames.length; i++) {
-            inputObjectNames[i] = argumentNamesForObjects.get(inputObjects.get(i));
+            inputObjectNames[i] = argumentNamesForObjects.get(inputObjects[i]);
         }
         String outputObjectName = argumentNamesForObjects.get(outputObject);
         StringBuilder sb = new StringBuilder();
+        sb.append(indent.repeat(2));
         if (outputObject != null && !outputObject.getClass().isArray()) {
             sb.append("assertEquals(");
             if (TcgUtility.isWrappingClass(outputObject.getClass())) {
@@ -464,9 +479,9 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
         if (isObjectMethod()) {
             sb.append(objectCalleeIdentifier);
         } else {
-            sb.append(testCases.getNameOfTestedClass());
+            sb.append(nameOfTestedClass);
         }
-        sb.append(".").append(testCases.getNameOfTestedMethod()).append("(");
+        sb.append(".").append(nameOfTestedMethod).append("(");
         for (int i = 0; i < inputObjectNames.length; i++) {
             if (i == 0 && isObjectMethod()) {
                 continue;
@@ -481,6 +496,6 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     }
 
     private boolean isObjectMethod() {
-        return !Modifier.isStatic(testCases.getTestedMethod().getModifiers());
+        return !Modifier.isStatic(testedMethod.getModifiers());
     }
 }

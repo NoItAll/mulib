@@ -67,4 +67,28 @@ public class SatHanoi01Transf {
             throw new IllegalStateException();
         }
     }
+
+    public static int execForTcg() {
+        int n = Mulib.rememberedFreeInt("arg1");
+        SatHanoi01Transf s = new SatHanoi01Transf();
+        Mulib.remember(s, "arg0");
+        return s.execForTcg(n);
+    }
+
+    public int execForTcg(int n) {
+        counter = 0;
+        applyHanoi(n, 1, 3, 2);
+        int result = hanoi(n);
+        // result and the counter should be the same!
+        if (result == counter) {
+            return result;
+        } else {
+            throw new IllegalStateException();
+        }
+    }
+
+    public void setCounter(int n) {
+        this.counter = n;
+    }
+
 }

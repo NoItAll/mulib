@@ -22,7 +22,7 @@ public class TestCases {
     }
 
     public String getNameOfTestedClass() {
-        return getClassOfTestedMethod().getName();
+        return getClassOfTestedMethod().getSimpleName();
     }
 
     public String getNameOfTestedMethod() {
