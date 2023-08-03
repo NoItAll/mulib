@@ -38,13 +38,17 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
         sb.append(generateAfterMethod());
         sb.append(indentBy).append("/* TEST CASES */").append(System.lineSeparator());
         testMethodStringBuilders.forEach(sb::append);
+        if (!tcgConfig.ASSUME_GETTERS || !tcgConfig.ASSUME_SETTERS || !tcgConfig.ASSUME_EQUALS_METHODS) {
+            sb.append(System.lineSeparator())
+                    .append(indentBy).append("/* UTILITY METHODS */").append(System.lineSeparator());
+        }
         sb.append(generateUtilityMethods());
         sb.append(generateClassEnd());
         return sb.toString();
     }
 
     protected String generatePackageDeclaration(String packageName) {
-        return "package " + packageName + ";" + System.lineSeparator();
+        return "package " + packageName + ";" + System.lineSeparator().repeat(2);
     }
 
     protected String generateImports(Set<Class<?>> encounteredTypes) {
@@ -67,7 +71,7 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                 sb.append("import ").append(typeToImport.getName()).append(";").append(System.lineSeparator());
             }
         }
-        sb.append(System.lineSeparator().repeat(2));
+        sb.append(System.lineSeparator());
         return sb.toString();
     }
 
@@ -107,9 +111,6 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
 
     protected String generateUtilityMethods() {
         StringBuilder sb = new StringBuilder();
-        if (!tcgConfig.ASSUME_GETTERS || !tcgConfig.ASSUME_SETTERS || !tcgConfig.ASSUME_EQUALS_METHODS) {
-            sb.append(indentBy).append("/* UTILITY METHODS */").append(System.lineSeparator());
-        }
         if (!tcgConfig.ASSUME_SETTERS) {
             // Utility method to use reflection instead of setters to set an object's field.
             sb.append(indentBy).append("/* Method for setting a field value for an object if no setter can be used */").append(System.lineSeparator())
@@ -142,11 +143,16 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
         }
 
         if (!tcgConfig.ASSUME_EQUALS_METHODS) {
-            sb.append(tcgConfig.INDENT).append("protected void ").append(TcgUtility.REFLECTION_COMPARE_OBJECTS).append("(Object o0, Object o1) {").append(System.lineSeparator())
+            sb.append(indentBy).append("/* Method for asserting the type-wise and field-wise equality of two objects using reflection */").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT).append("protected void ").append(TcgUtility.REFLECTION_COMPARE_OBJECTS).append("(Object o0, Object o1) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append(TcgUtility.REFLECTION_COMPARE_OBJECTS_INNER).append("(o0, o1, new ArrayList<>());").append(System.lineSeparator())
                     .append(tcgConfig.INDENT).append("}").append(System.lineSeparator());
 
-            sb.append(tcgConfig.INDENT).append("static class ComparedPair {").append(System.lineSeparator())
+            sb.append(indentBy).append("/*").append(System.lineSeparator())
+                    .append(indentBy).append(" * Class for storing already compared pairs of objects.").append(System.lineSeparator())
+                    .append(indentBy).append(" * This is needed to avoid an endless recursion of ").append(TcgUtility.REFLECTION_COMPARE_OBJECTS).append("(...) in case of circular object graphs").append(System.lineSeparator())
+                    .append(indentBy).append(" */").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT).append("static class ComparedPair {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("final Object o0;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("final Object o1;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("ComparedPair(Object o0, Object o1) {").append(System.lineSeparator())
@@ -164,16 +170,12 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                     .append(tcgConfig.INDENT).append("}").append(System.lineSeparator());
 
             sb.append(tcgConfig.INDENT).append("protected void ").append(TcgUtility.REFLECTION_COMPARE_OBJECTS_INNER).append("(Object o0, Object o1, List<ComparedPair> comparedObjects) {").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("/* Needed to avoid cyclic comparisons */").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("ComparedPair comparedPair = new ComparedPair(o0, o1);").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("if (comparedObjects.contains(comparedPair)) return;").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("comparedObjects.add(comparedPair);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (o0 == null && o1 != null) fail(o1 + \" is not null\");").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (o1 == null) fail(o0 + \" is not null\");").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (!o0.getClass().equals(o1.getClass())) fail(\"Objects do not have the same class\");").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("Class<?> c = o0.getClass();").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("/* Check if call to .equals(Object) is definitely safe: */").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("if ((c.isPrimitive() && c != void.class)").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("if (c.isPrimitive()").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append(indentBy.repeat(2)).append("|| c.getName().startsWith(\"java\")) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append("if (!o0.equals(o1)) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(4)).append("fail(o0 + \" does not equal \" + o1);").append(System.lineSeparator())
@@ -181,6 +183,9 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                     .append(tcgConfig.INDENT.repeat(4)).append("return;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append("}").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("}").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("ComparedPair comparedPair = new ComparedPair(o0, o1);").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("if (comparedObjects.contains(comparedPair)) return;").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("comparedObjects.add(comparedPair);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (c.getClass().isArray()) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append(TcgUtility.REFLECTION_COMPARE_ARRAYS_INNER).append("(o0, o1, comparedObjects);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append("return;").append(System.lineSeparator())
@@ -210,10 +215,6 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                     .append(tcgConfig.INDENT.repeat(3)).append(TcgUtility.REFLECTION_COMPARE_OBJECTS_INNER).append("(elementAr0, elementAr1, comparedObjects);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("}").append(System.lineSeparator())
                     .append(tcgConfig.INDENT).append("}").append(System.lineSeparator());
-        }
-
-        if (!tcgConfig.ASSUME_GETTERS || !tcgConfig.ASSUME_SETTERS || !tcgConfig.ASSUME_EQUALS_METHODS) {
-            sb.append(System.lineSeparator());
         }
         return sb.toString();
     }

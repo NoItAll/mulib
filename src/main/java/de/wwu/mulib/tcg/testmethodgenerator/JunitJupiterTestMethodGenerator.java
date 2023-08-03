@@ -462,7 +462,13 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         assert objectName != null;
         addTo.append(config.INDENT.repeat(2));
         if (objectToAssert != null && !objectToAssert.getClass().isArray()) {
-            addTo.append("assertEquals(");
+            if (config.ASSUME_EQUALS_METHODS
+                    || objectToAssert.getClass().isPrimitive()
+                    || TcgUtility.isWrappingClass(objectToAssert.getClass())) {
+                addTo.append("assertEquals(");
+            } else {
+                addTo.append(REFLECTION_COMPARE_OBJECTS).append("(");
+            }
             if (TcgUtility.isWrappingClass(objectToAssert.getClass())) {
                 if (objectToAssert instanceof Integer) {
                     addTo.append("(int)");
@@ -484,7 +490,11 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
             }
             addTo.append(objectName).append(", ");
         } else if (objectToAssert != null) {
-            addTo.append("assertArrayEquals(").append(objectName).append(", ");
+            if (config.ASSUME_EQUALS_METHODS || objectToAssert.getClass().getComponentType().isPrimitive()) {
+                addTo.append("assertArrayEquals(").append(objectName).append(", ");
+            } else {
+                addTo.append(REFLECTION_COMPARE_OBJECTS).append("(").append(objectName).append(", ");
+            }
         } else {
             addTo.append("assertNull(");
         }
