@@ -12,7 +12,7 @@ import java.util.*;
 
 import static de.wwu.mulib.tcg.TcgUtility.*;
 
-public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
+public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
     protected final Set<Class<?>> encounteredTypes;
     // Temporary store for objects and their argument name in the test method
     // Should be cleared after the String for the TestCase-object was generated.
@@ -29,7 +29,7 @@ public class Junit5_8TestMethodGenerator implements TestMethodGenerator {
     protected final Method testedMethod;
     protected final TcgConfig config;
 
-    public Junit5_8TestMethodGenerator(
+    public JunitJupiterTestMethodGenerator(
             Method testedMethod,
             TcgConfig config) {
         this.config = config;

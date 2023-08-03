@@ -9,6 +9,10 @@ public final class TcgUtility {
     public static final Pattern INPUT_OBJECT_ARGUMENT_POST_STATE_PATTERN = Pattern.compile("arg([0-9]+)AfterExec");
     public static final String REFLECTION_SETTER_METHOD_NAME = "setWithReflection";
     public static final String REFLECTION_GETTER_METHOD_NAME = "getWithReflection";
+    public static final String REFLECTION_COMPARE_ARRAYS_INNER = "_compareArraysWithReflection";
+    public static final String REFLECTION_COMPARE_OBJECTS_INNER = "_compareObjectsWithReflection";
+    public static final String REFLECTION_COMPARE_OBJECTS = "compareObjectsWithReflection";
+
     private TcgUtility() {}
 
     public static String toFirstLower(String s) {

@@ -1,8 +1,8 @@
 package de.wwu.mulib.tcg;
 
-import de.wwu.mulib.tcg.testclassgenerator.Junit5_8TestClassGenerator;
+import de.wwu.mulib.tcg.testclassgenerator.JunitJupiterTestClassGenerator;
 import de.wwu.mulib.tcg.testclassgenerator.TestClassGenerator;
-import de.wwu.mulib.tcg.testmethodgenerator.Junit5_8TestMethodGenerator;
+import de.wwu.mulib.tcg.testmethodgenerator.JunitJupiterTestMethodGenerator;
 import de.wwu.mulib.tcg.testmethodgenerator.TestMethodGenerator;
 import de.wwu.mulib.tcg.testsetreducer.TestSetReducer;
 import de.wwu.mulib.tcg.testsetsorter.TestSetSorter;
@@ -24,8 +24,8 @@ public class TestCasesStringGenerator {
             TestCases testCases,
             TcgConfig tcgConfig) {
         this(
-                new Junit5_8TestClassGenerator(tcgConfig),
-                new Junit5_8TestMethodGenerator(
+                new JunitJupiterTestClassGenerator(tcgConfig),
+                new JunitJupiterTestMethodGenerator(
                         testCases.getTestedMethod(),
                         tcgConfig
                 ),
