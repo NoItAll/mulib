@@ -13,19 +13,19 @@ public class TestCase {
     private static final AtomicLong testCaseNumbers = new AtomicLong(0L);
     private final long testCaseNumber;
     protected final boolean exceptional;
-    protected final Solution solution;
     protected final BitSet cover;
     protected final Object[] inputsInArgOrder;
     protected final Object[] inputsInArgOrderPostExecution;
+    protected final Object returnValue;
     protected final IdentityHashMap<Object, Object> inputsPostExecutionToInputs;
-    public TestCase(boolean exceptional, Solution solution, BitSet cover, TcgConfig config) {
+    public TestCase(boolean exceptional, Map<String, Object> labelNameToLabel, Object returnValue, BitSet cover, TcgConfig config) {
         this.testCaseNumber = testCaseNumbers.getAndIncrement();
         this.exceptional = exceptional;
-        this.solution = solution;
+        this.returnValue = returnValue;
         this.cover = cover;
         Map<Integer, Object> inputsInArgOrder = new HashMap<>();
         Map<Integer, Object> inputsInArgOrderAfterExecution = new HashMap<>();
-        for (Map.Entry<String, Object> entry : solution.labels.getIdToLabel().entrySet()) {
+        for (Map.Entry<String, Object> entry : labelNameToLabel.entrySet()) {
             Matcher m = TcgUtility.INPUT_ARGUMENT_NAME_PATTERN.matcher(entry.getKey());
             if (m.matches()) {
                 String number = m.group(1);
@@ -72,9 +72,6 @@ public class TestCase {
         return testCaseNumber;
     }
 
-    public Solution getSolution() {
-        return solution;
-    }
 
     public BitSet getCover() {
         return cover;
@@ -85,7 +82,7 @@ public class TestCase {
     }
 
     public Object getReturnValue() {
-        return solution.returnValue;
+        return returnValue;
     }
 
     public Object[] getInputs() {

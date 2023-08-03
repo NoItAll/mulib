@@ -181,7 +181,8 @@ public final class MulibContext {
             // Create a test case for each path solution
             TestCase testCase = new TestCase(
                     ps instanceof ExceptionPathSolution,
-                    ps.getSolution(),
+                    ps.getSolution().labels.getIdToLabel(),
+                    ps.getSolution().returnValue,
                     ps instanceof IPathSolutionWithBitSetCover ? ((IPathSolutionWithBitSetCover) ps).getCover() : new BitSet(),
                     tcgConfig
             );
