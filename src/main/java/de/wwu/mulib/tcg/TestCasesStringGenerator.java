@@ -24,14 +24,10 @@ public class TestCasesStringGenerator {
             TestCases testCases,
             TcgConfig tcgConfig) {
         this(
-                new Junit5_8TestClassGenerator(tcgConfig.ASSUME_SETTERS),
+                new Junit5_8TestClassGenerator(tcgConfig),
                 new Junit5_8TestMethodGenerator(
                         testCases.getTestedMethod(),
-                        tcgConfig.INDENT,
-                        tcgConfig.ASSUME_SETTERS,
-                        String.valueOf(tcgConfig.MAX_FP_DELTA),
-                        tcgConfig.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED,
-                        tcgConfig.SPECIAL_CASES
+                        tcgConfig
                 ),
                 tcgConfig.TEST_SET_REDUCER,
                 tcgConfig.TEST_SET_SORTER,
@@ -64,6 +60,8 @@ public class TestCasesStringGenerator {
                 testCases.getPackageNameOfClassOfTestedMethod(),
                 testCases.getNameOfTestedClass(),
                 testMethodGenerator.getEncounteredTypes(),
+                testCases.getNumberTestCases(),
+                tests.size(),
                 stringsForTests
         );
         if (printer != null) {

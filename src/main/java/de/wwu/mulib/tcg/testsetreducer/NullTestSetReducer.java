@@ -4,7 +4,7 @@ import de.wwu.mulib.tcg.TestCase;
 
 import java.util.Collection;
 
-public class NullTestSetReducer implements TestSetReducer {
+public class NullTestSetReducer extends AbstractTestSetReducer {
 
     @Override
     public Collection<TestCase> apply(Collection<TestCase> testCases) {

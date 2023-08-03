@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.Set;
 
-public final class SimpleBackwardsTestSetReducer implements TestSetReducer {
+public final class SimpleBackwardsTestSetReducer extends AbstractTestSetReducer {
 
     @Override
     public Set<TestCase> apply(Collection<TestCase> testCases) {

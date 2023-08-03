@@ -9,6 +9,8 @@ public interface TestClassGenerator {
             String packageName,
             String testedClassName,
             Set<Class<?>> encounteredTypes,
+            int initialNumberOfTestCases,
+            int reducedNumberOfTestCases,
             List<StringBuilder> testMethodStringBuilders);
 
 }

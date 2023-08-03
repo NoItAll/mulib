@@ -7,7 +7,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 
-public final class SimpleForwardsTestSetReducer implements TestSetReducer {
+public final class SimpleForwardsTestSetReducer extends AbstractTestSetReducer {
 
     @Override
     public List<TestCase> apply(Collection<TestCase> testCases) {

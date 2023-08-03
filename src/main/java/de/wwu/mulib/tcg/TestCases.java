@@ -44,4 +44,8 @@ public class TestCases {
     public List<TestCase> getTestCases() {
         return testCases;
     }
+
+    public int getNumberTestCases() {
+        return testCases.size();
+    }
 }

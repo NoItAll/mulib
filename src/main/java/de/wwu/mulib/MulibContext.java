@@ -175,13 +175,15 @@ public final class MulibContext {
         List<PathSolution> pathSolutions =
                 _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
         List<TestCase> testCaseList = new ArrayList<>();
+        TcgConfig tcgConfig = tcgConfigBuilder.build();
         boolean checkedForCorrectLables = false;
         for (PathSolution ps : pathSolutions) {
             // Create a test case for each path solution
             TestCase testCase = new TestCase(
                     ps instanceof ExceptionPathSolution,
                     ps.getSolution(),
-                    ps instanceof IPathSolutionWithBitSetCover ? ((IPathSolutionWithBitSetCover) ps).getCover() : new BitSet()
+                    ps instanceof IPathSolutionWithBitSetCover ? ((IPathSolutionWithBitSetCover) ps).getCover() : new BitSet(),
+                    tcgConfig
             );
             if (!checkedForCorrectLables) {
                 // We check for the correct naming of labels
@@ -216,7 +218,7 @@ public final class MulibContext {
         }
         TestCases testCases = new TestCases(testCaseList, methodUnderTest);
 
-        TestCasesStringGenerator tcg = new TestCasesStringGenerator(testCases, tcgConfigBuilder.build());
+        TestCasesStringGenerator tcg = new TestCasesStringGenerator(testCases, tcgConfig);
         String result = tcg.generateTestClassStringRepresentation();
         return result;
     }

@@ -7,7 +7,7 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 
-public class SimpleGreedyTestSetReducer implements TestSetReducer {
+public class SimpleGreedyTestSetReducer extends AbstractTestSetReducer {
 
     @Override
     public Collection<TestCase> apply(Collection<TestCase> testCases) {

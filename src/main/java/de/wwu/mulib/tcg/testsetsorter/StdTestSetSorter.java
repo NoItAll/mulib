@@ -7,7 +7,7 @@ import java.util.Collection;
 import java.util.Comparator;
 import java.util.List;
 
-public class StdTestSetSorter implements TestSetSorter {
+public class StdTestSetSorter extends AbstractTestSetSorter {
     protected final Comparator<TestCase> comparator;
 
     public StdTestSetSorter() {
