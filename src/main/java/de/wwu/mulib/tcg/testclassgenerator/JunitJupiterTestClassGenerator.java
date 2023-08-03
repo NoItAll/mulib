@@ -32,13 +32,13 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
         sb.append(generateTestClassAnnotations());
         sb.append(generateTestClassDeclaration(testedClassName, initialNumberTestCases, reducedNumberOfTestcases));
         sb.append(generateClassAttributes());
-        sb.append(generateUtilityMethods());
         sb.append(generateBeforeClassMethod());
         sb.append(generateAfterClassMethod());
         sb.append(generateBeforeMethod());
         sb.append(generateAfterMethod());
         sb.append(indentBy).append("/* TEST CASES */").append(System.lineSeparator());
         testMethodStringBuilders.forEach(sb::append);
+        sb.append(generateUtilityMethods());
         sb.append(generateClassEnd());
         return sb.toString();
     }
