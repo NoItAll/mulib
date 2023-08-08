@@ -125,11 +125,8 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected StringBuilder generateElementString(Object o) {
-        if (o == null) {
-            return new StringBuilder(); // No element string has to be generated for null
-        }
-        if (isAlreadyCreated(o)) {
-            return new StringBuilder();
+        if (o == null || isAlreadyCreated(o)) {
+            return new StringBuilder(); // No element string has to be generated for null or an already created element
         }
 
         Class<?> oc = o.getClass();
@@ -242,7 +239,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         sb.append(config.INDENT.repeat(2))
                 .append(o.getClass().getSimpleName())
                 .append(argumentNamesForObjects.get(o))
-                .append(" = ").append(o);
+                .append(" = ").append(o).append(";").append(System.lineSeparator());
         return sb;
     }
 
@@ -361,10 +358,27 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected StringBuilder generateConstructionString(Object o) {
+        if (config.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR) {
+            return generateConstructionStringWithZeroArgsConstructor(o);
+        } else {
+            return generateConstructionStringWithReflection(o);
+        }
+    }
+
+    private StringBuilder generateConstructionStringWithZeroArgsConstructor(Object o) {
         StringBuilder sb = new StringBuilder();
         sb.append(o.getClass().getSimpleName()).append(" ");
         sb.append(argumentNamesForObjects.get(o)).append(" = ");
         sb.append("new ").append(o.getClass().getSimpleName()).append("();").append(System.lineSeparator());
+        return sb;
+    }
+
+    private StringBuilder generateConstructionStringWithReflection(Object o) {
+        StringBuilder sb = new StringBuilder();
+        sb.append(o.getClass().getSimpleName()).append(" ")
+                .append(argumentNamesForObjects.get(o))
+                .append(" = (").append(o.getClass().getSimpleName()).append(") ")
+                .append(REFLECTION_NEW_INSTANCE).append("(").append(o.getClass().getSimpleName()).append(".class);").append(System.lineSeparator());
         return sb;
     }
 

@@ -3,9 +3,12 @@ package de.wwu.mulib.tcg.testclassgenerator;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.tcg.TcgUtility;
 import de.wwu.mulib.tcg.testsetreducer.NullTestSetReducer;
+import sun.reflect.ReflectionFactory;
 
 import java.lang.reflect.Array;
+import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -41,7 +44,8 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
         sb.append(generateAfterMethod());
         sb.append(indentBy).append("/* TEST CASES */").append(System.lineSeparator());
         testMethodStringBuilders.forEach(sb::append);
-        if (!tcgConfig.ASSUME_GETTERS || !tcgConfig.ASSUME_SETTERS || !tcgConfig.ASSUME_EQUALS_METHODS) {
+        if (!tcgConfig.ASSUME_GETTERS || !tcgConfig.ASSUME_SETTERS
+                || !tcgConfig.ASSUME_EQUALS_METHODS || !tcgConfig.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR) {
             sb.append(System.lineSeparator())
                     .append(indentBy).append("/* UTILITY METHODS */").append(System.lineSeparator());
         }
@@ -62,6 +66,10 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
 
         if (!tcgConfig.ASSUME_EQUALS_METHODS || !tcgConfig.ASSUME_SETTERS || !tcgConfig.ASSUME_GETTERS) {
             encounteredTypes.add(Field.class);
+        }
+
+        if (!tcgConfig.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR) {
+            encounteredTypes.addAll(List.of(Constructor.class, ReflectionFactory.class, Map.class, HashMap.class, InvocationTargetException.class, ArrayDeque.class, Collections.class));
         }
 
         if (!tcgConfig.ASSUME_EQUALS_METHODS) {
@@ -218,6 +226,50 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                     .append(tcgConfig.INDENT.repeat(3)).append(TcgUtility.REFLECTION_COMPARE_OBJECTS_INNER).append("(elementAr0, elementAr1, comparedObjects);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("}").append(System.lineSeparator())
                     .append(tcgConfig.INDENT).append("}").append(System.lineSeparator());
+        }
+
+        if (!tcgConfig.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR) {
+            sb.append(indentBy).append("/* Cache for new zero-args constructors */").append(System.lineSeparator())
+                    .append(indentBy).append("private static final Map<Class<?>, Constructor<?>> classToZeroArgsConstructor = Collections.synchronizedMap(new HashMap<>());").append(System.lineSeparator())
+                    .append(indentBy).append("/* Method for generating a new zero args constructor, if one has not yet been generated */").append(System.lineSeparator())
+                    .append(indentBy).append("protected static Constructor<?> getOrGenerateZeroArgsConstructor(final Class<?> toGenerateFor) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("Class<?> current = toGenerateFor;").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("// Gather superclasses").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("ArrayDeque<Class<?>> deque = new ArrayDeque<>();").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("Constructor<?> previousConstructor;").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("do {").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("previousConstructor = classToZeroArgsConstructor.get(current);").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("if (previousConstructor != null) break;").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("deque.addFirst(current);").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("current = current.getSuperclass();").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("} while (current != null);").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("ReflectionFactory rf = ReflectionFactory.getReflectionFactory();").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("Constructor<?> currentConstructor;").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("// Starting from the most abstract class, generate suitable constructors").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("while (!deque.isEmpty()) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("current = deque.pollFirst();").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("if (previousConstructor == null) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(4)).append("currentConstructor = rf.newConstructorForSerialization(current);").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("} else {").append(System.lineSeparator())
+                    .append(indentBy.repeat(4)).append("currentConstructor = rf.newConstructorForSerialization(current, previousConstructor);").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("}").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("if (currentConstructor == null) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(4)).append("throw new RuntimeException(\"Failed to generate a constructor.\");").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("}").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("classToZeroArgsConstructor.put(current, currentConstructor);").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("previousConstructor = currentConstructor;").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("}").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("return classToZeroArgsConstructor.get(toGenerateFor);").append(System.lineSeparator())
+                    .append(indentBy).append("}").append(System.lineSeparator());
+            sb.append(indentBy).append("/* Generates a new instance of an object bypassing any constructor */").append(System.lineSeparator())
+                    .append(indentBy).append("protected Object ").append(TcgUtility.REFLECTION_NEW_INSTANCE).append("(Class<?> c) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("Constructor<?> cons = getOrGenerateZeroArgsConstructor(c);").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("try {").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("return cons.newInstance();").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("} catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {").append(System.lineSeparator())
+                    .append(indentBy.repeat(3)).append("throw new RuntimeException(e);").append(System.lineSeparator())
+                    .append(indentBy.repeat(2)).append("}").append(System.lineSeparator())
+                    .append(indentBy).append("}").append(System.lineSeparator());
         }
         return sb.toString();
     }
