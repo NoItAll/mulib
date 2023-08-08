@@ -18,6 +18,8 @@ public class TcgConfig {
     public final boolean ASSUME_GETTERS;
     public final boolean ASSUME_EQUALS_METHODS;
     public final boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED;
+
+    public final boolean DACITE_TCG;
     public final Class<?>[] SPECIAL_CASES;
 
     public static TcgConfigBuilder builder() {
@@ -34,6 +36,8 @@ public class TcgConfig {
         private boolean assumeGetters;
         private boolean assumeEqualsMethods;
         private boolean generatePostStateChecksForObjectsIfSpecified;
+
+        private boolean daciteTcg;
         private Class<?>[] specialCases;
 
         TcgConfigBuilder() {
@@ -47,6 +51,7 @@ public class TcgConfig {
             assumeEqualsMethods = true;
             generatePostStateChecksForObjectsIfSpecified = true;
             specialCases = new Class[0];
+            daciteTcg = false;
 
         }
 
@@ -100,6 +105,11 @@ public class TcgConfig {
             return this;
         }
 
+        public TcgConfigBuilder setDaciteTcg(boolean daciteTcg){
+            this.daciteTcg = daciteTcg;
+            return this;
+        }
+
         public TcgConfig build() {
             return new TcgConfig(
                     testSetReducer,
@@ -111,7 +121,8 @@ public class TcgConfig {
                     assumeGetters,
                     assumeEqualsMethods,
                     generatePostStateChecksForObjectsIfSpecified,
-                    specialCases
+                    specialCases,
+                    daciteTcg
             );
         }
     }
@@ -119,7 +130,7 @@ public class TcgConfig {
     private TcgConfig(
             TestSetReducer TEST_SET_REDUCER, TestSetSorter TEST_SET_SORTER, String INDENT, double MAX_FP_DELTA,
             PrintStream PRINT_STREAM, boolean ASSUME_SETTERS, boolean ASSUME_GETTERS, boolean ASSUME_EQUALS_METHODS,
-            boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Class<?>[] SPECIAL_CASES) {
+            boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Class<?>[] SPECIAL_CASES, boolean DACITE_TCG) {
         this.TEST_SET_REDUCER = TEST_SET_REDUCER;
         this.TEST_SET_SORTER = TEST_SET_SORTER;
         this.INDENT = INDENT;
@@ -130,6 +141,7 @@ public class TcgConfig {
         this.ASSUME_EQUALS_METHODS = ASSUME_EQUALS_METHODS;
         this.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED = GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED;
         this.SPECIAL_CASES = SPECIAL_CASES;
+        this.DACITE_TCG = DACITE_TCG;
     }
 
     @Override
