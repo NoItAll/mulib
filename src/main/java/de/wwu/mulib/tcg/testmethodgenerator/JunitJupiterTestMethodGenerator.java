@@ -206,7 +206,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         for (int i = 0; i < Array.getLength(o); i++) {
             Object arrayElement = Array.get(o, i);
             sb.append(generateElementString(arrayElement));
-            sb.append(arrayName)
+            sb.append(config.INDENT.repeat(2)).append(arrayName)
                     .append("[")
                     .append(i)
                     .append("] = ")
@@ -247,20 +247,14 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
     }
 
     protected StringBuilder generateWrappingString(Object o) {
-        try {
-            StringBuilder sb = new StringBuilder();
-            sb.append(config.INDENT.repeat(2))
-                    .append(o.getClass().getSimpleName())
-                    .append(" ")
-                    .append(argumentNamesForObjects.get(o)).append(" = ");
-            Field valueField = o.getClass().getDeclaredField("value");
-            valueField.setAccessible(true);
-            sb.append(addCastIfNeeded(o.getClass()));
-            sb.append(valueField.get(o)).append(";").append(System.lineSeparator());
-            return sb;
-        } catch (NoSuchFieldException | IllegalAccessException e) {
-            throw new RuntimeException(e);
-        }
+        StringBuilder sb = new StringBuilder();
+        sb.append(config.INDENT.repeat(2))
+                .append(o.getClass().getSimpleName())
+                .append(" ")
+                .append(argumentNamesForObjects.get(o)).append(" = ");
+        sb.append(addCastIfNeeded(o.getClass()));
+        sb.append(o).append(";").append(System.lineSeparator());
+        return sb;
     }
 
     protected boolean wrappingClassNeedsCast(Class<?> oc) {
