@@ -10,11 +10,9 @@ import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.transformations.MulibValueCopier;
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.function.Function;
 
 @SuppressWarnings({ "rawtypes", "unchecked" })
@@ -594,7 +592,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return se.getAvailableInformationOnArray((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()));
     }
 
-
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
         assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver() && pc.__mulib__isRepresentedInSolver();
         Map<String, SubstitutedVar> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar();
@@ -613,6 +610,65 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             ));
         }
         return result.toArray(PartnerClassObjectFieldConstraint[]::new);
+    }
+
+    @Override
+    public void remember(SymbolicExecution se, String name, SubstitutedVar substitutedVar) {
+        if (substitutedVar == null) { // TODO Should we remember explicit nulls?
+            return;
+        }
+        if (substitutedVar instanceof PartnerClass) {
+            PartnerClass pc = (PartnerClass) substitutedVar;
+            pc.__mulib__setIsNamed();
+            // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
+            //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
+            MulibValueCopier mulibValueCopier = new MulibValueCopier(se, config);
+            boolean isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = false;
+            if (pc.__mulib__isToBeLazilyInitialized()) {
+                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = true;
+                pc.__mulib__prepareToRepresentSymbolically(se);
+                representPartnerClassObjectIfNeeded(se, pc, null, null, null);
+            } else {
+                _initializeIdsOfContainedLazilyInitializedObjects(se, pc);
+            }
+            if (!se.nextIsOnKnownPath()) {
+                PartnerClass copied = (PartnerClass) mulibValueCopier.copyNonSprimitive(pc);
+                PartnerClassObjectConstraint rememberConstraint = new PartnerClassObjectRememberConstraint(
+                        name,
+                        copied,
+                        isToBeLazilyInitializedButIsInsteadRepresentedSymbolically
+                );
+                se.addNewPartnerClassObjectConstraint(rememberConstraint);
+            }
+        }
+    }
+
+    private static void _initializeIdsOfContainedLazilyInitializedObjects(SymbolicExecution se, PartnerClass container) {
+        ArrayDeque<PartnerClass> toEvaluate = new ArrayDeque<>();
+        toEvaluate.add(container);
+        List<PartnerClass> alreadyEvaluated = new ArrayList<>();
+        while (!toEvaluate.isEmpty()) {
+            PartnerClass current = toEvaluate.poll();
+            if (alreadyEvaluated.contains(current)) {
+                continue;
+            }
+            alreadyEvaluated.add(current);
+            Collection<SubstitutedVar> vals = current instanceof Sarray ? (Collection<SubstitutedVar>) ((Sarray<?>) current).getCachedElements() : current.__mulib__getFieldNameToSubstitutedVar().values();
+            for (SubstitutedVar entry : vals) {
+                if (!(entry instanceof PartnerClass)) {
+                    continue;
+                }
+                PartnerClass pc = (PartnerClass) entry;
+                if (pc.__mulib__defaultIsSymbolic()
+                        && (!(pc instanceof Sarray) || ((Sarray<?>) pc)._getLengthWithoutCheckingForIsNull() instanceof Sym)
+                        && !pc.__mulib__isRepresentedInSolver()) {
+                    pc.__mulib__prepareToRepresentSymbolically(se);
+                    se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, pc, null, null, null);
+                } else {
+                    toEvaluate.add(pc);
+                }
+            }
+        }
     }
 
     private ArrayAccessConstraint[] collectInitialArrayAccessConstraints(Sarray sarray, SymbolicExecution se) {

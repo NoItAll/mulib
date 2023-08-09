@@ -226,66 +226,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public void remember(String name, SubstitutedVar remembered) {
-        if (remembered == null) { // TODO Should we remember explicit nulls?
-            return;
-        }
-        if (remembered instanceof PartnerClass) {
-            PartnerClass pc = (PartnerClass) remembered;
-            pc.__mulib__setIsNamed();
-            // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
-            //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
-            MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
-            boolean isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = false;
-            if (pc.__mulib__isToBeLazilyInitialized()) {
-                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = true;
-                pc.__mulib__prepareToRepresentSymbolically(currentSymbolicExecution);
-                getCalculationFactory().representPartnerClassObjectIfNeeded(currentSymbolicExecution, pc, null, null, null);
-            } else {
-                _initializeIdsOfContainedLazilyInitializedObjects(currentSymbolicExecution, pc);
-            }
-            if (!currentSymbolicExecution.nextIsOnKnownPath()) {
-                PartnerClass copied = (PartnerClass) mulibValueCopier.copyNonSprimitive(pc);
-                PartnerClassObjectConstraint rememberConstraint = new PartnerClassObjectRememberConstraint(
-                        name,
-                        copied,
-                        isToBeLazilyInitializedButIsInsteadRepresentedSymbolically
-                );
-                solverManager.addPartnerClassObjectConstraint(rememberConstraint);
-                currentChoiceOption.addPartnerClassConstraint(rememberConstraint);
-            }
-        } else {
-            assert remembered instanceof Snumber;
-            rememberedSprimitives.put(name, ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) remembered));
-        }
-    }
-
-    private static void _initializeIdsOfContainedLazilyInitializedObjects(SymbolicExecution se, PartnerClass container) {
-        ArrayDeque<PartnerClass> toEvaluate = new ArrayDeque<>();
-        toEvaluate.add(container);
-        List<PartnerClass> alreadyEvaluated = new ArrayList<>();
-        while (!toEvaluate.isEmpty()) {
-            PartnerClass current = toEvaluate.poll();
-            if (alreadyEvaluated.contains(current)) {
-                continue;
-            }
-            alreadyEvaluated.add(current);
-            Collection<SubstitutedVar> vals = current instanceof Sarray ? (Collection<SubstitutedVar>) ((Sarray<?>) current).getCachedElements() : current.__mulib__getFieldNameToSubstitutedVar().values();
-            for (SubstitutedVar entry : vals) {
-                if (!(entry instanceof PartnerClass)) {
-                    continue;
-                }
-                PartnerClass pc = (PartnerClass) entry;
-                if (pc.__mulib__defaultIsSymbolic()
-                        && (!(pc instanceof Sarray) || ((Sarray<?>) pc)._getLengthWithoutCheckingForIsNull() instanceof Sym)
-                        && !pc.__mulib__isRepresentedInSolver()) {
-                    pc.__mulib__prepareToRepresentSymbolically(se);
-                    se.getCalculationFactory().representPartnerClassObjectIfNeeded(se, pc, null, null, null);
-                } else {
-                    toEvaluate.add(pc);
-                }
-            }
-        }
+    public void rememberSprimitive(String name, Sprimitive remembered) {
+        rememberedSprimitives.put(name, ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) remembered));
     }
 
     private static Object[] copyArguments(

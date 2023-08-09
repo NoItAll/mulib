@@ -196,7 +196,10 @@ public final class SymbolicExecution {
     }
 
     private void addNamedVariable(String key, SubstitutedVar value) {
-        mulibExecutor.remember(key, value);
+        calculationFactory.remember(this, key, value);
+        if (value instanceof Sprimitive) {
+            mulibExecutor.rememberSprimitive(key, (Sprimitive) value);
+        }
     }
 
     public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {

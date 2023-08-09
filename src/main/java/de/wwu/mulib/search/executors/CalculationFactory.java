@@ -183,4 +183,6 @@ public interface CalculationFactory {
 
     ArrayInformation getAvailableInformationOnArray(SymbolicExecution se, Sarray<?> var);
 
+    void remember(SymbolicExecution se, String name, SubstitutedVar toRemember);
+
 }

@@ -7,8 +7,8 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.search.trees.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -50,7 +50,7 @@ public interface MulibExecutor {
 
     void addNewConstraintAfterBacktrackingPoint(Constraint c);
 
-    void remember(String name, SubstitutedVar remembered);
+    void rememberSprimitive(String name, Sprimitive remembered);
 
     boolean isSatisfiable();
 

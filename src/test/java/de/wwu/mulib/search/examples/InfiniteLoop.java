@@ -18,30 +18,6 @@ import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class InfiniteLoop {
 
-    @Test @Disabled // TODO Better budget
-    public void checkConcreteInfiniteLoop() {
-        TestUtility.getAllSolutions(this::_checkConcreteInfiniteLoop, "infiniteConcrete");
-    }
-
-    private List<PathSolution> _checkConcreteInfiniteLoop(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = TestUtility.executeMulib(
-                "infiniteConcrete",
-                InfiniteLoop.class,
-                mb,
-                false
-        );
-        assertEquals(0, result.size());
-        return result;
-    }
-
-    public static void infiniteConcrete() {
-        SymbolicExecution se = SymbolicExecution.get();
-        Sint i = se.concSint(0);
-        while (se.boolChoice(Sbool.ConcSbool.TRUE)) {
-            se.add(i, se.concSint(1));
-        }
-    }
-
     @Test
     public void checkSymbolicInfiniteLoop() {
         TestUtility.getAllSolutions(this::_checkSymbolicInfiniteLoop, "infiniteSymbolic");
