@@ -137,7 +137,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public final void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
         assert !currentSymbolicExecution.nextIsOnKnownPath();
         solverManager.addPartnerClassObjectConstraint(ic);
-        currentChoiceOption.addPartnerClassConstraintConstraint(ic);
+        currentChoiceOption.addPartnerClassConstraint(ic);
     }
 
     @Override
@@ -248,7 +248,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         isToBeLazilyInitializedButIsInsteadRepresentedSymbolically
                 );
                 solverManager.addPartnerClassObjectConstraint(rememberConstraint);
-                currentChoiceOption.addPartnerClassConstraintConstraint(rememberConstraint);
+                currentChoiceOption.addPartnerClassConstraint(rememberConstraint);
             }
         } else {
             assert remembered instanceof Snumber;
@@ -504,6 +504,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         if (choiceOption.getChoice().getChoiceOptions().size() == 2
                 && other.isUnsatisfiable()
                 && choiceOption.getParent().isEvaluated()
+                && !choiceOption.getParent().constraintWasModifiedAfterInitialSatCheck()
                 // We want to avoid that
                 && other.getPartnerClassObjectConstraints().isEmpty()) {
             assert solverManager.isSatisfiable();

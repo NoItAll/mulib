@@ -50,15 +50,16 @@ public final class Choice extends TreeNode {
         // To be evaluated, the option must have been satisfiable
         private static final byte EVALUATED = 2;
         // Symbolic state connected with tree is not satisfiable
-        private static final byte UNSATISFIABLE = 3;
+        private static final byte UNSATISFIABLE = 4;
         // Further evaluation would exceed budget
-        private static final byte BUDGET_EXCEEDED = 4;
+        private static final byte BUDGET_EXCEEDED = 8;
         // The further evaluation of the respective subtree will not be performed
-        private static final byte CUT_OFF = 5; // TODO not yet implemented functionality
+        private static final byte CUT_OFF = 16; // TODO not yet implemented functionality
         // If Mulib.failed() has been used.
-        private static final byte EXPLICITLY_FAILED = 6;
+        private static final byte EXPLICITLY_FAILED = 32;
         // For concolic execution: if the labeling is not valid anymore, we need to reevaluate
-        private static final byte REEVALUATION_NEEDED = 7;
+        private static final byte REEVALUATION_NEEDED = 64;
+        private static final byte CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK = -128;
 
         private byte state;
         public final int choiceOptionNumber;
@@ -110,10 +111,12 @@ public final class Choice extends TreeNode {
                 throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
                         " evaluated cannot be changed");
             }
+            assert isSatisfiable() || reevaluationNeeded();
+            state |= CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK;
             this.optionConstraint = optionConstraint;
         }
 
-        public void addPartnerClassConstraintConstraint(PartnerClassObjectConstraint ic) {
+        public void addPartnerClassConstraint(PartnerClassObjectConstraint ic) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The partner class object constraint must not be added to already evaluated" +
                         " choice options");
@@ -181,38 +184,38 @@ public final class Choice extends TreeNode {
         }
 
         private void _checkChildIsUnset() {
-            if (child != null || state == EVALUATED) {
+            if (child != null || ((state & EVALUATED) != 0)) {
                 throw new IllegalTreeModificationException("child cannot be set multiple times."
                         + " child is already set to: " + child);
             }
         }
 
         public boolean isEvaluated() {
-            return state == EVALUATED;
+            return (state & EVALUATED) != 0;
         }
 
         public boolean isUnsatisfiable() {
-            return state == UNSATISFIABLE;
+            return (state & UNSATISFIABLE) != 0;
         }
 
         public boolean isExplicitlyFailed() {
-            return state == EXPLICITLY_FAILED;
+            return (state & EXPLICITLY_FAILED) != 0;
         }
 
         public boolean isSatisfiable() {
-            return state == SATISFIABLE;
+            return (state & SATISFIABLE) != 0;
         }
 
         public boolean isBudgetExceeded() {
-            return state == BUDGET_EXCEEDED;
+            return (state & BUDGET_EXCEEDED) != 0;
         }
 
         public boolean isCutOff() {
-            return state == CUT_OFF;
+            return (state & CUT_OFF) != 0;
         }
 
         public boolean isUnknown() {
-            return state == UNKNOWN;
+            return state == UNKNOWN || state == CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK;
         }
 
         public void setSatisfiable() {
@@ -224,18 +227,23 @@ public final class Choice extends TreeNode {
         }
 
         public boolean reevaluationNeeded() {
-            return state == REEVALUATION_NEEDED;
+            return (state & REEVALUATION_NEEDED) != 0;
+        }
+
+        public boolean constraintWasModifiedAfterInitialSatCheck() {
+            return (state & CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK) != 0;
         }
 
         private void _checkIllegalStateModificationElseSet(byte newState) {
-            if (state != UNKNOWN
-                    && !(state == SATISFIABLE && newState == REEVALUATION_NEEDED)
-                    && !(state == REEVALUATION_NEEDED && (newState == EVALUATED /* This is done automatically for FAIL */ || newState == SATISFIABLE))
-                    && !(state == SATISFIABLE && newState == EVALUATED)) {
-                throw new IllegalTreeModificationException("New state '" + stateToString(newState) + "' cannot be set. " +
-                        "State is already set to '" + stateToString() + "'.");
+            if (!isUnknown()
+                    && !(isSatisfiable() && newState == REEVALUATION_NEEDED)
+                    && !(reevaluationNeeded() && (newState == EVALUATED /* This is done automatically for FAIL */ || newState == SATISFIABLE))
+                    && !(isSatisfiable() && newState == EVALUATED)) {
+                throw new IllegalTreeModificationException("New state cannot be set to '" + stateToString(newState) +
+                        "'. State is already set to '" + stateToString(state) + "'.");
             }
-            state = newState;
+            byte nextState = (byte) (newState | ((state & CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK) != 0 ? CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK : 0));
+            this.state = nextState;
         }
 
         @Override
@@ -245,23 +253,23 @@ public final class Choice extends TreeNode {
                     + ",constraint=" + optionConstraint
                     + ",partnerClassObjectConstraints=" + partnerClassObjectConstraints
                     + ",state="
-                        + stateToString()
+                        + stateToString(state)
                     + "}";
-        }
-
-        private String stateToString(byte state) {
-            return state == UNKNOWN ? "UNKNOWN" :
-                    state == SATISFIABLE ? "SATISFIABLE" :
-                            state == EVALUATED ? "EVALUATED" :
-                                    state == BUDGET_EXCEEDED ? "BUDGET_EXCEEDED" :
-                                            state == CUT_OFF ? "CUT_OFF" :
-                                                    state == EXPLICITLY_FAILED ? "EXPLICITLY_FAILED" :
-                                                            state == UNSATISFIABLE ? "UNSATISFIABLE" :
-                                                                    state == REEVALUATION_NEEDED ? "REEVALUATION_NEEDED" : "UNKNOWN_STATE";
         }
 
         public String stateToString() {
             return stateToString(state);
+        }
+
+        public String stateToString(byte state) {
+            return (state == UNKNOWN || state == CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK) ? "UNKNOWN" :
+                    ((state & SATISFIABLE) != 0) ? "SATISFIABLE" :
+                            ((state & EVALUATED) != 0) ? "EVALUATED" :
+                                    ((state & BUDGET_EXCEEDED) != 0) ? "BUDGET_EXCEEDED" :
+                                            ((state & CUT_OFF) != 0) ? "CUT_OFF" :
+                                                    ((state & EXPLICITLY_FAILED) != 0) ? "EXPLICITLY_FAILED" :
+                                                            ((state & UNSATISFIABLE) != 0) ? "UNSATISFIABLE" :
+                                                                    ((state & REEVALUATION_NEEDED) != 0) ? "REEVALUATION_NEEDED" : "UNKNOWN_STATE";
         }
 
     }
