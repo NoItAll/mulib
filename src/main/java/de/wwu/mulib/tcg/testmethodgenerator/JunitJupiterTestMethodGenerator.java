@@ -1,5 +1,6 @@
 package de.wwu.mulib.tcg.testmethodgenerator;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.tcg.TcgUtility;
 import de.wwu.mulib.tcg.TestCase;
@@ -161,17 +162,31 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
                 .append(type)
                 .append("[")
                 .append(Array.getLength(o))
-                .append("]")
-                .append(";")
+                .append("];")
                 .append(System.lineSeparator());
 
         return appendStoreInArray(o, sb, arrayName);
+    }
+
+    private static int getDimensionsOfArray(Class<?> arClass) {
+        Class<?> current = arClass;
+        int i = 0;
+        while (current.isArray()) {
+            i++;
+            current = current.getComponentType();
+        }
+        return i;
     }
 
     protected StringBuilder generateMultiArrayString(Object o) {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
         String type = getInnerSimpleTypeForArrayOrSimpleType(o);
+        int length = Array.getLength(o);
+        int dimensionsOfArray = getDimensionsOfArray(o.getClass());
+        if (dimensionsOfArray < 2) {
+            throw new MulibIllegalStateException("Dimensions of array must be >= 2 to generate a multi-array string.");
+        }
         sb.append(config.INDENT.repeat(2))
                 .append(o.getClass().getSimpleName())
                 .append(" ")
@@ -179,12 +194,9 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
                 .append(" = new ")
                 .append(type)
                 .append("[")
-                .append(Array.getLength(o))
+                .append(length)
                 .append("]")
-                .append("[")
-                .append(Array.getLength(Array.get(o, 0)))
-                .append("]")
-                .append(";")
+                .append("[]".repeat(dimensionsOfArray - 1))
                 .append(System.lineSeparator());
 
         return appendStoreInArray(o, sb, arrayName);

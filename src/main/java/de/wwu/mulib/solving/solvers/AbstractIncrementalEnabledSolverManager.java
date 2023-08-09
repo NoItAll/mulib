@@ -1,6 +1,7 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.util.Utility;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.*;
@@ -13,10 +14,6 @@ import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.StdLabels;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
-import de.wwu.mulib.substitutions.Conc;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.StringConstants;
 import sun.reflect.ReflectionFactory;
@@ -486,10 +483,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
             identifiersToOriginalRepresentation.put(rememberConstraint.getName(), label);
             substitutedVarsToOriginalRepresentation.put(copy, label);
+            // Take objects that were already labeled but changed in between into account; - otherwise we cache
+            // the named values
+            resetLabels();
         }
 
-        // Representation after labeling remembered variables must be different from result
-        resetLabels();
         // Label return value: All updates are relevant!
         Object labeledReturnValue = config.LABEL_RESULT_VALUE
                 ?
@@ -749,7 +747,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (partnerClassObjectId instanceof Sint.SymSint) {
             registerLabelPair(Sint.concSint(_labelSintToInt(partnerClassObjectId)), object);
         }
-        List<Field> fields = Utility.getDeclaredFieldsIncludingInheritedFieldsExcludingPartnerClassFields(originalType);
+        List<Field> fields = Utility.getInstanceFieldsIncludingInheritedFieldsExcludingPartnerClassFields(originalType);
         Utility.setAllAccessible(fields);
         Map<String, SubstitutedVar> latestValues = _getLastValues(constraints);
         if (latestValues.size() > fields.size()) {
@@ -1004,12 +1002,33 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             if (!object.__mulib__isRepresentedInSolver()) {
                 Object emptyLabelObject = createEmptyLabelObject(object.__mulib__getOriginalClass());
                 registerLabelPair(object, emptyLabelObject);
-                Object result = object.label(
-                        emptyLabelObject,
-                        this
-                );
-                assert emptyLabelObject == result;
-                return result;
+                List<Field> fieldsToGet = Utility.getInstanceFieldsIncludingInheritedFieldsExcludingPartnerClassFields(object.getClass());
+                List<Field> fieldsToSet = Utility.getInstanceFieldsIncludingInheritedFieldsExcludingPartnerClassFields(emptyLabelObject.getClass());
+                try {
+                    for (Field fg : fieldsToGet) {
+                        fg.setAccessible(true);
+                        // Label value
+                        Object value = fg.get(object);
+                        Object labeled = _getLabel(value, rememberConstraint, allRelevantPartnerClassObjectConstraints);
+                        // Get corresponding field from original class
+                        Field fieldToSet = null;
+                        for (Field fs : fieldsToSet) {
+                            if (fs.getName().equals(fg.getName())) {
+                                fieldToSet = fs;
+                                break;
+                            }
+                        }
+                        if (fieldToSet == null) {
+                            throw new LabelingNotPossibleException("Original field for partner class field '"
+                                    + fg.getDeclaringClass().getSimpleName() + "." + fg.getName() + "' not found");
+                        }
+                        fieldToSet.setAccessible(true);
+                        fieldToSet.set(emptyLabelObject, labeled);
+                    }
+                } catch (Exception e) {
+                    throw new LabelingNotPossibleException("Retrieval of fields not possible", e);
+                }
+                return emptyLabelObject;
             } else {
                 return labelPartnerClassObject(object.__mulib__getId(), rememberConstraint, allRelevantPartnerClassObjectConstraints);
             }

@@ -7,6 +7,7 @@ import de.wwu.mulib.tcg.testsetsorter.TestSetSorter;
 
 import java.io.PrintStream;
 import java.util.Arrays;
+import java.util.Optional;
 
 public class TcgConfig {
     public final TestSetReducer TEST_SET_REDUCER;
@@ -19,7 +20,7 @@ public class TcgConfig {
     public final boolean ASSUME_GETTERS;
     public final boolean ASSUME_EQUALS_METHODS;
     public final boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED;
-    public final boolean DACITE_TCG;
+    public final Optional<String> TEST_CLASS_POSTFIX;
     public final Class<?>[] SPECIAL_CASES;
 
     public static TcgConfigBuilder builder() {
@@ -37,7 +38,7 @@ public class TcgConfig {
         private boolean assumeGetters;
         private boolean assumeEqualsMethods;
         private boolean generatePostStateChecksForObjectsIfSpecified;
-        private boolean daciteTcg;
+        private Optional<String> testClassPostfix;
         private Class<?>[] specialCases;
 
         TcgConfigBuilder() {
@@ -52,8 +53,7 @@ public class TcgConfig {
             assumeEqualsMethods = true;
             generatePostStateChecksForObjectsIfSpecified = true;
             specialCases = new Class[0];
-            daciteTcg = false;
-
+            testClassPostfix = Optional.empty();
         }
 
         public TcgConfigBuilder setTestSetReducer(TestSetReducer testSetReducer) {
@@ -111,8 +111,8 @@ public class TcgConfig {
             return this;
         }
 
-        public TcgConfigBuilder setDaciteTcg(boolean daciteTcg){
-            this.daciteTcg = daciteTcg;
+        public TcgConfigBuilder setTestClassPostfix(String testClassPostfix){
+            this.testClassPostfix = Optional.of(testClassPostfix);
             return this;
         }
 
@@ -129,7 +129,7 @@ public class TcgConfig {
                     assumeEqualsMethods,
                     generatePostStateChecksForObjectsIfSpecified,
                     specialCases,
-                    daciteTcg
+                    testClassPostfix
             );
         }
     }
@@ -138,7 +138,7 @@ public class TcgConfig {
             TestSetReducer TEST_SET_REDUCER, TestSetSorter TEST_SET_SORTER, String INDENT, double MAX_FP_DELTA,
             PrintStream PRINT_STREAM, boolean ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR,
             boolean ASSUME_SETTERS, boolean ASSUME_GETTERS, boolean ASSUME_EQUALS_METHODS,
-            boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Class<?>[] SPECIAL_CASES, boolean DACITE_TCG) {
+            boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Class<?>[] SPECIAL_CASES, Optional<String> TEST_CLASS_POSTFIX) {
         this.TEST_SET_REDUCER = TEST_SET_REDUCER;
         this.TEST_SET_SORTER = TEST_SET_SORTER;
         this.INDENT = INDENT;
@@ -150,7 +150,7 @@ public class TcgConfig {
         this.ASSUME_EQUALS_METHODS = ASSUME_EQUALS_METHODS;
         this.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED = GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED;
         this.SPECIAL_CASES = SPECIAL_CASES;
-        this.DACITE_TCG = DACITE_TCG;
+        this.TEST_CLASS_POSTFIX = TEST_CLASS_POSTFIX;
     }
 
     @Override

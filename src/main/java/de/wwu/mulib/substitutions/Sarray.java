@@ -43,7 +43,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         this.len = len;
         this.isNull = isNull;
         this.cachedElements = new HashMap<>();
-        if (initializeImmediately) {
+        if (initializeImmediately && len instanceof ConcSnumber) {
             _initializeCachedElements(se);
         }
     }
@@ -157,6 +157,11 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         if (!__mulib__cacheIsBlocked()) {
             cachedElements.put(index, value);
         }
+    }
+
+    @Override
+    public void __mulib__blockCache() {
+        super.__mulib__blockCache();
     }
 
     public abstract Sarray<T> copy(MulibValueCopier mvt);

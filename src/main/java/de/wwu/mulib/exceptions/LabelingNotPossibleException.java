@@ -6,4 +6,8 @@ public class LabelingNotPossibleException extends MulibRuntimeException {
         super(msg);
     }
 
+    public LabelingNotPossibleException(String msg, Exception e) {
+        super(msg, e);
+    }
+
 }

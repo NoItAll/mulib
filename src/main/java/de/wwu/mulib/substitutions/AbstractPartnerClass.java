@@ -79,12 +79,14 @@ public abstract class AbstractPartnerClass implements PartnerClass {
 
     @Override
     public void __mulib__prepareToRepresentSymbolically(SymbolicExecution se) {
-        __mulib__initializeId(se.concSint(se.getNextNumberInitializedSymObject()));
+        __mulib__initializeId(Sint.concSint(se.getNextNumberInitializedSymObject()));
+        this.representationState |= SHOULD_BE_REPRESENTED_IN_SOLVER;
     }
 
     @Override
     public final void __mulib__prepareForAliasingAndBlockCache(SymbolicExecution se) {
         __mulib__initializeId(se.symSint());
+        this.representationState |= SHOULD_BE_REPRESENTED_IN_SOLVER;
         __mulib__blockCache();
     }
 
@@ -97,8 +99,6 @@ public abstract class AbstractPartnerClass implements PartnerClass {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }
-
-        this.representationState |= SHOULD_BE_REPRESENTED_IN_SOLVER;
         this.id = id;
     }
 

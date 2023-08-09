@@ -33,9 +33,11 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
         sb.append(generatePackageDeclaration(packageName));
         sb.append(generateImports(encounteredTypes));
         sb.append(generateTestClassAnnotations());
-        if(tcgConfig.DACITE_TCG){
-            testedClassName = testedClassName + "Dacite";
+
+        if (tcgConfig.TEST_CLASS_POSTFIX.isPresent()){
+            testedClassName = testedClassName + tcgConfig.TEST_CLASS_POSTFIX.get();
         }
+
         sb.append(generateTestClassDeclaration(testedClassName, initialNumberTestCases, reducedNumberOfTestcases));
         sb.append(generateClassAttributes());
         sb.append(generateBeforeClassMethod());

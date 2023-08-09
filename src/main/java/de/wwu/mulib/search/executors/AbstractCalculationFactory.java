@@ -654,7 +654,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
         }
 
-        representPartnerClassObjectViaConstraintsIfNeeded(se, sarray, index);
+        representPartnerClassObjectViaConstraintsIfNeeded(se, sarray, index instanceof Sym || sarray._getLengthWithoutCheckingForIsNull() instanceof Sym);
         checkIndexAccess(sarray, index, se);
 
         result = sarray.getNewValueForSelect(se, index);
@@ -666,7 +666,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     private SubstitutedVar _storeWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar value) {
-        representPartnerClassObjectViaConstraintsIfNeeded(se, sarray, index);
+        representPartnerClassObjectViaConstraintsIfNeeded(se, sarray,  index instanceof Sym || sarray._getLengthWithoutCheckingForIsNull() instanceof Sym);
         checkIndexAccess(sarray, index, se);
         Sarray.checkIfValueIsStorableForSarray(sarray, value);
 
