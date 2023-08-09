@@ -917,8 +917,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         pcoc -> !(pcoc instanceof ArrayConstraint);
         int concId = _labelSintToInt(id);
         List<PartnerClassObjectConstraint> result = new ArrayList<>();
-        if (rememberUntil != null && rememberUntil.isUninitializedLazyInit()) {
-            // This is the far more complex case: We need to filter for initializations,
+        if (rememberUntil != null) {
+            // TODO This branch should not be needed to be triggered in general, though rememberUntil.isUninitializedLazyInit() is not sufficient
+            //  in case there is an uninitialized lazily generated element (implicitly) contained in the object/array
+            // This is the far more complex case: We need to filter for initializations
             boolean seenRemember = false;
             Set<Object> seenFieldsOrIndices = new HashSet<>();
             for (PartnerClassObjectConstraint pcoc : allRelevantPartnerClassObjectConstraints) {

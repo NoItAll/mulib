@@ -52,8 +52,10 @@ public class Sort {
   }
 
   public static int[] sort() {
-    int[] a = Mulib.rememberedFreeObject("input", int[].class);
-    return new Sort().sort(a);
+    Sort s = new Sort();
+    Mulib.remember(s, "arg0");
+    int[] a = Mulib.rememberedFreeObject("arg1", int[].class);
+    return s.sort(a);
   }
 
 }

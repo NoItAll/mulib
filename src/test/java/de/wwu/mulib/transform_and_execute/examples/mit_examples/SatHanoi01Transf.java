@@ -72,7 +72,9 @@ public class SatHanoi01Transf {
         int n = Mulib.rememberedFreeInt("arg1");
         SatHanoi01Transf s = new SatHanoi01Transf();
         Mulib.remember(s, "arg0");
-        return s.execForTcg(n);
+        int result = s.execForTcg(n);
+        Mulib.remember(s, "arg0AfterExec");
+        return result;
     }
 
     public int execForTcg(int n) {
@@ -91,4 +93,11 @@ public class SatHanoi01Transf {
         this.counter = n;
     }
 
+    @Override
+    public boolean equals(Object o) {
+        if (!(o instanceof SatHanoi01Transf)) {
+            return false;
+        }
+        return this.counter == ((SatHanoi01Transf) o).counter;
+    }
 }

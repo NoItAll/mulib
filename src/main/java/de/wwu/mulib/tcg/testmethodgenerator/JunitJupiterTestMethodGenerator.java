@@ -197,6 +197,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
                 .append(length)
                 .append("]")
                 .append("[]".repeat(dimensionsOfArray - 1))
+                .append(";")
                 .append(System.lineSeparator());
 
         return appendStoreInArray(o, sb, arrayName);

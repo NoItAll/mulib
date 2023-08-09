@@ -2,6 +2,8 @@ package de.wwu.mulib.transform_and_execute.examples;
 
 import de.wwu.mulib.Mulib;
 
+import static de.wwu.mulib.Mulib.*;
+
 /**
  * Copyright (c) 2011, Regents of the University of California All rights reserved.
  *
@@ -42,6 +44,8 @@ public class TSP {
     private int best;
 
     public int nCalls;
+
+    public TSP() {}
 
     public TSP(int N, int D[][]) {
         this.N = N;
@@ -92,10 +96,20 @@ public class TSP {
         }
     }
 
-    public static int driver() {
-        TSP tsp = Mulib.rememberedFreeObject("input", TSP.class);
+    public static int execute() {
+        TSP tsp = Mulib.rememberedFreeObject("arg0", TSP.class);
         int result = tsp.solve();
-        Mulib.remember(tsp, "inputAfterExec");
+        Mulib.remember(tsp, "arg0AfterExec");
+        return result;
+    }
+
+    public static int driver() {
+        TSP tsp = new TSP(freeInt(), freeObject(int[][].class));
+        Mulib.remember(tsp, "arg0");
+        assume(tsp.visited.length == tsp.N);
+        assume(tsp.N <= 3);
+        int result = tsp.solve();
+        Mulib.remember(tsp, "arg0AfterExec");
         return result;
     }
 
