@@ -206,7 +206,7 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
                     .append(tcgConfig.INDENT.repeat(2)).append("ComparedPair comparedPair = new ComparedPair(o0, o1);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (comparedObjects.contains(comparedPair)) return;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("comparedObjects.add(comparedPair);").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("if (c.getClass().isArray()) {").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("if (c.isArray()) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append(TcgUtility.REFLECTION_COMPARE_ARRAYS_INNER).append("(o0, o1, comparedObjects);").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(3)).append("return;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("}").append(System.lineSeparator())
