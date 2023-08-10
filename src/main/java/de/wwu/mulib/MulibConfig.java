@@ -1,11 +1,15 @@
 package de.wwu.mulib;
 
+import com.microsoft.z3.Solver;
 import de.wwu.mulib.exceptions.MisconfigurationException;
+import de.wwu.mulib.expressions.Mul;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
+import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.executors.MulibExecutor;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
+import de.wwu.mulib.search.trees.ExceededBudget;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
@@ -38,6 +42,9 @@ public class MulibConfig {
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
     public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
     public final TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
+    public final TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK;
+    public final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK;
+    public final TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK;
 
     /* Values */
     public final Optional<Sint> SYMSINT_LB;
@@ -194,6 +201,10 @@ public class MulibConfig {
         private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
         private boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
+
+        private TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK;
+        private TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK;
+        private TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK;
         private TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
 
         private MulibConfigBuilder() {
@@ -289,6 +300,9 @@ public class MulibConfig {
             this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
             this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = false;
+            this.FAIL_CALLBACK = (me, f, sm) -> {};
+            this.BACKTRACK_CALLBACK = (me, b, sm) -> {};
+            this.EXCEEDED_BUDGET_CALLBACK = (me, b, sm) -> {};
             this.PATH_SOLUTION_CALLBACK = (me, ps, sm) -> {};
         }
 
@@ -657,6 +671,21 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setFAIL_CALLBACK(TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK) {
+            this.FAIL_CALLBACK = FAIL_CALLBACK;
+            return this;
+        }
+
+        public MulibConfigBuilder setBACKTRACK_CALLBACK(TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK) {
+            this.BACKTRACK_CALLBACK = BACKTRACK_CALLBACK;
+            return this;
+        }
+
+        public MulibConfigBuilder setEXCEEDED_BUDGET_CALLBACK(TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK) {
+            this.EXCEEDED_BUDGET_CALLBACK = EXCEEDED_BUDGET_CALLBACK;
+            return this;
+        }
+
         private void addDefaultModelClasses() {
             addModelClass(Number.class, NumberReplacement.class);
             addModelClass(Integer.class, IntegerReplacement.class);
@@ -792,6 +821,9 @@ public class MulibConfig {
                     TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                     TRANSF_USE_DEFAULT_MODEL_CLASSES,
                     PATH_SOLUTION_CALLBACK,
+                    BACKTRACK_CALLBACK,
+                    FAIL_CALLBACK,
+                    EXCEEDED_BUDGET_CALLBACK,
                     TRANSF_TREAT_SPECIAL_METHOD_CALLS,
                     TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
                     CFG_USE_GUIDANCE_DURING_EXECUTION,
@@ -864,6 +896,9 @@ public class MulibConfig {
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
                         TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK,
+                        TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK,
+                        TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK,
+                        TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK,
                         boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS,
                         boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
                         boolean CFG_USE_GUIDANCE_DURING_EXECUTION,
@@ -934,6 +969,9 @@ public class MulibConfig {
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
         this.PATH_SOLUTION_CALLBACK = PATH_SOLUTION_CALLBACK;
+        this.BACKTRACK_CALLBACK = BACKTRACK_CALLBACK;
+        this.FAIL_CALLBACK = FAIL_CALLBACK;
+        this.EXCEEDED_BUDGET_CALLBACK = EXCEEDED_BUDGET_CALLBACK;
         this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
         this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
         this.CFG_USE_GUIDANCE_DURING_EXECUTION = CFG_USE_GUIDANCE_DURING_EXECUTION;

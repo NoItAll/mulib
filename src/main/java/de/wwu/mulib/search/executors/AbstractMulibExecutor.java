@@ -3,7 +3,10 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Fail;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.constraints.And;
+import de.wwu.mulib.constraints.Constraint;
+import de.wwu.mulib.constraints.Not;
+import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.exceptions.MulibException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -16,10 +19,6 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -50,6 +49,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
     private final TriConsumer<MulibExecutor, PathSolution, SolverManager> pathSolutionCallback;
+    private final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> failCallback;
+    private final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.ExceededBudget, SolverManager> exceededBudgetCallback;
+    private final TriConsumer<MulibExecutor, Backtrack, SolverManager> backtrackCallback;
     private final MethodHandle searchRegionMethod;
     private final StaticVariables staticVariables;
     private final Object[] searchRegionArgs;
@@ -78,6 +80,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.staticVariables = staticVariables.copyFromPrototype();
         this.searchRegionArgs = searchRegionArgs;
         this.rememberedSprimitives = new HashMap<>();
+        this.failCallback = config.FAIL_CALLBACK;
+        this.exceededBudgetCallback = config.EXCEEDED_BUDGET_CALLBACK;
+        this.backtrackCallback = config.BACKTRACK_CALLBACK;
     }
 
     @Override
@@ -193,15 +198,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     // We assume that Backtracking is only executed in places where it is guaranteed that
                     // ChoiceOptions are not "swallowed" by backtracking, i.e.,
                     // we do not have to add back ChoiceOptions to the SearchTree's queue.
+                    this.backtrackCallback.accept(this, b, solverManager);
                 } catch (Fail f) {
                     de.wwu.mulib.search.trees.Fail fail = symbolicExecution.getCurrentChoiceOption().setExplicitlyFailed();
                     this.mulibExecutorManager.addToFails(fail);
+                    this.failCallback.accept(this, fail, solverManager);
                 } catch (ExceededBudget be) {
                     assert !be.getExceededBudget().isIncremental() : "Should not occur anymore, we throw a normal Backtracking in this case";
                     // The newly encountered choice option triggering the exception is set in the ChoicePointFactory
                     de.wwu.mulib.search.trees.ExceededBudget exceededBudget =
                             symbolicExecution.getCurrentChoiceOption().setBudgetExceeded(be.getExceededBudget());
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
+                    this.exceededBudgetCallback.accept(this, exceededBudget, solverManager);
                 } catch (MulibException e) {
                     Mulib.log.warning(config.toString());
                     throw e;
