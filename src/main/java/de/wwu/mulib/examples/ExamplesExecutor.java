@@ -240,13 +240,13 @@ public final class ExamplesExecutor {
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             TravelingSalespersonProblem.Route r = (TravelingSalespersonProblem.Route) ps.getSolution().returnValue;
-            sb.append("####START OF SOLUTION####");
+            sb.append("####START OF SOLUTION####").append(System.lineSeparator());
             for (TravelingSalespersonProblem.DirectedEdge e : r.getPath()) {
                 sb.append("Node ").append(e.n0).append(" -> ").append(e.n1).append(System.lineSeparator());
             }
             sb.append("####END OF SOLUTION####");
         }
-
+        Mulib.log.info(sb.toString());
 
         return result;
     }
