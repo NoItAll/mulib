@@ -11,6 +11,7 @@ import de.wwu.mulib.tcg.testsetreducer.SimpleGreedyTestSetReducer;
 import de.wwu.mulib.transform_and_execute.examples.Sort;
 import de.wwu.mulib.transform_and_execute.examples.TSP;
 import de.wwu.mulib.transform_and_execute.examples.mit_examples.SatHanoi01Transf;
+import de.wwu.mulib.util.Utility;
 import org.junit.jupiter.api.Test;
 
 public class TcgTests {
@@ -33,7 +34,7 @@ public class TcgTests {
                 "execForTcg",
                 SatHanoi01Transf.class,
                 mb,
-                Mulib.getMethodFromClass(SatHanoi01Transf.class.getName(), "execForTcg", new Class[] { int.class }),
+                Utility.getMethodFromClass(SatHanoi01Transf.class.getName(), "execForTcg", new Class[] { int.class }),
                 TcgConfig.builder()
                         .setAssumePublicZeroArgsConstructor(true)
                         .setAssumeSetters(true)
@@ -61,7 +62,7 @@ public class TcgTests {
                             "driver",
                             TSP.class,
                             mb,
-                            Mulib.getMethodFromClass(TSP.class, "solve"),
+                            Utility.getMethodFromClass(TSP.class, "solve"),
                             TcgConfig.builder()
                                     .setAssumePublicZeroArgsConstructor(true)
                                     .setAssumeSetters(false)
@@ -88,7 +89,7 @@ public class TcgTests {
                             "sort",
                             Sort.class,
                             mb,
-                            Mulib.getMethodFromClass(Sort.class, "sort", int[].class),
+                            Utility.getMethodFromClass(Sort.class, "sort", int[].class),
                             TcgConfig.builder()
                                     .setAssumePublicZeroArgsConstructor(false)
                                     .setAssumeSetters(false)
@@ -115,7 +116,7 @@ public class TcgTests {
                             "sort",
                             Sort.class,
                             mb,
-                            Mulib.getMethodFromClass(Sort.class, "sort", int[].class),
+                            Utility.getMethodFromClass(Sort.class, "sort", int[].class),
                             TcgConfig.builder()
                                     .setAssumePublicZeroArgsConstructor(false)
                                     .setAssumeSetters(false)
