@@ -2,7 +2,12 @@ package de.wwu.mulib.expressions;
 
 import de.wwu.mulib.constraints.Constraint;
 
-public class IfThenElse<T> {
+/**
+ * Abstract supertype for conditional values. There always is a condition deciding on which of two
+ * values is valid.
+ * @param <T> The type of element
+ */
+public abstract class IfThenElse<T> {
     protected final Constraint condition;
     protected final T ifCase;
     protected final T elseCase;
@@ -13,14 +18,23 @@ public class IfThenElse<T> {
         this.elseCase = elseCase;
     }
 
+    /**
+     * @return The condition
+     */
     public Constraint getCondition() {
         return condition;
     }
 
+    /**
+     * @return The value, given {@link IfThenElse#getCondition()} is true
+     */
     public T getIfCase() {
         return ifCase;
     }
 
+    /**
+     * @return The value, given {@link IfThenElse#getCondition()} is false
+     */
     public T getElseCase() {
         return elseCase;
     }

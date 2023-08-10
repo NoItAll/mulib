@@ -3,9 +3,24 @@ package de.wwu.mulib.constraints;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
+/**
+ * Represents an access to a array symbolically. Either the array access is a SELECT access, or a STORE access.
+ */
 public final class ArrayAccessConstraint implements ArrayConstraint {
 
-    public enum Type { SELECT, STORE }
+    /**
+     * The types of array accesses that are represented
+     */
+    public enum Type {
+        /**
+         * A select access
+         */
+        SELECT,
+        /**
+         * A store access
+         */
+        STORE
+    }
 
     private final Sint arrayId;
     private final Sint index;
@@ -14,6 +29,13 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
     private final Sprimitive value;
     private final Type type;
 
+    /**
+     * Constructs a new array access constraint
+     * @param arrayId The identifier of the array that is accessed
+     * @param index The index with which to access the array
+     * @param value The value extracted from or stored into the array
+     * @param type The type of access
+     */
     public ArrayAccessConstraint(Sint arrayId, Sint index, Sprimitive value, Type type) {
         assert arrayId != null;
         this.arrayId = arrayId;
@@ -31,14 +53,23 @@ public final class ArrayAccessConstraint implements ArrayConstraint {
         return arrayId;
     }
 
+    /**
+     * @return The used index
+     */
     public Sint getIndex() {
         return index;
     }
 
+    /**
+     * @return The value extracted from or stored into the array
+     */
     public Sprimitive getValue() {
         return value;
     }
 
+    /**
+     * @return The type of the array access
+     */
     public Type getType() {
         return type;
     }

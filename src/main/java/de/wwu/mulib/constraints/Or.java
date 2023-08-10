@@ -5,12 +5,21 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import java.util.List;
 import java.util.RandomAccess;
 
+/**
+ * Represents a logical OR
+ */
 public class Or extends AbstractTwoSidedConstraint {
 
     private Or(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 
+    /**
+     * Creates a new constraint, possibly simplifying the overall constraint
+     * @param lhs The left-hand side
+     * @param rhs The right-hand side
+     * @return A constraint that is either simplified or OR(lhs, rhs)
+     */
     public static Constraint newInstance(Constraint lhs, Constraint rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             return evaluateConcrete((Sbool.ConcSbool) lhs, rhs);

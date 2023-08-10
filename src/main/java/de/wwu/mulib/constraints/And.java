@@ -5,12 +5,21 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import java.util.Arrays;
 import java.util.List;
 
+/**
+ * Represents a logical AND
+ */
 public class And extends AbstractTwoSidedConstraint {
 
     private And(Constraint lhs, Constraint rhs) {
         super(lhs, rhs);
     }
 
+    /**
+     * Creates a new constraint, possibly simplifying the overall constraint
+     * @param lhs The left-hand side
+     * @param rhs The right-hand side
+     * @return A constraint that is either simplified or AND(lhs, rhs)
+     */
     public static Constraint newInstance(Constraint lhs, Constraint rhs) {
         if (lhs instanceof Sbool.ConcSbool) {
             return evaluateConcrete((Sbool.ConcSbool) lhs, rhs);

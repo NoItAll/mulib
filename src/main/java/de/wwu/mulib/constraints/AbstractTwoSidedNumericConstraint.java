@@ -5,6 +5,9 @@ import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
+/**
+ * Abstract supertype for those constraints that compare two numeric expressions
+ */
 public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpressionConstraint {
 
     protected final NumericExpression lhsExpr;

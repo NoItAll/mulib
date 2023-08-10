@@ -5,6 +5,9 @@ import de.wwu.mulib.search.NumberUtil;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+/**
+ * Represents the less-than-equals relationship between two numeric expressions, i.e., n0 <= n1
+ */
 public class Lte extends AbstractTwoSidedNumericConstraint {
 
     private Lte(NumericExpression lhs, NumericExpression rhs) {

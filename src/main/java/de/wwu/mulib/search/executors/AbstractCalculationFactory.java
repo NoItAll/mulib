@@ -623,9 +623,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
             //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
             MulibValueCopier mulibValueCopier = new MulibValueCopier(se, config);
-            boolean isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = false;
             if (pc.__mulib__isToBeLazilyInitialized()) {
-                isToBeLazilyInitializedButIsInsteadRepresentedSymbolically = true;
                 pc.__mulib__prepareToRepresentSymbolically(se);
                 representPartnerClassObjectIfNeeded(se, pc, null, null, null);
             } else {
@@ -633,11 +631,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
             if (!se.nextIsOnKnownPath()) {
                 PartnerClass copied = (PartnerClass) mulibValueCopier.copyNonSprimitive(pc);
-                PartnerClassObjectConstraint rememberConstraint = new PartnerClassObjectRememberConstraint(
-                        name,
-                        copied,
-                        isToBeLazilyInitializedButIsInsteadRepresentedSymbolically
-                );
+                PartnerClassObjectConstraint rememberConstraint =
+                        new PartnerClassObjectRememberConstraint(name, copied);
                 se.addNewPartnerClassObjectConstraint(rememberConstraint);
             }
         }

@@ -2,6 +2,9 @@ package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+/**
+ * Abstract supertype for those constraints that are composed of two other constraints/booleans
+ */
 public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
 
     protected final Constraint lhs;
@@ -20,10 +23,12 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
         this.rhs = rhs;
     }
 
+    @Override
     public Constraint getLhs() {
         return lhs;
     }
 
+    @Override
     public Constraint getRhs() {
         return rhs;
     }

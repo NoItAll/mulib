@@ -5,12 +5,21 @@ import de.wwu.mulib.search.NumberUtil;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+/**
+ * Represents the equality between two numeric expressions, i.e., n0 == n1
+ */
 public class Eq extends AbstractTwoSidedNumericConstraint {
 
     private Eq(NumericExpression lhs, NumericExpression rhs) {
         super(lhs, rhs);
     }
 
+    /**
+     * Creates a new constraint, possibly simplifying the overall constraint
+     * @param lhs The left-hand side
+     * @param rhs The right-hand side
+     * @return A constraint that is either simplified or lhs == rhs
+     */
     public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
             return Sbool.concSbool(NumberUtil.eq((ConcSnumber) lhs, (ConcSnumber) rhs));

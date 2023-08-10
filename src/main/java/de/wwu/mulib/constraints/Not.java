@@ -2,6 +2,9 @@ package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+/**
+ * Constraint representing a logical NOT
+ */
 public class Not implements Constraint {
 
     private final Constraint constraint;
@@ -12,6 +15,11 @@ public class Not implements Constraint {
         this.constraint = constraint;
     }
 
+    /**
+     * Constructs a new constraint negating the given constraint
+     * @param constraint The constraint to negate
+     * @return Either a simplified constraint, or NOT(constraint)
+     */
     public static Constraint newInstance(Constraint constraint) {
         if (constraint instanceof Sbool.ConcSbool) {
             return Sbool.concSbool(((Sbool.ConcSbool) constraint).isFalse());
@@ -30,6 +38,9 @@ public class Not implements Constraint {
         }
     }
 
+    /**
+     * @return The negated constraint
+     */
     public final Constraint getConstraint() {
         return constraint;
     }
