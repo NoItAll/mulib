@@ -14,7 +14,6 @@ import de.wwu.mulib.examples.sac22_mulib_benchmark.TspSolver;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
 import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
@@ -24,6 +23,7 @@ import de.wwu.mulib.solving.Solvers;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Optional;
 import java.util.logging.Level;
 import java.util.stream.Collectors;
 
@@ -36,11 +36,6 @@ public final class ExamplesExecutor {
     private static final boolean runChecks = false;
 
     public static void main(String[] args) {
-        // TODO Change SMM for other
-        // args = new String[] {"SMM", "DFS", "1"};
-        // args = new String[] {"KS", "DFS", "1"};
-        args = new String[] {"Schedule", "DFS", "1"};
-
         Mulib.setLogLevel(Level.FINE);
         Mulib.log.info("Starting...");
         String chosenMethod = args[0];
@@ -154,7 +149,12 @@ public final class ExamplesExecutor {
                 case "Schedule":   // Scheduling of teachers to courses and time slots
                     pathSolutions = runScheduling(b);
                     break;
-
+                case "TSP_P":
+                    pathSolutions = runTravelingSalesperson_possible(b);
+                    break;
+                case "TSP_IP":
+                    pathSolutions = runTravelingSalesperson_impossible(b);
+                    break;
                 default:
                     throw new IllegalStateException();
             }
@@ -215,6 +215,61 @@ public final class ExamplesExecutor {
         Mulib.log.info(sb.toString());
 
         return result;
+    }
+
+    public static List<PathSolution> runTravelingSalesperson_possible(MulibConfig.MulibConfigBuilder builder) {
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+        List<PathSolution> result =
+                Mulib.executeMulib(
+                        "getRoute",
+                        TravelingSalespersonProblem.class,
+                        builder,
+                        new Object[] { new TravelingSalespersonProblem.DirectedEdge[] {
+                                new TravelingSalespersonProblem.DirectedEdge(2,1),
+                                new TravelingSalespersonProblem.DirectedEdge(1,3),
+                                new TravelingSalespersonProblem.DirectedEdge(1,4),
+                                new TravelingSalespersonProblem.DirectedEdge(3,2),
+                                new TravelingSalespersonProblem.DirectedEdge(4,2),
+                                new TravelingSalespersonProblem.DirectedEdge(4,3),
+                                new TravelingSalespersonProblem.DirectedEdge(2,7),
+                                new TravelingSalespersonProblem.DirectedEdge(7,1),
+                                new TravelingSalespersonProblem.DirectedEdge(3,5),
+                                new TravelingSalespersonProblem.DirectedEdge(6,4),
+                                new TravelingSalespersonProblem.DirectedEdge(5,6)
+                        }});
+        StringBuilder sb = new StringBuilder();
+        for (PathSolution ps : result) {
+            TravelingSalespersonProblem.Route r = (TravelingSalespersonProblem.Route) ps.getSolution().returnValue;
+            sb.append("####START OF SOLUTION####");
+            for (TravelingSalespersonProblem.DirectedEdge e : r.getPath()) {
+                sb.append("Node ").append(e.n0).append(" -> ").append(e.n1).append(System.lineSeparator());
+            }
+            sb.append("####END OF SOLUTION####");
+        }
+
+
+        return result;
+    }
+
+    public static List<PathSolution> runTravelingSalesperson_impossible(MulibConfig.MulibConfigBuilder builder) {
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+        Optional<PathSolution> result =
+                Mulib.executeMulibForOne(
+                        "getRoute",
+                        TravelingSalespersonProblem.class,
+                        builder,
+                        new Object[] { new TravelingSalespersonProblem.DirectedEdge[] {
+                                new TravelingSalespersonProblem.DirectedEdge(1,3),
+                                new TravelingSalespersonProblem.DirectedEdge(2,1),
+                                new TravelingSalespersonProblem.DirectedEdge(2,3),
+                                new TravelingSalespersonProblem.DirectedEdge(4,2),
+                                new TravelingSalespersonProblem.DirectedEdge(3,5),
+                                new TravelingSalespersonProblem.DirectedEdge(6,4),
+                                new TravelingSalespersonProblem.DirectedEdge(5,6)
+                        }}
+                );
+        Mulib.log.info("#### No path solution should be found for impossible TSP: " + result.isEmpty());
+        return result.map(List::of).orElseGet(List::of);
     }
 
 
