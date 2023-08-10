@@ -48,6 +48,8 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
                 // If the array is completely initialized, we do not have to push this index-value combination since
                 // it is already represented
                 isCompletelyInitialized,
+                config.ALIASING_FOR_FREE_OBJECTS,
+                valueType,
                 // We only must enforce the default for unknown values if !defaultIsSymbolic
                 // Otherwise, we would enforce that defaultIsSymbolic-objects are always initialized to null
                 !defaultIsSymbolic && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
@@ -68,6 +70,6 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
 
     @Override
     public String toString() {
-        return String.format("PrimArrayRep[%s]{length=%s, isNull=%s, currentRepresentation=%s}", arrayId, length, isNull, currentRepresentation);
+        return String.format("%s[%s]{length=%s, isNull=%s, currentRepresentation=%s}", this instanceof SimplePartnerClassArraySolverRepresentation ? "PCArrayRep" : "PrimArrayRep", arrayId, length, isNull, currentRepresentation);
     }
 }

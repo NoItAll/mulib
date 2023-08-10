@@ -85,12 +85,22 @@ public class ArrayHistorySolverRepresentation {
             Sint index,
             Sprimitive value,
             boolean arrayIsCompletelyInitialized,
+            boolean allowAliasing,
+            Class<?> valueType,
             boolean defaultValueForUnknownsShouldBeEnforced) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             // We do not need to add anything to the history of array accesses, as this access is not valid
             return Sbool.ConcSbool.TRUE;
         }
-        Constraint selectConstraint = _select(index, value);
+        Constraint selectConstraint =
+                _select(
+                        index,
+                        value,
+                        // enforceDistinctLazilyInitializedValues
+                        !arrayIsCompletelyInitialized
+                                && (valueType.isArray() || PartnerClass.class.isAssignableFrom(valueType))
+                                && !allowAliasing
+                );
         // We do not have to enforce that, if index is unseen, value is a default value, if
         // there are not unseen indices
         if (defaultValueForUnknownsShouldBeEnforced) {
@@ -128,7 +138,8 @@ public class ArrayHistorySolverRepresentation {
 
     private Constraint _select(
             Sint index,
-            Sprimitive value) {
+            Sprimitive value,
+            boolean enforceDistinctLazilyInitializedValues) {
         Constraint indexEqualsToStoreIndexWithGuard;
         Constraint indexEqualsToStoreCase;
         Constraint resultForSelectOperations;
@@ -137,7 +148,7 @@ public class ArrayHistorySolverRepresentation {
             assert beforeStore != null;
             indexEqualsToStoreIndexWithGuard = store.indexIsValid.apply(index);
             indexEqualsToStoreCase = elementsEqualConstraint(store.value, value);
-            resultForSelectOperations = beforeStore._select(index, value);
+            resultForSelectOperations = beforeStore._select(index, value, enforceDistinctLazilyInitializedValues);
         } else {
             indexEqualsToStoreIndexWithGuard = Sbool.ConcSbool.FALSE;
             indexEqualsToStoreCase = Sbool.ConcSbool.TRUE;
@@ -151,7 +162,11 @@ public class ArrayHistorySolverRepresentation {
                 // We can cut this short:
                 boolean doEqual = ((Sbool.ConcSbool) indexEqualsToSelectIndex).isTrue();
                 if (!doEqual) {
-                    // We can simply skip this index
+                    // We can simply skip this index, if we do not enforce distinct values
+                    if (enforceDistinctLazilyInitializedValues) {
+                        Constraint valuesEqual = elementsEqualConstraint(s.value, value);
+                        resultForSelectOperations = And.newInstance(resultForSelectOperations, Not.newInstance(valuesEqual));
+                    }
                     continue;
                 } else {
                     resultForSelectOperations = elementsEqualConstraint(s.value, value);
@@ -159,8 +174,14 @@ public class ArrayHistorySolverRepresentation {
                 }
             }
             Constraint valuesEqual = elementsEqualConstraint(s.value, value);
-            Constraint indexEqualsToSelectIndexImplication =
-                    implies(indexEqualsToSelectIndex, valuesEqual);
+            Constraint indexEqualsToSelectIndexImplication;
+            if (enforceDistinctLazilyInitializedValues) {
+                // Only possible if this is not completely initialized and aliasing is not allowed
+                indexEqualsToSelectIndexImplication = Equivalence.newInstance(indexEqualsToSelectIndex, valuesEqual);
+            } else {
+                indexEqualsToSelectIndexImplication = implies(indexEqualsToSelectIndex, valuesEqual);
+            }
+
             resultForSelectOperations = And.newInstance(
                     indexEqualsToSelectIndexImplication,
                     resultForSelectOperations

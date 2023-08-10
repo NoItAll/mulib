@@ -114,6 +114,8 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                 Sint.ConcSint.ZERO,
                 value,
                 true,
+                config.ALIASING_FOR_FREE_OBJECTS,
+                fieldToType.get(fieldName),
                 false
         );
     }

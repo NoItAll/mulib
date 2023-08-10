@@ -187,6 +187,8 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     index,
                     selectedValue,
                     isCompletelyInitialized,
+                    config.ALIASING_FOR_FREE_OBJECTS,
+                    valueType,
                     !defaultIsSymbolic && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
             );
         }
@@ -250,7 +252,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         return String.format("AliasingArrayRep[%s]{reservedId=%s, length=%s, isNull=%s, aliasingTargets=%s" +
                         ", currentRepresentation=%s, isPrimitive=%s, cannotBeNewInstance=%s}",
                 arrayId, reservedId, length, isNull, getAliasedIds(),
-                currentRepresentation, this instanceof AliasingPartnerClassArraySolverRepresentation,
+                currentRepresentation, !(this instanceof AliasingPartnerClassArraySolverRepresentation),
                 cannotBeNewInstance
         );
     }

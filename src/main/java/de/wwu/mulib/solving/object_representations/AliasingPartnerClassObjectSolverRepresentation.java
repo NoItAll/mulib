@@ -242,7 +242,14 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                     joinedGetfieldConstraint,
                     this.fieldToRepresentation
                             .get(fieldName)
-                            .select(And.newInstance(guard, Eq.newInstance(id, reservedId)), Sint.ConcSint.ZERO, value, true, false));
+                            .select(
+                                    And.newInstance(guard, Eq.newInstance(id, reservedId)),
+                                    Sint.ConcSint.ZERO,
+                                    value,
+                                    true,
+                                    config.ALIASING_FOR_FREE_OBJECTS,
+                                    fieldToType.get(fieldName),
+                                    false));
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : aliasedObjects) {
             PartnerClassObjectSolverRepresentation psr = getAliasLevelSafe(pr);

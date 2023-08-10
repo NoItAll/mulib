@@ -709,13 +709,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         Object val;
         if (isNestedArray) {
             // Array values are arrays themselves
-            val = labelRepresentedArray((Sint) s.getValue(), rememberUntil, allRelevantPartnerClassObjectConstraints);
+            Sint value = (Sint) s.getValue();
+            val = labelRepresentedArray(value, rememberUntil, allRelevantPartnerClassObjectConstraints);
         } else {
             if (Sprimitive.class.isAssignableFrom(type)) {
                 val = labelSprimitive(s.getValue());
             } else {
                 assert PartnerClass.class.isAssignableFrom(type);
-                val = labelPartnerClassObject((Sint) s.getValue(), rememberUntil, allRelevantPartnerClassObjectConstraints);
+                Sint value = (Sint) s.getValue();
+                val = labelPartnerClassObject(value, rememberUntil, allRelevantPartnerClassObjectConstraints);
             }
         }
         Array.set(array, index, val);
