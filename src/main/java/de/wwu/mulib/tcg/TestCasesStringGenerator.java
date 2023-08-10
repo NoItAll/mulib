@@ -15,8 +15,9 @@ import java.util.List;
 public class TestCasesStringGenerator {
     protected final TestClassGenerator testClassGenerator;
     protected final TestMethodGenerator testMethodGenerator;
-    protected TestSetReducer testSetReducer;
-    protected TestSetSorter testSetSorter;
+    protected final TestSetSorter preReduceTestSetSorter;
+    protected final TestSetReducer testSetReducer;
+    protected final TestSetSorter postReduceTestSetSorter;
     protected final TestCases testCases;
     protected final PrintStream printer;
 
@@ -29,8 +30,9 @@ public class TestCasesStringGenerator {
                         testCases.getTestedMethod(),
                         tcgConfig
                 ),
+                tcgConfig.PRE_REDUCE_TEST_SET_SORTER,
                 tcgConfig.TEST_SET_REDUCER,
-                tcgConfig.TEST_SET_SORTER,
+                tcgConfig.POST_REDUCE_TEST_SET_SORTER,
                 testCases,
                 tcgConfig.PRINT_STREAM
         );
@@ -39,21 +41,24 @@ public class TestCasesStringGenerator {
     protected TestCasesStringGenerator(
             TestClassGenerator testClassGenerator,
             TestMethodGenerator testMethodGenerator,
+            TestSetSorter preReduceTestSetSorter,
             TestSetReducer testSetReducer,
-            TestSetSorter testSetSorter,
+            TestSetSorter postReduceTestSetSorter,
             TestCases testCases,
             PrintStream printer) {
         this.testClassGenerator = testClassGenerator;
         this.testMethodGenerator = testMethodGenerator;
+        this.preReduceTestSetSorter = preReduceTestSetSorter;
         this.testSetReducer = testSetReducer;
-        this.testSetSorter = testSetSorter;
+        this.postReduceTestSetSorter = postReduceTestSetSorter;
         this.testCases = testCases;
         this.printer = printer;
     }
 
     public String generateTestClassStringRepresentation() {
-        Collection<TestCase> tests = reduceTestCases(testCases.getTestCases());
-        List<TestCase> sortedTests = sortTestCases(tests);
+        List<TestCase> preSortedTestCases = preSortTestCases(testCases.getTestCases());
+        Collection<TestCase> tests = reduceTestCases(preSortedTestCases);
+        List<TestCase> sortedTests = sortReducedTestCases(tests);
         List<StringBuilder> stringsForTests = generateStringRepresentation(sortedTests);
 
         String result = testClassGenerator.generateTestClassString(
@@ -82,15 +87,11 @@ public class TestCasesStringGenerator {
         return testSetReducer.apply(testCases);
     }
 
-    protected List<TestCase> sortTestCases(Collection<TestCase> testCases) {
-        return testSetSorter.apply(testCases);
+    protected List<TestCase> preSortTestCases(Collection<TestCase> testCases) {
+        return preReduceTestSetSorter.apply(testCases);
     }
 
-    public void setTestSetSorter(TestSetSorter testSetSorter) {
-        this.testSetSorter = testSetSorter;
-    }
-
-    public void setTestSetReducer(TestSetReducer reducer){
-        this.testSetReducer = reducer;
+    protected List<TestCase> sortReducedTestCases(Collection<TestCase> testCases) {
+        return postReduceTestSetSorter.apply(testCases);
     }
 }

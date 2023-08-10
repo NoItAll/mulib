@@ -105,10 +105,17 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
     protected String generateTestClassDeclaration(String testedClassName, int initialNumberTestCases, int reducedNumberOfTestcases) {
         LocalDateTime now = LocalDateTime.now();
         String result = "/**" + System.lineSeparator();
-        result += " * Generation date: " + now.toLocalDate() + " at " + now.toLocalTime().getHour() + ":" + now.toLocalTime().getMinute() + System.lineSeparator();
+        int minute = now.toLocalTime().getMinute();
+        int hour = now.toLocalTime().getHour();
+        String hourToDoubleDigit = hour < 10 ? "0" + hour : String.valueOf(hour);
+        String minuteToDoubleDigit = minute < 10 ? "0" + minute : String.valueOf(minute);
+        result += " * Generation date: " + now.toLocalDate() + " at " + hourToDoubleDigit + ":" + minuteToDoubleDigit + System.lineSeparator();
         result += " * This class contains automatically generated test cases using the symbolic execution engine Mulib." + System.lineSeparator();
         result += " * It was generated using the following configuration: " + System.lineSeparator();
-        result += " * " + indentBy + tcgConfig.toString() + System.lineSeparator(); // TODO: Make prettier
+        String[] configOptions = tcgConfig.configStrings();
+        for (int i = 0; i < configOptions.length; i+=2) {
+            result += " * " + indentBy + configOptions[i] + (configOptions.length <= i+1 ? "" :  ", " + configOptions[i+1]) + System.lineSeparator();
+        }
         if (!(tcgConfig.TEST_SET_REDUCER instanceof NullTestSetReducer)) {
             result += " * The overall set of test cases was reduced from " + initialNumberTestCases + (initialNumberTestCases > 1 ? " test cases" : " test case ")
                     + " to " + reducedNumberOfTestcases + (reducedNumberOfTestcases > 1 ? " test cases." : " test case.") + System.lineSeparator();

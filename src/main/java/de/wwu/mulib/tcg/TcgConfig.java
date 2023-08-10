@@ -1,5 +1,6 @@
 package de.wwu.mulib.tcg;
 
+import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.tcg.testsetreducer.NullTestSetReducer;
 import de.wwu.mulib.tcg.testsetreducer.TestSetReducer;
 import de.wwu.mulib.tcg.testsetsorter.NullTestSetSorter;
@@ -10,8 +11,9 @@ import java.util.Arrays;
 import java.util.Optional;
 
 public class TcgConfig {
+    public final TestSetSorter PRE_REDUCE_TEST_SET_SORTER;
     public final TestSetReducer TEST_SET_REDUCER;
-    public final TestSetSorter TEST_SET_SORTER;
+    public final TestSetSorter POST_REDUCE_TEST_SET_SORTER;
     public final String INDENT;
     public final double MAX_FP_DELTA;
     public final PrintStream PRINT_STREAM;
@@ -28,8 +30,9 @@ public class TcgConfig {
     }
 
     public static class TcgConfigBuilder {
+        private TestSetSorter preReduceTestSetSorter;
         private TestSetReducer testSetReducer;
-        private TestSetSorter testSetSorter;
+        private TestSetSorter postReduceTestSetSorter;
         private String indent;
         private double maxFpDelta;
         private PrintStream printStream;
@@ -42,8 +45,9 @@ public class TcgConfig {
         private Class<?>[] specialCases;
 
         TcgConfigBuilder() {
+            preReduceTestSetSorter = new NullTestSetSorter();
             testSetReducer = new NullTestSetReducer();
-            testSetSorter = new NullTestSetSorter();
+            postReduceTestSetSorter = new NullTestSetSorter();
             indent = "    ";
             maxFpDelta = 1e-8;
             printStream = null;
@@ -61,8 +65,8 @@ public class TcgConfig {
             return this;
         }
 
-        public TcgConfigBuilder setTestSetSorter(TestSetSorter testSetSorter) {
-            this.testSetSorter = testSetSorter;
+        public TcgConfigBuilder setPostReduceTestSetSorter(TestSetSorter postReduceTestSetSorter) {
+            this.postReduceTestSetSorter = postReduceTestSetSorter;
             return this;
         }
 
@@ -111,15 +115,24 @@ public class TcgConfig {
             return this;
         }
 
-        public TcgConfigBuilder setTestClassPostfix(String testClassPostfix){
+        public TcgConfigBuilder setTestClassPostfix(String testClassPostfix) {
+            if (testClassPostfix == null) {
+                throw new MulibRuntimeException("Must not add null");
+            }
             this.testClassPostfix = Optional.of(testClassPostfix);
+            return this;
+        }
+
+        public TcgConfigBuilder setPreReduceTestSetSorter(TestSetSorter preReduceTestSetSorter) {
+            this.preReduceTestSetSorter = preReduceTestSetSorter;
             return this;
         }
 
         public TcgConfig build() {
             return new TcgConfig(
+                    preReduceTestSetSorter,
                     testSetReducer,
-                    testSetSorter,
+                    postReduceTestSetSorter,
                     indent,
                     maxFpDelta,
                     printStream,
@@ -135,12 +148,14 @@ public class TcgConfig {
     }
 
     private TcgConfig(
-            TestSetReducer TEST_SET_REDUCER, TestSetSorter TEST_SET_SORTER, String INDENT, double MAX_FP_DELTA,
+            TestSetSorter PRE_REDUCE_TEST_SET_SORTER,
+            TestSetReducer TEST_SET_REDUCER, TestSetSorter POST_REDUCE_TEST_SET_SORTER, String INDENT, double MAX_FP_DELTA,
             PrintStream PRINT_STREAM, boolean ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR,
             boolean ASSUME_SETTERS, boolean ASSUME_GETTERS, boolean ASSUME_EQUALS_METHODS,
             boolean GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Class<?>[] SPECIAL_CASES, Optional<String> TEST_CLASS_POSTFIX) {
+        this.PRE_REDUCE_TEST_SET_SORTER = PRE_REDUCE_TEST_SET_SORTER;
         this.TEST_SET_REDUCER = TEST_SET_REDUCER;
-        this.TEST_SET_SORTER = TEST_SET_SORTER;
+        this.POST_REDUCE_TEST_SET_SORTER = POST_REDUCE_TEST_SET_SORTER;
         this.INDENT = INDENT;
         this.MAX_FP_DELTA = MAX_FP_DELTA;
         this.PRINT_STREAM = PRINT_STREAM;
@@ -155,7 +170,14 @@ public class TcgConfig {
 
     @Override
     public String toString() {
-        return String.format("TcgConfig{reducer=%s, sorter=%s, indent=\"%s\", maxFpDelta=%s, assumePublicZeroArgsConstructor=%s, assumeSetters=%s, assumeGetters=%s, assumeEqualsMethods=%s, generatePostExecutionStateChecksForObjectsIfSpecified=%s, specialCases=%s}",
-                TEST_SET_REDUCER, TEST_SET_SORTER, INDENT, MAX_FP_DELTA, ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR, ASSUME_SETTERS, ASSUME_GETTERS, ASSUME_EQUALS_METHODS, GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Arrays.toString(SPECIAL_CASES));
+        return String.format("TcgConfig{preReduceSorter=%s, reducer=%s, postReduceSorter=%s, indent=\"%s\", maxFpDelta=%s, assumePublicZeroArgsConstructor=%s, assumeSetters=%s, assumeGetters=%s, assumeEqualsMethods=%s, generatePostExecutionStateChecksForObjectsIfSpecified=%s, specialCases=%s}",
+                PRE_REDUCE_TEST_SET_SORTER, TEST_SET_REDUCER, POST_REDUCE_TEST_SET_SORTER, INDENT, MAX_FP_DELTA, ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR, ASSUME_SETTERS, ASSUME_GETTERS, ASSUME_EQUALS_METHODS, GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED, Arrays.toString(SPECIAL_CASES));
+    }
+
+    public String[] configStrings() {
+        return toString()
+                .replace("TcgConfig{", "")
+                .replace("}", "")
+                .split(", ");
     }
 }
