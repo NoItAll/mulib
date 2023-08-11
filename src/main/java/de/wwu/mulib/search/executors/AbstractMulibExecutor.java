@@ -200,14 +200,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     // we do not have to add back ChoiceOptions to the SearchTree's queue.
                     this.backtrackCallback.accept(this, b, solverManager);
                 } catch (Fail f) {
-                    de.wwu.mulib.search.trees.Fail fail = symbolicExecution.getCurrentChoiceOption().setExplicitlyFailed();
+                    de.wwu.mulib.search.trees.Fail fail = currentChoiceOption.setExplicitlyFailed();
                     this.mulibExecutorManager.addToFails(fail);
                     this.failCallback.accept(this, fail, solverManager);
                 } catch (ExceededBudget be) {
                     assert !be.getExceededBudget().isIncremental() : "Should not occur anymore, we throw a normal Backtracking in this case";
                     // The newly encountered choice option triggering the exception is set in the ChoicePointFactory
                     de.wwu.mulib.search.trees.ExceededBudget exceededBudget =
-                            symbolicExecution.getCurrentChoiceOption().setBudgetExceeded(be.getExceededBudget());
+                            currentChoiceOption.setBudgetExceeded(be.getExceededBudget());
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                     this.exceededBudgetCallback.accept(this, exceededBudget, solverManager);
                 } catch (MulibException e) {
