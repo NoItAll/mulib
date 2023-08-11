@@ -1,4 +1,7 @@
 package de.wwu.mulib.exceptions;
 
-public class MulibControlFlowException extends MulibException {
+public abstract class MulibControlFlowException extends RuntimeException {
+    public MulibControlFlowException() {
+        super(null, null, false, false);
+    }
 }

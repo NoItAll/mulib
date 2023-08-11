@@ -131,8 +131,7 @@ public final class SearchTree {
 
     }
 
-    @Override
-    public String toString() {
+    public String stringRepresentation() {
         return toString(root, indentBy);
     }
 
