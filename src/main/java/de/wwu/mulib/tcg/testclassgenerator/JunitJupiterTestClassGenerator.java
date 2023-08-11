@@ -191,7 +191,8 @@ public class JunitJupiterTestClassGenerator implements TestClassGenerator {
 
             sb.append(tcgConfig.INDENT).append("protected void ").append(TcgUtility.REFLECTION_COMPARE_OBJECTS_INNER).append("(Object o0, Object o1, List<ComparedPair> comparedObjects) {").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (o0 == null && o1 != null) fail(o1 + \" is not null\");").append(System.lineSeparator())
-                    .append(tcgConfig.INDENT.repeat(2)).append("if (o1 == null) fail(o0 + \" is not null\");").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("if (o1 == null && o0 != null) fail(o0 + \" is not null\");").append(System.lineSeparator())
+                    .append(tcgConfig.INDENT.repeat(2)).append("if (o0 == null && o1 == null) return;").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("if (!o0.getClass().equals(o1.getClass())) fail(\"Objects do not have the same class\");").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("Class<?> c = o0.getClass();").append(System.lineSeparator())
                     .append(tcgConfig.INDENT.repeat(2)).append("/* Check if call to .equals(Object) is definitely safe: */").append(System.lineSeparator())
