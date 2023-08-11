@@ -13,6 +13,12 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A thread-safe {@link ChoicePointFactory} for concolic execution.
+ * Overrides {@link SymbolicChoicePointFactory#determineBooleanWithNewBinaryChoice(SymbolicExecution, Constraint, Choice.ChoiceOption)}
+ * to not let the {@link de.wwu.mulib.search.executors.MulibExecutor} decide on the next choice option, but rather
+ * let the already labeled symbolic values guide the execution.
+ */
 public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
     ConcolicChoicePointFactory(MulibConfig config, CoverageCfg coverageCfg) {
@@ -20,6 +26,12 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
         super(config, coverageCfg);
     }
 
+    /**
+     * Constructs a new instance
+     * @param config The configuration
+     * @param coverageCfg The control-flow graph used for, e.g. calculating coverage. Can be null.
+     * @return A new instance of ConcolicChoicePointFactory
+     */
     public static ConcolicChoicePointFactory getInstance(MulibConfig config, CoverageCfg coverageCfg) {
         return new ConcolicChoicePointFactory(config, coverageCfg);
     }

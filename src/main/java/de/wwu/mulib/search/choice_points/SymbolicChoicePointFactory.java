@@ -13,6 +13,13 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Supplier;
 
+/**
+ * A thread-safe {@link ChoicePointFactory} for pure symbolic execution.
+ * Implements the case distinction mentioned in, e.g., {@link ChoicePointFactory#ltChoice(SymbolicExecution, Sint, Sint)}
+ * in the method {@link SymbolicChoicePointFactory#threeCaseDistinctionTemplate(SymbolicExecution, Constraint)}.
+ * Offers the method {@link SymbolicChoicePointFactory#determineBooleanWithNewBinaryChoice(SymbolicExecution, Constraint, Choice.ChoiceOption)}
+ * to allow for overriding how the third case (a new choice point) should be dealt with.
+ */
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 
     private final MulibConfig config;
@@ -302,13 +309,20 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
     public boolean negatedBoolChoice(SymbolicExecution se, long id, Sbool b) {
         return choiceTemplateWithId(se, () -> negatedBoolChoice(se, b), id);
     }
-    
+
+    /**
+     * All XYZChoice methods delegate their execution to this method
+     * @param se The instance of symbolic execution used in this run
+     * @param c The constraint the decision is based on
+     * @return true, if the decision should evaluate to true, else false
+     * @see ChoicePointFactory#ltChoice(SymbolicExecution, Sint, Sint)
+     */
     protected boolean threeCaseDistinctionTemplate(
             SymbolicExecution se,
-            Constraint b) {
+            Constraint c) {
         // Case 1: No actual choice, only concrete values
-        if (b instanceof Sbool.ConcSbool) {
-            return ((Sbool.ConcSbool) b).isTrue();
+        if (c instanceof Sbool.ConcSbool) {
+            return ((Sbool.ConcSbool) c).isTrue();
         }
 
         // This choice option must be stored either way to be set as a parent later on
@@ -317,7 +331,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         // We encounter a new ChoiceOption. We check if a next ChoiceOption is present and which option is chosen.
         Optional<Boolean> possibleResult = checkIfStillOnKnownPath(se);
         if (possibleResult.isPresent()) {
-            assert !config.CONCOLIC || (!se.nextIsOnKnownPath() || (ConcolicConstraintContainer.getConcSboolFromConcolic(b).isTrue() == possibleResult.get())) : config;
+            assert !config.CONCOLIC || (!se.nextIsOnKnownPath() || (ConcolicConstraintContainer.getConcSboolFromConcolic(c).isTrue() == possibleResult.get())) : config;
             return possibleResult.get();
         }
 
@@ -326,7 +340,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         // Case 3: We are not on the known path. A new Choice is added. Potentially, we backtrack
         return determineBooleanWithNewBinaryChoice(
                 se,
-                b,
+                c,
                 currentChoiceOption
         );
     }
@@ -346,6 +360,17 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         }
     }
 
+    /**
+     * Determines how to proceed with newly encountered choices, i.e., the third case.
+     * Delegates the decision on which of the two choice options of the new choice to evaluate first to
+     * the {@link de.wwu.mulib.search.executors.MulibExecutor} of the current symbolic execution instance.
+     * @param se The instance of symbolic execution used in the current execution run
+     * @param constraint The base constraint of the new choice
+     * @param currentChoiceOption The choice option that will be the parent of the new choice
+     * @return true, if the constraint shall evaluate to true, else false; - might also throw {@link Backtrack},
+     * depending on the decision of {@link de.wwu.mulib.search.executors.MulibExecutor}
+     * @see SymbolicChoicePointFactory#threeCaseDistinctionTemplate(SymbolicExecution, Constraint)
+     */
     protected boolean determineBooleanWithNewBinaryChoice(
             SymbolicExecution se,
             Constraint constraint,

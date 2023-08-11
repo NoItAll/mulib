@@ -7,6 +7,9 @@ import de.wwu.mulib.search.trees.Choice;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Simple, thread-safe
+ */
 public class CoverageCfg {
     private final ThreadLocal<CfgNode> currentCfgNode = new ThreadLocal<>();
     private final ThreadLocal<ArrayDeque<CfgNodeDecision>> trailOfDecisions = new ThreadLocal<>();

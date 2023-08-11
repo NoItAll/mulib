@@ -1,7 +1,13 @@
 package de.wwu.mulib.search.budget;
 
+/**
+ * If no budget is specified, NullBudget will be used. NullBudget does nothing on increment and is never exceeded.
+ */
 public class NullBudget implements Budget {
 
+    /**
+     * The singleton instance of NullBudget
+     */
     public static final NullBudget INSTANCE = new NullBudget();
 
     private NullBudget() {}

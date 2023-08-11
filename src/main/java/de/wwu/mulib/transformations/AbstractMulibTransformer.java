@@ -6,6 +6,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -308,7 +309,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected abstract Class<?> getTransformedSpecializedPartnerClassSarrayClass(Class<?> clazz);
 
     @Override
-    public Class<?> transformMulibTypeBack(Class<?> toTransform) {
+    public Class<?> transformMulibTypeBackIfNeeded(Class<?> toTransform) {
         if (toTransform == null) {
             throw new MulibRuntimeException("Type to transform must not be null.");
         }
@@ -372,10 +373,12 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             } else if (toTransform == Schar[].class) {
                 return char[].class;
             } else {
-                return Array.newInstance(transformMulibTypeBack(toTransform.getComponentType()), 0).getClass();
+                return Array.newInstance(transformMulibTypeBackIfNeeded(toTransform.getComponentType()), 0).getClass();
             }
-        } else {
+        } else if (PartnerClass.class.isAssignableFrom(toTransform)) {
             return getNonTransformedClassFromPartnerClass(toTransform);
+        } else {
+            return toTransform;
         }
     }
 

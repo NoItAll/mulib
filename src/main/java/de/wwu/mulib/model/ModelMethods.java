@@ -11,7 +11,11 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 
-public class ModelMethods {
+/**
+ * Collection of default model methods that can be used in place of the default implementations.
+ * Method names here follow the scheme full_Class_Name__methodName(parameters).
+ */
+public final class ModelMethods {
 
     public static Slong java_lang_Double__doubleToRawLongBits(Sdouble d) {
         throw new NotYetImplementedException();
@@ -21,6 +25,11 @@ public class ModelMethods {
         throw new NotYetImplementedException();
     }
 
+    /**
+     * Reads the default model methods and can be used to get pairs of methods
+     * @param mulibTransformer The used mulib transformer
+     * @return The pairs of substituted to substituting methods
+     */
     public static Map<Method, Method> readDefaultModelMethods(MulibTransformer mulibTransformer) {
         Method[] ms = ModelMethods.class.getDeclaredMethods();
         Map<Method, Method> result = new HashMap<>();
@@ -38,7 +47,7 @@ public class ModelMethods {
                 Class<?> c = Class.forName(classNameReplacedUnderscores);
                 Class<?>[] transformedParameterTypes =
                         Arrays.stream(m.getParameterTypes())
-                                .map(mulibTransformer::transformMulibTypeBack)
+                                .map(mulibTransformer::transformMulibTypeBackIfNeeded)
                                 .toArray(Class[]::new);
                 Method substitutedMethod = c.getDeclaredMethod(methodName, transformedParameterTypes);
                 result.put(substitutedMethod, m);
