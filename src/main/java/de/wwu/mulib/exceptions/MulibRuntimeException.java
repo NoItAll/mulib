@@ -26,4 +26,11 @@ public class MulibRuntimeException extends MulibException {
     public MulibRuntimeException(Throwable cause) {
         super(cause);
     }
+
+    /**
+     * @param e The causing exception
+     */
+    public MulibRuntimeException(Exception e) {
+        super(e);
+    }
 }
