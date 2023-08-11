@@ -476,15 +476,11 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                         result = integerCase.apply((NumeralFormula.IntegerFormula) elhs, (NumeralFormula.IntegerFormula) erhs);
                     }
                 }
-            } else if (n instanceof AbstractExpressionWrappingExpression) {
-                if (n instanceof Neg) {
-                    if (n.isFp()) {
-                        result = rationalFormulaManager.negate(transformNumeral(((Neg) n).getWrapped()));
-                    } else {
-                        result = integerFormulaManager.negate((NumeralFormula.IntegerFormula) transformNumeral(((Neg) n).getWrapped()));
-                    }
+            } else if (n instanceof Neg) {
+                if (n.isFp()) {
+                    result = rationalFormulaManager.negate(transformNumeral(((Neg) n).getWrapped()));
                 } else {
-                    throw new NotYetImplementedException();
+                    result = integerFormulaManager.negate((NumeralFormula.IntegerFormula) transformNumeral(((Neg) n).getWrapped()));
                 }
             } else if (n instanceof NumericIte) {
                 NumericIte ite = (NumericIte) n;

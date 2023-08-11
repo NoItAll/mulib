@@ -4,6 +4,9 @@ import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
+/**
+ * Abstract supertype for all those numeric expressions that consist of two numeric expressions and an operator
+ */
 public abstract class AbstractOperatorNumericExpression implements NumericExpression, Sym {
 
     protected final NumericExpression expr0;
@@ -22,10 +25,16 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
         this.expr1 = expr1;
     }
 
+    /**
+     * @return The first expression
+     */
     public final NumericExpression getExpr0() {
         return expr0;
     }
 
+    /**
+     * @return The second expression
+     */
     public final NumericExpression getExpr1() {
         return expr1;
     }

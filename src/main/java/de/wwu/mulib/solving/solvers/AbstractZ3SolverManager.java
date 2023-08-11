@@ -339,12 +339,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     result = ctx.mkBV2Int((BitVecExpr) result, true);
                 }
                 numericExpressionsStore.put(n, result);
-            } else if (n instanceof AbstractExpressionWrappingExpression) {
-                if (n instanceof Neg) {
-                    result = ctx.mkUnaryMinus((ArithExpr) transformNumericExpr(((Neg) n).getWrapped()));
-                } else {
-                    throw new NotYetImplementedException();
-                }
+            } else if (n instanceof Neg) {
+                result = ctx.mkUnaryMinus((ArithExpr) transformNumericExpr(((Neg) n).getWrapped()));
                 numericExpressionsStore.put(n, result);
             } else if (n instanceof NumericIte) {
                 NumericIte ite = (NumericIte) n;
