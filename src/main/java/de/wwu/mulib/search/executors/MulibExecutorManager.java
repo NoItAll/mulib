@@ -28,6 +28,9 @@ public abstract class MulibExecutorManager {
     protected final CalculationFactory calculationFactory;
     protected final GlobalExecutionBudgetManager globalExecutionManagerBudgetManager;
     protected final MulibValueTransformer mulibValueTransformer;
+    /**
+     * If not null: {@link MulibExecutor#getUpToNSolutions(PathSolution, AtomicInteger)} will be called.
+     */
     private AtomicInteger numberRequestedSolutions;
     protected final List<Solution> solutions;
     protected final MethodHandle searchRegionMethod;

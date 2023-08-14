@@ -28,23 +28,43 @@ import java.lang.invoke.MethodHandle;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+/**
+ * Supertype for mulib executors. Implements the template pattern so that subclasses can focus on providing search strategies
+ * as specified in {@link SearchStrategy}.
+ */
 public abstract class AbstractMulibExecutor implements MulibExecutor {
+    /**
+     * The instance of {@link SymbolicExecution} currently used to execute the search region
+     */
     protected SymbolicExecution currentSymbolicExecution;
+    /**
+     * Stores the root choice of the search tree
+     */
     protected final Choice rootChoiceOfSearchTree;
-    // Gets the currently targeted choice option. This is not in sync with the choice option of SymbolicExecution
-    // until the last ChoiceOption of the known path is reached
+    /**
+     * Stores the currently targeted choice option. This is not in sync with the choice option of SymbolicExecution
+     * until the last ChoiceOption of the known path is reached
+     */
     protected Choice.ChoiceOption currentChoiceOption;
     // Statistics
     protected long heuristicSatEvals = 0, satEvals = 0, unsatEvals = 0,
             addedAfterBacktrackingPoint = 0, solverBacktrack = 0;
-    // Manager
+    /**
+     * Stores the {@link MulibExecutorManager} managing this {@link AbstractMulibExecutor}.
+     */
     protected final MulibExecutorManager mulibExecutorManager;
+    /**
+     * Stores true if this instance has terminated and cannot be sensibly called anymore
+     */
     protected boolean terminated = false;
-    // Executor-specific state
+    /**
+     * Stores the solver manager exclusive to this mulib executor
+     */
     protected final SolverManager solverManager;
-    // Config
+    /**
+     * Stores the chosen search strategy
+     */
     protected final SearchStrategy searchStrategy;
-    protected final boolean isConcolic;
     private final ExecutionBudgetManager prototypicalExecutionBudgetManager;
     private final MulibValueTransformer mulibValueTransformer;
     private final MulibConfig config;
@@ -71,7 +91,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.mulibExecutorManager = mulibExecutorManager;
         this.solverManager = Solvers.getSolverManager(config);
         this.searchStrategy = searchStrategy;
-        this.isConcolic = config.CONCOLIC;
         this.config = config;
         this.mulibValueTransformer = mulibValueTransformer;
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
@@ -131,13 +150,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public final void addNewConstraintAfterBacktrackingPoint(Constraint c) {
+    public final void addConstraintAfterBacktrackingPoint(Constraint c) {
         solverManager.addConstraintAfterNewBacktrackingPoint(c);
-    }
-
-    @Override
-    public final void addExistingPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> ics) {
-        solverManager.addPartnerClassObjectConstraints(ics);
     }
 
     @Override
@@ -214,7 +228,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     Mulib.log.warning(config.toString());
                     throw e;
                 } catch (Throwable e) {
-                    if (isConcolic && !solverManager.isSatisfiable()) {
+                    if (config.CONCOLIC && !solverManager.isSatisfiable()) {
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
@@ -318,7 +332,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             if (currentChoiceOption.reevaluationNeeded()) {
                 optionToBeEvaluated = currentChoiceOption;
                 // Relabeling case for concolic execution
-                assert isConcolic;
+                assert config.CONCOLIC;
                 if (!solverManager.isSatisfiable()) {
                     optionToBeEvaluated.setUnsatisfiable();
                     return Optional.empty();
@@ -354,6 +368,18 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
     }
 
+    @Override
+    public void addExistingPartnerClassObjectConstraints(List<PartnerClassObjectConstraint> partnerClassObjectConstraints) {
+        solverManager.addPartnerClassObjectConstraints(partnerClassObjectConstraints);
+    }
+
+    /**
+     * Selects the next choice option from the global {@link ChoiceOptionDeque}
+     * @param deque The deque storing the choice options that are candidates for evaluation
+     * @return An optional wrapping a choice option, if a next choice option is picked. Else {@link Optional#empty()}.
+     * Note that in a multi-threading setting with multiple {@link MulibExecutor}s, returning {@link Optional#empty()}
+     * does not necessarily mean that no {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} can be found anymore.
+     */
     protected abstract Optional<Choice.ChoiceOption> selectNextChoiceOption(ChoiceOptionDeque deque);
 
     @Override
@@ -420,7 +446,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         currentChoiceOption = choiceOption;
     }
 
-    protected void backtrackOnce() {
+    private void backtrackOnce() {
         if (currentChoiceOption.getDepth() > 1) {
             solverManager.backtrackOnce();
             solverBacktrack++;
@@ -428,22 +454,25 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
     }
 
+    /**
+     * @return The deque containing the choice options that are candidates for evaluation
+     */
     protected ChoiceOptionDeque getDeque() {
         return getExecutorManager().observedTree.getChoiceOptionDeque();
     }
 
-    protected ChoicePointFactory getChoicePointFactory() {
+    private ChoicePointFactory getChoicePointFactory() {
         return getExecutorManager().choicePointFactory;
     }
 
-    protected ValueFactory getValueFactory() {
+    private ValueFactory getValueFactory() {
         return getExecutorManager().valueFactory;
     }
 
-    protected CalculationFactory getCalculationFactory() {
+    private CalculationFactory getCalculationFactory() {
         return getExecutorManager().calculationFactory;
     }
-    protected void adjustSolverManagerToNewChoiceOption(final Choice.ChoiceOption optionToBeEvaluated) {
+    private void adjustSolverManagerToNewChoiceOption(final Choice.ChoiceOption optionToBeEvaluated) {
         // Backtrack with solver's push- and pop-capabilities
         final Choice.ChoiceOption backtrackTo = SearchTree.getDeepestSharedAncestor(optionToBeEvaluated, currentChoiceOption);
         int depthDifference = (currentChoiceOption.getDepth() - backtrackTo.getDepth());
@@ -452,13 +481,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         ArrayDeque<Choice.ChoiceOption> getPathBetween = SearchTree.getPathBetween(backtrackTo, optionToBeEvaluated);
         for (Choice.ChoiceOption co : getPathBetween) {
             solverManager.addConstraintAfterNewBacktrackingPoint(co.getOptionConstraint());
-            addExistingPartnerClassObjectConstraints(co.getPartnerClassObjectConstraints());
+            solverManager.addPartnerClassObjectConstraints(co.getPartnerClassObjectConstraints());
             addedAfterBacktrackingPoint++;
         }
         currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
     }
 
-    protected Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
+    private Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
         for (Choice.ChoiceOption choiceOption : options) {
             if (checkIfSatisfiableAndSet(choiceOption)) {
                 return choiceOption;
@@ -467,7 +496,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return null;
     }
 
-    protected boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
+    private boolean checkIfSatisfiableAndSet(Choice.ChoiceOption choiceOption) {
         assert !choiceOption.isEvaluated() && !choiceOption.isBudgetExceeded() && !choiceOption.isUnsatisfiable()
                 && !choiceOption.isCutOff() && !choiceOption.isExplicitlyFailed() : choiceOption.stateToString();
         assert currentChoiceOption == null ||
@@ -513,7 +542,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return checkSatWithSolver(solverManager, choiceOption);
     }
 
-    protected boolean checkSatWithSolver(SolverManager solverManager, Choice.ChoiceOption choiceOption) {
+    private boolean checkSatWithSolver(SolverManager solverManager, Choice.ChoiceOption choiceOption) {
         if (solverManager.isSatisfiable()) {
             choiceOption.setSatisfiable();
             satEvals++;
@@ -547,6 +576,10 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
     }
 
+    /**
+     * @return Determines whether we should continue evaluating choice options in the current execution using
+     * {@link SymbolicExecution}.
+     */
     protected abstract boolean shouldContinueExecution();
 
     @Override

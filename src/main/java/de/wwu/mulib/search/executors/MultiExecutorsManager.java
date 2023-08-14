@@ -98,7 +98,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
                                 staticVariables,
                                 searchRegionArgs
                         );
-                        finalNextExecutor.addNewConstraintAfterBacktrackingPoint(
+                        finalNextExecutor.addConstraintAfterBacktrackingPoint(
                                 observedTree.root.getOption(0).getOptionConstraint());
                         finalNextExecutor.addExistingPartnerClassObjectConstraints(
                                 observedTree.root.getOption(0).getPartnerClassObjectConstraints());

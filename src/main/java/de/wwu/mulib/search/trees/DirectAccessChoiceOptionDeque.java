@@ -44,7 +44,6 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
     }
 
     private volatile ChoiceOptionLevelContainer cachedTail;
-    // Returns a locked ChoiceOptionLevelContainer
     private ChoiceOptionLevelContainer getTail() {
         ChoiceOptionLevelContainer cachedContainer = cachedTail;
         if (cachedContainer.isEmpty()) {

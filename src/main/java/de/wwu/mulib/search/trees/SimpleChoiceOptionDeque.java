@@ -90,7 +90,7 @@ public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
 
     @Override
     public synchronized String toString() {
-        return "SingleThreadChoiceOptionDeque{"
+        return "SimpleChoiceOptionDeque{"
                 + "size=" + choiceOptions.size()
                 + ",choiceOptions=" + choiceOptions
                 + "}";

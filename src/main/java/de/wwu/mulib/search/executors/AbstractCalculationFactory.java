@@ -15,17 +15,26 @@ import de.wwu.mulib.transformations.MulibValueCopier;
 import java.util.*;
 import java.util.function.Function;
 
+/**
+ * Abstract supertype for calculation factories.
+ * Implements strategies for selecting and storing from and in Sarrays and getting and putting fields in symbolic objects
+ * that are reused by {@link SymbolicCalculationFactory} and {@link ConcolicCalculationFactory}.
+ * It can be configured that eager indexes are used to load elements from arrays with reference-typed or primitive-typed content
+ * and whether we want to throw a {@link ArrayIndexOutOfBoundsException} if a symbolic index access can be out-of-bounds.
+ * An instance of {@link ValueFactory} is used to construct suiting values.
+ */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public abstract class AbstractCalculationFactory implements CalculationFactory {
+    /**
+     * The configuration
+     */
     protected final MulibConfig config;
-    protected final boolean throwExceptionOnOOB;
-    protected final boolean useEagerIndexesForFreeArrayPrimitiveElements;
-    protected final boolean useEagerIndexesForFreeArrayObjectElements;
-    protected final boolean enableInitializeFreeArraysWithNull;
-    protected final boolean enableInitializeFreeObjectsWithNull;
+    /**
+     * The used value factory
+     */
     protected final ValueFactory valueFactory;
-    protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
-    protected final Function<Sbool, Sbool> tryGetSymFromSbool;
+    private final Function<Snumber, Snumber> tryGetSymFromSnumber;
+    private final Function<Sbool, Sbool> tryGetSymFromSbool;
 
     protected AbstractCalculationFactory(
             MulibConfig config,
@@ -33,11 +42,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             Function<Snumber, Snumber> tryGetSymFromSnumber,
             Function<Sbool, Sbool> tryGetSymFromSbool) {
         this.config = config;
-        this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
-        this.useEagerIndexesForFreeArrayPrimitiveElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
-        this.useEagerIndexesForFreeArrayObjectElements = config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
-        this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
-        this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         this.valueFactory = valueFactory;
         this.tryGetSymFromSbool = tryGetSymFromSbool;
         this.tryGetSymFromSnumber = tryGetSymFromSnumber;
@@ -46,7 +50,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index) {
         sarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayPrimitiveElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
             return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
         } else {
             return (Sprimitive) _selectWithSymbolicIndexes(se, sarray, index);
@@ -56,7 +60,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value) {
         sarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayPrimitiveElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
             return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
         } else {
             return (Sprimitive) _storeWithSymbolicIndexes(se, sarray, index, value);
@@ -66,7 +70,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index) {
         sarraySarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayObjectElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
         } else {
             return (Sarray<?>) _selectWithSymbolicIndexes(se, sarraySarray, index);
@@ -76,7 +80,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
         sarraySarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayObjectElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
         } else {
             return (Sarray<?>) _storeWithSymbolicIndexes(se, sarraySarray, index, value);
@@ -86,7 +90,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
         partnerClassSarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayObjectElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
         } else {
             return (PartnerClass) _selectWithSymbolicIndexes(se, partnerClassSarray, index);
@@ -96,7 +100,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
         partnerClassSarray.__mulib__nullCheck();
-        if (useEagerIndexesForFreeArrayObjectElements) {
+        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
         } else {
             return (PartnerClass) _storeWithSymbolicIndexes(se, partnerClassSarray, index, value);
@@ -154,7 +158,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return concsIndex;
     }
 
-    protected void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
+    private void checkIndexAccess(Sarray sarray, Sint i, SymbolicExecution se) {
         if (i instanceof ConcSnumber && ((ConcSnumber) i).intVal() < 0) {
             throw new ArrayIndexOutOfBoundsException();
         }
@@ -166,7 +170,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     se.lt(i, sarray._getLengthWithoutCheckingForIsNull()),
                     se.lte(Sint.ConcSint.ZERO, i)
             );
-            if (throwExceptionOnOOB) {
+            if (config.THROW_EXCEPTION_ON_OOB) {
                 boolean inBounds = se.boolChoice(indexInBound);
                 if (!inBounds) {
                     throw new ArrayIndexOutOfBoundsException();
@@ -187,7 +191,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
 
-    protected void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
+    private void addSelectConstraintIfNeeded(SymbolicExecution se, Sarray sarray, Sint index, SubstitutedVar result) {
         // We will now add a constraint indicating to the solver that at position i a value can be found that previously
         // was not there. This only occurs if the array must be represented via constraints. This, in turn, only
         // is the case if symbolic indices have been used.
@@ -210,6 +214,13 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         }
     }
 
+    /**
+     * Used to get the value to represent for the constraint solver. If the value is a {@link PartnerClass},
+     * the identifier is returned. A pure value must be returned, i.e., wrapping such as {@link de.wwu.mulib.expressions.ConcolicNumericContainer}
+     * or {@link ConcolicConstraintContainer} must be unpacked.
+     * @param value The value
+     * @return The Sprimitive representing the value
+     */
     protected abstract Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value);
 
     @Override
@@ -429,25 +440,25 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public void representPartnerClassObjectIfNeeded(
             SymbolicExecution se,
-            PartnerClass ihsr,
+            PartnerClass toPotentiallyRepresent,
             Sint idOfContainingPartnerClassObject,
             String fieldName,
             Sint index) {
         assert fieldName == null || index == null;
-        if (!ihsr.__mulib__shouldBeRepresentedInSolver() || ihsr.__mulib__isRepresentedInSolver()) {
+        if (!toPotentiallyRepresent.__mulib__shouldBeRepresentedInSolver() || toPotentiallyRepresent.__mulib__isRepresentedInSolver()) {
             return;
         }
-        assert !(ihsr instanceof Sarray) || ((Sarray) ihsr).getCachedIndices().stream().noneMatch(i -> i instanceof Sym)
+        assert !(toPotentiallyRepresent instanceof Sarray) || ((Sarray) toPotentiallyRepresent).getCachedIndices().stream().noneMatch(i -> i instanceof Sym)
                 : "The Sarray should have already been represented in the constraint system";
-        assert ihsr.__mulib__getId() != null;
-        assert !(ihsr.__mulib__getId() instanceof Sym) || idOfContainingPartnerClassObject != null;
+        assert toPotentiallyRepresent.__mulib__getId() != null;
+        assert !(toPotentiallyRepresent.__mulib__getId() instanceof Sym) || idOfContainingPartnerClassObject != null;
         // Already set this so that we do not have any issues with circular dependencies
-        ihsr.__mulib__setAsRepresentedInSolver();
+        toPotentiallyRepresent.__mulib__setAsRepresentedInSolver();
         // If needed, represent complex-typed entries in solver
-        if (ihsr instanceof Sarray.PartnerClassSarray) {
+        if (toPotentiallyRepresent instanceof Sarray.PartnerClassSarray) {
             // Includes SarraySarrays
-            for (Sint i : ((Sarray<?>) ihsr).getCachedIndices()) {
-                Object objectEntry = ((Sarray.PartnerClassSarray<?>) ihsr).getFromCacheForIndex(i);
+            for (Sint i : ((Sarray<?>) toPotentiallyRepresent).getCachedIndices()) {
+                Object objectEntry = ((Sarray.PartnerClassSarray<?>) toPotentiallyRepresent).getFromCacheForIndex(i);
                 if (objectEntry == null) {
                     continue;
                 }
@@ -456,17 +467,17 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     assert !entry.__mulib__shouldBeRepresentedInSolver();
                     entry.__mulib__prepareToRepresentSymbolically(se);
                     // Is a Sarray, i.e., we do not have a field here
-                    representPartnerClassObjectIfNeeded(se, entry, ihsr.__mulib__getId(), null, i);
+                    representPartnerClassObjectIfNeeded(se, entry, toPotentiallyRepresent.__mulib__getId(), null, i);
                 }
                 if (entry instanceof Sarray) {
                     assert entry.__mulib__cacheIsBlocked();
                     ((Sarray<?>) entry).clearCache();
                 }
             }
-        } else if (!(ihsr instanceof Sarray)) {
+        } else if (!(toPotentiallyRepresent instanceof Sarray)) {
             // Check the fields of 'real' PartnerClass objects
             // We must not initialize the fields, if they have not already been initialized
-            Map<String, SubstitutedVar> fieldValues = ihsr.__mulib__getFieldNameToSubstitutedVar();
+            Map<String, SubstitutedVar> fieldValues = toPotentiallyRepresent.__mulib__getFieldNameToSubstitutedVar();
             for (Map.Entry<String, SubstitutedVar> entry : fieldValues.entrySet()) {
                 SubstitutedVar val = entry.getValue();
                 if (!(val instanceof PartnerClass)) {
@@ -475,17 +486,17 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     continue;
                 }
                 PartnerClass pc = (PartnerClass) val;
-                _generateIdIfNeeded(se, ihsr, pc);
-                representPartnerClassObjectIfNeeded(se, pc, ihsr.__mulib__getId(), entry.getKey(), null);
+                _generateIdIfNeeded(se, toPotentiallyRepresent, pc);
+                representPartnerClassObjectIfNeeded(se, pc, toPotentiallyRepresent.__mulib__getId(), entry.getKey(), null);
             }
         }
         // Represent array OR partnerclass object in constraint solver, if needed
-        if (ihsr.__mulib__getId() instanceof ConcSnumber) {
+        if (toPotentiallyRepresent.__mulib__getId() instanceof ConcSnumber) {
             // In this case the PartnerClass object was not spawned from a select
             // from a PartnerClassSarray or a PartnerClass object
             if (!se.nextIsOnKnownPath()) {
-                if (ihsr instanceof Sarray) {
-                    Sarray sarray = (Sarray) ihsr;
+                if (toPotentiallyRepresent instanceof Sarray) {
+                    Sarray sarray = (Sarray) toPotentiallyRepresent;
                     ArrayInitializationConstraint arrayInitializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                             (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
@@ -497,14 +508,14 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     assert arrayInitializationConstraint.getType() == ArrayInitializationConstraint.Type.SIMPLE_SARRAY;
                     se.addNewPartnerClassObjectConstraint(arrayInitializationConstraint);
                 } else {
-                    assert ihsr.__mulib__getId() != null;
+                    assert toPotentiallyRepresent.__mulib__getId() != null;
                     PartnerClassObjectInitializationConstraint c =
                             new PartnerClassObjectInitializationConstraint(
-                                    ihsr.getClass(),
-                                    (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
-                                    tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
-                                    collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
-                                    ihsr.__mulib__defaultIsSymbolic()
+                                    toPotentiallyRepresent.getClass(),
+                                    (Sint) tryGetSymFromSnumber.apply(toPotentiallyRepresent.__mulib__getId()),
+                                    tryGetSymFromSbool.apply(toPotentiallyRepresent.__mulib__isNull()),
+                                    collectInitialPartnerClassObjectFieldConstraints(toPotentiallyRepresent, se),
+                                    toPotentiallyRepresent.__mulib__defaultIsSymbolic()
                             );
                     assert c.getType() == PartnerClassObjectInitializationConstraint.Type.SIMPLE_PARTNER_CLASS_OBJECT;
                     se.addNewPartnerClassObjectConstraint(c);
@@ -516,8 +527,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             Sint reservedId = se.concSint(se.getNextNumberInitializedSymObject());
             if (!se.nextIsOnKnownPath()) {
                 PartnerClassObjectConstraint initializationConstraint;
-                if (ihsr instanceof Sarray) {
-                    Sarray sarray = (Sarray) ihsr;
+                if (toPotentiallyRepresent instanceof Sarray) {
+                    Sarray sarray = (Sarray) toPotentiallyRepresent;
                     initializationConstraint = new ArrayInitializationConstraint(
                             (Sint) tryGetSymFromSnumber.apply(sarray.__mulib__getId()),
                             (Sint) tryGetSymFromSnumber.apply(sarray._getLengthWithoutCheckingForIsNull()),
@@ -539,15 +550,15 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 } else {
                     initializationConstraint =
                             new PartnerClassObjectInitializationConstraint(
-                                    ihsr.getClass(),
-                                    (Sint) tryGetSymFromSnumber.apply(ihsr.__mulib__getId()),
-                                    tryGetSymFromSbool.apply(ihsr.__mulib__isNull()),
+                                    toPotentiallyRepresent.getClass(),
+                                    (Sint) tryGetSymFromSnumber.apply(toPotentiallyRepresent.__mulib__getId()),
+                                    tryGetSymFromSbool.apply(toPotentiallyRepresent.__mulib__isNull()),
                                     reservedId,
                                     (Sint) tryGetSymFromSnumber.apply(idOfContainingPartnerClassObject),
                                     fieldName, // Is null if container is sarray
                                     (Sint) tryGetSymFromSnumber.apply(index), // Is null if container is partner class object
-                                    collectInitialPartnerClassObjectFieldConstraints(ihsr, se),
-                                    ihsr.__mulib__defaultIsSymbolic()
+                                    collectInitialPartnerClassObjectFieldConstraints(toPotentiallyRepresent, se),
+                                    toPotentiallyRepresent.__mulib__defaultIsSymbolic()
                             );
                     assert ((PartnerClassObjectInitializationConstraint) initializationConstraint).getType() ==
                             (fieldName == null ?
@@ -559,21 +570,18 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
         }
 
-        if (!(ihsr instanceof Sarray) || !config.CONCOLIC) {
+        if (!(toPotentiallyRepresent instanceof Sarray) || !config.CONCOLIC) {
             // For concolic execution, in the current implementation,
             // we need to evaluate the cached indices of Sarrays to see whether we still have a valid labeling
             // or whether we need to relabel everything
-            ihsr.__mulib__blockCache();
+            toPotentiallyRepresent.__mulib__blockCache();
         }
 
-        if (ihsr instanceof Sarray) {
-            ((Sarray<?>) ihsr).clearCache();
+        if (toPotentiallyRepresent instanceof Sarray) {
+            ((Sarray<?>) toPotentiallyRepresent).clearCache();
         }
     }
 
-    private void representPartnerClassObjectViaConstraintsIfNeeded(SymbolicExecution se, PartnerClass ihsv, Sint newIndex) {
-        representPartnerClassObjectViaConstraintsIfNeeded(se, ihsv, newIndex instanceof Sym);
-    }
     private void representPartnerClassObjectViaConstraintsIfNeeded(SymbolicExecution se, PartnerClass ihsv, boolean additionalConstraintToPrepare) {
         if (!ihsv.__mulib__isRepresentedInSolver() && additionalConstraintToPrepare) {
             ihsv.__mulib__prepareToRepresentSymbolically(se);
@@ -582,9 +590,9 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     }
 
     @Override
-    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass var, String field) {
-        assert !(var instanceof Sarray);
-        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(var.__mulib__getId()), field);
+    public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(SymbolicExecution se, PartnerClass containingObject, String field) {
+        assert !(containingObject instanceof Sarray);
+        return se.getAvailableInformationOnPartnerClassObject((Sint) tryGetSymFromSnumber.apply(containingObject.__mulib__getId()), field);
     }
 
     @Override
@@ -614,9 +622,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     @Override
     public void remember(SymbolicExecution se, String name, SubstitutedVar substitutedVar) {
-        if (substitutedVar == null) { // TODO Should we remember explicit nulls?
-            return;
-        }
         if (substitutedVar instanceof PartnerClass) {
             PartnerClass pc = (PartnerClass) substitutedVar;
             pc.__mulib__setIsNamed();
@@ -627,6 +632,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 pc.__mulib__prepareToRepresentSymbolically(se);
                 representPartnerClassObjectIfNeeded(se, pc, null, null, null);
             } else {
+                // This must also be done for non-symbolic objects, since they might contain uninitialized lazily generated objects
                 _initializeIdsOfContainedLazilyInitializedObjects(se, pc);
             }
             if (!se.nextIsOnKnownPath()) {
@@ -689,6 +695,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return initialConstraints.toArray(new ArrayAccessConstraint[0]);
     }
 
+    /**
+     * Adds a constraint that ensured that a value is in the bounds of an array.
+     * Is used to account for the case where concolic execution finds that we must relabel the values.
+     * @param se The instance of {@link SymbolicExecution} used for this execution run
+     * @param indexInBounds The constraint
+     */
     protected abstract void _addIndexInBoundsConstraint(SymbolicExecution se, Sbool indexInBounds);
 
     private SubstitutedVar _selectWithSymbolicIndexes(SymbolicExecution se, Sarray sarray, Sint index) {
@@ -742,6 +754,11 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         return value;
     }
 
+    /**
+     * Only implemented by concolic execution. Checks whether the accessed array has any stale index-value pairs.
+     * @param sarray The sarray to check
+     * @param se The instance of {@link SymbolicExecution} used for this execution run
+     */
     protected void additionalChecksAfterSelect(Sarray sarray, SymbolicExecution se) {}
 
 }
