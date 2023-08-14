@@ -1,8 +1,6 @@
 package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.substitutions.*;
-import de.wwu.mulib.util.Utility;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -14,14 +12,17 @@ import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.StdLabels;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
+import de.wwu.mulib.substitutions.Conc;
+import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.StringConstants;
-import sun.reflect.ReflectionFactory;
+import de.wwu.mulib.util.Utility;
+import sun.misc.Unsafe;
 
 import java.lang.reflect.Array;
-import java.lang.reflect.Constructor;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.function.BiFunction;
@@ -1071,51 +1072,23 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return result;
     }
 
-    private Object createEmptyLabelObject(Class<?> clazz) {
-        Constructor<?> constructor = getOrGenerateZeroArgsConstructor(clazz);
+
+    static {
         try {
-            return constructor.newInstance();
-        } catch (InstantiationException | IllegalAccessException | InvocationTargetException e) {
-            e.printStackTrace();
-            throw new MulibRuntimeException(e);
+            Field f = Unsafe.class.getDeclaredField("theUnsafe");
+            f.setAccessible(true);
+            UNSAFE = (Unsafe) f.get(null);
+        } catch (Exception e) {
+            throw new MulibIllegalStateException("Unsafe not retrieveable. Cannot construct empty objects to label", e);
         }
     }
-
-    // Cache for generated constructors
-    private static final Map<Class<?>, Constructor<?>> classToZeroArgsConstructor = Collections.synchronizedMap(new HashMap<>());
-    protected static Constructor<?> getOrGenerateZeroArgsConstructor(final Class<?> toGenerateFor) {
-        Class<?> current = toGenerateFor;
-        // Gather superclasses
-        ArrayDeque<Class<?>> deque = new ArrayDeque<>();
-        Constructor<?> previousConstructor;
-        do {
-            previousConstructor = classToZeroArgsConstructor.get(current);
-            if (previousConstructor != null) {
-                break;
-            }
-            assert !deque.contains(current);
-            deque.addFirst(current);
-            current = current.getSuperclass();
-        } while (current != null);
-
-        ReflectionFactory rf = ReflectionFactory.getReflectionFactory();
-        Constructor<?> currentConstructor;
-        // Starting from the most abstract class, generate suitable constructors
-        while (!deque.isEmpty()) {
-            current = deque.pollFirst();
-            if (previousConstructor == null) {
-                currentConstructor = rf.newConstructorForSerialization(current);
-            } else {
-                currentConstructor = rf.newConstructorForSerialization(current, previousConstructor);
-            }
-            if (currentConstructor == null) {
-                throw new MulibRuntimeException("Failed to generate a constructor.");
-            }
-            classToZeroArgsConstructor.put(current, currentConstructor);
-            previousConstructor = currentConstructor;
+    private static final Unsafe UNSAFE;
+    private Object createEmptyLabelObject(Class<?> clazz) {
+        try {
+            return UNSAFE.allocateInstance(clazz);
+        } catch (InstantiationException e) {
+            throw new MulibRuntimeException("Cannot instantiate instance of type " + clazz.getSimpleName(), e);
         }
-
-        return classToZeroArgsConstructor.get(toGenerateFor);
     }
 
     protected Constraint getNeq(
