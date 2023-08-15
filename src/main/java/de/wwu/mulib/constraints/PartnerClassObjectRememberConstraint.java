@@ -17,10 +17,11 @@ public class PartnerClassObjectRememberConstraint implements PartnerClassObjectC
 
     /**
      * Creates new remember constraint
-     * @param name The name to remember the snapshot by
+     * @param name The name to remember the snapshot by. Must not be "return"
      * @param copy A copy. If the object is lazily initialized, this copy potentially is incomplete
      */
     public PartnerClassObjectRememberConstraint(String name, PartnerClass copy) {
+        assert !name.equals("return");
         this.name = name;
         this.copy = copy;
     }

@@ -3,7 +3,7 @@ package de.wwu.mulib;
 import de.wwu.mulib.search.executors.SearchStrategy;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.Solvers;
 
 import java.util.ArrayList;

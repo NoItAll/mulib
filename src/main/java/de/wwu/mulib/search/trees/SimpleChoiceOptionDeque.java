@@ -7,6 +7,11 @@ import java.util.Optional;
 import java.util.function.Consumer;
 import java.util.function.Supplier;
 
+/**
+ * A deque based on a linked list.
+ * Oftentimes offers a bad performance for {@link de.wwu.mulib.search.executors.SearchStrategy#DSAS} and
+ * {@link de.wwu.mulib.search.executors.SearchStrategy#IDDSAS}.
+ */
 public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
 
     private final LinkedList<Choice.ChoiceOption> choiceOptions;
@@ -23,8 +28,8 @@ public class SimpleChoiceOptionDeque implements ChoiceOptionDeque {
 
     @Override
     public synchronized boolean request(
-            Choice.ChoiceOption toRemove) {
-        return choiceOptions.remove(toRemove);
+            Choice.ChoiceOption requested) {
+        return choiceOptions.remove(requested);
     }
 
     @Override

@@ -4,7 +4,7 @@ import de.wwu.mulib.Mulib;
 
 import static de.wwu.mulib.Mulib.assume;
 
-public class TravelingSalespersonProblem {
+public class PostmanProblemWithDirectedEdges {
 
     public static class DirectedEdge {
         public final int n0, n1;

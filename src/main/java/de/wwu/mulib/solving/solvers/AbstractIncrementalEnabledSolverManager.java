@@ -5,7 +5,7 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.*;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.Labels;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
@@ -361,7 +361,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         Solution latestSolution = initialSolution;
         // Decrement to account for initialSolution
         int currentN = N.decrementAndGet();
-        if (latestSolution.labels.getNamedVars().length == 0) {
+        if (latestSolution.labels.getIdToLabel().isEmpty()) {
             return Collections.singletonList(initialSolution); // No named variables --> nothing to negate.
         }
         List<Solution> solutions = new ArrayList<>();
@@ -428,7 +428,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 }
             }
             assert rememberConstraint != null || sv instanceof Sprimitive || entry.getKey().equals("return");
-            Object label = givenLabels.getLabelForNamedSubstitutedVar(sv);
+            Object label = givenLabels.getLabelForId(entry.getKey());
             Constraint disjunctionConstraint;
             if (sv instanceof Sprimitive) {
                 disjunctionConstraint = getNeqFromSprimitive((Sprimitive) sv, label);
@@ -459,7 +459,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
                 incrementalSolverState.getAllPartnerClassObjectConstraints();
         Map<String, SubstitutedVar> identifierToSubstitutedVars  = new HashMap<>();
-        Map<SubstitutedVar, Object> substitutedVarsToOriginalRepresentation = new IdentityHashMap<>();
         Map<String, Object> identifiersToOriginalRepresentation = new HashMap<>();
         // Label remembered Sprimitives
         for (Map.Entry<String, Sprimitive> entry : rememberedSprimitives.entrySet()) {
@@ -468,7 +467,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
             Object labeled = labelSprimitive(entry.getValue());
             identifiersToOriginalRepresentation.put(entry.getKey(), labeled);
-            substitutedVarsToOriginalRepresentation.put(entry.getValue(), labeled);
         }
 
         // Label remembered values, only a subset of updates are relevant!
@@ -483,7 +481,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 throw new MulibRuntimeException("Must not overwrite names for remembering values! Overwritten: " + rememberConstraint.getName());
             }
             identifiersToOriginalRepresentation.put(rememberConstraint.getName(), label);
-            substitutedVarsToOriginalRepresentation.put(copy, label);
             // Take objects that were already labeled but changed in between into account; - otherwise we cache
             // the named values
             resetLabels();
@@ -498,13 +495,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
         if (returnValue instanceof SubstitutedVar) { // TODO
             identifierToSubstitutedVars.put("return", (SubstitutedVar) returnValue);
-            substitutedVarsToOriginalRepresentation.put((SubstitutedVar) returnValue, labeledReturnValue);
         }
         identifiersToOriginalRepresentation.put("return", labeledReturnValue);
 
         Labels labels = new StdLabels(
                 identifierToSubstitutedVars,
-                substitutedVarsToOriginalRepresentation,
                 identifiersToOriginalRepresentation
         );
         return new Solution(labeledReturnValue, labels);

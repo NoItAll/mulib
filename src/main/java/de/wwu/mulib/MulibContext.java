@@ -6,6 +6,7 @@ import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.*;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.tcg.*;

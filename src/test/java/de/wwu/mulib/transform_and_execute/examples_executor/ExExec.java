@@ -4,7 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.*;
 import de.wwu.mulib.transform_and_execute.examples.apache2_examples.*;
 import de.wwu.mulib.transform_and_execute.examples.mit_examples.InfiniteLoop;

@@ -5,6 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
+/**
+ * A more complex deque based on a list of level containers supporting accessing the sublist of
+ * {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} for a given depth.
+ */
 public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
     private final ArrayList<ChoiceOptionLevelContainer> choiceOptions;
     private final int batchIncreaseOfDirectAccessList = 32;
@@ -124,9 +128,9 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
     }
 
     @Override
-    public synchronized boolean request(Choice.ChoiceOption toRemove) {
-        ChoiceOptionLevelContainer container = choiceOptions.get(toRemove.getDepth());
-        if (container.remove(toRemove)) {
+    public synchronized boolean request(Choice.ChoiceOption requested) {
+        ChoiceOptionLevelContainer container = choiceOptions.get(requested.getDepth());
+        if (container.remove(requested)) {
             size--;
             return true;
         }

@@ -7,6 +7,7 @@ import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.*;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.primitives.ValueFactory;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -178,7 +179,6 @@ public abstract class MulibExecutorManager {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         Optional<PathSolution> result = _getPathSolution();
         printStatistics();
-        terminate();
         return result;
     }
 

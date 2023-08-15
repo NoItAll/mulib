@@ -11,17 +11,39 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
+/**
+ * Represents a search tree.
+ */
 public final class SearchTree {
 
     private final MulibConfig config;
+    /**
+     * The root node of the search tree. Initially this is a choice with a single choice option having the constraint
+     * {@link Sbool.ConcSbool#TRUE}.
+     */
     public final Choice root;
+    /**
+     * The path solutions of this search tree
+     */
     private final List<PathSolution> solutionsList;
+    /**
+     * If configured, stores all encountered fail nodes explicitly
+     */
     private final List<Fail> failsList;
+    /**
+     * If configured, stores all exceeded budgets explicitly
+     */
     private final List<ExceededBudget> exceededBudgetList;
+    /**
+     * A double-ended priority "deque" storing the choice options that can be explored in this search tree
+     */
     private final ChoiceOptionDeque choiceOptionDeque;
     private final String indentBy;
     private final boolean enlistLeaves;
 
+    /**
+     * @param config The configuration
+     */
     public SearchTree(
             MulibConfig config) {
         this.config = config;
@@ -51,6 +73,12 @@ public final class SearchTree {
         choiceOptionDeque = ChoiceOptionDeques.getChoiceOptionDeque(config, root.getOption(0));
     }
 
+    /**
+     * Returns the trail to a choice option. This is used by {@link de.wwu.mulib.search.executors.SymbolicExecution} to
+     * retrieve the predetermined choices to reach an unexplored choice option.
+     * @param getTo The choice option that should be explored in the search region
+     * @return An ArrayDeque with the path/trail of choice options that has to be taken to reach the choice option 'getTo'
+     */
     public static ArrayDeque<Choice.ChoiceOption> getPathTo(final Choice.ChoiceOption getTo) {
         ArrayDeque<Choice.ChoiceOption> result = new ArrayDeque<>();
         Choice.ChoiceOption currentChoiceOption = getTo;
@@ -61,6 +89,14 @@ public final class SearchTree {
         return result;
     }
 
+    /**
+     * Returns the choice option deepest in the search tree that is shared by the two choice options.
+     * Is used by {@link de.wwu.mulib.search.executors.AbstractMulibExecutor} to determine how often the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager} must be backtracked so that a new choice option can be targeted.
+     * @param co0 The first choice option
+     * @param co1 The second choice option
+     * @return The deepest shared ancestor of the co0 and co1
+     */
     public static Choice.ChoiceOption getDeepestSharedAncestor(
             Choice.ChoiceOption co0,
             Choice.ChoiceOption co1) {
@@ -81,7 +117,7 @@ public final class SearchTree {
 
     /**
      * Get the ChoiceOptions between getFrom and getTo. Assumes that there is a path with strictly increasing depth
-     * between the two ChoiceOptions.
+     * between the two ChoiceOptions. Will throw an exception if there is no such path.
      * @param getFrom First ChoiceOption, depth <= getTo.depth.
      * @param getTo Second ChoiceOption, depth >= getFrom.depth
      * @return The path between (excluding) the ChoiceOption with the lesser depth to the ChoiceOption with the higher depth.
@@ -105,6 +141,12 @@ public final class SearchTree {
         return result;
     }
 
+    /**
+     * Accumulates the encountered constraints for traversing from the root of the search tree to the passed choice option.
+     * @param co The choice option up to which all constraints shall be collected
+     * @return A container with all {@link Constraint}s and {@link PartnerClassObjectConstraint}s encountered
+     * on the path to the choice option.
+     */
     public static AccumulatedChoiceOptionConstraints getAllConstraintsForChoiceOption(Choice.ChoiceOption co) {
         ArrayDeque<Choice.ChoiceOption> cos = getPathTo(co);
         List<Constraint> constraints = new ArrayList<>();
@@ -120,8 +162,17 @@ public final class SearchTree {
         );
     }
 
+    /**
+     * Container for {@link Constraint}s and {@link PartnerClassObjectConstraint}s
+     */
     public static class AccumulatedChoiceOptionConstraints {
+        /**
+         * The constraints
+         */
         public final Constraint[] constraints;
+        /**
+         * The partner class object constraints
+         */
         public final PartnerClassObjectConstraint[] partnerClassObjectConstraints;
 
         AccumulatedChoiceOptionConstraints(Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
@@ -131,6 +182,10 @@ public final class SearchTree {
 
     }
 
+    /**
+     * @return A string representation of this search tree. We purposefully did not use toString since this
+     * kills the debugger if the search tree is sufficiently large.
+     */
     public String stringRepresentation() {
         return toString(root, indentBy);
     }
@@ -168,30 +223,54 @@ public final class SearchTree {
         return sb.toString();
     }
 
+    /**
+     * @return The choice option deque
+     */
     public ChoiceOptionDeque getChoiceOptionDeque() {
         return choiceOptionDeque;
     }
 
+    /**
+     * Adds a path solution to the list of path solutions
+     * @param pathSolution The path solution
+     */
     public void addToPathSolutions(PathSolution pathSolution) {
         this.solutionsList.add(pathSolution);
     }
 
+    /**
+     * @return The path solutions list
+     */
     public List<PathSolution> getPathSolutionsList() {
         return solutionsList;
     }
 
+    /**
+     * @return The fails list
+     */
     public List<Fail> getFailsList() {
         return failsList;
     }
 
+    /**
+     * @return The exceeded budgets list
+     */
     public List<ExceededBudget> getExceededBudgetList() {
         return exceededBudgetList;
     }
 
+    /**
+     * Adds a fail to the list of fails, if configured to do so
+     * @param fail The fail
+     */
     public void addToFails(Fail fail) {
         if (enlistLeaves) this.failsList.add(fail);
     }
 
+    /**
+     * Adds an exceeded budget to the list of exceeded budgets, if configured to do so
+     * @param exceededBudget The exceeded budget
+     */
     public void addToExceededBudgets(ExceededBudget exceededBudget) {
         if (enlistLeaves) this.exceededBudgetList.add(exceededBudget);
     }

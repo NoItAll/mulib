@@ -4,7 +4,7 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;

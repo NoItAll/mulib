@@ -2,14 +2,18 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
+import de.wwu.mulib.solving.Solution;
 
 import java.util.BitSet;
 
+/**
+ * Adds to {@link ExceptionPathSolution} by also storing a cover
+ */
 public class ExceptionPathSolutionWithCover extends ExceptionPathSolution implements IPathSolutionWithBitSetCover {
 
     private final BitSet cover;
 
-    public ExceptionPathSolutionWithCover(
+    ExceptionPathSolutionWithCover(
             Choice.ChoiceOption choiceOption,
             Solution s,
             Constraint[] constraints,
@@ -19,6 +23,9 @@ public class ExceptionPathSolutionWithCover extends ExceptionPathSolution implem
         this.cover = cover;
     }
 
+    /**
+     * @return The cover of the path solution in the form of a bit set
+     */
     public BitSet getCover() {
         return cover;
     }

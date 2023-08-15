@@ -6,9 +6,14 @@ import de.wwu.mulib.exceptions.IllegalTreeAccessException;
 import de.wwu.mulib.exceptions.IllegalTreeModificationException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
+import de.wwu.mulib.solving.Solution;
 
 import java.util.*;
 
+/**
+ * Represents a choice with a list of {@link ChoiceOption} as its children in the {@link SearchTree}.
+ * Typically, two choice options are contained in on choice. However, more are possible.
+ */
 public final class Choice extends TreeNode {
     private final List<ChoiceOption> options;
 
@@ -42,6 +47,15 @@ public final class Choice extends TreeNode {
         return "Choice{depth=" + depth + ",nrOptions=" + options.size() + "}";
     }
 
+    /**
+     * Represents a choice option with a constraint in the search tree.
+     * A choice option can have a set of states, as represented by {@link ChoiceOption#isSatisfiable()} etc.
+     * These states are used to track whether we can still modify a choice option and whether we have already checked if it
+     * is satisfiable or not.
+     * The constraints of a choice option can be mutated via {@link ChoiceOption#setOptionConstraint(Constraint)} and
+     * {@link ChoiceOption#addPartnerClassConstraint(PartnerClassObjectConstraint)}. This can only be done if the choice
+     * option has not yet been evaluated. A choice option might get unsatisfiable due to such added constraints.
+     */
     public final class ChoiceOption {
         // No information on current state
         private static final byte UNKNOWN = 0;
@@ -62,6 +76,10 @@ public final class Choice extends TreeNode {
         private static final byte CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK = -128;
 
         private byte state;
+        /**
+         * The number of the choice option. If the parent choice is binary it is expected that the constraint which
+         * causes the execution to fork via a {@link Choice} has the number 0 while the negation has the number 1.
+         */
         public final int choiceOptionNumber;
         // This constraint must be fulfilled to further evaluate the ChoiceOption
         private Constraint optionConstraint;
@@ -76,28 +94,48 @@ public final class Choice extends TreeNode {
             this.optionConstraint = optionConstraint;
         }
 
+        /**
+         * @return The depth of this option's choice in the search tree
+         */
         public int getDepth() {
             return Choice.this.depth;
         }
 
+        /**
+         * Sets the child of this choice option to the specified tree node.
+         * Throws an exception if the choice option is either already evaluated.
+         * @param child The child
+         */
         void setChild(TreeNode child) {
             _checkChildIsUnset();
             _checkIllegalStateModificationElseSet(EVALUATED);
             this.child = child;
         }
 
+        /**
+         * @return The parent of this choice option
+         */
         public ChoiceOption getParent() {
             return Choice.this.parent;
         }
 
+        /**
+         * @return The choice this option is a child of
+         */
         public Choice getChoice() {
             return Choice.this;
         }
 
+        /**
+         * @return The constraint associated with this choice option
+         */
         public Constraint getOptionConstraint() {
             return optionConstraint;
         }
 
+        /**
+         * @return The list of partner class constraints that were added while evaluating this choice option
+         */
         public List<PartnerClassObjectConstraint> getPartnerClassObjectConstraints() {
             return partnerClassObjectConstraints;
         }
@@ -106,6 +144,13 @@ public final class Choice extends TreeNode {
             return child != null || isEvaluated();
         }
 
+        /**
+         * Sets the choice option constraint.
+         * Heuristics can use this to set the constraint to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#TRUE}
+         * or {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE} if this can be proven.
+         * Throws an exception if this choice option is already evaluated.
+         * @param optionConstraint The new constraint
+         */
         public void setOptionConstraint(Constraint optionConstraint) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
@@ -116,6 +161,11 @@ public final class Choice extends TreeNode {
             this.optionConstraint = optionConstraint;
         }
 
+        /**
+         * Adds a new partner class constraint.
+         * Throws an exception if this choice option was already evaluated.
+         * @param ic The new partner class constraint
+         */
         public void addPartnerClassConstraint(PartnerClassObjectConstraint ic) {
             if (isIllegalConstraintModification()) {
                 throw new IllegalTreeModificationException("The partner class object constraint must not be added to already evaluated" +
@@ -127,6 +177,9 @@ public final class Choice extends TreeNode {
             partnerClassObjectConstraints.add(ic);
         }
 
+        /**
+         * @return The child, if a child has already been set. If there is no child, an exception is thrown.
+         */
         public TreeNode getChild() {
             if (child == null) {
                 throw new IllegalTreeAccessException("child cannot be retrieved as it has not yet been set.");
@@ -134,6 +187,11 @@ public final class Choice extends TreeNode {
             return child;
         }
 
+        /**
+         * Sets the choice option to be unsatisfiable
+         * Throws an exception if this choice option was already evaluated.
+         * @return The Fail node associated with the failure of this choice option
+         */
         @SuppressWarnings("UnusedReturnValue")
         public Fail setUnsatisfiable() {
             _checkChildIsUnset();
@@ -143,6 +201,12 @@ public final class Choice extends TreeNode {
             return result;
         }
 
+        /**
+         * Sets the choice option to be explicitly failed, i.e., the user has thrown a {@link de.wwu.mulib.Fail}.
+         * This yields a leaf node in the search tree.
+         * Throws an exception if this choice option was already evaluated.
+         * @return The Fail node associated with the failure of this choice option
+         */
         public Fail setExplicitlyFailed() {
             _checkChildIsUnset();
             Fail result = new Fail(this, true);
@@ -151,26 +215,72 @@ public final class Choice extends TreeNode {
             return result;
         }
 
+        /**
+         * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}
+         * All constraints on the path are added to the path solution
+         * Throws an exception if this choice option was already evaluated.
+         * @param s The solution to wrap in the path solution
+         * @param constraints The encountered constraints
+         * @param partnerClassObjectConstraints The list of partner class constraints
+         * @return The PathSolution node associated with reaching a leaf node
+         */
         public PathSolution setSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
             return new PathSolution(this, s, constraints, partnerClassObjectConstraints);
         }
 
-        public PathSolution setSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
+        /**
+         * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}
+         * All constraints on the path are added to the path solution
+         * Throws an exception if this choice option was already evaluated.
+         * @param s The solution to wrap in the path solution
+         * @param constraints The encountered constraints
+         * @param partnerClassObjectConstraints The list of partner class constraints
+         * @param cover The cover that could be calculated for this path solution. Is, e.g., calculated using {@link de.wwu.mulib.search.choice_points.CoverageCfg}.
+         * @return The path solution node associated with reaching a leaf node. The path solution also contains a coverage bit set
+         */
+        public PathSolutionWithCover setSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
             _checkChildIsUnset();
             return new PathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
         }
 
+        /**
+         * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}.
+         * The returned path solution is an {@link ExceptionPathSolution}, i.e., an exception was thrown.
+         * All constraints on the path are added to the path solution
+         * Throws an exception if this choice option was already evaluated.
+         * @param s The solution to wrap in the path solution
+         * @param constraints The encountered constraints
+         * @param partnerClassObjectConstraints The list of partner class constraints
+         * @return The path solution node associated with reaching a leaf node
+         */
         public ExceptionPathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
             return new ExceptionPathSolution(this, s, constraints, partnerClassObjectConstraints);
         }
 
-        public ExceptionPathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
+        /**
+         * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}.
+         * The returned path solution is an {@link ExceptionPathSolution}, i.e., an exception was thrown.
+         * All constraints on the path are added to the path solution
+         * Throws an exception if this choice option was already evaluated.
+         * @param s The solution to wrap in the path solution
+         * @param constraints The encountered constraints
+         * @param partnerClassObjectConstraints The list of partner class constraints
+         * @param cover The cover that could be calculated for this path solution. Is, e.g., calculated using {@link de.wwu.mulib.search.choice_points.CoverageCfg}.
+         * @return The path solution node associated with reaching a leaf node. The path solution also contains a coverage bit set
+         */
+        public ExceptionPathSolutionWithCover setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
             _checkChildIsUnset();
             return new ExceptionPathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
         }
 
+        /**
+         * Sets the choice option to yield a leaf node in the search tree, a {@link ExceededBudget}.
+         * Throws an exception if this choice option was already evaluated.
+         * @param budget The budget that was exceeded
+         * @return The exceeded budget node associated with reaching a leaf node
+         */
         public ExceededBudget setBudgetExceeded(Budget budget) {
             _checkChildIsUnset();
             if (budget.isIncremental()) {
@@ -190,46 +300,88 @@ public final class Choice extends TreeNode {
             }
         }
 
+        /**
+         * @return true, if the choice option is evaluated, i.e., a child node has been found, else false
+         */
         public boolean isEvaluated() {
             return (state & EVALUATED) != 0;
         }
 
+        /**
+         * @return true, if the constraints added by this choice option cause the constraint stack of the
+         * {@link de.wwu.mulib.solving.solvers.SolverManager} to be unsatisfiable, else false
+         */
         public boolean isUnsatisfiable() {
             return (state & UNSATISFIABLE) != 0;
         }
 
+        /**
+         * @return true, if the choice option is explicitly failed, i.e., the user caused this branch to not be further
+         * evaluated, else false
+         */
         public boolean isExplicitlyFailed() {
             return (state & EXPLICITLY_FAILED) != 0;
         }
 
+        /**
+         * @return true, if the choice option is found to be satisfiable. Note that a choice option can become unsatisfiable
+         * due to constraints added via {@link ChoiceOption#setOptionConstraint(Constraint)} later on. This update is
+         * not necessarily reflected via this return value. Else false
+         */
         public boolean isSatisfiable() {
             return (state & SATISFIABLE) != 0;
         }
 
+        /**
+         * @return true, if the choice option yields a leaf node since it exceeds a budget, else false
+         */
         public boolean isBudgetExceeded() {
             return (state & BUDGET_EXCEEDED) != 0;
         }
 
+        /**
+         * @return true, if the choice option and all children are excluded from further evaluation, else false
+         */
         public boolean isCutOff() {
             return (state & CUT_OFF) != 0;
         }
 
+        /**
+         * @return true if there is no current information on the choice option available, else false
+         */
         public boolean isUnknown() {
             return state == UNKNOWN || state == CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK;
         }
 
+        /**
+         * Sets the current choice option to be satisfiable.
+         * Throws an exception if the state transition is illegal
+         */
         public void setSatisfiable() {
             _checkIllegalStateModificationElseSet(SATISFIABLE);
         }
 
+        /**
+         * Sets the current choice option to be needed to be reevaluated.
+         * Throws an exception if the state transition is illegal.
+         * This method is called during concolic execution if a stale labeling was detected
+         */
         public void setReevaluationNeeded() {
             _checkIllegalStateModificationElseSet(REEVALUATION_NEEDED);
         }
 
+        /**
+         * @return true, if the choice option needs to be reevaluated for satisfiability, else false
+         * @see ChoiceOption#setReevaluationNeeded()
+         */
         public boolean reevaluationNeeded() {
             return (state & REEVALUATION_NEEDED) != 0;
         }
 
+        /**
+         * @return true, if the choice option was modified after the intial SAT check, e.g., by changing the associated
+         * constraint
+         */
         public boolean constraintWasModifiedAfterInitialSatCheck() {
             return (state & CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK) != 0;
         }
@@ -257,10 +409,17 @@ public final class Choice extends TreeNode {
                     + "}";
         }
 
+        /**
+         * @return An informative string on the current state of the choice option
+         */
         public String stateToString() {
             return stateToString(state);
         }
 
+        /**
+         * @param state The state to get information on
+         * @return An informative string on the meaning of the state
+         */
         public String stateToString(byte state) {
             return (state == UNKNOWN || state == CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK) ? "UNKNOWN" :
                     ((state & SATISFIABLE) != 0) ? "SATISFIABLE" :

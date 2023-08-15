@@ -17,7 +17,7 @@ import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.Solvers;
 
 import java.util.ArrayList;
@@ -149,11 +149,11 @@ public final class ExamplesExecutor {
                 case "Schedule":   // Scheduling of teachers to courses and time slots
                     pathSolutions = runScheduling(b);
                     break;
-                case "TSP_P":
-                    pathSolutions = runTravelingSalesperson_possible(b);
+                case "PM_P":
+                    pathSolutions = runPostmanProblem_possible(b);
                     break;
-                case "TSP_IP":
-                    pathSolutions = runTravelingSalesperson_impossible(b);
+                case "PM_IP":
+                    pathSolutions = runPostmanProblem_impossible(b);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -217,58 +217,58 @@ public final class ExamplesExecutor {
         return result;
     }
 
-    public static List<PathSolution> runTravelingSalesperson_possible(MulibConfig.MulibConfigBuilder builder) {
+    public static List<PathSolution> runPostmanProblem_possible(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
         List<PathSolution> result =
                 Mulib.executeMulib(
                         "getRoute",
-                        TravelingSalespersonProblem.class,
+                        PostmanProblemWithDirectedEdges.class,
                         builder,
-                        new Object[] { new TravelingSalespersonProblem.DirectedEdge[] {
-                                new TravelingSalespersonProblem.DirectedEdge(2,1),
-                                new TravelingSalespersonProblem.DirectedEdge(1,3),
-                                new TravelingSalespersonProblem.DirectedEdge(1,4),
-                                new TravelingSalespersonProblem.DirectedEdge(3,2),
-                                new TravelingSalespersonProblem.DirectedEdge(4,2),
-                                new TravelingSalespersonProblem.DirectedEdge(4,3),
-                                new TravelingSalespersonProblem.DirectedEdge(2,7),
-                                new TravelingSalespersonProblem.DirectedEdge(7,1),
-                                new TravelingSalespersonProblem.DirectedEdge(3,5),
-                                new TravelingSalespersonProblem.DirectedEdge(6,4),
-                                new TravelingSalespersonProblem.DirectedEdge(5,6)
+                        new Object[] { new PostmanProblemWithDirectedEdges.DirectedEdge[] {
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(2,1),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(1,3),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(1,4),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(3,2),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(4,2),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(4,3),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(2,7),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(7,1),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(3,5),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(6,4),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(5,6)
                         }});
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
-            TravelingSalespersonProblem.Route r = (TravelingSalespersonProblem.Route) ps.getSolution().returnValue;
+            PostmanProblemWithDirectedEdges.Route r = (PostmanProblemWithDirectedEdges.Route) ps.getSolution().returnValue;
             sb.append("####START OF SOLUTION####").append(System.lineSeparator());
-            for (TravelingSalespersonProblem.DirectedEdge e : r.getPath()) {
+            for (PostmanProblemWithDirectedEdges.DirectedEdge e : r.getPath()) {
                 sb.append("Node ").append(e.n0).append(" -> ").append(e.n1).append(System.lineSeparator());
             }
-            sb.append("####END OF SOLUTION####");
+            sb.append("####END OF SOLUTION####").append(System.lineSeparator());
         }
         Mulib.log.info(sb.toString());
 
         return result;
     }
 
-    public static List<PathSolution> runTravelingSalesperson_impossible(MulibConfig.MulibConfigBuilder builder) {
+    public static List<PathSolution> runPostmanProblem_impossible(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
         Optional<PathSolution> result =
                 Mulib.executeMulibForOne(
                         "getRoute",
-                        TravelingSalespersonProblem.class,
+                        PostmanProblemWithDirectedEdges.class,
                         builder,
-                        new Object[] { new TravelingSalespersonProblem.DirectedEdge[] {
-                                new TravelingSalespersonProblem.DirectedEdge(1,3),
-                                new TravelingSalespersonProblem.DirectedEdge(2,1),
-                                new TravelingSalespersonProblem.DirectedEdge(2,3),
-                                new TravelingSalespersonProblem.DirectedEdge(4,2),
-                                new TravelingSalespersonProblem.DirectedEdge(3,5),
-                                new TravelingSalespersonProblem.DirectedEdge(6,4),
-                                new TravelingSalespersonProblem.DirectedEdge(5,6)
+                        new Object[] { new PostmanProblemWithDirectedEdges.DirectedEdge[] {
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(1,3),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(2,1),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(2,3),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(4,2),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(3,5),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(6,4),
+                                new PostmanProblemWithDirectedEdges.DirectedEdge(5,6)
                         }}
                 );
-        Mulib.log.info("#### No path solution should be found for impossible TSP: " + result.isEmpty());
+        Mulib.log.info("#### No path solution should be found for impossible postman problem: " + result.isEmpty());
         return result.map(List::of).orElseGet(List::of);
     }
 

@@ -5,7 +5,7 @@ import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.IntegerScenario;
 import org.junit.jupiter.api.Test;
 

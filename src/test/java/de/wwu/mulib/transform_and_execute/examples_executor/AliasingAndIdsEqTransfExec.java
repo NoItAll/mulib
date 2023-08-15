@@ -2,7 +2,7 @@ package de.wwu.mulib.transform_and_execute.examples_executor;
 
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.AliasingAndIdsEq;
 import org.junit.jupiter.api.Test;
 

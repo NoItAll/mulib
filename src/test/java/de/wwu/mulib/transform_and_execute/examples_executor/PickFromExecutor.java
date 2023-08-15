@@ -2,7 +2,7 @@ package de.wwu.mulib.transform_and_execute.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.trees.Solution;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.GraphEdge;
 import de.wwu.mulib.transform_and_execute.examples.PickFrom;
 import org.junit.jupiter.api.Test;

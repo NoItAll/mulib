@@ -1,7 +1,5 @@
 package de.wwu.mulib.tcg;
 
-import de.wwu.mulib.search.trees.Solution;
-
 import java.util.BitSet;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
