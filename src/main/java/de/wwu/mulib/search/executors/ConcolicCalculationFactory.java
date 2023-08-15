@@ -8,6 +8,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -21,6 +22,14 @@ import static de.wwu.mulib.constraints.ConcolicConstraintContainer.tryGetSymFrom
 import static de.wwu.mulib.expressions.ConcolicNumericContainer.getConcNumericFromConcolic;
 import static de.wwu.mulib.expressions.ConcolicNumericContainer.tryGetSymFromConcolic;
 
+/**
+ * Calculation factory implementing concolic execution. The returned elements either are an instance of {@link de.wwu.mulib.substitutions.Conc},
+ * i.e., not carrying any symbolic information, or are wrappers carrying a {@link ConcolicNumericContainer} or a {@link ConcolicConstraintContainer}.
+ * These two container types carry the symbolic value and, additionally, a label for the given execution run.
+ * It can happen that during concolic execution, some labels become stale because a constraint has been added that violates
+ * them. In this case, we finish evaluating the given {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} but mark it via
+ * {@link Choice.ChoiceOption#setReevaluationNeeded()}.
+ */
 @SuppressWarnings({ "rawtypes", "unchecked" })
 public final class ConcolicCalculationFactory extends AbstractCalculationFactory {
 

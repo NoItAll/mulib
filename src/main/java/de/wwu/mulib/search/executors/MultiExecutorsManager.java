@@ -17,6 +17,9 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
+/**
+ * Mulib executor manager that manages multiple {@link MulibExecutor}s.
+ */
 public class MultiExecutorsManager extends MulibExecutorManager {
     private final SimpleSyncedQueue<SearchStrategy> nextStrategiesToInitialize;
     private final SimpleSyncedQueue<MulibExecutor> idle;
@@ -24,6 +27,18 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     private final long activateParallelFor;
     private volatile Throwable failureInThread = null;
 
+    /**
+     * @param config The configuration
+     * @param observedTree The tree representing the evaluation of the search region
+     * @param choicePointFactory The choice point factory; - must be compatible with the value and calculation factory
+     * @param valueFactory The value factory; - must be compatible with the choice point and calculation factory
+     * @param calculationFactory The calculation factory; - must be compatible with the value and choice point factory
+     * @param mulibValueTransformer The mulib value transformed used to transform the initial arguments into search region types
+     * @param searchRegionMethod The method handle used to invoke the search region
+     * @param staticVariables A prototype of the manager of static variables
+     * @param searchRegionArgs The transformed search region arguments
+     * @param coverageCfg Can be null: The coverage control flow graph.
+     */
     public MultiExecutorsManager(
             MulibConfig config,
             SearchTree observedTree,
@@ -31,13 +46,13 @@ public class MultiExecutorsManager extends MulibExecutorManager {
             ValueFactory valueFactory,
             CalculationFactory calculationFactory,
             MulibValueTransformer mulibValueTransformer,
-            MethodHandle representedMethod,
+            MethodHandle searchRegionMethod,
             StaticVariables staticVariables,
             Object[] searchRegionArgs,
             CoverageCfg coverageCfg) {
         super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
                 choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer,
-                representedMethod, staticVariables, searchRegionArgs, coverageCfg);
+                searchRegionMethod, staticVariables, searchRegionArgs, coverageCfg);
         this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
         this.idle = new SimpleSyncedQueue<>();
@@ -114,6 +129,11 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         }
     }
 
+    /**
+     * If {@link ExceptionThrowingThreadFactory} finds a {@link Throwable} that escaped a {@link MulibExecutor}, this
+     * will call this method.
+     * @param failureInThread Throwable that made a thread fail
+     */
     public void signalFailure(Throwable failureInThread) {
         this.failureInThread = failureInThread;
     }
@@ -135,7 +155,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     @Override
-    protected boolean checkForShutdownAndShutdown() {
+    protected boolean checkForTerminationAndTerminate() {
         checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
             executorService.shutdown();

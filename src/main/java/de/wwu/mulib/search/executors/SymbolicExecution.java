@@ -20,6 +20,22 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.util.*;
 import java.util.function.Supplier;
 
+/**
+ * Implements the facade pattern.
+ * For each exploration of the search region, a new instance of SymbolicExecution is stored.
+ * This instance of symbolic execution contains all trails relevant for validly exploring the search region.
+ * It stores a trail of predetermined choice options so that we can easily navigate to the unexplored choice option
+ * that should be explored next.
+ * It furthermore contains identifier-counter for ensuring that symbolic values that are already involved in constraints stored
+ * in the constraint solver, are recreated so that the constraint stack is valid with regards to the current state of the execution.
+ * In other words: If on the constraint solver there is a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf) with
+ * the id {@link Sint.SymSintLeaf#getId()} "Sint1", {@link SymbolicExecution} will contact the {@link ValueFactory} to
+ * create such a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf} at the correct location during the execution.
+ * Similarly, for all other {@link Sprimitive}s, numbers are maintained and so are concrete identifiers of objects that
+ * will be represented for the constraint solver.
+ * It mostly delegates all other business logic to {@link MulibExecutor}, {@link ChoicePointFactory}, {@link ValueFactory},
+ * and {@link CalculationFactory}.
+ */
 @SuppressWarnings({"unused", "rawtypes"})
 public final class SymbolicExecution {
     private final static ThreadLocal<SymbolicExecution> se = new ThreadLocal<>();
@@ -39,6 +55,18 @@ public final class SymbolicExecution {
             nextNumberInitializedAtomicSymSbytes = 0, nextNumberInitializedAtomicSymSchars = 0,
             nextIdentitiyHavingObjectNr;
 
+    /**
+     * @param mulibExecutor The executor that constructed this instance
+     * @param choicePointFactory The choice point factory
+     * @param valueFactory The value factory
+     * @param calculationFactory The calculation factory
+     * @param navigateTo The {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} to which we try to navigate.
+     *                   {@link SymbolicExecution} will create a trail of options, predetermining the choices made in the
+     *                   {@link ChoicePointFactory} to reach this new option.
+     * @param executionBudgetManager The budget manager for this execution
+     * @param nextIdentitiyHavingObjectNr The starting identifier for objects that are represented in the constraint solver
+     * @param config The configuration
+     */
     public SymbolicExecution(
             MulibExecutor mulibExecutor,
             ChoicePointFactory choicePointFactory,
@@ -104,7 +132,7 @@ public final class SymbolicExecution {
         int result = nextIdentitiyHavingObjectNr++;
         if (result < 0) {
             // See AbstractPartnerClassObjectSolverRepresentation.getNextUntrackedReservedId
-            throw new MulibIllegalStateException("Currently, negative integers are reserved for lazy initialization, see ");
+            throw new MulibIllegalStateException("Currently, negative integers are reserved for lazy initialization");
         }
         if (result == -1) { // Reserved for null-representation
             result = nextIdentitiyHavingObjectNr++;

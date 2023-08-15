@@ -19,6 +19,7 @@ import java.util.function.Supplier;
  * in the method {@link SymbolicChoicePointFactory#threeCaseDistinctionTemplate(SymbolicExecution, Constraint)}.
  * Offers the method {@link SymbolicChoicePointFactory#determineBooleanWithNewBinaryChoice(SymbolicExecution, Constraint, Choice.ChoiceOption)}
  * to allow for overriding how the third case (a new choice point) should be dealt with.
+ * This choice point factory also respects the setting {@link MulibConfig#CFG_USE_GUIDANCE_DURING_EXECUTION}.
  */
 public class SymbolicChoicePointFactory implements ChoicePointFactory {
 

@@ -10,9 +10,24 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 import java.lang.invoke.MethodHandle;
 import java.util.ArrayList;
 
+/**
+ * Executor manager for a single thread
+ */
 public class SingleExecutorManager extends MulibExecutorManager {
 
 
+    /**
+     * @param config The config
+     * @param observedTree The search tree representing the evaluation of the search region
+     * @param choicePointFactory The choice point factory; - must be compatible with the value and calculation factory
+     * @param valueFactory The value factory; - must be compatible with the choice point and calculation factory
+     * @param calculationFactory The calculation factory; - must be compatible with the value and choice point factory
+     * @param mulibValueTransformer The mulib value transformed used to transform the initial arguments into search region types
+     * @param searchRegionMethod The method handle used to invoke the search region
+     * @param staticVariables A prototype of the manager of static variables
+     * @param searchRegionArgs The transformed search region arguments
+     * @param coverageCfg Can be null: The coverage control flow graph.
+     */
     public SingleExecutorManager(
             MulibConfig config,
             SearchTree observedTree,
@@ -20,7 +35,7 @@ public class SingleExecutorManager extends MulibExecutorManager {
             ValueFactory valueFactory,
             CalculationFactory calculationFactory,
             MulibValueTransformer mulibValueTransformer,
-            MethodHandle representedMethod,
+            MethodHandle searchRegionMethod,
             StaticVariables staticVariables,
             Object[] searchRegionArgs,
             CoverageCfg coverageCfg) {
@@ -32,7 +47,7 @@ public class SingleExecutorManager extends MulibExecutorManager {
                 valueFactory,
                 calculationFactory,
                 mulibValueTransformer,
-                representedMethod,
+                searchRegionMethod,
                 staticVariables,
                 searchRegionArgs,
                 coverageCfg
@@ -40,5 +55,5 @@ public class SingleExecutorManager extends MulibExecutorManager {
     }
 
     @Override
-    public void checkForFailure() { }
+    protected void checkForFailure() { }
 }

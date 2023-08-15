@@ -7,7 +7,10 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
 
-@SuppressWarnings( { "rawtypes", "unchecked" })
+/**
+ * The default symbolic calculation factory. Constructs wrapper objects containing constraint or
+ * numeric expressions.
+ */
 public class SymbolicCalculationFactory extends AbstractCalculationFactory {
 
     SymbolicCalculationFactory(MulibConfig config, ValueFactory valueFactory) {

@@ -77,6 +77,17 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private final Object[] searchRegionArgs;
     private final Map<String, Sprimitive> rememberedSprimitives;
 
+    /**
+     * Constructs a new instance
+     * @param mulibExecutorManager The owning executor manager
+     * @param mulibValueTransformer The value transformer used for initially transforming the arguments to search region types
+     * @param config The configuration
+     * @param rootChoiceOption The root of the search tree
+     * @param searchStrategy The chosen search strategy
+     * @param searchRegionMethod The method handle used for invoking the search region
+     * @param staticVariables The instance of {@link StaticVariables} used for managing the static variables of the search region
+     * @param searchRegionArgs The transformed arguments to the search region
+     */
     public AbstractMulibExecutor(
             MulibExecutorManager mulibExecutorManager,
             MulibValueTransformer mulibValueTransformer,

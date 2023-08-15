@@ -14,11 +14,31 @@ import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Executor that implements multiple search strategies. Since {@link AbstractMulibExecutor} implements all interfacing,
+ * this executor mostly implements the methods {@link AbstractMulibExecutor#shouldContinueExecution()} and
+ * {@link AbstractMulibExecutor#selectNextChoiceOption(ChoiceOptionDeque)}.
+ * It implements all search strategies listed in {@link SearchStrategy} and allows for modifying the search behavior
+ * using the option {@link MulibConfig#CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE}.
+ */
 public final class GenericExecutor extends AbstractMulibExecutor {
     private final Function<ChoiceOptionDeque, Optional<Choice.ChoiceOption>> choiceOptionDequeRetriever;
     private final Supplier<Boolean> continueExecution;
     private long dsasMissed;
 
+    /**
+     * Constructs a new instance by calling the respective super-constructor and determining the search strategy
+     * implementation based on the configuration
+     * @param mulibExecutorManager The owning executor manager
+     * @param mulibValueTransformer The value transformer used for initially transforming the arguments to search region types
+     * @param config The configuration
+     * @param rootChoiceOption The root of the search tree
+     * @param searchStrategy The chosen search strategy
+     * @param searchRegionMethod The method handle used for invoking the search region
+     * @param staticVariables The instance of {@link StaticVariables} used for managing the static variables of the search region
+     * @param searchRegionArgs The transformed arguments to the search region
+     * @see AbstractMulibExecutor
+     */
     public GenericExecutor(
             Choice.ChoiceOption rootChoiceOption,
             MulibExecutorManager mulibExecutorManager,
