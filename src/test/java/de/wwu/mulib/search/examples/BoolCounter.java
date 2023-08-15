@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.examples;
 
 import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -130,7 +131,7 @@ public class BoolCounter {
         }
         if (se.boolChoice(se.symSbool())) {
             // Should not influence the overall number of solutions
-            throw new Fail();
+            throw Mulib.fail();
         }
         if (se.boolChoice(b3)) {
             count = count.add(Sint.concSint(8), se);
@@ -177,7 +178,7 @@ public class BoolCounter {
         }
         if (se.boolChoice(se.symSbool())) {
             // Should not influence the overall number of solutions
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         if (se.boolChoice(b3)) {
@@ -206,9 +207,9 @@ public class BoolCounter {
             Sint i1 = se.symSint();
             // Check backtracking behavior also for long paths
             if (se.ltChoice(i0, i1)) {
-                throw new Fail();
+                throw Mulib.fail();
             } else if (se.ltChoice(i0, i1.add(se.concSint(22), se))) {
-                throw new Fail();
+                throw Mulib.fail();
             }
 
             if (se.ltChoice(i0, i1)) {

@@ -1,6 +1,5 @@
 package de.wwu.mulib.transform_and_execute.examples;
 
-import de.wwu.mulib.Fail;
 import de.wwu.mulib.Mulib;
 
 public class CapacityAssignmentProblem {
@@ -83,7 +82,7 @@ public class CapacityAssignmentProblem {
                 int chosenMachinePeriod = Mulib.freeInt();
                 int chosenCapacity = overallCapacities[chosenMachinePeriod][chosenMachineIndex];
                 if (chosenMachinePeriod > i || chosenCapacity < currentSetOfWorkloads[j]) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
                 overallCapacities[chosenMachinePeriod][chosenMachineIndex] = chosenCapacity - currentSetOfWorkloads[j];
                 assignmentsPerPeriod[i][j] = chosenMachineIndex;

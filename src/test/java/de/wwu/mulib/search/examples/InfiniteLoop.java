@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.examples;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.executors.SymbolicExecution;
@@ -8,7 +8,6 @@ import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -64,7 +63,7 @@ public class InfiniteLoop {
         Sint i = se.concSint(0);
         Sbool b = se.symSbool();
         if (!se.boolChoice(b)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         while (se.boolChoice(b)) {
             se.add(i, se.concSint(1));
@@ -94,7 +93,7 @@ public class InfiniteLoop {
         do {
             b = se.symSbool();
             if (!se.boolChoice(b)) {
-                throw new Fail();
+                throw Mulib.fail();
             }
             se.add(i, se.concSint(1));
         } while (se.boolChoice(b));

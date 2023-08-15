@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.choice_points;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
@@ -176,7 +176,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
             Choice.ChoiceOption currentChoiceOption) {
         boolean reevaluationNeeded = currentChoiceOption.reevaluationNeeded();
         if (reevaluationNeeded && !se.isSatisfiable()) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         Constraint innerConstraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         ConcolicConstraintContainer container = (ConcolicConstraintContainer) innerConstraint;
@@ -202,7 +202,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
             if (chosen.isEmpty()) { // Incremental budget exceeded.
                 chosenChoiceOption.setReevaluationNeeded();
                 se.notifyNewChoice(newChoice.depth, newChoice.getChoiceOptions());
-                throw new Backtrack();
+                throw Backtrack.getInstance();
             }
             assert chosen.get() == chosenChoiceOption;
             // Then, add the new ChoiceOptions to the ExecutionManager's deque.
@@ -217,7 +217,7 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
             // All is ok, the state is satisfiable. However, we still need to backtrack since the concolic labels
             // have become invalid
             se.notifyNewChoice(newChoice.depth, newChoice.getChoiceOptions());
-            throw new Backtrack();
+            throw Backtrack.getInstance();
         }
     }
 }

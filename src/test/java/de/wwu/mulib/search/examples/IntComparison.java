@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.examples;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -42,7 +42,7 @@ public class IntComparison {
             alwaysLargerVal = alwaysLargerVal.add(n00, se);
             alwaysLowerVal = alwaysLowerVal.add(n01, se);
         } else {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         Sint n10 = se.symSint();
@@ -54,14 +54,14 @@ public class IntComparison {
             alwaysLargerVal = alwaysLargerVal.add(n10, se);
             alwaysLowerVal = alwaysLowerVal.add(n11, se);
         } else {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         if (se.ltChoice(n21, n20)) {
             alwaysLargerVal = alwaysLargerVal.add(n20, se);
             alwaysLowerVal = alwaysLowerVal.add(n21, se);
         } else {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         if (se.lteChoice(alwaysLargerVal, alwaysLowerVal)) {

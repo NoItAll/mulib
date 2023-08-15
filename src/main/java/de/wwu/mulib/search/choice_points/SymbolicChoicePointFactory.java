@@ -390,7 +390,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         }
 
         if (possibleNextChoiceOption.isEmpty()) {
-            throw new Backtrack();
+            throw Backtrack.getInstance();
         } else {
             Choice.ChoiceOption newCo = possibleNextChoiceOption.get();
             return newCo.choiceOptionNumber == 0;

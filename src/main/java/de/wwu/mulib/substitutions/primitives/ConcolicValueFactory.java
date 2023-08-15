@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
@@ -43,7 +43,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         // Symbolic value
         SA sym = symCreator.apply(se);
         if (!se.isSatisfiable()) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         // Concrete value
         ConcSnumber conc = concSnumberCreator.apply(se.label(sym));
@@ -91,7 +91,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         // Symbolic value
         Sbool.SymSbool sym = svf.symSbool(se);
         if (!se.isSatisfiable()) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         // Concrete value
         Sbool.ConcSbool conc = Sbool.concSbool((Boolean) se.label(sym));

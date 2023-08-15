@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.examples;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
@@ -69,7 +69,7 @@ public class AbsValueMul {
         SymbolicExecution se = SymbolicExecution.get();
         if (se.ltChoice(i, Sint.concSint(0))) {
             if (se.boolChoice(se.symSbool())) {
-                throw new Fail();
+                throw Mulib.fail();
             }
             return i.neg(se);
         } else {

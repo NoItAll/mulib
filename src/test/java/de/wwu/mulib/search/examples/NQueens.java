@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.examples;
 
-import de.wwu.mulib.Fail;
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
@@ -142,13 +142,13 @@ public class NQueens {
         for (int i = 0; i < dimension; i++) {
             boolean valid = board.isOnBoard(qs[i]);
             if (!valid) {
-                throw new Fail();
+                throw Mulib.fail();
             }
 
             for (int j = i+1; j < dimension; j++) {
                 boolean threatens = board.threatens(qs[i], qs[j]);
                 if (threatens) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
             }
         }
@@ -165,12 +165,12 @@ public class NQueens {
         for (int i = 0; i < dimension; i++) {
             boolean valid = board.isOnBoard(qs[i]);
             if (!valid) {
-                throw new Fail();
+                throw Mulib.fail();
             }
 
             Sbool b0 = se.symSbool();
             if (se.boolChoice(b0)) {
-                throw new Fail();
+                throw Mulib.fail();
             }
 
             if (!board.isOnBoard(qs[i])) {
@@ -182,9 +182,9 @@ public class NQueens {
                 if (threatens) {
                     Sbool b1 = se.namedSymSbool("notImportant");
                     if (se.boolChoice(b1)) {
-                        throw new Fail();
+                        throw Mulib.fail();
                     }
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
                 if (board.threatens(qs[i], qs[j])) {
                     throw new MulibRuntimeException("Should not be possible");
@@ -211,7 +211,7 @@ public class NQueens {
             }
         }
         if (!valid.boolChoice(se)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         return qs;
     }

@@ -976,7 +976,7 @@ public class ArrayChecks {
         Sint index0 = se.symSint();
         Sint index1 = se.symSint();
         if (se.eqChoice(index0, index1)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
         first.store(index0, se.concSint(4), se);
         first.store(index1, se.concSint(4), se);
@@ -984,7 +984,7 @@ public class ArrayChecks {
         second.store(index0, se.concSint(5), se);
 
         if (se.boolChoice(se.symSbool())) {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         second.store(index1, se.concSint(5), se);
@@ -997,13 +997,13 @@ public class ArrayChecks {
         Sint index2 = se.symSint();
         Sint index3 = se.symSint();
         if (!se.notEqChoice(index2, index3)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         Sint selectFromFirstAny = firstAny.select(index2, se);
 
         if (se.boolChoice(se.symSbool())) {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         Sint selectFromSecondAny = secondAny.select(index3, se);
@@ -1096,7 +1096,7 @@ public class ArrayChecks {
                 Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
                 Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
                 if (chosenMachinePeriod.gtChoice(se.concSint(i), se) || !chosenCapacity.gteChoice(machineCapacitiesPerPeriod.select(se.concSint(j), se), se)) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
 
                 ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se)).store(lengthOrChosenMachineIndex, chosenCapacity.sub(machineCapacitiesPerPeriod.select(se.concSint(j), se), se), se);
@@ -1144,7 +1144,7 @@ public class ArrayChecks {
         Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
         Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
         if (chosenMachinePeriod.gtChoice(se.concSint(1), se) || !chosenCapacity.gteChoice(workloadsOfPeriod1.select(se.concSint(0), se), se)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         Sarray.SintSarray tempSarray0 = ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se));
@@ -1159,7 +1159,7 @@ public class ArrayChecks {
         Sarray.SintSarray intermediate1 = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod1, se);
         Sint chosenCapacity1 = intermediate1.select(lengthOrChosenMachineIndex1, se);
         if (chosenMachinePeriod1.gtChoice(se.concSint(1), se) || !chosenCapacity1.gteChoice(workloadsOfPeriod1.select(se.concSint(1), se), se)) {
-            throw new Fail();
+            throw Mulib.fail();
         }
 
         ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod1, se)).store(lengthOrChosenMachineIndex1, chosenCapacity1.sub(workloadsOfPeriod1.select(se.concSint(1), se), se), se);
@@ -1254,7 +1254,7 @@ public class ArrayChecks {
                 Sarray.SintSarray intermediate = (Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se);
                 Sint chosenCapacity = intermediate.select(lengthOrChosenMachineIndex, se);
                 if (chosenMachinePeriod.gtChoice(se.concSint(i), se) || !chosenCapacity.gteChoice(machineCapacitiesPerPeriod.select(se.concSint(j), se), se)) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
 
                 ((Sarray.SintSarray)overallCapacities.select(chosenMachinePeriod, se)).store(lengthOrChosenMachineIndex, chosenCapacity.sub(machineCapacitiesPerPeriod.select(se.concSint(j), se), se), se);

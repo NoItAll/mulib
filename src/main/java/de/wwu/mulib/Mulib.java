@@ -182,7 +182,7 @@ public final class Mulib {
      * @return The fail
      */
     public static Fail fail() {
-        return new Fail();
+        return Fail.getInstance();
     }
 
     /* INITIALIZATIONS OF FREE VARIABLES. THESE METHODS ARE INDICATORS TO BE REPLACED BY A CODE TRANSFORMATION */

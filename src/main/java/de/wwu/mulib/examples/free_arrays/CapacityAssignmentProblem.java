@@ -43,7 +43,7 @@ public class CapacityAssignmentProblem {
                 int[] chosenPeriodCapacities = overallCapacities[chosenMachinePeriod];
                 int chosenCapacity = chosenPeriodCapacities[chosenMachineIndex];
                 if (chosenMachinePeriod > i || chosenCapacity < currentSetOfWorkloads[j]) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
                 chosenPeriodCapacities[chosenMachineIndex] = chosenCapacity - currentSetOfWorkloads[j];
                 assignmentsPerPeriod[i][j] = new int[] { chosenMachinePeriod, chosenMachineIndex };

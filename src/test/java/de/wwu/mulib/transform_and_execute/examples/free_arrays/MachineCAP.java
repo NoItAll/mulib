@@ -72,7 +72,7 @@ public class MachineCAP {
                 Machine vc = valueContainersOfPeriod[chosenMachineIndex];
                 int chosenCapacity = vc.i;
                 if (chosenMachinePeriod > i || chosenCapacity < currentSetOfWorkloads[j]) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
                 int newCapacity = chosenCapacity - currentSetOfWorkloads[j];
                 valueContainersOfPeriod[chosenMachineIndex] = new Machine(newCapacity);
@@ -102,7 +102,7 @@ public class MachineCAP {
                 Machine vc = valueContainersOfPeriod[chosenMachineIndex];
                 int chosenCapacity = vc.i;
                 if (chosenMachinePeriod > i || chosenCapacity < currentSetOfWorkloads[j]) {
-                    throw new Fail();
+                    throw Mulib.fail();
                 }
                 int newCapacity = chosenCapacity - currentSetOfWorkloads[j];
                 vc.i = newCapacity;
