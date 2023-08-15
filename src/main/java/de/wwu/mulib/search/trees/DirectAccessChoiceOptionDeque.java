@@ -1,6 +1,7 @@
 package de.wwu.mulib.search.trees;
 
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Optional;
 
@@ -147,6 +148,38 @@ public class DirectAccessChoiceOptionDeque implements ChoiceOptionDeque {
             return new int[] { head.depth, tail.depth };
         }
         return minMaxZero;
+    }
+
+    private static class ChoiceOptionLevelContainer {
+        @SuppressWarnings("all")
+        final int depth;
+        private final LinkedList<Choice.ChoiceOption> choiceOptionsOfDepth;
+
+        ChoiceOptionLevelContainer(int depth) {
+            this.depth = depth;
+            this.choiceOptionsOfDepth = new LinkedList<>();
+        }
+
+        void insert(Choice.ChoiceOption co) {
+            assert co.getDepth() == depth;
+            choiceOptionsOfDepth.add(co);
+        }
+
+        Choice.ChoiceOption poll() {
+            return choiceOptionsOfDepth.poll();
+        }
+
+        boolean isEmpty() {
+            return choiceOptionsOfDepth.isEmpty();
+        }
+
+        List<Choice.ChoiceOption> getChoiceOptions() {
+            return choiceOptionsOfDepth;
+        }
+
+        boolean remove(Choice.ChoiceOption toRemove) {
+            return choiceOptionsOfDepth.remove(toRemove);
+        }
     }
 
 }
