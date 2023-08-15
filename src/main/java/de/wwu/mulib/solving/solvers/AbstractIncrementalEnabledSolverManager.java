@@ -29,7 +29,12 @@ import java.util.function.BiFunction;
 import java.util.function.Function;
 
 /**
- *
+ * The abstract supertype of solver managers.
+ * Implements the template pattern and simplifies the addition of new constraint solvers since most lifecycle methods
+ * have been implement and only few methods with a more clearly-defined scope must be implemented. Also caches the result
+ * of a satisfiability check and calculated models.
+ * Notably, uses {@link IncrementalSolverState} to keep track of constraints for backtracking points and to keep track
+ * of up-to-date representations for/in the solver.
  * @param <M> Class representing a solver's model from which value assignments can be derived
  * @param <B> Class representing constraints in the solver
  * @param <AR> Class representing array expressions in the solver
@@ -42,18 +47,21 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     // while we can still use a own layer or high-level array theory
     private final IncrementalSolverState incrementalSolverState;
     private M currentModel;
+    // For caching calls to the constraint solver
     private boolean isSatisfiable;
+    // Is reset to false if we add a constraint
     private boolean satisfiabilityWasCalculated;
-    protected final boolean transformationRequired;
-    protected final MulibConfig config;
+    private final MulibConfig config;
 
     private final Map<Class<?>, BiFunction<SolverManager, Object, Object>> classesToLabelFunction;
     // Label cache
     private final Map<Object, Object> _searchSpaceRepresentationToLabelObject = new IdentityHashMap<>();
 
+    /**
+     * @param config The configuration
+     */
     protected AbstractIncrementalEnabledSolverManager(MulibConfig config) {
         this.config = config;
-        this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         this.classesToLabelFunction = config.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         this.incrementalSolverState = IncrementalSolverState.newInstance(config, this);
     }
@@ -74,13 +82,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return result;
     }
 
-    @Override
-    public final ArrayDeque<Constraint> getConstraints() {
-        return new ArrayDeque<>(incrementalSolverState.getConstraints()); // Wrap and return
-    }
-
-    // For internal use without conservative copy
-    protected ArrayDeque<Constraint> _getConstraints() {
+    // For debugging use
+    ArrayDeque<Constraint> _getConstraints() {
         return incrementalSolverState.getConstraints();
     }
 
@@ -135,11 +138,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
         assert !_searchSpaceRepresentationToLabelObject.containsKey(searchRegionRepresentation);
         _searchSpaceRepresentationToLabelObject.put(searchRegionRepresentation, labeled);
-    }
-
-    @Override
-    public final List<PartnerClassObjectConstraint> getAllPartnerClassObjectConstraints() {
-        return incrementalSolverState.getAllPartnerClassObjectConstraints();
     }
 
     @Override
@@ -505,7 +503,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return new Solution(labeledReturnValue, labels);
     }
 
-    private Object _getLabel(
+    /**
+     * Labels the given Object taking all field updates up to rememberUntil into account
+     * @param var The object to-be-labeled
+     * @param rememberUntil The remember constraint determining the scope until which field updates should be regarded
+     * @param allRelevantPartnerClassObjectConstraints The partner class object constraints that should be taken into
+     *                                                 account while labeling
+     * @return The label, e.g., a primitive in case var was a {@link Sprimitive}, or the "original" to a {@link PartnerClass}
+     */
+    protected Object _getLabel(
             Object var,
             PartnerClassObjectRememberConstraint rememberUntil,
             List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
@@ -530,7 +536,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             } else if (var.getClass().isArray()) {
                 result = labelArray(var, rememberUntil, allRelevantPartnerClassObjectConstraints);
             } else {
-                result = customLabelObject(var);
+                result = customLabelObject(var, rememberUntil, allRelevantPartnerClassObjectConstraints);
             }
             return result;
         } catch (Throwable t) {
@@ -541,6 +547,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
+    /**
+     * Labels a Sprimitive
+     * @param sprimitive The Sprimitive
+     * @return The primitive label in a wrapper object
+     */
     protected Object labelSprimitive(Sprimitive sprimitive) {
         if (sprimitive instanceof ConcSnumber) {
             return labelConcSnumber((ConcSnumber) sprimitive);
@@ -559,6 +570,11 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return labelSymSprimitive((SymSprimitive) sprimitive);
     }
 
+    /**
+     * Labels a ConcSnumber
+     * @param searchRegionVal The ConcSnumber
+     * @return The label; - a primitive value in a wrapper object
+     */
     protected static Object labelConcSnumber(ConcSnumber searchRegionVal) {
         if (searchRegionVal instanceof Sbool) {
             return ((Sbool.ConcSbool) searchRegionVal).isTrue();
@@ -584,8 +600,21 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
+    /**
+     * Labels a symbolic sprimitive based on the concrete constraint solver
+     * @param symSprimitive The symbolic sprimitive
+     * @return The labeled primitive value in a wrapper type
+     */
     protected abstract Object labelSymSprimitive(SymSprimitive symSprimitive);
 
+    /**
+     * Labels a sarray
+     * @param sarray The sarray
+     * @param rememberUntil The remember constraint determining the scope until which field updates should be regarded
+     * @param allRelevantPartnerClassObjectConstraints The partner class object constraints that should be taken into
+     *                                                 account while labeling
+     * @return The label, i.e., some Java array
+     */
     protected Object labelSarray(
             Sarray<?> sarray,
             PartnerClassObjectRememberConstraint rememberUntil,
@@ -683,7 +712,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return new ArrayLengthAndType(length, type);
     }
 
-    static class ArrayLengthAndType {
+    private static class ArrayLengthAndType {
         final Sint length;
         final Class<?> elementType;
 
@@ -994,11 +1023,19 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return result;
     }
 
+    /**
+     * Labels a partner class object
+     * @param object The non-array partner class object to label
+     * @param rememberUntil The remember constraint determining the scope until which field updates should be regarded
+     * @param allRelevantPartnerClassObjectConstraints The partner class object constraints that should be taken into
+     *                                                 account while labeling
+     * @return The label, i.e., the "original" to a {@link PartnerClass}
+     */
     protected Object labelPartnerClassObject(
             PartnerClass object,
-            PartnerClassObjectRememberConstraint rememberConstraint,
+            PartnerClassObjectRememberConstraint rememberUntil,
             List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
-        if (transformationRequired) {
+        if (config.TRANSF_TRANSFORMATION_REQUIRED) {
             if (!object.__mulib__isRepresentedInSolver()) {
                 Object emptyLabelObject = createEmptyLabelObject(object.__mulib__getOriginalClass());
                 registerLabelPair(object, emptyLabelObject);
@@ -1009,7 +1046,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         fg.setAccessible(true);
                         // Label value
                         Object value = fg.get(object);
-                        Object labeled = _getLabel(value, rememberConstraint, allRelevantPartnerClassObjectConstraints);
+                        Object labeled = _getLabel(value, rememberUntil, allRelevantPartnerClassObjectConstraints);
                         // Get corresponding field from original class
                         Field fieldToSet = null;
                         for (Field fs : fieldsToSet) {
@@ -1030,14 +1067,14 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 }
                 return emptyLabelObject;
             } else {
-                return labelPartnerClassObject(object.__mulib__getId(), rememberConstraint, allRelevantPartnerClassObjectConstraints);
+                return labelPartnerClassObject(object.__mulib__getId(), rememberUntil, allRelevantPartnerClassObjectConstraints);
             }
         } else {
             return object;
         }
     }
 
-    protected Object labelArray(
+    private Object labelArray(
             Object array,
             PartnerClassObjectRememberConstraint rememberConstraint,
             List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
@@ -1050,7 +1087,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return result;
     }
 
-    protected Object customLabelObject(Object o) {
+    /**
+     * Labels the object according to a custom strategy
+     * @param o The object that should be labeled
+     * @param rememberUntil The remember constraint determining the scope until which field updates should be regarded
+     * @param allRelevantPartnerClassObjectConstraints The partner class object constraints that should be taken into
+     *                                                 account while labeling
+     * @return The label, i.e., the "original" to a {@link PartnerClass}
+     */
+    protected Object customLabelObject(
+            Object o,
+            PartnerClassObjectRememberConstraint rememberUntil,
+            List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
         Object result;
         if ((result = checkForAlreadyLabeledRepresentation(o)) != null) {
             return result;
@@ -1078,7 +1126,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
     private static final Unsafe UNSAFE;
-    private Object createEmptyLabelObject(Class<?> clazz) {
+
+    /**
+     * Creates a new object bypassing all constructors
+     * @param clazz The class of which an object should be created
+     * @return An empty object that has been initialized without using any constructor
+     */
+    protected Object createEmptyLabelObject(Class<?> clazz) {
         try {
             return UNSAFE.allocateInstance(clazz);
         } catch (InstantiationException e) {
@@ -1086,7 +1140,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
     }
 
-    protected Constraint getNeq(
+    private Constraint getNeq(
             SubstitutedVar sv,
             Object value,
             Set<PartnerClass> alreadyTreatedPartnerClasses,
@@ -1228,42 +1282,109 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return result;
     }
 
+    /**
+     * Checks if there still is a cached valid model, otherwise computes a new model from the constraint solver
+     * @return A model from which labels can be calculated
+     */
     protected final M getCurrentModel() {
         if (currentModel == null) {
             try {
                 currentModel = calculateCurrentModel();
             } catch (Throwable t) {
-                t.printStackTrace();
                 throw new MulibRuntimeException(t);
             }
         }
         return currentModel;
     }
 
+    /**
+     * Calculates a model from which labels can be derived
+     * @return The model
+     */
     protected abstract M calculateCurrentModel();
 
+    /**
+     * Adds a constraint to the constraint solver
+     * @param constraint The constraint
+     */
     protected abstract void addSolverConstraintRepresentation(B constraint);
 
+    /**
+     * @return true, if the current constraint stack is satisfiable, else false
+     */
     protected abstract boolean calculateIsSatisfiable();
 
+    /**
+     * Creates a new solver-specific representation of an array
+     * @param ac The array initialization constraint describing the initial content of the array
+     * @return The solver-specific representation of an array
+     */
     protected abstract AR createCompletelyNewArrayRepresentation(ArrayInitializationConstraint ac);
 
+    /**
+     * Creates a new representation from the old representation and a store command
+     * @param ac The array store constraint, i.e., {@link ArrayAccessConstraint#getType()} == {@link de.wwu.mulib.constraints.ArrayAccessConstraint.Type#STORE}
+     * @param oldRepresentation The old representation of the array
+     * @return The new representation that returns the stored value, if this index applies, and else checks the old representation
+     */
     protected abstract AR createNewArrayRepresentationForStore(ArrayAccessConstraint ac, AR oldRepresentation);
 
-    protected abstract void addArraySelectConstraint(AR arrayRepresentation, Sint index, SubstitutedVar value);
+    /**
+     * Adds the solver-specific version of a select-constraint
+     * @param arrayRepresentation The solver-specific array representation
+     * @param index The index
+     * @param value The value
+     * @see AbstractIncrementalEnabledSolverManager#newArraySelectConstraint(Object, Sint, SubstitutedVar)
+     */
+    protected void addArraySelectConstraint(AR arrayRepresentation, Sint index, SubstitutedVar value) {
+        B constraint = newArraySelectConstraint(arrayRepresentation, index, value);
+        addSolverConstraintRepresentation(constraint);
+    }
 
+    /**
+     * Creates a solver-specific backtracking point
+     */
     protected abstract void solverSpecificBacktrackingPoint();
 
+    /**
+     * Backtracks the constraint solver once
+     */
     protected abstract void solverSpecificBacktrackOnce();
 
+    /**
+     * Backtracks the constraint solver a defined number of times
+     * @param toBacktrack The number of times to backtrack
+     */
     protected abstract void solverSpecificBacktrack(int toBacktrack);
 
+    /**
+     * Checks whether the current constraint stack is satisfiable if the new solver-specific constraint c would be added to it.
+     * The constraint c is not effectively enforced thereafter.
+     * @param boolExpr The constraint
+     * @return true, if the constraint stack would be satisfiable, else false
+     * @see AbstractIncrementalEnabledSolverManager#checkWithNewConstraint(Constraint)
+     */
     protected abstract boolean calculateSatisfiabilityWithSolverBoolRepresentation(B boolExpr);
 
+    /**
+     * Creates a new solver-specific select constraint
+     * @param arrayRepresentation The solver-specific array representation
+     * @param indexInArray The index in the array
+     * @param arrayValue The value selected from the array
+     * @return A solver-specific constraint
+     */
     protected abstract B newArraySelectConstraint(AR arrayRepresentation, Sint indexInArray, SubstitutedVar arrayValue);
 
+    /**
+     * Transforms the given constraint into a solver-specific constraint
+     * @param c The constraint
+     * @return The solver-specific representation of the constraint
+     */
     protected abstract B transformConstraint(Constraint c);
 
+    /**
+     * Terminates the solver and all opened resources
+     */
     protected abstract void solverSpecificShutdown();
 
 }

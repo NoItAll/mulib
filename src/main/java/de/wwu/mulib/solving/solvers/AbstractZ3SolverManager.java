@@ -17,13 +17,25 @@ import java.util.Map;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * Supertype for constraint solver adapters using JNI and the Z3 constraint solver.
+ */
 public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabledSolverManager<Model, BoolExpr, ArrayExpr, DatatypeExpr /* TODO Validate*/> {
 
     private static final Object syncObject = new Object();
+    /**
+     * The solver
+     */
     protected final Solver solver;
+    /**
+     * The adapter with which to transform constraints
+     */
     protected final Z3MulibAdapter adapter;
 
-    public AbstractZ3SolverManager(MulibConfig config) {
+    /**
+     * @param config The configuration
+     */
+    protected AbstractZ3SolverManager(MulibConfig config) {
         super(config);
         synchronized (syncObject) {
             Context context = new Context();
@@ -113,12 +125,6 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     @Override
-    protected final void addArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
-        BoolExpr selectConstraint = newArraySelectConstraint(arrayRepresentation, index, value);
-        addSolverConstraintRepresentation(selectConstraint);
-    }
-
-    @Override
     protected BoolExpr newArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
         return adapter.transformSelectConstraint(arrayRepresentation, index, value);
     }
@@ -186,6 +192,9 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         }
     }
 
+    /**
+     * An adapter to transform Mulib's types to Z3's types
+     */
     protected static final class Z3MulibAdapter {
         final Context ctx;
         private final Map<NumericExpression, Expr> numericExpressionsStore = new HashMap<>();
@@ -287,6 +296,11 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
+        /**
+         * Transforms a numeric expression into an Expr object of Z3
+         * @param n The numeric expression
+         * @return The Z3 representation of n
+         */
         public Expr transformNumericExpr(NumericExpression n) {
             Expr result;
             if (n instanceof AbstractOperatorNumericExpression) {
@@ -463,6 +477,12 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
+        /**
+         * Creates a new Z3 representation of the array with a given identifier and a type
+         * @param arrayId The identifier
+         * @param type The type
+         * @return The Z3 representation of the array
+         */
         public ArrayExpr newArrayExprFromType(Sint arrayId, Class<?> type) {
             Sort arraySort;
             if (Sprimitive.class.isAssignableFrom(type)) {
@@ -491,12 +511,26 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             }
         }
 
+        /**
+         * Constructs a new array expression nesting the old expression
+         * @param oldRepresentation The old representation
+         * @param index The index
+         * @param value The value to store
+         * @return The new representation also expressing the store
+         */
         public ArrayExpr newArrayExprFromStore(ArrayExpr oldRepresentation, Sint index, SubstitutedVar value) {
             Expr val = transformSubstitutedVar(value);
             Expr i = transformSintegerNumber(index);
             return ctx.mkStore(oldRepresentation, i, val);
         }
 
+        /**
+         * Creates a constraint ensuring that the value is selected from the array at position index
+         * @param arrayExpr The array representation
+         * @param index The index
+         * @param value The value
+         * @return Z3's representation of the constraint
+         */
         public BoolExpr transformSelectConstraint(ArrayExpr arrayExpr, Sint index, SubstitutedVar value) {
             Expr selectExpr = ctx.mkSelect(arrayExpr, transformSintegerNumber(index));
             return ctx.mkEq(selectExpr, transformSubstitutedVar(value));

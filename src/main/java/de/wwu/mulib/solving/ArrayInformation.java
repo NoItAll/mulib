@@ -5,11 +5,27 @@ import de.wwu.mulib.solving.object_representations.PartnerClassArraySolverRepres
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+/**
+ * Contains metadata for an array that is represented for/int the solver
+ */
 public class ArrayInformation {
+    /**
+     * Can the array be null?
+     */
     public final Sbool isNull;
+    /**
+     * Can the array potentially contain unrepresented non symbolic default values?
+     */
     public final boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+    /**
+     * Are there potentially null values in the array?
+     */
     public final boolean arrayCanPotentiallyContainNull;
 
+    /**
+     * @param sas The structure maintaining the representations for/in the constraint solver
+     * @param asr The array solver representation
+     */
     public ArrayInformation(
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas,
             ArraySolverRepresentation asr) {

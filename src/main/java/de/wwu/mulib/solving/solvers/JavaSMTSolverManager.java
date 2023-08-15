@@ -25,6 +25,9 @@ import java.util.Map;
 import java.util.function.BiFunction;
 import java.util.function.Supplier;
 
+/**
+ * Constraint solver adapter using the JavaSMT project.
+ */
 @SuppressWarnings("rawtypes")
 public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolverManager<Model, BooleanFormula, ArrayFormula, Formula /* TODO better type */> {
 
@@ -32,6 +35,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
     private final ProverEnvironment solver;
     private final JavaSMTMulibAdapter adapter;
 
+    /**
+     * @param mulibConfig The configuration
+     */
     public JavaSMTSolverManager(MulibConfig mulibConfig) {
         super(mulibConfig);
         synchronized (syncObject) {
@@ -114,16 +120,6 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 ac.getIndex(),
                 ac.getValue()
         );
-    }
-
-    @Override
-    protected void addArraySelectConstraint(ArrayFormula arrayRepresentation, Sint index, SubstitutedVar value) {
-        BooleanFormula selectConstraint = newArraySelectConstraint(arrayRepresentation, index, value);
-        try {
-            solver.addConstraint(selectConstraint);
-        } catch (InterruptedException e) {
-            throw new MulibRuntimeException(e);
-        }
     }
 
     protected BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, SubstitutedVar value) {
@@ -225,6 +221,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         }
     }
 
+    /**
+     * An adapter transforming Mulib's types to JavaSMT's types
+     */
     protected static final class JavaSMTMulibAdapter {
         private final Map<NumericExpression, NumeralFormula> numericExpressionStore = new HashMap<>();
         private final Map<Object, BooleanFormula> booleanFormulaStore = new HashMap<>();
@@ -405,6 +404,11 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
+        /**
+         * Transforms a NumericExpression into a NumeralFormula
+         * @param n The numeric expression
+         * @return The NumeralFormula
+         */
         public NumeralFormula transformNumeral(NumericExpression n) {
             NumeralFormula result;
 
@@ -588,6 +592,12 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return result;
         }
 
+        /**
+         * Creates a new JavaSMT representation of the array with a given identifier and a type
+         * @param arrayId The identifier
+         * @param type The type
+         * @return The JavaSMT representation of the array
+         */
         @SuppressWarnings("unchecked")
         private ArrayFormula newArrayExprFromType(Sint arrayId, Class<?> type) {
             FormulaType arraySort;
@@ -616,6 +626,13 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             }
         }
 
+        /**
+         * Constructs a new array expression nesting the old expression
+         * @param oldRepresentation The old representation
+         * @param index The index
+         * @param value The value to store
+         * @return The new representation also expressing the store
+         */
         @SuppressWarnings({"rawtypes", "unchecked"})
         public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, SubstitutedVar value) {
             Formula f = transformSubstitutedVar(value);
@@ -623,6 +640,13 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return arrayFormulaManager.store(oldRepresentation, i, f);
         }
 
+        /**
+         * Creates a constraint ensuring that the value is selected from the array at position index
+         * @param array The array representation
+         * @param index The index
+         * @param var The value
+         * @return JavaSMT's representation of the constraint
+         */
         public BooleanFormula transformSelectConstraint(ArrayFormula array, Sint index, SubstitutedVar var) {
             @SuppressWarnings("unchecked")
             Formula selectExpr = arrayFormulaManager.select(array, transformSintegerNumber(index));

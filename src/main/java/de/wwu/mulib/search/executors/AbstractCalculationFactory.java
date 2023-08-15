@@ -322,7 +322,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                                 pco,
                                 field
                         );
-                canBeNull = pcoi.fieldCanPotentiallyContainExplicitNull;
+                canBeNull = pcoi.fieldCanPotentiallyContainNull;
             } else {
                 // For now, we assume that the object cannot be null
                 // It is not represented in the solver from here anyway, so this

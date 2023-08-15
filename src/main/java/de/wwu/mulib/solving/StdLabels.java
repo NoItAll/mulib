@@ -6,11 +6,18 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.Map;
 
+/**
+ * Standard implementation of {@link Labels} using two {@link Map}s
+ */
 public class StdLabels implements Labels {
 
-    protected final Map<String, SubstitutedVar> identifiersToSVars;
-    protected final Map<String, Object> identifiersToValues;
+    private final Map<String, SubstitutedVar> identifiersToSVars;
+    private final Map<String, Object> identifiersToValues;
 
+    /**
+     * @param identifiersToSubstitutedVars The remembering name to the search space representation
+     * @param identifiersToOriginalRepresentation The remembering name to the label
+     */
     public StdLabels(
             Map<String, SubstitutedVar> identifiersToSubstitutedVars,
             Map<String, Object> identifiersToOriginalRepresentation) {

@@ -9,12 +9,24 @@ import java.util.ArrayDeque;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Non-incremental version of the Z3 constraint solver. Instead of using scope, we push all constraints into a global
+ * scope. For backtracking etc. we push those constraints not as-are but with an simple boolean antecedent in an implication.
+ * On backtracking, these bools are deactivated. For as long as the constraint solver has them "in a virtual scope"
+ * the antecedent is forced to be on.
+ * By keeping all constraints in a global scope, the constraint solver still can learn lemmas which might speed up, e.g.,
+ * {@link de.wwu.mulib.search.executors.SearchStrategy#BFS} and {@link de.wwu.mulib.search.executors.SearchStrategy#IDDFS}
+ * but is costly in terms of memory.
+ */
 public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
-    protected final ArrayDeque<BoolExpr> expressions;
-    protected final ArrayDeque<BoolExpr> boolImpliers;
-    protected final Map<BoolExpr, BoolExpr> impliedBy;
+    private final ArrayDeque<BoolExpr> expressions;
+    private final ArrayDeque<BoolExpr> boolImpliers;
+    private final Map<BoolExpr, BoolExpr> impliedBy;
     private long boolImplyId = 0;
 
+    /**
+     * @param config The configuration
+     */
     public Z3GlobalLearningSolverManager(MulibConfig config) {
         super(config);
         this.expressions = new ArrayDeque<>();

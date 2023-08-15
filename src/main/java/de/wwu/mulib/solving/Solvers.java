@@ -7,21 +7,67 @@ import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;
 import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
 
+/**
+ * Enumeration of all constraint solvers supported by Mulib
+ */
 public enum Solvers {
+    /**
+     * Incremental version of Z3
+     * @see Z3IncrementalSolverManager
+     */
     Z3_INCREMENTAL,
+    /**
+     * Global version of Z3,
+     * @see Z3GlobalLearningSolverManager
+     */
     Z3_GLOBAL_LEARNING,
     JACOP,
+    /**
+     * Z3 via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_Z3,
+    /**
+     * SMTInterpol via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_SMTINTERPOL,
+    /**
+     * Princess via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_PRINCESS,
+    /**
+     * CVC4 via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_CVC4,
+    /**
+     * CVC5 via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_CVC5,
+    /**
+     * MathSat5 via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_MATHSAT5,
+    /**
+     * YICES2 via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_YICES2,
+    /**
+     * Boolector via JavaSMT
+     * @see JavaSMTSolverManager
+     */
     JSMT_BOOLECTOR;
 
+    /**
+     * @param config The configuration
+     * @return The solver manager according to the configuration
+     */
     public static SolverManager getSolverManager(MulibConfig config) {
-
         switch (config.GLOBAL_SOLVER_TYPE) {
             case Z3_INCREMENTAL:
                 return new Z3IncrementalSolverManager(config);
