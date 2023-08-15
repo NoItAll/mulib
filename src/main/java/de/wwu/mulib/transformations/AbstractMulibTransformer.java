@@ -210,22 +210,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         return getFieldsOfTransformedClassesToOriginalClasses(accessibleStaticFieldsOfTransformedClasses);
     }
 
-    @Override
-    public Collection<Field> getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(Class<?> clazz) {
-        synchronized (syncObject) {
-            Collection<Field> result = new HashSet<>();
-            T classNode = getClassNodeForName(clazz.getName());
-            Collection<T> classNodes = getConnectedClassNodes(classNode);
-            for (T t : classNodes) {
-                String name = getNameToLoadOfClassNode(t);
-                Class<?> c = TransformationUtility.getClassForName(name, classLoader);
-                result.addAll(getAccessibleStaticFields(c));
-            }
-            return result;
-        }
-    }
-
-    protected abstract Collection<T> getConnectedClassNodes(T classNode);
 
     /**
      * Transforms type. Arrays are transformed to their respective subclass of Sarray. Must be called after

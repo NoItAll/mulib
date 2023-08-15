@@ -596,11 +596,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Object getStaticField(String fieldName) {
+        assert config.TRANSF_TRANSFORMATION_REQUIRED : "Static variables are only supported if we transform the search region";
         return staticVariables.getStaticField(fieldName);
     }
 
     @Override
     public void setStaticField(String fieldName, Object value) {
+        assert config.TRANSF_TRANSFORMATION_REQUIRED : "Static variables are only supported if we transform the search region";
         staticVariables.setStaticField(fieldName, value);
     }
 }

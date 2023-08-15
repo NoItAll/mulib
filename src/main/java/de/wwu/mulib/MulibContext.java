@@ -81,11 +81,6 @@ public final class MulibContext {
             mulibValueTransformer = new MulibValueTransformer(config, mulibTransformer);
             searchRegionArgs = transformArguments(mulibValueTransformer, args);
         } else {
-            Collection<Field> staticFields = mulibTransformer.getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(possiblyTransformedMethodClass);
-            // We will copy the very same value in StaticVariables, no need to take a snapshot
-            for (Field f : staticFields) {
-                transformedToOriginalStaticFields.put(f, f);
-            }
             mulibValueTransformer = new MulibValueTransformer(config, null);
             searchRegionArgs = args;
         }

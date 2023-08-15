@@ -18,7 +18,6 @@ import soot.tagkit.Tag;
 import soot.util.Chain;
 
 import java.io.File;
-import java.lang.reflect.Array;
 import java.lang.reflect.Method;
 import java.util.*;
 import java.util.function.Function;
@@ -126,17 +125,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             List.of(transformed.getType(), v.TYPE_MULIB_VALUE_COPIER)
                             :
                             List.of();
-        }
-
-        // Return either the original type, if it has no model class, otherwise the model class
-        private Type getOriginalOrModelType(SootClass original) {
-            Class<?> c = getClassForName(original.getName(), classLoader);
-            return RefType.v(
-                    replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(
-                            c,
-                            c
-                    ).getName()
-            );
         }
 
         private Local getAdditionalLocal(ChosenConstructor cc, LocalSpawner localSpawner) {
@@ -399,44 +387,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         return nextIdOfChoicePoint;
     }
 
-    private Class<?> transformToTransformedClass(Type t) {
-        if (t instanceof ArrayType) {
-            ArrayType at = (ArrayType) t;
-            Type transformedBaseType = transformType(at.baseType);
-            Class<?> baseClass = transformToTransformedClass(transformedBaseType);
-            int[] dimensions = new int[at.numDimensions];
-            Class<?> arrayType = Array.newInstance(baseClass, dimensions).getClass();
-            return arrayType;
-        } else if (t instanceof RefType) {
-            RefType rt = (RefType) t;
-            try {
-                return classLoader.loadClass(rt.getClassName());
-            } catch (ClassNotFoundException e) {
-                throw new MulibRuntimeException(e);
-            }
-        } else {
-            assert t instanceof PrimType;
-            if (t instanceof IntType) {
-                return Sint.class;
-            } else if (t instanceof LongType) {
-                return Slong.class;
-            } else if (t instanceof DoubleType) {
-                return Sdouble.class;
-            } else if (t instanceof FloatType) {
-                return Sfloat.class;
-            } else if (t instanceof ShortType) {
-                return Sshort.class;
-            } else if (t instanceof ByteType) {
-                return Sbyte.class;
-            } else if (t instanceof BooleanType) {
-                return Sbool.class;
-            } else if (t instanceof CharType) {
-                return Schar.class;
-            } else {
-                throw new NotYetImplementedException();
-            }
-        }
-    }
 
     /**
      * Constructs an instance of MulibTransformer according to the configuration.
@@ -488,67 +438,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected Map<String, String> getSpecializedArrayTypeNameToOriginalTypeName() {
         return specializedArrayTypeNameToOriginalTypeName;
-    }
-
-    @Override
-    protected Collection<SootClass> getConnectedClassNodes(SootClass classNode) {
-        Collection<SootClass> result = new HashSet<>();
-        ArrayDeque<SootClass> toWorkOn = new ArrayDeque<>();
-        SootClass current = classNode;
-        while (current != null) {
-            if (result.contains(current) || !shouldBeTransformed(current.getName())) {
-                current = toWorkOn.poll();
-                continue;
-            } else if (current.resolvingLevel() != SootClass.BODIES) {
-                current = getClassNodeForName(current.getName());
-            }
-            result.add(current);
-            if (current != v.SC_OBJECT) {
-                if (current.hasSuperclass()) {
-                    toWorkOn.add(current.getSuperclass());
-                }
-            }
-            // Add fields
-            toWorkOn.addAll(
-                    current.getFields().stream()
-                            .filter(f -> f.getType() instanceof RefType)
-                            .map(f -> getClassNodeForName(((RefType) f.getType()).getClassName()))
-                            .collect(Collectors.toList())
-            );
-            current.getMethods().forEach(
-                    m -> {
-                        if (m.isNative() || m.isAbstract()) {
-                            return;
-                        }
-                        List<SootClass> newClasses = new ArrayList<>();
-                        newClasses.addAll(
-                                m.getParameterTypes().stream()
-                                        .filter(pt -> pt instanceof RefType)
-                                        .map(
-                                                pt -> getClassNodeForName(((RefType) pt).getClassName()))
-                                        .collect(Collectors.toList()));
-                        newClasses.addAll(
-                                m.getExceptions().stream()
-                                        .map(e -> getClassNodeForName(e.getType().getClassName()))
-                                        .collect(Collectors.toList()));
-                        newClasses.addAll(
-                                m.retrieveActiveBody().getLocals().stream()
-                                        .filter(l -> l.getType() instanceof RefType)
-                                        .map(l -> getClassNodeForName(((RefType) l.getType()).getClassName()))
-                                        .collect(Collectors.toList()));
-                        newClasses.addAll(
-                                m.retrieveActiveBody().getUnits().stream()
-                                        .filter(u -> u instanceof AssignStmt && ((AssignStmt) u).getRightOp() instanceof FieldRef)
-                                        .map(u -> getClassNodeForName(((FieldRef) ((AssignStmt) u).getRightOp()).getField().getDeclaringClass().getName()))
-                                        .collect(Collectors.toList()));
-                        toWorkOn.addAll(newClasses);
-                    }
-            );
-
-            current = toWorkOn.poll();
-        }
-
-        return result;
     }
 
     @Override
@@ -2260,7 +2149,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         new DaciteProcedure().treatSpecialMethodCallsInClassNodesMethods(sc);
     }
 
-    final class DaciteProcedure {
+    final static class DaciteProcedure {
 
         void treatSpecialMethodCallsInClassNodesMethods(SootClass sc) {
             // TODO Hardcoded for now
@@ -4552,8 +4441,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return "L" + ((RefType) t).getClassName() + ";";
         }
     }
-
-
 
     private final Map<String, SootClass> arrayTypeToSpecialPartnerClassSarray = new HashMap<>();
     private final Map<String, String> specializedArrayTypeNameToOriginalTypeName = new HashMap<>();

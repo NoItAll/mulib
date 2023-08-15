@@ -11,8 +11,6 @@ public interface MulibTransformer {
 
     Map<Field, Field> getAccessibleStaticFieldsOfTransformedClassesToOriginalClasses();
 
-    Collection<Field> getAccessibleStaticFieldsAndConnectedAccessibleStaticFields(Class<?> c);
-
     void transformAndLoadClasses(Class<?>... toTransform);
 
     Class<?> transformType(Class<?> toTransform, boolean sarrayToRealArrayTypes);
