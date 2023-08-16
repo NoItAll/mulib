@@ -18,13 +18,34 @@ import java.util.stream.Collectors;
  */
 public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation implements AliasingArraySolverRepresentation {
 
+    /**
+     * The identifier reserved for this representation IF the representation is a new one
+     */
     protected final Sint reservedId;
+    /**
+     * The metadata constraint
+     */
     protected final Constraint metadataConstraintForPotentialIds;
+    /**
+     * The potential aliasing targets
+     */
     protected final Set<IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation>> aliasedArrays;
-    // Is Sarray containing this Sarray is completely initialized? If there is no containing Sarray, is false
+    /**
+     * Whether or not this is a pure alias, i.e., no own instance, or can also represent a new instance
+     */
     protected final boolean cannotBeNewInstance;
 
-    public AliasingPrimitiveValuedArraySolverRepresentation(
+    /**
+     * Constructs a new instance
+     * @param config The configuration
+     * @param aic The initialization constraint for constructing this representation. Also contains the reservedIdentifier
+     * @param level The level this representation is initialized for
+     * @param potentialIds The potential aliases
+     * @param symbolicArrayStates The construct containing the array representations. Is used to formulate
+     *                            the metadata constraint
+     * @param cannotBeNewInstance Whether or not this is a pure alias
+     */
+    AliasingPrimitiveValuedArraySolverRepresentation(
             MulibConfig config,
             final ArrayInitializationConstraint aic,
             final int level,
@@ -66,6 +87,20 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
 
     /**
      * Constructor for generating lazily
+     * @param config The configuration
+     * @param id The identifier
+     * @param length The length
+     * @param isNull Whether the array is null
+     * @param valueType The component type
+     * @param defaultIsSymbolic Whether uninitialized indexes return a new symbolic index
+     * @param level The level
+     * @param reservedId The reserved identifier
+     * @param symbolicArrayStates The construct containing the array representations. Is used to formulate
+     *                            the metadata constraint
+     * @param cannotBeNewInstance Whether or not this is a pure alias
+     * @param isCompletelyInitialized Whether we know for sure that the content of this array is completely known
+     * @param canPotentiallyContainCurrentlyUnrepresentedDefaults Whether or not
+     * @param potentialIds The identifiers of potentially symbolic aliasing targets
      */
     protected AliasingPrimitiveValuedArraySolverRepresentation(
             MulibConfig config,
@@ -161,7 +196,12 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         return metadataEqualsDependingOnId;
     }
 
-    protected AliasingPrimitiveValuedArraySolverRepresentation(
+    /**
+     * Copy constructor
+     * @param apvasr To-copy
+     * @param level The level to copy for
+     */
+    AliasingPrimitiveValuedArraySolverRepresentation(
             AliasingPrimitiveValuedArraySolverRepresentation apvasr,
             int level) {
         super(apvasr, level);
@@ -230,7 +270,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         return metadataConstraintForPotentialIds;
     }
 
-    protected final ArraySolverRepresentation getAliasLevelSafe(
+    final ArraySolverRepresentation getAliasLevelSafe(
             IncrementalSolverState.PartnerClassObjectRepresentation<ArraySolverRepresentation> ar) {
         ArraySolverRepresentation result = ar.getNewestRepresentation();
         if (result.getLevel() < level) {

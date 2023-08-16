@@ -10,13 +10,40 @@ import de.wwu.mulib.substitutions.primitives.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
+/**
+ * Represents a non-array partner class object that potentially is represented by another pre-existing array.
+ * Lazy initialization is supported.
+ */
 public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPartnerClassObjectSolverRepresentation {
+    /**
+     * The reserved identifier, that this representation represents if it is not an alias of another partner class object.
+     */
     protected final Sint reservedId;
+    /**
+     * The metadata constraint
+     */
     protected final Constraint metadataConstraintForPotentialIds;
-    protected final List<IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>> aliasedObjects;
+    /**
+     * The representation of potentially aliased objects, if this is not a new instance
+     */
+    protected final List<IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation>>
+            aliasedObjects;
+    /**
+     * Whether or not this cannot be a new instance or is a pure alias
+     */
     protected final boolean cannotBeNewInstance;
 
-    protected AliasingPartnerClassObjectSolverRepresentation(
+    /**
+     * Constructs a new representation
+     * @param config The configuration
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param pic The constraint initializing this representation
+     * @param level The level this representation is initialized for
+     * @param potentialIds The identifiers of potential aliasing targets
+     * @param cannotBeNewInstance Whether or not this cannot be a new instance or is a pure alias
+     */
+    AliasingPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
@@ -36,6 +63,16 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
 
     /**
      * Constructor for generating an AliasingPartnerClassObject lazily
+     * @param config The configuration
+     * @param id The symbolic identifier that can either be reserved identifier, or the identifier of an aliasing target
+     * @param isNull Whether an object is represented that is potentially null
+     * @param clazz The class represented by this representation
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param level The level this representation is created for
+     * @param reservedId The reserved identifier
+     * @param potentialIds The identifiers of the aliasing targets
+     * @param cannotBeNewInstance Whether or not this can be a new instance, i.e., is not a pure alias
      */
     protected AliasingPartnerClassObjectSolverRepresentation(
             MulibConfig config,
@@ -103,7 +140,12 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
         return metadataEqualsDependingOnId;
     }
 
-    protected AliasingPartnerClassObjectSolverRepresentation(AliasingPartnerClassObjectSolverRepresentation apcor, int level) {
+    /**
+     * Copy constructor
+     * @param apcor To-copy
+     * @param level The level to create this copy for
+     */
+    AliasingPartnerClassObjectSolverRepresentation(AliasingPartnerClassObjectSolverRepresentation apcor, int level) {
         super(apcor, level);
         this.reservedId = apcor.reservedId;
         this.metadataConstraintForPotentialIds = apcor.metadataConstraintForPotentialIds;
@@ -249,7 +291,9 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                                     true,
                                     config.ALIASING_FOR_FREE_OBJECTS,
                                     fieldToType.get(fieldName),
-                                    false));
+                                    false
+                            )
+            );
         }
         for (IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr : aliasedObjects) {
             PartnerClassObjectSolverRepresentation psr = getAliasLevelSafe(pr);
@@ -283,10 +327,6 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
         }
     }
 
-    public Constraint getMetadataConstraintForPotentialIds() {
-        return metadataConstraintForPotentialIds;
-    }
-
     private PartnerClassObjectSolverRepresentation getAliasLevelSafe(
             IncrementalSolverState.PartnerClassObjectRepresentation<PartnerClassObjectSolverRepresentation> pr) {
         PartnerClassObjectSolverRepresentation result = pr.getNewestRepresentation();
@@ -299,12 +339,12 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
         return result;
     }
 
-    public Collection<Sint> getAliasedObjects() {
-        return aliasedObjects.stream().map(o -> o.getNewestRepresentation().getId()).collect(Collectors.toList());
-    }
 
     @Override
     public String toString() {
-        return String.format("AliasingPCORep[%s]{reservedId=%s, aliasingTargets=%s, fieldRep=%s, cannotBeNewInstance=%s}", id, reservedId, getAliasedObjects(), fieldToRepresentation, cannotBeNewInstance);
+        return String.format("AliasingPCORep[%s]{reservedId=%s, aliasingTargets=%s, fieldRep=%s, cannotBeNewInstance=%s}",
+                id, reservedId, aliasedObjects.stream().map(o -> o.getNewestRepresentation().getId()).collect(Collectors.toList()),
+                fieldToRepresentation, cannotBeNewInstance
+        );
     }
 }

@@ -11,8 +11,22 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.Set;
 
+/**
+ * Interface for all representations of a Sarray FOR the constraint solver
+ */
 public interface ArraySolverRepresentation {
 
+    /**
+     * Constructs a new representation
+     * Regards the various "initialization types" of the initialization constraint
+     * @param config The configuration
+     * @param ac The constraint initializing the array
+     * @param symbolicArrayStates The structure maintaining symbolic arrays
+     * @param symbolicPartnerClassObjectStates The structure maintaining partner class objects
+     * @param level The level at which we initialize the representation
+     * @return The new representation for the solver
+     * @see ArrayInitializationConstraint.Type
+     */
     static ArraySolverRepresentation newInstance(
             MulibConfig config,
             ArrayInitializationConstraint ac,
@@ -29,8 +43,6 @@ public interface ArraySolverRepresentation {
                     new SimplePartnerClassArraySolverRepresentation(
                             config,
                             ac,
-                            symbolicPartnerClassObjectStates,
-                            symbolicArrayStates,
                             level
                     )
                     :
@@ -109,32 +121,84 @@ public interface ArraySolverRepresentation {
         return result;
     }
 
+    /**
+     * @param index The index
+     * @param selectedValue The selected value
+     * @return A constraint signaling that when selecting from the represented array at the given index,
+     * the selectedValue is returned
+     */
     Constraint select(Sint index, Sprimitive selectedValue);
 
+    /**
+     * @param guard The guard
+     * @param index The index
+     * @param selectedValue The selected value
+     * @return A constraint signaling that when selecting from the represented array at the given index,
+     * the selectedValue is returned IF the guard parameter evaluates to true
+     */
     Constraint select(Constraint guard, Sint index, Sprimitive selectedValue);
 
+    /**
+     * Modifies this representation so reads at the specified index subsequently should return the specified value
+     * @param index The index
+     * @param storedValue The value
+     */
     void store(Sint index, Sprimitive storedValue);
 
+    /**
+     * Modifies this representation so reads at the specified index subsequently should return the specified value
+     * IF guard evaluates to true
+     * @param guard The guard
+     * @param index The index
+     * @param storedValue The value
+     */
     void store(Constraint guard, Sint index, Sprimitive storedValue);
 
+    /**
+     * Copies the representation for a new level
+     * @param level The new level
+     * @return A new representation for the new level
+     */
     ArraySolverRepresentation copyForNewLevel(int level);
 
+    /**
+     * @return The identifier of the representation
+     */
     Sint getArrayId();
 
+    /**
+     * @return The length of the representation
+     */
     Sint getLength();
 
+    /**
+     * @return Whether the representation is null
+     */
     Sbool getIsNull();
 
+    /**
+     * @return The level of the representation
+     */
     int getLevel();
 
+    /**
+     * @return true, if the representation is completely initialized, false, if there are yet unknown elements
+     */
     boolean isCompletelyInitialized();
 
+    /**
+     * If this is true, {@link ArraySolverRepresentation#isCompletelyInitialized()} must be false
+     * @return true, if unknown elements might contain Java's default values (e.g. 0 for int, in Mulib -1 for null) etc.
+     */
     boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault();
 
+    /**
+     * @return The type of elements
+     */
     Class<?> getElementType();
 
+    /**
+     * @return Whether the default element of the represented array is symbolic
+     */
     boolean defaultIsSymbolic();
-
-    ArrayHistorySolverRepresentation getCurrentRepresentation();
-
 }

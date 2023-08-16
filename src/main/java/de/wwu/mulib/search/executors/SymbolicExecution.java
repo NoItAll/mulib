@@ -12,6 +12,7 @@ import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.solving.object_representations.AbstractPartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -128,6 +129,10 @@ public final class SymbolicExecution {
         return nextNumberInitializedAtomicSymSchars++;
     }
 
+    /**
+     * @return The next number of an object that is represented for/in the solver
+     * @see AbstractPartnerClassObjectSolverRepresentation#getNextUntrackedReservedId()
+     */
     public int getNextNumberInitializedSymObject() {
         int result = nextIdentitiyHavingObjectNr++;
         if (result < 0) {

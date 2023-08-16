@@ -12,10 +12,21 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
  */
 public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolverRepresentation {
 
-    public PrimitiveValuedArraySolverRepresentation(MulibConfig config, ArrayInitializationConstraint aic, int level) {
+    /**
+     * Constructs an array that is neither aliasing nor has reference-typed elements
+     * @param config The configuration
+     * @param aic The constraint initializing the representation
+     * @param level The level
+     */
+    PrimitiveValuedArraySolverRepresentation(MulibConfig config, ArrayInitializationConstraint aic, int level) {
         super(config, aic, level);
     }
 
+    /**
+     * Copy constructor
+     * @param pvasr The representation to copy
+     * @param level The level to copy for
+     */
     protected PrimitiveValuedArraySolverRepresentation(
             PrimitiveValuedArraySolverRepresentation pvasr,
             int level) {
@@ -24,6 +35,15 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
 
     /**
      * Constructor for generating lazily
+     * @param config The configuration
+     * @param id The identifier
+     * @param length The length
+     * @param isNull Whether the array can be null
+     * @param valueType The component type
+     * @param defaultIsSymbolic Whether the default is symbolic
+     * @param level The level
+     * @param isCompletelyInitialized Whether the array is completely initialized
+     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaults Whether there may be unrepresented non-symbolic defaults
      */
     protected PrimitiveValuedArraySolverRepresentation(
             MulibConfig config,
@@ -34,8 +54,8 @@ public class PrimitiveValuedArraySolverRepresentation extends AbstractArraySolve
             boolean defaultIsSymbolic,
             int level,
             boolean isCompletelyInitialized,
-            boolean canPotentiallyContainCurrentlyUnrepresenteDefaults) {
-        super(config, id, length, isNull, valueType, defaultIsSymbolic, isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresenteDefaults, level);
+            boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaults) {
+        super(config, id, length, isNull, valueType, defaultIsSymbolic, isCompletelyInitialized, canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefaults, level);
     }
 
     @Override

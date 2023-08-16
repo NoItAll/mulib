@@ -6,13 +6,23 @@ import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.Set;
 
+/**
+ * Interface for all representations of an array of reference-typed elements FOR the constraint solver
+ */
 public interface PartnerClassArraySolverRepresentation extends ArraySolverRepresentation {
 
+    /**
+     * @return The identifiers of the objects that are stored in the sarray
+     */
     Set<Sint> getValuesKnownToPossiblyBeContainedInArray();
 
     @Override
     PartnerClassArraySolverRepresentation copyForNewLevel(int level);
 
+    /**
+     * @param sas The structure maintaining the state of representations of arrays and objects
+     * @return True if one of the elements potentially is null
+     */
     @SuppressWarnings("rawuse")
     default boolean canContainNull(IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> sas) {
         Set<Sint> relevantValues = getValuesKnownToPossiblyBeContainedInArray();

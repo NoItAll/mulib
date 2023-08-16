@@ -37,6 +37,7 @@ public class IncrementalSolverState<AR, PR> {
 
     /**
      * Maintains the state of all {@link PartnerClassObjectRepresentation}s for {@link IncrementalSolverState}.
+     * Can be thought of a heap of symbolic aliasing representations and aliasing target representations.
      * @param <R> The represented type of object, either AR or PR
      */
     public static class SymbolicPartnerClassObjectStates<R> {

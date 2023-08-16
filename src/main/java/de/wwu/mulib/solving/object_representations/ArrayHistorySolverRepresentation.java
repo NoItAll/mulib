@@ -13,12 +13,17 @@ import java.util.Set;
 import java.util.function.Function;
 
 /**
- * Contains the select for an array. A store yields a nested structure of ArrayHistorySolverRepresentations
+ * Maintains the state for an array. A store yields a nested structure of ArrayHistorySolverRepresentations.
+ * If the array is not completely initialized, selects are also recorded.
  */
 public class ArrayHistorySolverRepresentation {
+    // The selects. If the array is completely initialized, only the root element has non-empty selects
     private final List<ArrayAccessSolverRepresentation> selects;
+    // Is null for the root element
     private final ArrayAccessSolverRepresentation store;
+    // The nested array before storing in this array
     private final ArrayHistorySolverRepresentation beforeStore;
+    // The default value
     private final SubstitutedVar defaultValue;
 
     public ArrayHistorySolverRepresentation(
@@ -48,6 +53,7 @@ public class ArrayHistorySolverRepresentation {
         this.beforeStore = null;
         this.defaultValue = defaultValue;
         this.selects = new ArrayList<>();
+        // Initialize the initial content of this array
         for (ArrayAccessConstraint ac : initialSelects) {
             Sprimitive value = ac.getValue();
             selects.add(new ArrayAccessSolverRepresentation(
@@ -59,14 +65,17 @@ public class ArrayHistorySolverRepresentation {
     }
 
     // Copy constructor, called to create a semantically equal version of ArraySolverRepresentation
-    protected ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
+    private ArrayHistorySolverRepresentation(ArrayHistorySolverRepresentation toCopy) {
         this.selects = new ArrayList<>(toCopy.selects);
         this.store = toCopy.store;
         this.beforeStore = toCopy.beforeStore;
         this.defaultValue = toCopy.defaultValue;
     }
 
-    protected ArrayHistorySolverRepresentation(
+    // Constructor called to create a new ArrayHistorySolverRepresentation
+    // This is done to first check whether an array-select is already answered by the store.
+    // If this is not the case, the representation before the array-store can be checked recursively
+    private ArrayHistorySolverRepresentation(
             ArrayHistorySolverRepresentation beforeStore,
             ArrayAccessSolverRepresentation store) {
         assert store != null && beforeStore != null;
@@ -76,10 +85,28 @@ public class ArrayHistorySolverRepresentation {
         this.defaultValue = beforeStore.defaultValue;
     }
 
+    /**
+     * @return A representation that is a copy of the previous. Any mutations to either array won't effect the other one
+     */
     public ArrayHistorySolverRepresentation copy() {
         return new ArrayHistorySolverRepresentation(this);
     }
 
+    /**
+     * Constructs a constraint ensuring that, when selecting from the given index, value must be returned IF guard
+     * evaluates to true
+     * @param guard The guard
+     * @param index The index used for selecting
+     * @param value The selected value
+     * @param arrayIsCompletelyInitialized Whether or not the array is completely initialized.
+     *                                     If this is not the case, the (guard, index, value)-pair is stored
+     * @param allowAliasing Whether we allow aliasing. This is used to determine whether we allow the same value to be
+     *                      in the list of selects
+     * @param valueType The component type
+     * @param defaultValueForUnknownsShouldBeEnforced Whether we should enforce default values (i.e. '0' for ints,
+     *                                                '-1' for reference-types representing null) for unknown indexes
+     * @return The constraint
+     */
     public Constraint select(
             Constraint guard,
             Sint index,
@@ -191,6 +218,13 @@ public class ArrayHistorySolverRepresentation {
         return ite(indexEqualsToStoreIndexWithGuard, indexEqualsToStoreCase, resultForSelectOperations);
     }
 
+    /**
+     * Nests the current representation in a new representation for which we register the stored value
+     * @param guard The guard which must evaluate to true to consider the stored (index, value)-pair
+     * @param index The index
+     * @param value The value
+     * @return The representation for which we have registered the store
+     */
     public ArrayHistorySolverRepresentation store(Constraint guard, Sint index, Sprimitive value) {
         if (guard instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) guard).isFalse()) {
             return this;
@@ -201,11 +235,18 @@ public class ArrayHistorySolverRepresentation {
         );
     }
 
+    /**
+     * @return true, if this array history solver representation is empty, else false
+     */
     public boolean isEmpty() {
         return store == null && selects.isEmpty();
     }
 
-    // Assumes eager initialization in case of free length
+    /**
+     * Represents an over-approximation of values contained in this representation
+     * @param arrayHasFixedLength Whether the array has a fixed, instead of a symbolic, length
+     * @return The set of values
+     */
     public Set<? extends Sprimitive> getValuesKnownToPossiblyBeContainedInArray(boolean arrayHasFixedLength) {
         // In the case where the array has a fixed length, the array is fully initialized directly. We only have
         // to regard the initially selected values as well as the stored values

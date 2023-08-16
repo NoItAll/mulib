@@ -12,9 +12,21 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
 import java.util.Set;
 
+/**
+ * The representation of a non-aliasing partner class object solver representation.
+ * Lazy initialization is supported.
+ */
 public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartnerClassObjectSolverRepresentation {
 
-    protected SimplePartnerClassObjectSolverRepresentation(
+    /**
+     * Constructs a new instance of representation
+     * @param config The configuration
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param pic The constraint initializing this representation
+     * @param level The level for which we create this representation
+     */
+    SimplePartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
@@ -23,7 +35,18 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
         super(config, sps, asr, pic, level);
     }
 
-    protected SimplePartnerClassObjectSolverRepresentation(
+    /**
+     * Constructor for generating a representation lazily
+     * @param config The configuration
+     * @param id The identifier
+     * @param isNull Whether the represented object potentially is null
+     * @param clazz The represented class
+     * @param defaultIsSymbolic Whether the default of uninitialized elements is symbolic
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param level The level
+     */
+    SimplePartnerClassObjectSolverRepresentation(
             MulibConfig config,
             Sint id,
             Sbool isNull,
@@ -35,7 +58,12 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
         super(config, id, isNull, clazz, defaultIsSymbolic, sps, asr, level);
     }
 
-    protected SimplePartnerClassObjectSolverRepresentation(SimplePartnerClassObjectSolverRepresentation apcor, int level) {
+    /**
+     * Copy constructor
+     * @param apcor To-copy
+     * @param level The level to copy for
+     */
+    SimplePartnerClassObjectSolverRepresentation(SimplePartnerClassObjectSolverRepresentation apcor, int level) {
         super(apcor, level);
     }
 
@@ -77,9 +105,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         defaultIsSymbolic,
                         sps.getCurrentLevel(),
                         false,
-                        Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ? config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL : config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
-                        sps,
-                        asr
+                        Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ? config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL : config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL
                 )
                 :
                 new PrimitiveValuedArraySolverRepresentation(

@@ -12,26 +12,44 @@ import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import java.util.HashSet;
 import java.util.Set;
 
+/**
+ * Representation of an array of partner class objects that potentially is an alias of another, pre-existing array.
+ */
 public class AliasingPartnerClassArraySolverRepresentation extends AliasingPrimitiveValuedArraySolverRepresentation implements PartnerClassArraySolverRepresentation {
 
     private final IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps;
     private final IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr;
 
-    public AliasingPartnerClassArraySolverRepresentation(
+    /**
+     * Constructs a new instance
+     * @param config The configuration
+     * @param aic The constraint initializing this representation
+     * @param level The level
+     * @param potentialIds The identifiers of potential aliasing targets
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param containingContainerIsCompletelyInitialized Whether all values of the container (field or array) are known
+     */
+    AliasingPartnerClassArraySolverRepresentation(
             MulibConfig config,
             ArrayInitializationConstraint aic,
             int level,
             Set<Sint> potentialIds,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr,
-            boolean containingSarrayIsCompletelyInitialized) {
-        super(config, aic, level, potentialIds, asr, containingSarrayIsCompletelyInitialized);
+            boolean containingContainerIsCompletelyInitialized) {
+        super(config, aic, level, potentialIds, asr, containingContainerIsCompletelyInitialized);
         this.sps = sps;
         this.asr = asr;
         assert aic.getValueType().isArray() || PartnerClass.class.isAssignableFrom(aic.getValueType());
     }
 
-    private AliasingPartnerClassArraySolverRepresentation(
+    /**
+     * Copy constructor
+     * @param aaasr To-copy
+     * @param level The level to copy for
+     */
+    AliasingPartnerClassArraySolverRepresentation(
             AliasingPartnerClassArraySolverRepresentation aaasr,
             int level) {
         super(aaasr, level);
@@ -41,6 +59,21 @@ public class AliasingPartnerClassArraySolverRepresentation extends AliasingPrimi
 
     /**
      * Constructor for generating lazily
+     * @param config The configuration
+     * @param id The identifier, will be constrained to either be reservedId or one of the potential identifiers
+     * @param length The length
+     * @param isNull Whether the array is null
+     * @param valueType The component type
+     * @param defaultIsSymbolic Whether the default value is symbolic
+     * @param level The level to create this representation for
+     * @param reservedId The identifier id is equal, if this represents a new array
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param cannotBeNewInstance Whether this is can be a new instance
+     * @param isCompletelyInitialized Whether we know all values of this array
+     * @param canPotentiallyContainCurrentlyUnrepresentedDefaults Whether there might be values contained in this array
+     *                                                            that are not yet known.
+     * @param potentialIds The identifiers one of which 'id' is equal to, i.e., aliasing targets
      */
     protected AliasingPartnerClassArraySolverRepresentation(
             MulibConfig config,

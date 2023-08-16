@@ -12,18 +12,62 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
+/**
+ * Abstract implementation of a representation of an array for the constraint solver.
+ * Keeps track of the main metadata, such as the identifier, the length, whether the array can be null, the component type,
+ * and the level this representation is for.
+ * Furthermore keeps track of other specific metadata, i.e. whether the array is completely initialized, if the
+ * array returns symbolic values for unknown elements, and whether unrepresented non symbolic default values (such as
+ * 'null' for references or '0' for ints) might be present in the array
+ */
 public abstract class AbstractArraySolverRepresentation implements ArraySolverRepresentation {
+    /**
+     * The configuration
+     */
     protected final MulibConfig config;
+    /**
+     * The object holding information on the (index, value)-pairs in the array and is used for selecting and
+     * storing new array-stores
+     */
     protected ArrayHistorySolverRepresentation currentRepresentation;
+    /**
+     * The identifier of the array
+     */
     protected final Sint arrayId;
+    /**
+     * The length of the array
+     */
     protected final Sint length;
+    /**
+     * Whether the array is null or not
+     */
     protected final Sbool isNull;
+    /**
+     * The level of this array
+     */
     protected final int level;
+    /**
+     * Whether the array is completely initialized
+     */
     protected boolean isCompletelyInitialized;
+    /**
+     * The component type
+     */
     protected final Class<?> valueType;
+    /**
+     * Whether the array can potentially contain non-symbolic default values that are not yet seen
+     */
     protected boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
+    /**
+     * Whether the default values of this array are symbolic
+     */
     protected final boolean defaultIsSymbolic;
 
+    /**
+     * @param config The configuration
+     * @param aic The array initialization constraint
+     * @param level The level
+     */
     protected AbstractArraySolverRepresentation(
             MulibConfig config,
             ArrayInitializationConstraint aic,
@@ -70,6 +114,16 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
 
     /**
      * Constructor for generating lazily
+     * @param config The configuration
+     * @param id The identifier
+     * @param length The length of the array
+     * @param isNull Whether the array is null
+     * @param valueType The component type
+     * @param defaultIsSymbolic Whether the default value is symbolic
+     * @param isCompletelyInitialized Whether the array is completely initialized
+     * @param canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault Whether there potentially are unrepresented
+     *                                                                      non-symbolic default values
+     * @param level The level of this representation
      */
     protected AbstractArraySolverRepresentation(
             MulibConfig config,
@@ -97,6 +151,8 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
 
     /**
      * Copy constructor
+     * @param aasr The representation to copy
+     * @param level The level to copy for
      */
     protected AbstractArraySolverRepresentation(
             AbstractArraySolverRepresentation aasr,
@@ -136,22 +192,42 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
         _store(guard, index, storedValue);
     }
 
+    /**
+     * Should be overridden to differentiate between aliasing array solver representations and "simple" array
+     * solver representations that represent only themselves.
+     * @param guard The guard determining whether the select should be valid
+     * @param index The index to read from
+     * @param selectedValue The value that is checked to be selected
+     * @return The select constraint
+     */
     protected abstract Constraint _select(Constraint guard, Sint index, Sprimitive selectedValue);
 
+    /**
+     * Should be overridden to differentiate between aliasing array solver representations and "simple" array
+     * solver representations that represent only themselves.
+     * Modifies this representation and, in the case of symbolic aliasing, the other representations conditionally.
+     * @param guard The guard determining whether the store should be valid
+     * @param index The index to read from
+     * @param storedValue The value that is checked to be stored
+     */
     protected abstract void _store(Constraint guard, Sint index, Sprimitive storedValue);
 
+    @Override
     public Sint getArrayId() {
         return arrayId;
     }
 
+    @Override
     public Sint getLength() {
         return length;
     }
 
+    @Override
     public Sbool getIsNull() {
         return isNull;
     }
 
+    @Override
     public int getLevel() {
         return level;
     }
@@ -176,18 +252,12 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
         return valueType;
     }
 
-    public ArrayHistorySolverRepresentation getCurrentRepresentation() {
-        return currentRepresentation;
-    }
-
-    public Class<?> getValueType() {
-        return valueType;
-    }
-
+    @Override
     public boolean canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault() {
         return canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault;
     }
 
+    @Override
     public boolean defaultIsSymbolic() {
         return defaultIsSymbolic;
     }

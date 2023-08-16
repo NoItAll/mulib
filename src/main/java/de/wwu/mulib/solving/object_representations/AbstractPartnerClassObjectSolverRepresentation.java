@@ -6,6 +6,7 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectFieldConstraint;
 import de.wwu.mulib.constraints.PartnerClassObjectInitializationConstraint;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
@@ -19,27 +20,74 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Representation for all non-array partner class objects FOR the solver.
+ * Subtypes must also support lazy initialization of single fields.
+ * Primitive-typed fields are initialized immediately, if they are to be initialized lazily
+ */
 public abstract class AbstractPartnerClassObjectSolverRepresentation implements PartnerClassObjectSolverRepresentation {
     // TODO Find more elegant solution. For instance, for PartnerClassObjectConstraints (GETFIELD and initialization)
     //  store the delta in SymbolicExecution
     private static int NEXT_UNTRACKED_RESERVED_ID = -2;
 
+    /**
+     * @return The next identifier not supplied by a {@link ValueFactory} for lazy initialization in the solver backend
+     * @see SymbolicExecution#getNextNumberInitializedSymObject()
+     */
     public static int getNextUntrackedReservedId() {
-        // See SymbolicExecution.getNextNumberInitializedSymObject
         return NEXT_UNTRACKED_RESERVED_ID--;
     }
 
+    /**
+     * The configuration
+     */
     protected final MulibConfig config;
-    // To reuse all functionality, we simply model a field to be an array with one element of the respective type
+    /**
+     * To reuse all functionality, we simply model a field to be an array with one element of the respective type
+     * This representation contains (packageName.className.fieldName, one-elemented array history)-pairs
+     */
     protected final Map<String, ArrayHistorySolverRepresentation> fieldToRepresentation;
+    /**
+     * Contains a map of (packageName.className.fieldName, type of field)-pairs for lazy initialization
+     */
     protected final Map<String, Class<?>> fieldToType;
+    /**
+     * The construct containing partner class object representations
+     */
     protected final IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps;
+    /**
+     * The construct containing array solver representations
+     */
     protected final IncrementalSolverState.SymbolicPartnerClassObjectStates<ArraySolverRepresentation> asr;
+    /**
+     * The identifiers
+     */
     protected final Sint id;
+    /**
+     * Whether the object is null or not
+     */
     protected final Sbool isNull;
+    /**
+     * The level this representation is for
+     */
     protected final int level;
+    /**
+     * The class represented by this representation
+     */
     protected final Class<?> clazz;
+    /**
+     * Whether the default value returned by uninitialized fields is symbolic or not
+     */
     protected final boolean defaultIsSymbolic;
+
+    /**
+     * Constructs a new instance of representation
+     * @param config The configuration
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param pic The constraint initializing this representation
+     * @param level The level for which we create this representation
+     */
     protected AbstractPartnerClassObjectSolverRepresentation(
             MulibConfig config,
             IncrementalSolverState.SymbolicPartnerClassObjectStates<PartnerClassObjectSolverRepresentation> sps,
@@ -60,7 +108,15 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     }
 
     /**
-     * Constructor for generating lazily
+     * Constructor for generating a representation lazily
+     * @param config The configuration
+     * @param id The identifier
+     * @param isNull Whether the represented object potentially is null
+     * @param clazz The represented class
+     * @param defaultIsSymbolic Whether the default of uninitialized elements is symbolic
+     * @param sps The construct maintaining object representations for potential lazy initialization of fields
+     * @param asr The construct maintaining array representations for potential lazy initialization of fields
+     * @param level The level
      */
     protected AbstractPartnerClassObjectSolverRepresentation(
             MulibConfig config,
@@ -90,7 +146,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         }
     }
 
-    protected void initializeFields(
+    private void initializeFields(
             PartnerClassObjectFieldConstraint[] initialGetfields,
             Map<String, Class<?>> fieldTypes) {
         // We treat single fields as arrays of length 1
@@ -161,6 +217,11 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         return result;
     }
 
+    /**
+     * Copy constructor
+     * @param apcor To-copy
+     * @param level The level to copy for
+     */
     protected AbstractPartnerClassObjectSolverRepresentation(AbstractPartnerClassObjectSolverRepresentation apcor, int level) {
         this.config = apcor.config;
         this.id = apcor.id;
@@ -236,8 +297,18 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         return this;
     }
 
+    /**
+     * Must be overridden to lazily generate a field of a non-array reference-type
+     * @param field The field. Should conform to the pattern: packageName.className.fieldName
+     * @return The lazily generated non-array partner class representation
+     */
     protected abstract PartnerClassObjectSolverRepresentation lazilyGeneratePartnerClassObjectForField(String field);
 
+    /**
+     * Must be overridden to lazily generate a field of an array-type
+     * @param field The field. Should conform to the pattern: packageName.className.fieldName
+     * @return The lazily generated array representation
+     */
     protected abstract ArraySolverRepresentation lazilyGenerateArrayForField(String field);
 
     @Override
@@ -245,8 +316,24 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         _putField(guard, fieldName, value);
     }
 
+    /**
+     * Should be overridden to differentiate between aliasing partner class object solver representations and "simple"
+     * solver representations that represent only themselves.
+     * @param guard The guard determining whether the getField should be valid
+     * @param fieldName The field. Should follow the pattern: packageName.className.fieldName
+     * @param value The value that is checked to be retrieved
+     * @return The GETFIELD constraint
+     */
     protected abstract Constraint _getField(Constraint guard, String fieldName, Sprimitive value);
 
+    /**
+     * Should be overridden to differentiate between aliasing partner class object solver representations and "simple"
+     * solver representations that represent only themselves.
+     * Modifies this representation and, in the case of symbolic aliasing, the other representations conditionally.
+     * @param guard The guard determining whether the putfield should be valid
+     * @param fieldName The field. Should follow the pattern: packageName.className.fieldName
+     * @param value The value that is checked to be put into an instance field
+     */
     protected abstract void _putField(Constraint guard, String fieldName, Sprimitive value);
 
     @Override
@@ -254,6 +341,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         return id;
     }
 
+    @Override
     public Sbool isNull() {
         return isNull;
     }
@@ -277,7 +365,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
     public boolean partnerClassFieldCanPotentiallyContainNull(String field) {
         Class<?> typeOfField = fieldToType.get(field);
         Set<Sint> relevantValues = getPartnerClassIdsKnownToBePossiblyContainedInField(field, false); //// TODO change to true or...
-        //// TODO ...if symbolic init to null is allowed, regard this here
+        //// TODO ...if symbolic init to null is allowed, regard this here for lazily initialized objects
         return relevantValues.stream()
                 .anyMatch(s -> {
                     if (s == Sint.ConcSint.MINUS_ONE) {
