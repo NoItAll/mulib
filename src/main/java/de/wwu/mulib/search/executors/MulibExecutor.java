@@ -39,7 +39,7 @@ public interface MulibExecutor {
 
 
     /**
-     * If there are any available {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}:
+     * If there are any available and satisfiable {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}:
      * Constructs a new instance of {@link SymbolicExecution} to evaluate the search region and tries to find a
      * {@link PathSolution}.
      * @return If a {@link PathSolution} can be retrieved, this is returned in an instance of {@link Optional}.

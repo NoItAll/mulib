@@ -71,8 +71,6 @@ public final class Choice extends TreeNode {
         private static final byte CUT_OFF = 16; // TODO not yet implemented functionality
         // If Mulib.failed() has been used.
         private static final byte EXPLICITLY_FAILED = 32;
-        // For concolic execution: if the labeling is not valid anymore, we need to reevaluate
-        private static final byte REEVALUATION_NEEDED = 64;
         private static final byte CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK = -128;
 
         private byte state;
@@ -156,7 +154,7 @@ public final class Choice extends TreeNode {
                 throw new IllegalTreeModificationException("The constraint of a choice option that has already been" +
                         " evaluated cannot be changed");
             }
-            assert isSatisfiable() || reevaluationNeeded();
+            assert isSatisfiable();
             state |= CONSTRAINT_MODIFIED_AFTER_INITIAL_SAT_CHECK;
             this.optionConstraint = optionConstraint;
         }
@@ -362,23 +360,6 @@ public final class Choice extends TreeNode {
         }
 
         /**
-         * Sets the current choice option to be needed to be reevaluated.
-         * Throws an exception if the state transition is illegal.
-         * This method is called during concolic execution if a stale labeling was detected
-         */
-        public void setReevaluationNeeded() {
-            _checkIllegalStateModificationElseSet(REEVALUATION_NEEDED);
-        }
-
-        /**
-         * @return true, if the choice option needs to be reevaluated for satisfiability, else false
-         * @see ChoiceOption#setReevaluationNeeded()
-         */
-        public boolean reevaluationNeeded() {
-            return (state & REEVALUATION_NEEDED) != 0;
-        }
-
-        /**
          * @return true, if the choice option was modified after the intial SAT check, e.g., by changing the associated
          * constraint
          */
@@ -388,8 +369,6 @@ public final class Choice extends TreeNode {
 
         private void _checkIllegalStateModificationElseSet(byte newState) {
             if (!isUnknown()
-                    && !(isSatisfiable() && newState == REEVALUATION_NEEDED)
-                    && !(reevaluationNeeded() && (newState == EVALUATED /* This is done automatically for FAIL */ || newState == SATISFIABLE))
                     && !(isSatisfiable() && newState == EVALUATED)) {
                 throw new IllegalTreeModificationException("New state cannot be set to '" + stateToString(newState) +
                         "'. State is already set to '" + stateToString(state) + "'.");
@@ -428,7 +407,7 @@ public final class Choice extends TreeNode {
                                             ((state & CUT_OFF) != 0) ? "CUT_OFF" :
                                                     ((state & EXPLICITLY_FAILED) != 0) ? "EXPLICITLY_FAILED" :
                                                             ((state & UNSATISFIABLE) != 0) ? "UNSATISFIABLE" :
-                                                                    ((state & REEVALUATION_NEEDED) != 0) ? "REEVALUATION_NEEDED" : "UNKNOWN_STATE";
+                                                                    "UNKNOWN_STATE";
         }
 
     }

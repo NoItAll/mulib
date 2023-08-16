@@ -1,21 +1,12 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
-import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
-import de.wwu.mulib.expressions.NumericExpression;
-import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
-
-import java.util.ArrayList;
-import java.util.List;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.tryGetSymFromConcolic;
@@ -27,14 +18,11 @@ import static de.wwu.mulib.expressions.ConcolicNumericContainer.tryGetSymFromCon
  * i.e., not carrying any symbolic information, or are wrappers carrying a {@link ConcolicNumericContainer} or a {@link ConcolicConstraintContainer}.
  * These two container types carry the symbolic value and, additionally, a label for the given execution run.
  * It can happen that during concolic execution, some labels become stale because a constraint has been added that violates
- * them. In this case, we finish evaluating the given {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} but mark it via
- * {@link Choice.ChoiceOption#setReevaluationNeeded()}.
+ * them. In this case, we finish the evaluation and check for satisfiability at the very end.
  */
-@SuppressWarnings({ "rawtypes", "unchecked" })
 public final class ConcolicCalculationFactory extends AbstractCalculationFactory {
 
     private final SymbolicCalculationFactory scf;
-
     ConcolicCalculationFactory(MulibConfig config, ValueFactory vf) {
         super(
                 config,
@@ -934,66 +922,6 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         return Schar.newExpressionSymbolicSchar(container);
     }
 
-    private static Constraint getEqOfConcolic(SubstitutedVar e, SymbolicExecution se) {
-        Sbool eq;
-        if (e instanceof PartnerClass) {
-            e = ((PartnerClass) e).__mulib__getId();
-        }
-
-        if (e instanceof Sbool) {
-            Sbool.ConcSbool conc = getConcSboolFromConcolic((Sbool) e);
-            eq = conc.isEqualTo((Sbool) e, se);
-        } else if (e instanceof Snumber) {
-            ConcSnumber conc = getConcNumericFromConcolic((NumericExpression) e);
-            if (e instanceof Sint) {
-                eq = se.eq((Sint) e, (Sint) conc);
-            } else if (e instanceof Sdouble) {
-                eq = se.eq((Sdouble) e, (Sdouble) conc);
-            } else if (e instanceof Sfloat) {
-                eq = se.eq((Sfloat) e, (Sfloat) conc);
-            } else if (e instanceof Slong) {
-                eq = se.eq((Slong) e, (Slong) conc);
-            } else {
-                throw new NotYetImplementedException();
-            }
-        } else {
-            throw new NotYetImplementedException();
-        }
-        return tryGetSymFromConcolic(eq);
-    }
-
-    @Override
-    protected void additionalChecksAfterSelect(
-            Sarray s,
-            SymbolicExecution se) {
-        // TODO Possibly prune the amount of constraints via the given index?
-        // Evaluate relabeling
-        if (se.nextIsOnKnownPath() || !s.__mulib__shouldBeRepresentedInSolver() || se.getCurrentChoiceOption().reevaluationNeeded()) {
-            return;
-        }
-        assert s.getCachedElements().stream().allMatch(
-                e -> e instanceof Snumber /* Also holds for Sbool */ || e instanceof PartnerClass || e == null)
-                : "Failed with: " + s.getCachedElements();
-        Iterable<SubstitutedVar> symbolicValues = (Iterable<SubstitutedVar>) s.getCachedElements();
-        List<Constraint> currentConcolicMapping = new ArrayList<>();
-        for (SubstitutedVar e : symbolicValues) {
-            if (e == null) {
-                continue;
-            }
-            currentConcolicMapping.add(tryGetSymFromConcolic((Sbool) getEqOfConcolic(e, se)));
-        }
-        Constraint currentAssignment = And.newInstance(currentConcolicMapping);
-        if (!se.checkWithNewConstraint(currentAssignment)) {
-            markForReevaluation(se);
-        }
-    }
-
-    private static void markForReevaluation(SymbolicExecution se) {
-        if (!se.getCurrentChoiceOption().reevaluationNeeded()) {
-            se.getCurrentChoiceOption().setReevaluationNeeded();
-        }
-    }
-
     @Override
     protected void _addIndexInBoundsConstraint(SymbolicExecution se, Sbool indexInBounds) {
         // If we do not regard out-of-bound array index-accesses, we simply add a new constraint and proceed.
@@ -1001,10 +929,6 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         // here.
         Sbool actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(indexInBounds);
         se.addNewConstraint(actualConstraint);
-        Sbool.ConcSbool isLabeledIndexInBounds = ConcolicConstraintContainer.getConcSboolFromConcolic(indexInBounds);
-        if (isLabeledIndexInBounds.isFalse()) {
-            markForReevaluation(se);
-        }
     }
 
     @Override

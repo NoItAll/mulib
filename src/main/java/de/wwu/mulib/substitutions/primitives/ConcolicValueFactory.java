@@ -11,17 +11,16 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import java.util.Map;
 import java.util.function.Function;
 
-// The creation of concrete numbers is performed in SymbolicValueFactory.
 public class ConcolicValueFactory extends AbstractValueFactory implements AssignConcolicLabelEnabledValueFactory {
 
     private final SymbolicValueFactory svf;
-    
-    protected ConcolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+
+    ConcolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
         super(config, arrayTypesToSpecializedSarrayClass);
         this.svf = SymbolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
     }
 
-    public static ConcolicValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+    static ConcolicValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
         return new ConcolicValueFactory(config, arrayTypesToSpecializedSarrayClass);
     }
 
@@ -35,7 +34,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         se.addNewConstraint(actualConstraint);
     }
 
-    private static <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
+    private <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
             SymbolicExecution se,
             Function<SymbolicExecution, SA> symCreator,
             Function<Object, ConcSnumber> concSnumberCreator,
@@ -43,6 +42,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         // Symbolic value
         SA sym = symCreator.apply(se);
         if (!se.isSatisfiable()) {
+            // Must be called anyway for labeling
             throw Mulib.fail();
         }
         // Concrete value
@@ -91,6 +91,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         // Symbolic value
         Sbool.SymSbool sym = svf.symSbool(se);
         if (!se.isSatisfiable()) {
+            // Must be called anyway for labeling
             throw Mulib.fail();
         }
         // Concrete value

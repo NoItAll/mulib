@@ -197,17 +197,25 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Optional<PathSolution> getPathSolution() {
-        while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded()) || currentChoiceOption.reevaluationNeeded()) {
+        while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded())) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution();
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
+                if (config.CONCOLIC && !solverManager.isSatisfiable()) {
+                    // Be skeptical with concolic execution; - choice options might be unsatisfiable here if a labeling
+                    // has become stale
+                    currentChoiceOption.setUnsatisfiable();
+                    continue;
+                }
                 this.currentSymbolicExecution = symbolicExecution;
                 assert solverManager.isSatisfiable() : config.toString();
                 try {
                     // This executes the search region with the choice path predetermined by the chosen choice option
                     Object solutionValue = invokeSearchRegion();
                     if (!solverManager.isSatisfiable()) {
+                        // One last check for when the last added constraints made the constraint stack unsatisfiable.
+                        // We will call solverManager.isSatisfiable() anyway to label a path solution
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
@@ -237,10 +245,16 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                     this.exceededBudgetCallback.accept(this, exceededBudget, solverManager);
                 } catch (MulibException e) {
+                    if (config.CONCOLIC && !solverManager.isSatisfiable()) {
+                        currentChoiceOption.setUnsatisfiable();
+                        continue;
+                    }
                     Mulib.log.warning(config.toString());
                     throw e;
                 } catch (Throwable e) {
-                    if (config.CONCOLIC && !solverManager.isSatisfiable()) {
+                    if (!solverManager.isSatisfiable()) {
+                        // One last check for when the last added constraints made the constraint stack unsatisfiable.
+                        // We will call solverManager.isSatisfiable() anyway to label a path solution if needed
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
@@ -251,7 +265,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     } else {
                         Mulib.log.warning(config.toString());
                         e.printStackTrace();
-                        throw new MulibRuntimeException("Exception was thrown but not expected, config: " + config, e);
+                        throw new MulibRuntimeException("Exception was thrown but not allowed, config: " + config, e);
                     }
                 }
             }
@@ -341,27 +355,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     private Optional<SymbolicExecution> createExecution() {
         Choice.ChoiceOption optionToBeEvaluated;
         try {
-            if (currentChoiceOption.reevaluationNeeded()) {
-                optionToBeEvaluated = currentChoiceOption;
-                // Relabeling case for concolic execution
-                assert config.CONCOLIC;
-                if (!solverManager.isSatisfiable()) {
-                    optionToBeEvaluated.setUnsatisfiable();
-                    return Optional.empty();
-                } else {
-                    optionToBeEvaluated.setSatisfiable();
-                }
-            } else {
-                Optional<Choice.ChoiceOption> optionalChoiceOption = selectNextChoiceOption(getDeque());
-                if (optionalChoiceOption.isEmpty()) {
-                    return Optional.empty();
-                }
-                optionToBeEvaluated = optionalChoiceOption.get();
-                assert !optionToBeEvaluated.isUnsatisfiable();
-                adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
-                if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
-                    return Optional.empty();
-                }
+            Optional<Choice.ChoiceOption> optionalChoiceOption = selectNextChoiceOption(getDeque());
+            if (optionalChoiceOption.isEmpty()) {
+                return Optional.empty();
+            }
+            optionToBeEvaluated = optionalChoiceOption.get();
+            assert !optionToBeEvaluated.isUnsatisfiable();
+            adjustSolverManagerToNewChoiceOption(optionToBeEvaluated);
+            if (!checkIfSatisfiableAndSet(optionToBeEvaluated)) {
+                return Optional.empty();
             }
             assert currentChoiceOption.getDepth() == solverManager.getLevel();
             return Optional.of(new SymbolicExecution(
@@ -524,7 +526,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
         int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
         Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
-        if (choiceOption.getChoice().getChoiceOptions().size() == 2
+        if (!config.CONCOLIC // Exclude concolic execution; - the solver manager might be unsatisfiable here
+                && choiceOption.getChoice().getChoiceOptions().size() == 2
                 && other.isUnsatisfiable()
                 && choiceOption.getParent().isEvaluated()
                 && !choiceOption.getParent().constraintWasModifiedAfterInitialSatCheck()

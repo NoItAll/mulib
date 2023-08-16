@@ -570,10 +570,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             }
         }
 
-        if (!(toPotentiallyRepresent instanceof Sarray) || !config.CONCOLIC) {
-            // For concolic execution, in the current implementation,
-            // we need to evaluate the cached indices of Sarrays to see whether we still have a valid labeling
-            // or whether we need to relabel everything
+        if (!(toPotentiallyRepresent instanceof Sarray)) {
             toPotentiallyRepresent.__mulib__blockCache();
         }
 
@@ -723,8 +720,6 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         result = sarray.getNewValueForSelect(se, index);
         addSelectConstraintIfNeeded(se, sarray, index, result);
         sarray.setInCacheForIndexForSelect(index, result);
-        // Needed for concolic execution
-        additionalChecksAfterSelect(sarray, se);
         return result;
     }
 
@@ -753,12 +748,4 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         sarray.setInCacheForIndexForStore(index, value);
         return value;
     }
-
-    /**
-     * Only implemented by concolic execution. Checks whether the accessed array has any stale index-value pairs.
-     * @param sarray The sarray to check
-     * @param se The instance of {@link SymbolicExecution} used for this execution run
-     */
-    protected void additionalChecksAfterSelect(Sarray sarray, SymbolicExecution se) {}
-
 }

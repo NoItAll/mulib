@@ -174,10 +174,6 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
             SymbolicExecution se,
             Constraint constraint,
             Choice.ChoiceOption currentChoiceOption) {
-        boolean reevaluationNeeded = currentChoiceOption.reevaluationNeeded();
-        if (reevaluationNeeded && !se.isSatisfiable()) {
-            throw Mulib.fail();
-        }
         Constraint innerConstraint = ((Sbool.SymSbool) constraint).getRepresentedConstraint();
         ConcolicConstraintContainer container = (ConcolicConstraintContainer) innerConstraint;
 
@@ -187,37 +183,28 @@ public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 
         // Create Choice with ChoiceOptions (true false)
         Choice newChoice = new Choice(currentChoiceOption, actualConstraint, Not.newInstance(actualConstraint));
-        if (!reevaluationNeeded) {
-            // First, let the Executor of the current SymbolicExecution decide which choice is to be.
-            // This also adds the constraint to the SolverManager's stack
-            Choice.ChoiceOption chosenChoiceOption = firstIsChosen ?
-                    newChoice.getOption(0)
-                    :
-                    newChoice.getOption(1);
-
-            chosenChoiceOption.setSatisfiable(); // Determined by concrete values
-            // Only forward the predetermined choice option. This will trigger the necessary side-effects in GenericExecutor.
-            Optional<Choice.ChoiceOption> chosen =
-                    se.decideOnNextChoiceOptionDuringExecution(Collections.singletonList(chosenChoiceOption));
-            if (chosen.isEmpty()) { // Incremental budget exceeded.
-                chosenChoiceOption.setReevaluationNeeded();
-                se.notifyNewChoice(newChoice.depth, newChoice.getChoiceOptions());
-                throw Backtrack.getInstance();
-            }
-            assert chosen.get() == chosenChoiceOption;
-            // Then, add the new ChoiceOptions to the ExecutionManager's deque.
-            // This depends on the chosen ChoiceOption and whether the incremental budget is exceeded.
-            List<Choice.ChoiceOption> notChosenOptions = Collections.singletonList(
-                    firstIsChosen ? newChoice.getOption(1) : newChoice.getOption(0)
-            );
-            se.notifyNewChoice(newChoice.depth, notChosenOptions);
-            Constraint newCpConstraint = chosenChoiceOption.getOptionConstraint();
-            return newCpConstraint == actualConstraint;
-        } else {
-            // All is ok, the state is satisfiable. However, we still need to backtrack since the concolic labels
-            // have become invalid
+        // First, let the Executor of the current SymbolicExecution decide which choice is to be.
+        // This also adds the constraint to the SolverManager's stack
+        Choice.ChoiceOption chosenChoiceOption = firstIsChosen ?
+                newChoice.getOption(0)
+                :
+                newChoice.getOption(1);
+        chosenChoiceOption.setSatisfiable(); // Determined by concrete values
+        // Only forward the predetermined choice option. This will trigger the necessary side-effects in GenericExecutor.
+        Optional<Choice.ChoiceOption> chosen =
+                se.decideOnNextChoiceOptionDuringExecution(Collections.singletonList(chosenChoiceOption));
+        if (chosen.isEmpty()) { // Incremental budget exceeded.
             se.notifyNewChoice(newChoice.depth, newChoice.getChoiceOptions());
             throw Backtrack.getInstance();
         }
+        assert chosen.get() == chosenChoiceOption;
+        // Then, add the new ChoiceOptions to the ExecutionManager's deque.
+        // This depends on the chosen ChoiceOption and whether the incremental budget is exceeded.
+        List<Choice.ChoiceOption> notChosenOptions = Collections.singletonList(
+                firstIsChosen ? newChoice.getOption(1) : newChoice.getOption(0)
+        );
+        se.notifyNewChoice(newChoice.depth, notChosenOptions);
+        Constraint newCpConstraint = chosenChoiceOption.getOptionConstraint();
+        return newCpConstraint == actualConstraint;
     }
 }
