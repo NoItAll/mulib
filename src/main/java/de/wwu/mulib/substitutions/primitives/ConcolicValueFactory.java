@@ -26,7 +26,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    protected void _addLengthLteZeroConstraint(SymbolicExecution se, Sint len) {
+    protected void _addZeroLteLengthConstraint(SymbolicExecution se, Sint len) {
         Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
         Constraint actualConstraint = ConcolicConstraintContainer.tryGetSymFromConcolic(inBounds);
         if (actualConstraint instanceof Sbool.SymSbool) {
@@ -354,6 +354,17 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
                 (s) -> sym,
                 o -> Sfloat.concSfloat((Float) o),
                 Sfloat::newExpressionSymbolicSfloat
+        );
+    }
+
+    @Override
+    public Schar.SymSchar assignLabel(SymbolicExecution se, Schar.SymSchar potentiallyToUnwrap) {
+        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        return numericConcolicWrapperCreator(
+                se,
+                (s) -> sym,
+                o -> Schar.concSchar((Character) o),
+                Schar::newExpressionSymbolicSchar
         );
     }
 }

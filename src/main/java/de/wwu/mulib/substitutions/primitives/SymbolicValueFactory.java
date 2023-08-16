@@ -43,7 +43,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    protected void _addLengthLteZeroConstraint(SymbolicExecution se, Sint len) {
+    protected void _addZeroLteLengthConstraint(SymbolicExecution se, Sint len) {
         Sbool inBounds = se.lte(Sint.ConcSint.ZERO, len);
         se.addNewConstraint(inBounds);
     }

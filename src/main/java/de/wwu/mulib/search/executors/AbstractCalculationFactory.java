@@ -624,7 +624,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     public void remember(SymbolicExecution se, String name, SubstitutedVar substitutedVar) {
         if (substitutedVar instanceof PartnerClass) {
             PartnerClass pc = (PartnerClass) substitutedVar;
-            pc.__mulib__setIsNamed();
+            pc.__mulib__setIsRemembered();
             // TODO Another remember-method should take a whole set of SubstitutedVars with their names to remember
             //  The benefit would be that they all recognize object identity as they come from the same MulibValueCopier
             MulibValueCopier mulibValueCopier = new MulibValueCopier(se, config);

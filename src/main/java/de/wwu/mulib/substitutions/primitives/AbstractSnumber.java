@@ -1,39 +1,30 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.search.NumberUtil;
 
+/**
+ * Abstract supertype for all Snumbers. Mostly predefines a a default equals-method and a default hashCode for
+ * {@link ConcSnumber}s.
+ */
 public abstract class AbstractSnumber implements Snumber {
 
+    /**
+     * Construct a new AbstractSnumber
+     */
     protected AbstractSnumber() {}
 
-    /**
-     * Implementation for ConcSnumbers
-     * @param o
-     * @return
-     */
     @Override
     public boolean equals(Object o) {
         assert this instanceof ConcSnumber;
-        if (!(o instanceof ConcSnumber)) {
+        if (this == o) {
+            return true;
+        }
+        if (getClass() != o.getClass()) {
             return false;
         }
         ConcSnumber oc = (ConcSnumber) o;
         ConcSnumber thisc = (ConcSnumber) this;
-        boolean isFp = isFp();
-        boolean oIsFp = oc.isFp();
-        if (isFp != oIsFp) {
-            return false;
-        }
-        if (isFp) {
-            return oc.doubleVal() == thisc.doubleVal();
-        }
-        if (o instanceof Sint) {
-            return oc.intVal() == thisc.intVal();
-        }
-        if (o instanceof Slong) {
-            return oc.longVal() == thisc.longVal();
-        }
-        throw new NotYetImplementedException(this + ", " + oc);
+        return NumberUtil.eq(oc, thisc);
     }
 
     @Override

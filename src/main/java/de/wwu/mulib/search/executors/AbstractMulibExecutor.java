@@ -324,13 +324,13 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     private void _manifestCfgAndReset(Object result) {
         if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
-            if (!(result instanceof MulibException)) {
-                getExecutorManager().getCoverageCfg().manifestTrail();
-                // We still need to retrieve the path solution; - this is done later on
-            } else if (result instanceof Fail) {
+            if (result instanceof Fail) {
                 // Is explicit Fail
                 getExecutorManager().getCoverageCfg().manifestTrail();
                 getExecutorManager().getCoverageCfg().reset();
+            } else if (!(result instanceof MulibException) && !(result instanceof Backtrack)) {
+                getExecutorManager().getCoverageCfg().manifestTrail();
+                // We still need to retrieve the path solution; - this is done later on
             } else {
                 // Is, e.g., Backtrack
                 getExecutorManager().getCoverageCfg().reset();

@@ -22,29 +22,31 @@ import java.util.Set;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Supertype of value factories. Implements the generation of {@link PartnerClass} objects and {@link Sarray}s.
+ */
 public abstract class AbstractValueFactory implements ValueFactory {
-    protected final boolean enableInitializeFreeArraysWithNull;
-    protected final boolean enableInitializeFreeObjectsWithNull;
-    protected final boolean aliasingForFreeObjects;
-    protected final boolean throwExceptionOnOOB;
+    /**
+     * Can be used to extract the symbolic value from {@link ConcolicNumericContainer}s
+     */
     protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
+    /**
+     * Can be used to extract the symbolic value from {@link ConcolicConstraintContainer}
+     */
     protected final Function<Sbool, Sbool> tryGetSymFromSbool;
     private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedConstructor;
     private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors;
     private final BiFunction<Class<?>, Object[], Sarray.PartnerClassSarray<?>> getSarrayConstructor;
     private final BiFunction<Class<?>, Object[], Sarray.SarraySarray> getMultiDimensionalSarraySarrayConstructor;
-    private final boolean transformationRequired;
 
-
+    /**
+     * The configuration
+     */
     protected final MulibConfig config;
 
     @SuppressWarnings("unchecked")
     protected AbstractValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
-        this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
-        this.enableInitializeFreeArraysWithNull = config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
-        this.enableInitializeFreeObjectsWithNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        this.aliasingForFreeObjects = config.ALIASING_FOR_FREE_OBJECTS;
-        this.throwExceptionOnOOB = config.THROW_EXCEPTION_ON_OOB;
+        boolean transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         // Generate the initializers for, statically unknown, Sarray subclasses.
         // TODO In the future, we might directly call the constructors in-code to avoid this. We might have callbacks in
         // the constructors to inform the ValueFactories about initialized Sarrays.
@@ -123,54 +125,54 @@ public abstract class AbstractValueFactory implements ValueFactory {
                 len,
                 defaultIsSymbolic,
                 // defaultIsSymbolic also acts as a way to check whether the array should be initializable to null
-                enableInitializeFreeArraysWithNull && defaultIsSymbolic
+                config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic
         );
     }
 
     @Override
     public final Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sdoubleSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sdoubleSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sfloatSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sfloatSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return slongSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return slongSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
 
     }
 
     @Override
     public final Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sshortSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sshortSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sbyteSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sbyteSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sboolSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sboolSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return scharSarray(se, len, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return scharSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
-        return partnerClassSarray(se, len, clazz, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return partnerClassSarray(se, len, clazz, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean defaultIsSymbolic) {
-        return sarraySarray(se, len, clazz, defaultIsSymbolic, enableInitializeFreeArraysWithNull && defaultIsSymbolic);
+        return sarraySarray(se, len, clazz, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
@@ -263,7 +265,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
         // defaultIsSymbolic is assumed
-        return symObject(se, toGetInstanceOf, enableInitializeFreeObjectsWithNull);
+        return symObject(se, toGetInstanceOf, config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL);
     }
 
     @Override
@@ -349,15 +351,20 @@ public abstract class AbstractValueFactory implements ValueFactory {
             if (((ConcSnumber) len).intVal() < 0) {
                 throw new NegativeArraySizeException();
             }
-        } else if (throwExceptionOnOOB) {
+        } else if (config.THROW_EXCEPTION_ON_OOB) {
             Sbool outOfBounds = se.gt(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();
             }
         } else if (!se.nextIsOnKnownPath()) {
-            _addLengthLteZeroConstraint(se, len);
+            _addZeroLteLengthConstraint(se, len);
         }
     }
 
-    protected abstract void _addLengthLteZeroConstraint(SymbolicExecution se, Sint len);
+    /**
+     * Should add that the length is larger than or equal to zero
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param len The length to be restricted
+     */
+    protected abstract void _addZeroLteLengthConstraint(SymbolicExecution se, Sint len);
 }

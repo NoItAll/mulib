@@ -97,34 +97,66 @@ public final class SymbolicExecution {
         return calculationFactory;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSints() {
         return nextNumberInitializedAtomicSymSints++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sdouble.SymSdoubleLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSdoubles() {
         return nextNumberInitializedAtomicSymSdoubles++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sfloat.SymSfloatLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSfloats() {
         return nextNumberInitializedAtomicSymSfloats++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sbool.SymSboolLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSbools() {
         return nextNumberInitializedAtomicSymSbools++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Slong.SymSlongLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSlongs() {
         return nextNumberInitializedAtomicSymSlongs++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sbyte.SymSbyteLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSbytes() {
         return nextNumberInitializedAtomicSymSbytes++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sshort.SymSshortLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSshorts() {
         return nextNumberInitializedAtomicSymSshorts++;
     }
 
+    /**
+     * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Schar.SymScharLeaf}
+     * (or an equivalent object) should be spawned next
+     */
     public int getNextNumberInitializedAtomicSymSchars() {
         return nextNumberInitializedAtomicSymSchars++;
     }
@@ -143,38 +175,6 @@ public final class SymbolicExecution {
             result = nextIdentitiyHavingObjectNr++;
         }
         return result;
-    }
-
-    public void setNextNumberInitializedAtomicSymSints(int i) {
-        nextNumberInitializedAtomicSymSints += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSdoubles(int i) {
-        nextNumberInitializedAtomicSymSdoubles += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSfloats(int i) {
-        nextNumberInitializedAtomicSymSfloats += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSbools(int i) {
-        nextNumberInitializedAtomicSymSbools += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSlongs(int i) {
-        nextNumberInitializedAtomicSymSlongs += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSbytes(int i) {
-        nextNumberInitializedAtomicSymSbytes += i;
-    }
-
-    public void addToNextNumberInitializedAtomicSymSshorts(int i) {
-        nextNumberInitializedAtomicSymSshorts += i;
-    }
-
-    public void addToNextNumberInitializedSymObject(int i) {
-        nextIdentitiyHavingObjectNr += i;
     }
 
     PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field) {
@@ -198,8 +198,12 @@ public final class SymbolicExecution {
         se.remove();
     }
 
-    // If a ChoiceOption exists on the predeterminedPath, pop it and add its constraints to existingConstraints
-    // These are then orderly polled during the execution.
+    /**
+     * If a ChoiceOption exists on the predeterminedPath, pop it and take the next choice option from the trail
+     * @return true, if there is such a new choice option, else false. Returning true means that we are still on a
+     * predetermined path for navigating to a new choice option. Returning false means that a {@link MulibExecutor}
+     * must decide on the next choice option
+     */
     public boolean transitionToNextChoiceOptionAndCheckIfOnKnownPath() {
         if (!predeterminedPath.isEmpty()) {
             predeterminedPath.pop();
@@ -216,14 +220,19 @@ public final class SymbolicExecution {
         return true;
     }
 
-    private boolean isOnKnownPath() {
-        return !predeterminedPath.isEmpty();
-    }
-
+    /**
+     * @return true if there is a next predetermined {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} on the current path.
+     * Returning true means that we should not modify any option since we already evaluated this choice option.
+     * Returning false means that we are currently exploring a new choice option (for which, e.g., constraints should be
+     * added that are found)
+     */
     public boolean nextIsOnKnownPath() {
         return predeterminedPath.size() > 1;
     }
 
+    /**
+     * @return The current choice option. Might be a choice option that was already evaluated.
+     */
     public Choice.ChoiceOption getCurrentChoiceOption() {
         return currentChoiceOption;
     }
@@ -235,18 +244,36 @@ public final class SymbolicExecution {
         }
     }
 
+    /**
+     * Delegates the decision on determining which of the options to evaluate next to
+     * {@link MulibExecutor#chooseNextChoiceOption(List)}.
+     * @param chooseFrom The choice options to choose from
+     * @return The {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}, if the execution should be returned.
+     * {@link Optional#empty()} if the execution should be aborted
+     */
     public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {
-        assert !isOnKnownPath() : "Should not occur";
+        assert predeterminedPath.isEmpty() : "Should not occur";
         Optional<Choice.ChoiceOption> result = mulibExecutor.chooseNextChoiceOption(chooseFrom);
         result.ifPresent(choiceOption -> this.currentChoiceOption = choiceOption);
         return result;
     }
 
+    /**
+     * Adds a constraint via {@link MulibExecutor#addNewConstraint(Constraint)} to the constraint solver and the
+     * current {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}.
+     * @param c The constraint
+     */
     public void addNewConstraint(Constraint c) {
         assert !nextIsOnKnownPath();
         mulibExecutor.addNewConstraint(c);
     }
 
+    /**
+     * Notifies new choice options to the executor via {@link MulibExecutor#notifyNewChoice(int, List)}. These
+     * choice options are NOT treated by this instance of symbolic execution.
+     * @param depth The depth of the choice options
+     * @param choiceOptions The choice options
+     */
     public void notifyNewChoice(int depth, List<Choice.ChoiceOption> choiceOptions) {
         mulibExecutor.notifyNewChoice(depth, choiceOptions);
     }
@@ -263,9 +290,14 @@ public final class SymbolicExecution {
         return mulibExecutor.checkWithNewConstraint(c);
     }
 
-    public void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic) {
+    /**
+     * Adds a constraint via {@link MulibExecutor#addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint)}
+     * to the constraint solver and the current {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}.
+     * @param pc The constraint
+     */
+    public void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint pc) {
         assert !nextIsOnKnownPath();
-        mulibExecutor.addNewPartnerClassObjectConstraint(ic);
+        mulibExecutor.addNewPartnerClassObjectConstraint(pc);
     }
 
     public Sbool.ConcSbool check(Sbool s) {

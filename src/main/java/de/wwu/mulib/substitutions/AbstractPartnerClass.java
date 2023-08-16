@@ -27,13 +27,13 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     }
 
     @Override
-    public final void __mulib__setIsNamed() {
-        this.representationState |= IS_NAMED;
+    public final void __mulib__setIsRemembered() {
+        this.representationState |= IS_REMEMBERED;
     }
 
     @Override
-    public final boolean __mulib__isNamed() {
-        return (this.representationState & IS_NAMED) != 0;
+    public final boolean __mulib__isRemembered() {
+        return (this.representationState & IS_REMEMBERED) != 0;
     }
 
     @Override
