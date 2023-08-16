@@ -10,10 +10,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Non-incremental version of the Z3 constraint solver. Instead of using scope, we push all constraints into a global
- * scope. For backtracking etc. we push those constraints not as-are but with an simple boolean antecedent in an implication.
- * On backtracking, these bools are deactivated. For as long as the constraint solver has them "in a virtual scope"
- * the antecedent is forced to be on.
+ * Non-incremental version of the Z3 constraint solver. Instead of using a scope for each
+ * backtracking point, we push all constraints into a global scope.
+ * For backtracking etc. we push those constraints not as-are but with an simple boolean antecedent in an implication, i.e.,
+ * (boolean_leaf -> constraint).
+ * For as long as the constraint solver has them "in a virtual scope" the antecedent (boolean_leaf) is forced to be on.
+ * On backtracking, the antecedents are not enforced to be true any longer.
  * By keeping all constraints in a global scope, the constraint solver still can learn lemmas which might speed up, e.g.,
  * {@link de.wwu.mulib.search.executors.SearchStrategy#BFS} and {@link de.wwu.mulib.search.executors.SearchStrategy#IDDFS}
  * but is costly in terms of memory.

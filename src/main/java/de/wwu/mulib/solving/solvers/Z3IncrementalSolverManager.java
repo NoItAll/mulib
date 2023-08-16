@@ -7,7 +7,7 @@ import de.wwu.mulib.exceptions.UnknownSolutionException;
 
 /**
  * Incremental version of the Z3 constraint solver. Uses Z3's scopes for backtracking and is more space-efficient and,
- * for depth-first strategies, more performant than {@link Z3GlobalLearningSolverManager}.
+ * for depth-first strategies, typically more performant than {@link Z3GlobalLearningSolverManager}.
  */
 public final class Z3IncrementalSolverManager extends AbstractZ3SolverManager {
 
