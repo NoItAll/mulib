@@ -14,13 +14,13 @@ import java.util.Optional;
 public interface ChoiceOptionDeque {
 
     /**
-     * @return One of the unevaluated choice options with the lowest depth.
+     * @return One of the unevaluated choice options with the lowest depth in the search tree.
      * Is typically used by {@link de.wwu.mulib.search.executors.SearchStrategy#BFS} and {@link de.wwu.mulib.search.executors.SearchStrategy#IDDFS}.
      */
     Optional<Choice.ChoiceOption> pollFirst();
 
     /**
-     * @return One of the unevaluated choice options with the highest depth.
+     * @return One of the unevaluated choice options with the highest depth in the search tree.
      * Is typically used by {@link de.wwu.mulib.search.executors.SearchStrategy#DFS}.
      */
     Optional<Choice.ChoiceOption> pollLast();
@@ -39,7 +39,8 @@ public interface ChoiceOptionDeque {
 
     /**
      * Request a choice option from the deque.
-     * Is typically used by {@link de.wwu.mulib.search.executors.SearchStrategy#DSAS} and {@link de.wwu.mulib.search.executors.SearchStrategy#IDDSAS}.
+     * Is typically used by {@link de.wwu.mulib.search.executors.SearchStrategy#DSAS} and
+     * {@link de.wwu.mulib.search.executors.SearchStrategy#IDDSAS}.
      * If the requested choice option is available, it will be removed from the deque.
      * @param requested The requested choice option
      * @return true, if the choice option is available and has not been requested by another consumer, else false
