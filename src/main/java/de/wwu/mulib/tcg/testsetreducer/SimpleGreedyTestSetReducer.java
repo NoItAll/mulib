@@ -7,6 +7,13 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Starts with an empty collection of test cases.
+ * Then starts adding test cases that contributes the most to increasing the cardinality of the coverage of
+ * the current set of test cases.
+ * If the cardinality did not increase, the procedure terminates.
+ * This is a coverage loss-less reducer.
+ */
 public class SimpleGreedyTestSetReducer extends AbstractTestSetReducer {
 
     @Override
@@ -28,14 +35,14 @@ public class SimpleGreedyTestSetReducer extends AbstractTestSetReducer {
                 if (enrichedCardinality > maxCardinalityInInnerIteration) {
                     maxCurrent = tc;
                     maxCardinalityInInnerIteration = enrichedCardinality;
-                } else if (enrichedCardinality < currentMaxCardinality) {
+                } else if (enrichedCardinality <= currentMaxCardinality) {
                     pruneAway.add(tc);
                 }
             }
-            currentlyRegardedTestCases.removeAll(pruneAway);
             if (maxCurrent == null) {
                 break;
             }
+            currentlyRegardedTestCases.removeAll(pruneAway);
             result.add(maxCurrent);
             currentCover.or(maxCurrent.getCover());
         }

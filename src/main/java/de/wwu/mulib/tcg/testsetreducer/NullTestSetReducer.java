@@ -4,6 +4,9 @@ import de.wwu.mulib.tcg.TestCase;
 
 import java.util.Collection;
 
+/**
+ * Does not reduce any test cases
+ */
 public class NullTestSetReducer extends AbstractTestSetReducer {
 
     @Override

@@ -5,11 +5,19 @@ import de.wwu.mulib.tcg.TestCase;
 import java.util.Arrays;
 import java.util.Collection;
 
+/**
+ * Simple wrapper for pipelining two {@link TestSetReducer}s.
+ * These test set reducers than forward their output to the next reducer in the pipeline, if any
+ */
 public class CombinedTestSetReducer extends AbstractTestSetReducer {
 
     private final TestSetReducer[] inOrder;
+
+    /**
+     * @param inOrder The reducers that are applied in-order
+     */
     public CombinedTestSetReducer(TestSetReducer... inOrder) {
-        this.inOrder = inOrder;
+        this.inOrder = Arrays.copyOf(inOrder, inOrder.length);
     }
 
     @Override

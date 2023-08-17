@@ -4,47 +4,67 @@ import java.lang.reflect.Method;
 import java.util.Iterator;
 import java.util.List;
 
+/**
+ * Comprises a list of {@link TestCase}s and a reference to the method under test
+ */
 public class TestCases {
-    private List<TestCase> testCases;
+    private final List<TestCase> testCases;
     private final Method testedMethod;
 
+    /**
+     * @param testCases The test cases
+     * @param testedMethod The method under test
+     */
     public TestCases(List<TestCase> testCases, Method testedMethod) {
         this.testCases = testCases;
         this.testedMethod = testedMethod;
     }
 
-    public Class<?> getClassOfTestedMethod() {
+    /**
+     * @return The class declaring the method under test
+     */
+    public Class<?> getClassOfMethodUnderTest() {
         return testedMethod.getDeclaringClass();
     }
 
-    public Method getTestedMethod() {
+    /**
+     * @return The method under test
+     */
+    public Method getMethodUnderTest() {
         return testedMethod;
     }
 
-    public String getNameOfTestedClass() {
-        return getClassOfTestedMethod().getSimpleName();
+    /**
+     * @return The name of the class under test
+     */
+    public String getNameOfClassUnderTest() {
+        return getClassOfMethodUnderTest().getSimpleName();
     }
 
-    public String getNameOfTestedMethod() {
-        return getTestedMethod().getName();
+    /**
+     * @return The name of the method under test
+     */
+    public String getNameOfMethodUnderTest() {
+        return getMethodUnderTest().getName();
     }
 
-    public String getPackageNameOfClassOfTestedMethod() {
-        return getClassOfTestedMethod().getPackageName();
+    /**
+     * @return The package name of the class declaring the method under test
+     */
+    public String getPackageNameOfClassOfMethodUnderTest() {
+        return getClassOfMethodUnderTest().getPackageName();
     }
 
-    public Iterator<TestCase> iterator() {
-        return testCases.iterator();
-    }
-
-    public void setTestCases(List<TestCase> testCases) {
-       this.testCases = testCases;
-    }
-
+    /**
+     * @return The test cases
+     */
     public List<TestCase> getTestCases() {
         return testCases;
     }
 
+    /**
+     * @return The number of test cases
+     */
     public int getNumberTestCases() {
         return testCases.size();
     }

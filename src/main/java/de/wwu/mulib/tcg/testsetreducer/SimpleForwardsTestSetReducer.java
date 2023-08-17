@@ -7,6 +7,13 @@ import java.util.BitSet;
 import java.util.Collection;
 import java.util.List;
 
+/**
+ * Starts with an empty collection of test cases.
+ * Then starts adding test cases in-order.
+ * For each added test case, if the new overall test set coverage is not increased,
+ * the test case is discarded again. Otherwise, the test case remains added.
+ * This is a coverage loss-less reducer.
+ */
 public final class SimpleForwardsTestSetReducer extends AbstractTestSetReducer {
 
     @Override

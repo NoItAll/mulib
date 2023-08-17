@@ -13,23 +13,58 @@ import java.util.*;
 
 import static de.wwu.mulib.tcg.TcgUtility.*;
 
+/**
+ * Generates executable Junit Jupiter test methods
+ */
 public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
+    /**
+     * The encountered types for importing
+     */
     protected final Set<Class<?>> encounteredTypes;
-    // Temporary store for objects and their argument name in the test method
-    // Should be cleared after the String for the TestCase-object was generated.
+    /**
+     * Temporary store for objects and their argument name in the test method.
+     * Should be cleared after the String for the TestCase-object was generated.
+     */
     protected final Map<Object, String> argumentNamesForObjects;
-    // Temporary stores for object types how many of them are already within a method.
-    // Should be cleared after the String for the TestCase-object was generated.
+    /**
+     * Temporary stores for object types how many of them are already within a method.
+     * Should be cleared after the String for the TestCase-object was generated.
+     */
     protected final Map<String, Integer> argumentNameToNumberOfOccurrences;
-    // An identifier for the currently generated test
+    /**
+     * An identifier for the currently generated test
+     */
     protected int numberOfTest = 0;
+    /**
+     * The String from {@link JunitJupiterTestMethodGenerator#argumentNamesForObjects} for the object calling
+     * the method under test if the method under test is not static
+     */
     protected String objectCalleeIdentifier;
+    /**
+     * The test case to generate a representation of
+     */
     protected TestCase testCase;
+    /**
+     * The name of the class declaring the method under test
+     */
     protected final String nameOfTestedClass;
+    /**
+     * The name of the method under test
+     */
     protected final String nameOfTestedMethod;
+    /**
+     * The method under test
+     */
     protected final Method testedMethod;
+    /**
+     * The configuration
+     */
     protected final TcgConfig config;
 
+    /**
+     * @param testedMethod The method under test
+     * @param config The configuration
+     */
     public JunitJupiterTestMethodGenerator(
             Method testedMethod,
             TcgConfig config) {
@@ -50,6 +85,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return result;
     }
 
+    /**
+     * Is executed after generating the test case representation.
+     * Resets temporary variables such as {@link JunitJupiterTestMethodGenerator#argumentNamesForObjects}
+     */
     protected void after() {
         argumentNamesForObjects.clear();
         argumentNameToNumberOfOccurrences.clear();
@@ -63,6 +102,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return encounteredTypes;
     }
 
+    /**
+     * Executes several steps to generate the representation
+     * @return The representation of the method under test
+     */
     protected StringBuilder execute() {
         StringBuilder sb = new StringBuilder();
         sb.append(config.INDENT).append(generateTestMethodAnnotations())
@@ -74,30 +117,42 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
+    /**
+     * @return The annotation for the test method
+     */
     protected String generateTestMethodAnnotations() {
         if (testCase.isExceptional()) {
             return generateTestAnnotationForException((Exception) testCase.getReturnValue());
         } else {
-            return generateTestAnnotationForReturn(testCase.getReturnValue());
+            return generateTestAnnotationForReturn();
         }
     }
 
-    protected String generateTestAnnotationForException(Exception e) {
+    private String generateTestAnnotationForException(Exception e) {
         return "@Test(expected=" + e.getClass().getName() + ".class)" + System.lineSeparator();
     }
 
-    protected String generateTestAnnotationForReturn(Object returnVal) {
+    private String generateTestAnnotationForReturn() {
         return "@Test" + System.lineSeparator();
     }
 
+    /**
+     * @return The method declaration of the method testing the method under test
+     */
     protected String generateTestMethodDeclaration() {
         return "public void test_" + nameOfTestedMethod + "_" + numberOfTest + "() {" + System.lineSeparator();
     }
 
+    /**
+     * @return An end to the method, e.g., "}"
+     */
     protected String generateTestMethodEnd() {
         return "}" + System.lineSeparator();
     }
 
+    /**
+     * @return A String initializing the single inputs
+     */
     protected String generateStringsForInputs() {
         Object[] inputs = testCase.getInputs();
         StringBuilder sb = new StringBuilder();
@@ -125,6 +180,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb.toString();
     }
 
+    /**
+     * @param o The object to initialize
+     * @return A String initializing an object, if such a String was not already created, else returns an empty StringBuilder
+     */
     protected StringBuilder generateElementString(Object o) {
         if (o == null || isAlreadyCreated(o)) {
             return new StringBuilder(); // No element string has to be generated for null or an already created element
@@ -150,6 +209,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
+    /**
+     * @param o An array
+     * @return A String initializing an array and storing its values
+     */
     protected StringBuilder generateArrayString(Object o) {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
@@ -178,6 +241,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return i;
     }
 
+    /**
+     * @param o The array
+     * @return A String generating a multi-dimensional array and setting its content
+     */
     protected StringBuilder generateMultiArrayString(Object o) {
         StringBuilder sb = new StringBuilder();
         String arrayName = argumentNamesForObjects.get(o);
@@ -228,6 +295,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
+    /**
+     * Adds a type that was encountered while creating the test representation
+     * @param oc The type
+     */
     protected void addToEncounteredTypes(Class<?> oc) {
         if (oc.isPrimitive()) {
             return;
@@ -243,10 +314,15 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
-    protected boolean isAlreadyCreated(Object o) {
+
+    private boolean isAlreadyCreated(Object o) {
         return argumentNamesForObjects.containsKey(o);
     }
 
+    /**
+     * @param o The object representing a primitive
+     * @return A String initializing a primitive value
+     */
     protected StringBuilder generatePrimitiveString(Object o) {
         StringBuilder sb = new StringBuilder();
         sb.append(config.INDENT.repeat(2))
@@ -256,6 +332,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
+    /**
+     * @param o The wrapping object
+     * @return A String initializing a wrapping object
+     */
     protected StringBuilder generateWrappingString(Object o) {
         StringBuilder sb = new StringBuilder();
         sb.append(config.INDENT.repeat(2))
@@ -267,11 +347,12 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
-    protected boolean wrappingClassNeedsCast(Class<?> oc) {
-        return oc.equals(Float.class) || oc.equals(Short.class) || oc.equals(Byte.class);
+    private boolean wrappingClassNeedsCast(Class<?> oc) {
+        return oc.equals(Float.class) || oc.equals(Short.class)
+                || oc.equals(Byte.class) || oc.equals(Character.class);
     }
 
-    protected String addCastIfNeeded(Class<?> oc) {
+    private String addCastIfNeeded(Class<?> oc) {
         if (wrappingClassNeedsCast(oc)) {
             // Float, Byte, or Short
             return "(" + toFirstLower(oc.getSimpleName()) + ") ";
@@ -280,6 +361,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
+    /**
+     * @param o The object to name
+     * @return A new name for o, if o has not yet been named, else the known name is returned
+     */
     protected String generateNumberedArgumentName(Object o) {
         String numberedArgumentNameForType = argumentNamesForObjects.get(o);
         if (numberedArgumentNameForType != null) {
@@ -297,6 +382,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return numberedArgumentNameForType;
     }
 
+    /**
+     * @param type The type
+     * @return A name for a type
+     */
     protected String getArgumentNameForType(Class<?> type) {
         if (type.isArray()) {
             return toFirstLower(getArgumentNameForType(type.getComponentType())) + "Ar";
@@ -305,6 +394,11 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
+    /**
+     * @param o The object
+     * @return A String representing the initialization of a non-primitive and a non-wrapper object, array, or String.
+     * If this is a special case {@link JunitJupiterTestMethodGenerator#generateSpecialCaseString(Object)} is called
+     */
     protected StringBuilder generateObjectString(Object o) {
         StringBuilder sb = new StringBuilder();
         sb.append(config.INDENT.repeat(2));
@@ -317,7 +411,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
-    protected boolean isSpecialCase(Class<?> objectClass) {
+    private boolean isSpecialCase(Class<?> objectClass) {
         for (Class<?> specialCase : config.SPECIAL_CASES) {
             if (specialCase.isAssignableFrom(objectClass)) {
                 return true;
@@ -326,6 +420,11 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return false;
     }
 
+    /**
+     * This must be implemented by overriding JunitJupiterTestMethodGenerator
+     * @param o The object
+     * @return A String initializing a type that was specified {@link TcgConfig#SPECIAL_CASES}
+     */
     protected StringBuilder generateSpecialCaseString(Object o) {
         if (o instanceof Collection) {
             return treatCollectionSpecialCase((Collection<?>) o);
@@ -336,7 +435,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
                 "for the StdTestCaseGenerator yet.");
     }
 
-    protected StringBuilder treatCollectionSpecialCase(Collection<?> c) {
+    private StringBuilder treatCollectionSpecialCase(Collection<?> c) {
         StringBuilder sb = new StringBuilder();
         sb.append(generateConstructionString(c));
         String collectionName = argumentNamesForObjects.get(c);
@@ -347,7 +446,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
-    protected StringBuilder treatMapSpecialCase(Map<?, ?> m) {
+    private StringBuilder treatMapSpecialCase(Map<?, ?> m) {
         StringBuilder sb = new StringBuilder();
         sb.append(generateConstructionString(m));
         String mapName = argumentNamesForObjects.get(m);
@@ -361,7 +460,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
-    protected StringBuilder generateStringString(Object o) {
+    private StringBuilder generateStringString(Object o) {
         return new StringBuilder(config.INDENT.repeat(2))
                 .append("String ")
                 .append(argumentNamesForObjects.get(o))
@@ -370,8 +469,8 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
                 .append("\";").append(System.lineSeparator());
     }
 
-    protected StringBuilder generateConstructionString(Object o) {
-        if (config.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTOR) {
+    private StringBuilder generateConstructionString(Object o) {
+        if (config.ASSUME_PUBLIC_ZERO_ARGS_CONSTRUCTORS) {
             return generateConstructionStringWithZeroArgsConstructor(o);
         } else {
             return generateConstructionStringWithReflection(o);
@@ -395,7 +494,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb;
     }
 
-    protected String generateAttributesStrings(Object o) {
+    private String generateAttributesStrings(Object o) {
         StringBuilder sb = new StringBuilder();
         Field[] fields = o.getClass().getDeclaredFields();
         String objectArgumentName = argumentNamesForObjects.get(o);
@@ -408,11 +507,15 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb.toString();
     }
 
+    /**
+     * @param f The field
+     * @return true, if this field should not be set
+     */
     protected boolean skipField(Field f) {
         return f.getName().contains("jacoco");
     }
 
-    protected String generateSetStatementForObject(String objectArgumentName, Object o, Field f) {
+    private String generateSetStatementForObject(String objectArgumentName, Object o, Field f) {
         try {
             StringBuilder sb = new StringBuilder();
             f.setAccessible(true);
@@ -446,10 +549,13 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         }
     }
 
-    protected StringBuilder generateStringForReturnValue() {
+    private StringBuilder generateStringForReturnValue() {
         return generateElementString(testCase.getReturnValue());
     }
 
+    /**
+     * @return A String asserting in which the correctness of the input objects values is asserted.
+     */
     protected String generateAssertionString() {
         String[] inputObjectNames = new String[this.testCase.getInputs().length];
         for (int i = 0; i < inputObjectNames.length; i++) {
@@ -478,7 +584,7 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb.toString();
     }
 
-    protected void addAssertion(StringBuilder addTo, Object objectToAssert, String assertWith) {
+    private void addAssertion(StringBuilder addTo, Object objectToAssert, String assertWith) {
         String objectName = argumentNamesForObjects.get(objectToAssert);
         assert objectName != null;
         addTo.append(config.INDENT.repeat(2));
@@ -529,6 +635,10 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         addTo.append(")").append(";").append(System.lineSeparator());
     }
 
+    /**
+     * @param inputObjectNames The names of input objects
+     * @return A String in which the method under test is called with the inputs
+     */
     protected String generateTestedMethodCallString(String[] inputObjectNames) {
         StringBuilder sb = new StringBuilder();
         if (isObjectMethod()) {
