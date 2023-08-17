@@ -92,9 +92,9 @@ public abstract class AbstractArraySolverRepresentation implements ArraySolverRe
             // different from, e.g., SintSarray, where the default value ConcSint{0} can be assumed by SymSint as well
             // without failing to illustrate special behavior.
             if (valueType.isArray()) {
-                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
             } else if (PartnerClass.class.isAssignableFrom(valueType)) {
-                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+                this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic || config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
             } else if (Sprimitive.class.isAssignableFrom(valueType)) {
                 this.canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault = !defaultIsSymbolic;
             } else {

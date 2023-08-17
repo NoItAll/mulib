@@ -1,8 +1,6 @@
 package de.wwu.mulib;
 
-import com.microsoft.z3.Solver;
 import de.wwu.mulib.exceptions.MisconfigurationException;
-import de.wwu.mulib.expressions.Mul;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
 import de.wwu.mulib.search.choice_points.Backtrack;
@@ -24,75 +22,80 @@ import java.util.*;
 import java.util.function.BiFunction;
 import java.util.function.Function;
 
+/**
+ * Comprises configuration options for executing Mulib.
+ * Is created using the builder pattern
+ * @see MulibConfigBuilder
+ */
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
 public class MulibConfig {
 
-    /* Trees */
+    /* Tree */
     public final String TREE_INDENTATION;
-    public final boolean ENLIST_LEAVES;
-
+    public final boolean TREE_ENLIST_LEAVES;
     /* Search */
-    public final SearchStrategy GLOBAL_SEARCH_STRATEGY;
-    public final List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
-    public final long PARALLEL_TIMEOUT_IN_MS;
-    public final ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
-    public final Optional<Long> ACTIVATE_PARALLEL_FOR;
-    public final boolean CONCOLIC;
-    public final boolean ALLOW_EXCEPTIONS;
+    public final SearchStrategy SEARCH_MAIN_STRATEGY;
+    public final List<SearchStrategy> SEARCH_ADDITIONAL_PARALLEL_STRATEGIES;
+    public final ChoiceOptionDeques SEARCH_CHOICE_OPTION_DEQUE_TYPE;
+    public final Optional<Long> SEARCH_ACTIVATE_PARALLEL_FOR;
+    public final boolean SEARCH_CONCOLIC;
+    public final boolean SEARCH_ALLOW_EXCEPTIONS;
+    public final boolean SEARCH_LABEL_RESULT_VALUE;
+    /* Shutdown */
+    public final long SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS;
+    /* Logging */
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
     public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
-    public final TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
-    public final TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK;
-    public final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK;
-    public final TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK;
-
+    /* Callbacks */
+    public final TriConsumer<MulibExecutor, PathSolution, SolverManager> CALLBACK_PATH_SOLUTION;
+    public final TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK;
+    public final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL;
+    public final TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET;
     /* Values */
-    public final Optional<Sint> SYMSINT_LB;
-    public final Optional<Sint> SYMSINT_UB;
+    public final Optional<Sint> VALS_SYMSINT_LB;
+    public final Optional<Sint> VALS_SYMSINT_UB;
 
-    public final Optional<Slong> SYMSLONG_LB;
-    public final Optional<Slong> SYMSLONG_UB;
+    public final Optional<Slong> VALS_SYMSLONG_LB;
+    public final Optional<Slong> VALS_SYMSLONG_UB;
 
-    public final Optional<Sdouble> SYMSDOUBLE_LB;
-    public final Optional<Sdouble> SYMSDOUBLE_UB;
+    public final Optional<Sdouble> VALS_SYMSDOUBLE_LB;
+    public final Optional<Sdouble> VALS_SYMSDOUBLE_UB;
 
-    public final Optional<Sfloat> SYMSFLOAT_LB;
-    public final Optional<Sfloat> SYMSFLOAT_UB;
+    public final Optional<Sfloat> VALS_SYMSFLOAT_LB;
+    public final Optional<Sfloat> VALS_SYMSFLOAT_UB;
 
-    public final Optional<Sshort> SYMSSHORT_LB;
-    public final Optional<Sshort> SYMSSHORT_UB;
+    public final Optional<Sshort> VALS_SYMSSHORT_LB;
+    public final Optional<Sshort> VALS_SYMSSHORT_UB;
 
-    public final Optional<Sbyte> SYMSBYTE_LB;
-    public final Optional<Sbyte> SYMSBYTE_UB;
+    public final Optional<Sbyte> VALS_SYMSBYTE_LB;
+    public final Optional<Sbyte> VALS_SYMSBYTE_UB;
 
-    public final Optional<Schar> SYMSCHAR_LB;
-    public final Optional<Schar> SYMSCHAR_UB;
+    public final Optional<Schar> VALS_SYMSCHAR_LB;
+    public final Optional<Schar> VALS_SYMSCHAR_UB;
 
-    public final boolean TREAT_BOOLEANS_AS_INTS;
+    public final boolean VALS_TREAT_BOOLEANS_AS_INTS;
 
     /* Free Arrays */
-    public final boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
-    public final boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
-    public final boolean THROW_EXCEPTION_ON_OOB;
-    public final boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
+    public final boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+    public final boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+    public final boolean ARRAYS_THROW_EXCEPTION_ON_OOB;
     /* Solver */
-    public final Solvers GLOBAL_SOLVER_TYPE;
-    public final boolean LABEL_RESULT_VALUE;
+    public final Solvers SOLVER_GLOBAL_TYPE;
     public final Map<String, Object> SOLVER_ARGS;
+    public final boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
 
     /* Budget */
-    public final Optional<Long> FIXED_ACTUAL_CP_BUDGET;
-    public final Optional<Long> INCR_ACTUAL_CP_BUDGET;
+    public final Optional<Long> BUDGETS_FIXED_ACTUAL_CP;
+    public final Optional<Long> BUDGETS_INCR_ACTUAL_CP;
+    public final Optional<Long> BUDGETS_GLOBAL_TIME_IN_NANOSECONDS;
+    public final Optional<Long> BUDGETS_MAX_FAILS;
+    public final Optional<Long> BUDGETS_MAX_PATH_SOLUTIONS;
+    public final Optional<Long> BUDGETS_MAX_EXCEEDED_BUDGET;
 
-    public final Optional<Long> NANOSECONDS_PER_INVOCATION;
-    public final Optional<Long> MAX_FAILS;
-    public final Optional<Long> MAX_PATH_SOLUTIONS;
-    public final Optional<Long> MAX_EXCEEDED_BUDGETS;
-
-    /* Aliasing and Initialization */
-    public final boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
-    public final boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-    public final boolean ALIASING_FOR_FREE_OBJECTS;
+    /* Free Initialization */
+    public final boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+    public final boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+    public final boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
     private final boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
@@ -120,6 +123,7 @@ public class MulibConfig {
     public final boolean TRANSF_INCLUDE_PACKAGE_NAME;
     public final boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
     public final boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
+    /* CFG */
     public final boolean CFG_USE_GUIDANCE_DURING_EXECUTION;
     public final boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
     public final boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
@@ -134,13 +138,12 @@ public class MulibConfig {
 
     public final static class MulibConfigBuilder {
         private boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
-        private boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
-        private boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        private boolean ALIASING_FOR_FREE_OBJECTS;
+        private boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        private boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+        private boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
         private String TREE_INDENTATION;
-        private boolean LABEL_RESULT_VALUE;
-        private boolean ENLIST_LEAVES;
-        private boolean CONCRETIZE_IF_NEEDED;
+        private boolean SEARCH_LABEL_RESULT_VALUE;
+        private boolean TREE_ENLIST_LEAVES;
         private Set<String> TRANSF_IGNORE_FROM_PACKAGES;
         private Set<Class<?>> TRANSF_IGNORE_CLASSES;
         private Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
@@ -154,19 +157,19 @@ public class MulibConfig {
         private Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
         private boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
         private Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
-        private SearchStrategy GLOBAL_SEARCH_STRATEGY;
-        private boolean CONCOLIC;
-        private boolean ALLOW_EXCEPTIONS;
-        private List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES;
-        private ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE;
-        private long ACTIVATE_PARALLEL_FOR;
-        private Solvers GLOBAL_SOLVER_TYPE;
-        private long FIXED_ACTUAL_CP_BUDGET;
-        private long INCR_ACTUAL_CP_BUDGET;
-        private long SECONDS_PER_INVOCATION;
-        private long MAX_FAILS;
-        private long MAX_PATH_SOLUTIONS;
-        private long MAX_EXCEEDED_BUDGETS;
+        private SearchStrategy SEARCH_MAIN_STRATEGY;
+        private boolean SEARCH_CONCOLIC;
+        private boolean SEARCH_ALLOW_EXCEPTIONS;
+        private List<SearchStrategy> SEARCH_ADDITIONAL_PARALLEL_STRATEGIES;
+        private ChoiceOptionDeques SEARCH_CHOICE_OPTION_DEQUE_TYPE;
+        private long SEARCH_ACTIVATE_PARALLEL_FOR;
+        private Solvers SOLVER_GLOBAL_TYPE;
+        private long BUDGET_FIXED_ACTUAL_CP;
+        private long BUDGET_INCR_ACTUAL_CP;
+        private long BUDGET_GLOBAL_TIME_IN_SECONDS;
+        private long BUDGET_MAX_FAILS;
+        private long BUDGET_MAX_PATH_SOLUTIONS;
+        private long BUDGET_MAX_EXCEEDED;
         private boolean TRANSF_WRITE_TO_FILE;
         private String TRANSF_GENERATED_CLASSES_PATH;
         private boolean TRANSF_VALIDATE_TRANSFORMATION;
@@ -179,56 +182,55 @@ public class MulibConfig {
         private boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
         private boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         private boolean TRANSF_TRANSFORMATION_REQUIRED;
-        private long PARALLEL_TIMEOUT_IN_MS;
-        private Optional<Integer> SYMSINT_LB;
-        private Optional<Integer> SYMSINT_UB;
-        private Optional<Long> SYMSLONG_LB;
-        private Optional<Long> SYMSLONG_UB;
-        private Optional<Double> SYMSDOUBLE_LB;
-        private Optional<Double> SYMSDOUBLE_UB;
-        private Optional<Float> SYMSFLOAT_LB;
-        private Optional<Float> SYMSFLOAT_UB;
-        private Optional<Short> SYMSSHORT_LB;
-        private Optional<Short> SYMSSHORT_UB;
-        private Optional<Byte> SYMSBYTE_LB;
-        private Optional<Byte> SYMSBYTE_UB;
-        private Optional<Character> SYMSCHAR_LB;
-        private Optional<Character> SYMSCHAR_UB;
-        private boolean TREAT_BOOLEANS_AS_INTS;
-        private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
-        private boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
-        private boolean THROW_EXCEPTION_ON_OOB;
-        private boolean HIGH_LEVEL_FREE_ARRAY_THEORY;
+        private long SHUTDOWN_PARALLEL_TIMEOUT_IN_MS;
+        private Optional<Integer> VALS_SYMSINT_LB;
+        private Optional<Integer> VALS_SYMSINT_UB;
+        private Optional<Long> VALS_SYMSLONG_LB;
+        private Optional<Long> VALS_SYMSLONG_UB;
+        private Optional<Double> VALS_SYMSDOUBLE_LB;
+        private Optional<Double> VALS_SYMSDOUBLE_UB;
+        private Optional<Float> VALS_SYMSFLOAT_LB;
+        private Optional<Float> VALS_SYMSFLOAT_UB;
+        private Optional<Short> VALS_SYMSSHORT_LB;
+        private Optional<Short> VALS_SYMSSHORT_UB;
+        private Optional<Byte> VALS_SYMSBYTE_LB;
+        private Optional<Byte> VALS_SYMSBYTE_UB;
+        private Optional<Character> VALS_SYMSCHAR_LB;
+        private Optional<Character> VALS_SYMSCHAR_UB;
+        private boolean VALS_TREAT_BOOLEANS_AS_INTS;
+        private boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        private boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+        private boolean ARRAYS_THROW_EXCEPTION_ON_OOB;
+        private boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
         private LinkedHashMap<String, Object> SOLVER_ARGS;
         private boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
 
-        private TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK;
-        private TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK;
-        private TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK;
-        private TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK;
+        private TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL;
+        private TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK;
+        private TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET;
+        private TriConsumer<MulibExecutor, PathSolution, SolverManager> CALLBACK_PATH_SOLUTION;
 
         private MulibConfigBuilder() {
             // Defaults
             this.LOG_TIME_FOR_EACH_PATH_SOLUTION = false;
-            this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
-            this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
-            this.ALIASING_FOR_FREE_OBJECTS = false;
-            this.CONCRETIZE_IF_NEEDED = true;
-            this.LABEL_RESULT_VALUE = true;
-            this.ENLIST_LEAVES = false;
-            this.CONCOLIC = false;
-            this.ALLOW_EXCEPTIONS = false;
+            this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
+            this.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
+            this.FREE_INIT_ALIASING_FOR_FREE_OBJECTS = false;
+            this.SEARCH_LABEL_RESULT_VALUE = true;
+            this.TREE_ENLIST_LEAVES = false;
+            this.SEARCH_CONCOLIC = false;
+            this.SEARCH_ALLOW_EXCEPTIONS = false;
             this.TREE_INDENTATION = "    ";
-            this.GLOBAL_SEARCH_STRATEGY = SearchStrategy.DFS;
-            this.GLOBAL_SOLVER_TYPE = Solvers.Z3_INCREMENTAL;
-            this.FIXED_ACTUAL_CP_BUDGET =   0;
-            this.INCR_ACTUAL_CP_BUDGET =    0;
-            this.SECONDS_PER_INVOCATION =   0;
-            this.MAX_FAILS =                0;
-            this.MAX_PATH_SOLUTIONS =       0;
-            this.MAX_EXCEEDED_BUDGETS =     0;
-            this.ACTIVATE_PARALLEL_FOR =    2;
-            this.CHOICE_OPTION_DEQUE_TYPE = ChoiceOptionDeques.SIMPLE;
+            this.SEARCH_MAIN_STRATEGY = SearchStrategy.DFS;
+            this.SOLVER_GLOBAL_TYPE = Solvers.Z3_INCREMENTAL;
+            this.BUDGET_FIXED_ACTUAL_CP =   0;
+            this.BUDGET_INCR_ACTUAL_CP =    0;
+            this.BUDGET_GLOBAL_TIME_IN_SECONDS =   0;
+            this.BUDGET_MAX_FAILS =                0;
+            this.BUDGET_MAX_PATH_SOLUTIONS =       0;
+            this.BUDGET_MAX_EXCEEDED =     0;
+            this.SEARCH_ACTIVATE_PARALLEL_FOR =    2;
+            this.SEARCH_CHOICE_OPTION_DEQUE_TYPE = ChoiceOptionDeques.SIMPLE;
             this.TRANSF_IGNORE_CLASSES = Set.of(
                     Mulib.class, Fail.class
             );
@@ -277,42 +279,37 @@ public class MulibConfig {
             );
             this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = false;
             this.TRANSF_TRANSFORMATION_REQUIRED = true;
-            this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = Collections.emptyList();
-            this.PARALLEL_TIMEOUT_IN_MS = 5000;
-            this.SYMSINT_LB =    Optional.empty();
-            this.SYMSINT_UB =    Optional.empty();
-            this.SYMSDOUBLE_LB = Optional.empty();
-            this.SYMSDOUBLE_UB = Optional.empty();
-            this.SYMSFLOAT_LB =  Optional.empty();
-            this.SYMSFLOAT_UB =  Optional.empty();
-            this.SYMSLONG_LB =   Optional.empty();
-            this.SYMSLONG_UB =   Optional.empty();
-            this.SYMSSHORT_LB =  Optional.empty();
-            this.SYMSSHORT_UB =  Optional.empty();
-            this.SYMSBYTE_LB =   Optional.empty();
-            this.SYMSBYTE_UB =   Optional.empty();
-            this.SYMSCHAR_LB =   Optional.empty();
-            this.SYMSCHAR_UB =   Optional.empty();
-            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = false;
-            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = false;
-            this.TREAT_BOOLEANS_AS_INTS = false;
-            this.THROW_EXCEPTION_ON_OOB = false;
-            this.HIGH_LEVEL_FREE_ARRAY_THEORY = false;
+            this.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES = Collections.emptyList();
+            this.SHUTDOWN_PARALLEL_TIMEOUT_IN_MS = 5000;
+            this.VALS_SYMSINT_LB =    Optional.empty();
+            this.VALS_SYMSINT_UB =    Optional.empty();
+            this.VALS_SYMSDOUBLE_LB = Optional.empty();
+            this.VALS_SYMSDOUBLE_UB = Optional.empty();
+            this.VALS_SYMSFLOAT_LB =  Optional.empty();
+            this.VALS_SYMSFLOAT_UB =  Optional.empty();
+            this.VALS_SYMSLONG_LB =   Optional.empty();
+            this.VALS_SYMSLONG_UB =   Optional.empty();
+            this.VALS_SYMSSHORT_LB =  Optional.empty();
+            this.VALS_SYMSSHORT_UB =  Optional.empty();
+            this.VALS_SYMSBYTE_LB =   Optional.empty();
+            this.VALS_SYMSBYTE_UB =   Optional.empty();
+            this.VALS_SYMSCHAR_LB =   Optional.empty();
+            this.VALS_SYMSCHAR_UB =   Optional.empty();
+            this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = false;
+            this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = false;
+            this.VALS_TREAT_BOOLEANS_AS_INTS = false;
+            this.ARRAYS_THROW_EXCEPTION_ON_OOB = false;
+            this.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH = false;
             this.SOLVER_ARGS = new LinkedHashMap<>();
             this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = false;
-            this.FAIL_CALLBACK = (me, f, sm) -> {};
-            this.BACKTRACK_CALLBACK = (me, b, sm) -> {};
-            this.EXCEEDED_BUDGET_CALLBACK = (me, b, sm) -> {};
-            this.PATH_SOLUTION_CALLBACK = (me, ps, sm) -> {};
+            this.CALLBACK_FAIL = (me, f, sm) -> {};
+            this.CALLBACK_BACKTRACK = (me, b, sm) -> {};
+            this.CALLBACK_EXCEEDED_BUDGET = (me, b, sm) -> {};
+            this.CALLBACK_PATH_SOLUTION = (me, ps, sm) -> {};
         }
 
-        public MulibConfigBuilder setENLIST_LEAVES(boolean ENLIST_LEAVES) {
-            this.ENLIST_LEAVES = ENLIST_LEAVES;
-            return this;
-        }
-
-        public MulibConfigBuilder setCONCRETIZE_IF_NEEDED(boolean CONCRETIZE_IF_NEEDED) {
-            this.CONCRETIZE_IF_NEEDED = CONCRETIZE_IF_NEEDED;
+        public MulibConfigBuilder setTREE_ENLIST_LEAVES(boolean TREE_ENLIST_LEAVES) {
+            this.TREE_ENLIST_LEAVES = TREE_ENLIST_LEAVES;
             return this;
         }
 
@@ -354,23 +351,23 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setGLOBAL_SEARCH_STRATEGY(SearchStrategy GLOBAL_SEARCH_STRATEGY) {
-            this.GLOBAL_SEARCH_STRATEGY = GLOBAL_SEARCH_STRATEGY;
+        public MulibConfigBuilder setSEARCH_MAIN_STRATEGY(SearchStrategy SEARCH_MAIN_STRATEGY) {
+            this.SEARCH_MAIN_STRATEGY = SEARCH_MAIN_STRATEGY;
             return this;
         }
 
-        public MulibConfigBuilder setGLOBAL_SOLVER_TYPE(Solvers GLOBAL_SOLVER_TYPE) {
-            this.GLOBAL_SOLVER_TYPE = GLOBAL_SOLVER_TYPE;
+        public MulibConfigBuilder setSOLVER_GLOBAL_TYPE(Solvers SOLVER_GLOBAL_TYPE) {
+            this.SOLVER_GLOBAL_TYPE = SOLVER_GLOBAL_TYPE;
             return this;
         }
 
-        public MulibConfigBuilder setFIXED_ACTUAL_CP_BUDGET(long FIXED_ACTUAL_CP_BUDGET) {
-            this.FIXED_ACTUAL_CP_BUDGET = FIXED_ACTUAL_CP_BUDGET;
+        public MulibConfigBuilder setBUDGET_FIXED_ACTUAL_CP(long BUDGET_FIXED_ACTUAL_CP) {
+            this.BUDGET_FIXED_ACTUAL_CP = BUDGET_FIXED_ACTUAL_CP;
             return this;
         }
 
-        public MulibConfigBuilder setINCR_ACTUAL_CP_BUDGET(long INCR_ACTUAL_CP_BUDGET) {
-            this.INCR_ACTUAL_CP_BUDGET = INCR_ACTUAL_CP_BUDGET;
+        public MulibConfigBuilder setBUDGET_INCR_ACTUAL_CP(long BUDGET_INCR_ACTUAL_CP) {
+            this.BUDGET_INCR_ACTUAL_CP = BUDGET_INCR_ACTUAL_CP;
             return this;
         }
 
@@ -390,53 +387,53 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setSECONDS_PER_INVOCATION(long SECONDS_PER_INVOCATION) {
-            this.SECONDS_PER_INVOCATION = SECONDS_PER_INVOCATION;
+        public MulibConfigBuilder setBUDGET_GLOBAL_TIME_IN_SECONDS(long BUDGET_GLOBAL_TIME_IN_SECONDS) {
+            this.BUDGET_GLOBAL_TIME_IN_SECONDS = BUDGET_GLOBAL_TIME_IN_SECONDS;
             return this;
         }
 
-        public MulibConfigBuilder setMAX_FAILS(long MAX_FAILS) {
-            this.MAX_FAILS = MAX_FAILS;
+        public MulibConfigBuilder setBUDGET_MAX_FAILS(long BUDGET_MAX_FAILS) {
+            this.BUDGET_MAX_FAILS = BUDGET_MAX_FAILS;
             return this;
         }
 
-        public MulibConfigBuilder setMAX_PATH_SOLUTIONS(long MAX_PATH_SOLUTIONS) {
-            this.MAX_PATH_SOLUTIONS = MAX_PATH_SOLUTIONS;
+        public MulibConfigBuilder setBUDGET_MAX_PATH_SOLUTIONS(long BUDGET_MAX_PATH_SOLUTIONS) {
+            this.BUDGET_MAX_PATH_SOLUTIONS = BUDGET_MAX_PATH_SOLUTIONS;
             return this;
         }
 
-        public MulibConfigBuilder setMAX_EXCEEDED_BUDGETS(long MAX_EXCEEDED_BUDGETS) {
-            this.MAX_EXCEEDED_BUDGETS = MAX_EXCEEDED_BUDGETS;
+        public MulibConfigBuilder setBUDGET_MAX_EXCEEDED(long BUDGET_MAX_EXCEEDED) {
+            this.BUDGET_MAX_EXCEEDED = BUDGET_MAX_EXCEEDED;
             return this;
         }
 
-        public MulibConfigBuilder setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(SearchStrategy... searchStrategies) {
+        public MulibConfigBuilder setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(SearchStrategy... searchStrategies) {
             this.setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(Arrays.asList(searchStrategies));
             return this;
         }
 
         public MulibConfigBuilder setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(List<SearchStrategy> searchStrategies) {
-            this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = searchStrategies;
+            this.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES = searchStrategies;
             return this;
         }
 
-        public MulibConfigBuilder setPARALLEL_TIMEOUT_IN_MS(long ms) {
-            this.PARALLEL_TIMEOUT_IN_MS = ms;
+        public MulibConfigBuilder setSHUTDOWN_PARALLEL_TIMEOUT_IN_MS(long ms) {
+            this.SHUTDOWN_PARALLEL_TIMEOUT_IN_MS = ms;
             return this;
         }
 
-        public MulibConfigBuilder setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques choiceOptionDequeType) {
-            this.CHOICE_OPTION_DEQUE_TYPE = choiceOptionDequeType;
+        public MulibConfigBuilder setSEARCH_CHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques choiceOptionDequeType) {
+            this.SEARCH_CHOICE_OPTION_DEQUE_TYPE = choiceOptionDequeType;
             return this;
         }
 
-        public MulibConfigBuilder setACTIVATE_PARALLEL_FOR(long setFor) {
-            this.ACTIVATE_PARALLEL_FOR = setFor;
+        public MulibConfigBuilder setSEARCH_ACTIVATE_PARALLEL_FOR(long setFor) {
+            this.SEARCH_ACTIVATE_PARALLEL_FOR = setFor;
             return this;
         }
 
-        public MulibConfigBuilder setLABEL_RESULT_VALUE(boolean b) {
-            this.LABEL_RESULT_VALUE = b;
+        public MulibConfigBuilder setSEARCH_LABEL_RESULT_VALUE(boolean b) {
+            this.SEARCH_LABEL_RESULT_VALUE = b;
             return this;
         }
 
@@ -475,108 +472,105 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setSYMSINT_DOMAIN(int SYMSINT_LB, int SYMSINT_UB) {
+        public MulibConfigBuilder setVALS_SYMSINT_DOMAIN(int SYMSINT_LB, int SYMSINT_UB) {
             if (SYMSINT_LB > SYMSINT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSINT_LB = Optional.of(SYMSINT_LB);
-            this.SYMSINT_UB = Optional.of(SYMSINT_UB);
+            this.VALS_SYMSINT_LB = Optional.of(SYMSINT_LB);
+            this.VALS_SYMSINT_UB = Optional.of(SYMSINT_UB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSLONG_DOMAIN(long SYMSLONG_LB, long SYMSLONG_UB) {
+        public MulibConfigBuilder setVALS_SYMSLONG_DOMAIN(long SYMSLONG_LB, long SYMSLONG_UB) {
             if (SYMSLONG_LB > SYMSLONG_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSLONG_LB = Optional.of(SYMSLONG_LB);
-            this.SYMSLONG_UB = Optional.of(SYMSLONG_UB);
+            this.VALS_SYMSLONG_LB = Optional.of(SYMSLONG_LB);
+            this.VALS_SYMSLONG_UB = Optional.of(SYMSLONG_UB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSDOUBLE_DOMAIN(double SYMSDOUBLE_LB, double SYMSDOUBLE_UB) {
+        public MulibConfigBuilder setVALS_SYMSDOUBLE_DOMAIN(double SYMSDOUBLE_LB, double SYMSDOUBLE_UB) {
             if (SYMSDOUBLE_LB > SYMSDOUBLE_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSDOUBLE_UB = Optional.of(SYMSDOUBLE_UB);
-            this.SYMSDOUBLE_LB = Optional.of(SYMSDOUBLE_LB);
+            this.VALS_SYMSDOUBLE_UB = Optional.of(SYMSDOUBLE_UB);
+            this.VALS_SYMSDOUBLE_LB = Optional.of(SYMSDOUBLE_LB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSFLOAT_DOMAIN(float SYMSFLOAT_LB, float SYMSFLOAT_UB) {
+        public MulibConfigBuilder setVALS_SYMSFLOAT_DOMAIN(float SYMSFLOAT_LB, float SYMSFLOAT_UB) {
             if (SYMSFLOAT_LB > SYMSFLOAT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSFLOAT_UB = Optional.of(SYMSFLOAT_UB);
-            this.SYMSFLOAT_LB = Optional.of(SYMSFLOAT_LB);
+            this.VALS_SYMSFLOAT_UB = Optional.of(SYMSFLOAT_UB);
+            this.VALS_SYMSFLOAT_LB = Optional.of(SYMSFLOAT_LB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSSHORT_DOMAIN(short SYMSSHORT_LB, short SYMSSHORT_UB) {
+        public MulibConfigBuilder setVALS_SYMSSHORT_DOMAIN(short SYMSSHORT_LB, short SYMSSHORT_UB) {
             if (SYMSSHORT_LB > SYMSSHORT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSSHORT_UB = Optional.of(SYMSSHORT_UB);
-            this.SYMSSHORT_LB = Optional.of(SYMSSHORT_LB);
+            this.VALS_SYMSSHORT_UB = Optional.of(SYMSSHORT_UB);
+            this.VALS_SYMSSHORT_LB = Optional.of(SYMSSHORT_LB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSBYTE_DOMAIN(byte SYMSBYTE_LB, byte SYMSBYTE_UB) {
+        public MulibConfigBuilder setVALS_SYMSBYTE_DOMAIN(byte SYMSBYTE_LB, byte SYMSBYTE_UB) {
             if (SYMSBYTE_LB > SYMSBYTE_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSBYTE_UB = Optional.of(SYMSBYTE_UB);
-            this.SYMSBYTE_LB = Optional.of(SYMSBYTE_LB);
+            this.VALS_SYMSBYTE_UB = Optional.of(SYMSBYTE_UB);
+            this.VALS_SYMSBYTE_LB = Optional.of(SYMSBYTE_LB);
             return this;
         }
 
-        public MulibConfigBuilder setSYMSCHAR_LB(char SYMSCHAR_LB, char SYMSCHAR_UB) {
+        public MulibConfigBuilder setVALS_SYMSCHAR_DOMAIN(char SYMSCHAR_LB, char SYMSCHAR_UB) {
             if (SYMSCHAR_LB > SYMSCHAR_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
             }
-            this.SYMSCHAR_UB = Optional.of(SYMSCHAR_UB);
-            this.SYMSCHAR_LB = Optional.of(SYMSCHAR_LB);
+            this.VALS_SYMSCHAR_UB = Optional.of(SYMSCHAR_UB);
+            this.VALS_SYMSCHAR_LB = Optional.of(SYMSCHAR_LB);
             return this;
         }
 
-        public void setSYMSCHAR_UB(Optional<Character> SYMSCHAR_UB) {
-            this.SYMSCHAR_UB = SYMSCHAR_UB;
-        }
 
-        public MulibConfigBuilder setTREAT_BOOLEANS_AS_INTS(boolean TREAT_BOOLEANS_AS_INTS) {
-            this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
+        public MulibConfigBuilder setVALS_TREAT_BOOLEANS_AS_INTS(boolean VALS_TREAT_BOOLEANS_AS_INTS) {
+            this.VALS_TREAT_BOOLEANS_AS_INTS = VALS_TREAT_BOOLEANS_AS_INTS;
             return this;
         }
 
-        public MulibConfigBuilder setHIGH_LEVEL_FREE_ARRAY_THEORY(boolean HIGH_LEVEL_FREE_ARRAY_THEORY) {
-            this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
+        public MulibConfigBuilder setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
+            this.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH = SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
             return this;
         }
 
         public MulibConfigBuilder assumeMulibDefaultValueRanges() {
-            this.SYMSINT_LB =    Optional.of(Integer.MIN_VALUE);
-            this.SYMSINT_UB =    Optional.of(Integer.MAX_VALUE);
-            this.SYMSDOUBLE_LB = Optional.of(-100_000_000_000_000_000D);
-            this.SYMSDOUBLE_UB = Optional.of(100_000_000_000_000_000D);
-            this.SYMSFLOAT_LB =  Optional.of(-100_000_000_000_000_000F);
-            this.SYMSFLOAT_UB =  Optional.of(100_000_000_000_000_000F);
-            this.SYMSLONG_LB =   Optional.of(-100_000_000_000_000_000L);
-            this.SYMSLONG_UB =   Optional.of(100_000_000_000_000_000L);
-            this.SYMSSHORT_LB =  Optional.of(Short.MIN_VALUE);
-            this.SYMSSHORT_UB =  Optional.of(Short.MAX_VALUE);
-            this.SYMSBYTE_LB =   Optional.of(Byte.MIN_VALUE);
-            this.SYMSBYTE_UB =   Optional.of(Byte.MAX_VALUE);
-            this.SYMSCHAR_LB =   Optional.of(Character.MIN_VALUE);
-            this.SYMSCHAR_UB =   Optional.of(Character.MAX_VALUE);
+            this.VALS_SYMSINT_LB =    Optional.of(Integer.MIN_VALUE);
+            this.VALS_SYMSINT_UB =    Optional.of(Integer.MAX_VALUE);
+            this.VALS_SYMSDOUBLE_LB = Optional.of(-100_000_000_000_000_000D);
+            this.VALS_SYMSDOUBLE_UB = Optional.of(100_000_000_000_000_000D);
+            this.VALS_SYMSFLOAT_LB =  Optional.of(-100_000_000_000_000_000F);
+            this.VALS_SYMSFLOAT_UB =  Optional.of(100_000_000_000_000_000F);
+            this.VALS_SYMSLONG_LB =   Optional.of(-100_000_000_000_000_000L);
+            this.VALS_SYMSLONG_UB =   Optional.of(100_000_000_000_000_000L);
+            this.VALS_SYMSSHORT_LB =  Optional.of(Short.MIN_VALUE);
+            this.VALS_SYMSSHORT_UB =  Optional.of(Short.MAX_VALUE);
+            this.VALS_SYMSBYTE_LB =   Optional.of(Byte.MIN_VALUE);
+            this.VALS_SYMSBYTE_UB =   Optional.of(Byte.MAX_VALUE);
+            this.VALS_SYMSCHAR_LB =   Optional.of(Character.MIN_VALUE);
+            this.VALS_SYMSCHAR_UB =   Optional.of(Character.MAX_VALUE);
             return this;
         }
 
-        public MulibConfigBuilder setALLOW_EXCEPTIONS(boolean ALLOW_EXCEPTIONS) {
-            this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
+        public MulibConfigBuilder setSEARCH_ALLOW_EXCEPTIONS(boolean SEARCH_ALLOW_EXCEPTIONS) {
+            this.SEARCH_ALLOW_EXCEPTIONS = SEARCH_ALLOW_EXCEPTIONS;
             return this;
         }
 
-        public MulibConfigBuilder setTHROW_EXCEPTION_ON_OOB(boolean THROW_EXCEPTION_ON_OOB) {
-            this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
+        public MulibConfigBuilder setARRAYS_THROW_EXCEPTION_ON_OOB(boolean ARRAYS_THROW_EXCEPTION_ON_OOB) {
+            this.ARRAYS_THROW_EXCEPTION_ON_OOB = ARRAYS_THROW_EXCEPTION_ON_OOB;
             return this;
         }
 
@@ -585,8 +579,8 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setCONCOLIC(boolean CONCOLIC) {
-            this.CONCOLIC = CONCOLIC;
+        public MulibConfigBuilder setSEARCH_CONCOLIC(boolean SEARCH_CONCOLIC) {
+            this.SEARCH_CONCOLIC = SEARCH_CONCOLIC;
             return this;
         }
 
@@ -605,28 +599,28 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
-            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+        public MulibConfigBuilder setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+            this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
             return this;
         }
 
-        public MulibConfigBuilder setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
-            this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        public MulibConfigBuilder setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
+            this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
             return this;
         }
 
-        public MulibConfigBuilder setALIASING_FOR_FREE_OBJECTS(boolean ALIASING_FOR_FREE_OBJECTS) {
-            this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
+        public MulibConfigBuilder setFREE_INIT_ALIASING_FOR_FREE_OBJECTS(boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS) {
+            this.FREE_INIT_ALIASING_FOR_FREE_OBJECTS = FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
             return this;
         }
 
-        public MulibConfigBuilder setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
-            this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        public MulibConfigBuilder setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
+            this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
             return this;
         }
 
-        public MulibConfigBuilder setENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL) {
-            this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+        public MulibConfigBuilder setFREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL) {
+            this.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
             return this;
         }
 
@@ -666,23 +660,23 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setPATH_SOLUTION_CALLBACK(TriConsumer<MulibExecutor, PathSolution, SolverManager> callback) {
-            this.PATH_SOLUTION_CALLBACK = callback;
+        public MulibConfigBuilder setCALLBACK_PATH_SOLUTION(TriConsumer<MulibExecutor, PathSolution, SolverManager> callback) {
+            this.CALLBACK_PATH_SOLUTION = callback;
             return this;
         }
 
-        public MulibConfigBuilder setFAIL_CALLBACK(TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK) {
-            this.FAIL_CALLBACK = FAIL_CALLBACK;
+        public MulibConfigBuilder setCALLBACK_FAIL(TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL) {
+            this.CALLBACK_FAIL = CALLBACK_FAIL;
             return this;
         }
 
-        public MulibConfigBuilder setBACKTRACK_CALLBACK(TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK) {
-            this.BACKTRACK_CALLBACK = BACKTRACK_CALLBACK;
+        public MulibConfigBuilder setCALLBACK_BACKTRACK(TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK) {
+            this.CALLBACK_BACKTRACK = CALLBACK_BACKTRACK;
             return this;
         }
 
-        public MulibConfigBuilder setEXCEEDED_BUDGET_CALLBACK(TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK) {
-            this.EXCEEDED_BUDGET_CALLBACK = EXCEEDED_BUDGET_CALLBACK;
+        public MulibConfigBuilder setCALLBACK_EXCEEDED_BUDGET(TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET) {
+            this.CALLBACK_EXCEEDED_BUDGET = CALLBACK_EXCEEDED_BUDGET;
             return this;
         }
 
@@ -708,7 +702,7 @@ public class MulibConfig {
         }
 
         public boolean isConcolic() {
-            return CONCOLIC;
+            return SEARCH_CONCOLIC;
         }
         
         public MulibConfig build() {
@@ -721,32 +715,32 @@ public class MulibConfig {
             }
 
 
-            if (INCR_ACTUAL_CP_BUDGET != 0) {
-                if ((GLOBAL_SEARCH_STRATEGY != SearchStrategy.IDDFS
-                        && !ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))
-                    && (GLOBAL_SEARCH_STRATEGY != SearchStrategy.IDDSAS && !ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
+            if (BUDGET_INCR_ACTUAL_CP != 0) {
+                if ((SEARCH_MAIN_STRATEGY != SearchStrategy.IDDFS
+                        && !SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.contains(SearchStrategy.IDDFS))
+                    && (SEARCH_MAIN_STRATEGY != SearchStrategy.IDDSAS && !SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
                     throw new MisconfigurationException("When choosing an incremental budget, an IDDFS-based search strategy" +
-                            " must be used. Currently, " + GLOBAL_SEARCH_STRATEGY + " is used as the global" +
-                            " search strategy and " + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES + " are used as additional" +
+                            " must be used. Currently, " + SEARCH_MAIN_STRATEGY + " is used as the global" +
+                            " search strategy and " + SEARCH_ADDITIONAL_PARALLEL_STRATEGIES + " are used as additional" +
                             " search strategies.");
                 }
             }
 
-            if (INCR_ACTUAL_CP_BUDGET < 1
-                    && ((GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDFS
-                        || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDFS))
-                        || GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDSAS
-                        || ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
+            if (BUDGET_INCR_ACTUAL_CP < 1
+                    && ((SEARCH_MAIN_STRATEGY == SearchStrategy.IDDFS
+                        || SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.contains(SearchStrategy.IDDFS))
+                        || SEARCH_MAIN_STRATEGY == SearchStrategy.IDDSAS
+                        || SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.contains(SearchStrategy.IDDSAS))) {
                 throw new MisconfigurationException("When choosing IDDFS, an incremental budget must be specified.");
             }
 
-            if (USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS && !USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+            if (ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS && !ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
                 throw new MisconfigurationException("Since our way of representing free arrays of arrays or free arrays of objects " +
                         "is based on the assumption that we represent the contained arrays in the constraint solver, we cannot " +
                         "use eager indices for primitive elements but not for object elements.");
             }
 
-            if (CONCOLIC && CFG_USE_GUIDANCE_DURING_EXECUTION) {
+            if (SEARCH_CONCOLIC && CFG_USE_GUIDANCE_DURING_EXECUTION) {
                 throw new MisconfigurationException("Concolic execution cannot be guided by the CFG; - the concrete values guide the" +
                         " execution. Deactivate either the concolic mode or the hints using the CFG."
                 );
@@ -757,21 +751,20 @@ public class MulibConfig {
             }
 
             return new MulibConfig(
-                    LABEL_RESULT_VALUE,
-                    ENLIST_LEAVES,
-                    CONCRETIZE_IF_NEEDED,
+                    SEARCH_LABEL_RESULT_VALUE,
+                    TREE_ENLIST_LEAVES,
                     TREE_INDENTATION,
-                    GLOBAL_SEARCH_STRATEGY,
-                    ADDITIONAL_PARALLEL_SEARCH_STRATEGIES,
-                    PARALLEL_TIMEOUT_IN_MS,
-                    GLOBAL_SOLVER_TYPE,
+                    SEARCH_MAIN_STRATEGY,
+                    SEARCH_ADDITIONAL_PARALLEL_STRATEGIES,
+                    SHUTDOWN_PARALLEL_TIMEOUT_IN_MS,
+                    SOLVER_GLOBAL_TYPE,
                     SOLVER_ARGS,
-                    FIXED_ACTUAL_CP_BUDGET,
-                    INCR_ACTUAL_CP_BUDGET,
-                    SECONDS_PER_INVOCATION,
-                    MAX_FAILS,
-                    MAX_PATH_SOLUTIONS,
-                    MAX_EXCEEDED_BUDGETS,
+                    BUDGET_FIXED_ACTUAL_CP,
+                    BUDGET_INCR_ACTUAL_CP,
+                    BUDGET_GLOBAL_TIME_IN_SECONDS,
+                    BUDGET_MAX_FAILS,
+                    BUDGET_MAX_PATH_SOLUTIONS,
+                    BUDGET_MAX_EXCEEDED,
                     TRANSF_IGNORE_FROM_PACKAGES,
                     TRANSF_IGNORE_CLASSES,
                     TRANSF_IGNORE_SUBCLASSES_OF,
@@ -788,42 +781,42 @@ public class MulibConfig {
                     TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                     TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
                     TRANSF_TRANSFORMATION_REQUIRED,
-                    CHOICE_OPTION_DEQUE_TYPE,
-                    ACTIVATE_PARALLEL_FOR,
-                    SYMSINT_LB,
-                    SYMSINT_UB,
-                    SYMSDOUBLE_LB,
-                    SYMSDOUBLE_UB,
-                    SYMSFLOAT_LB,
-                    SYMSFLOAT_UB,
-                    SYMSLONG_LB,
-                    SYMSLONG_UB,
-                    SYMSSHORT_LB,
-                    SYMSSHORT_UB,
-                    SYMSBYTE_LB,
-                    SYMSBYTE_UB,
-                    SYMSCHAR_LB,
-                    SYMSCHAR_UB,
-                    TREAT_BOOLEANS_AS_INTS,
-                    USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
-                    USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
-                    THROW_EXCEPTION_ON_OOB,
-                    HIGH_LEVEL_FREE_ARRAY_THEORY,
-                    CONCOLIC,
-                    ALLOW_EXCEPTIONS,
-                    ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
-                    ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
-                    ALIASING_FOR_FREE_OBJECTS,
+                    SEARCH_CHOICE_OPTION_DEQUE_TYPE,
+                    SEARCH_ACTIVATE_PARALLEL_FOR,
+                    VALS_SYMSINT_LB,
+                    VALS_SYMSINT_UB,
+                    VALS_SYMSDOUBLE_LB,
+                    VALS_SYMSDOUBLE_UB,
+                    VALS_SYMSFLOAT_LB,
+                    VALS_SYMSFLOAT_UB,
+                    VALS_SYMSLONG_LB,
+                    VALS_SYMSLONG_UB,
+                    VALS_SYMSSHORT_LB,
+                    VALS_SYMSSHORT_UB,
+                    VALS_SYMSBYTE_LB,
+                    VALS_SYMSBYTE_UB,
+                    VALS_SYMSCHAR_LB,
+                    VALS_SYMSCHAR_UB,
+                    VALS_TREAT_BOOLEANS_AS_INTS,
+                    ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
+                    ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
+                    ARRAYS_THROW_EXCEPTION_ON_OOB,
+                    SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH,
+                    SEARCH_CONCOLIC,
+                    SEARCH_ALLOW_EXCEPTIONS,
+                    FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
+                    FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
+                    FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                     LOG_TIME_FOR_EACH_PATH_SOLUTION,
                     LOG_TIME_FOR_FIRST_PATH_SOLUTION,
                     TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
                     TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                     TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                     TRANSF_USE_DEFAULT_MODEL_CLASSES,
-                    PATH_SOLUTION_CALLBACK,
-                    BACKTRACK_CALLBACK,
-                    FAIL_CALLBACK,
-                    EXCEEDED_BUDGET_CALLBACK,
+                    CALLBACK_PATH_SOLUTION,
+                    CALLBACK_BACKTRACK,
+                    CALLBACK_FAIL,
+                    CALLBACK_EXCEEDED_BUDGET,
                     TRANSF_TREAT_SPECIAL_METHOD_CALLS,
                     TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
                     CFG_USE_GUIDANCE_DURING_EXECUTION,
@@ -832,21 +825,20 @@ public class MulibConfig {
             );
         }
     }
-    private MulibConfig(boolean LABEL_RESULT_VALUE,
-                        boolean ENLIST_LEAVES,
-                        boolean CONCRETIZE_IF_NEEDED,
+    private MulibConfig(boolean SEARCH_LABEL_RESULT_VALUE,
+                        boolean TREE_ENLIST_LEAVES,
                         String TREE_INDENTATION,
-                        SearchStrategy GLOBAL_SEARCH_STRATEGY,
-                        List<SearchStrategy> ADDITIONAL_PARALLEL_SEARCH_STRATEGIES,
-                        long PARALLEL_TIMEOUT_IN_MS,
-                        Solvers GLOBAL_SOLVER_TYPE,
+                        SearchStrategy SEARCH_MAIN_STRATEGY,
+                        List<SearchStrategy> SEARCH_ADDITIONAL_PARALLEL_STRATEGIES,
+                        long SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS,
+                        Solvers SOLVER_GLOBAL_TYPE,
                         LinkedHashMap<String, Object> SOLVER_ARGS,
-                        long FIXED_ACTUAL_CP_BUDGET,
-                        long INCR_ACTUAL_CP_BUDGET,
+                        long BUDGETS_FIXED_ACTUAL_CP,
+                        long BUDGETS_INCR_ACTUAL_CP,
                         long SECONDS_PER_INVOCATION,
-                        long MAX_FAILS,
-                        long MAX_PATH_SOLUTIONS,
-                        long MAX_EXCEEDED_BUDGETS,
+                        long BUDGETS_MAX_FAILS,
+                        long BUDGETS_MAX_PATH_SOLUTIONS,
+                        long BUDGETS_MAX_EXCEEDED_BUDGET,
                         Set<String> TRANSF_IGNORE_FROM_PACKAGES,
                         Set<Class<?>> TRANSF_IGNORE_CLASSES,
                         Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF,
@@ -863,61 +855,61 @@ public class MulibConfig {
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                         boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
                         boolean TRANSF_TRANSFORMATION_REQUIRED,
-                        ChoiceOptionDeques CHOICE_OPTION_DEQUE_TYPE,
-                        long ACTIVATE_PARALLEL_FOR,
-                        Optional<Integer> SYMSINT_LB,
-                        Optional<Integer> SYMSINT_UB,
-                        Optional<Double> SYMSDOUBLE_LB,
-                        Optional<Double> SYMSDOUBLE_UB,
-                        Optional<Float> SYMSFLOAT_LB,
-                        Optional<Float> SYMSFLOAT_UB,
-                        Optional<Long> SYMSLONG_LB,
-                        Optional<Long> SYMSLONG_UB,
-                        Optional<Short> SYMSSHORT_LB,
-                        Optional<Short> SYMSSHORT_UB,
-                        Optional<Byte> SYMSBYTE_LB,
-                        Optional<Byte> SYMSBYTE_UB,
-                        Optional<Character> SYMSCHAR_LB,
-                        Optional<Character> SYMSCHAR_UB,
-                        boolean TREAT_BOOLEANS_AS_INTS,
-                        boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
-                        boolean USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
-                        boolean THROW_EXCEPTION_ON_OOB,
-                        boolean HIGH_LEVEL_FREE_ARRAY_THEORY,
-                        boolean CONCOLIC,
-                        boolean ALLOW_EXCEPTIONS,
-                        boolean ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
-                        boolean ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
-                        boolean ALIASING_FOR_FREE_OBJECTS,
+                        ChoiceOptionDeques SEARCH_CHOICE_OPTION_DEQUE_TYPE,
+                        long SEARCH_ACTIVATE_PARALLEL_FOR,
+                        Optional<Integer> VALS_SYMSINT_LB,
+                        Optional<Integer> VALS_SYMSINT_UB,
+                        Optional<Double> VALS_SYMSDOUBLE_LB,
+                        Optional<Double> VALS_SYMSDOUBLE_UB,
+                        Optional<Float> VALS_SYMSFLOAT_LB,
+                        Optional<Float> VALS_SYMSFLOAT_UB,
+                        Optional<Long> VALS_SYMSLONG_LB,
+                        Optional<Long> VALS_SYMSLONG_UB,
+                        Optional<Short> VALS_SYMSSHORT_LB,
+                        Optional<Short> VALS_SYMSSHORT_UB,
+                        Optional<Byte> VALS_SYMSBYTE_LB,
+                        Optional<Byte> VALS_SYMSBYTE_UB,
+                        Optional<Character> VALS_SYMSCHAR_LB,
+                        Optional<Character> VALS_SYMSCHAR_UB,
+                        boolean VALS_TREAT_BOOLEANS_AS_INTS,
+                        boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS,
+                        boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
+                        boolean ARRAYS_THROW_EXCEPTION_ON_OOB,
+                        boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH,
+                        boolean SEARCH_CONCOLIC,
+                        boolean SEARCH_ALLOW_EXCEPTIONS,
+                        boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
+                        boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL,
+                        boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                         boolean LOG_TIME_FOR_EACH_PATH_SOLUTION,
                         boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION,
                         Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
                         boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
-                        TriConsumer<MulibExecutor, PathSolution, SolverManager> PATH_SOLUTION_CALLBACK,
-                        TriConsumer<MulibExecutor, Backtrack, SolverManager> BACKTRACK_CALLBACK,
-                        TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> FAIL_CALLBACK,
-                        TriConsumer<MulibExecutor, ExceededBudget, SolverManager> EXCEEDED_BUDGET_CALLBACK,
+                        TriConsumer<MulibExecutor, PathSolution, SolverManager> CALLBACK_PATH_SOLUTION,
+                        TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK,
+                        TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL,
+                        TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET,
                         boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS,
                         boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID,
                         boolean CFG_USE_GUIDANCE_DURING_EXECUTION,
                         boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
                         boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE
     ) {
-        this.LABEL_RESULT_VALUE = LABEL_RESULT_VALUE;
-        this.ENLIST_LEAVES = ENLIST_LEAVES;
+        this.SEARCH_LABEL_RESULT_VALUE = SEARCH_LABEL_RESULT_VALUE;
+        this.TREE_ENLIST_LEAVES = TREE_ENLIST_LEAVES;
         this.TREE_INDENTATION = TREE_INDENTATION;
-        this.GLOBAL_SEARCH_STRATEGY = GLOBAL_SEARCH_STRATEGY;
-        this.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES = List.copyOf(ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
-        this.GLOBAL_SOLVER_TYPE = GLOBAL_SOLVER_TYPE;
+        this.SEARCH_MAIN_STRATEGY = SEARCH_MAIN_STRATEGY;
+        this.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES = List.copyOf(SEARCH_ADDITIONAL_PARALLEL_STRATEGIES);
+        this.SOLVER_GLOBAL_TYPE = SOLVER_GLOBAL_TYPE;
         this.SOLVER_ARGS = Collections.unmodifiableMap(new LinkedHashMap<>(SOLVER_ARGS));
-        this.FIXED_ACTUAL_CP_BUDGET =   0 != FIXED_ACTUAL_CP_BUDGET     ? Optional.of(FIXED_ACTUAL_CP_BUDGET)   : Optional.empty();
-        this.INCR_ACTUAL_CP_BUDGET =    0 != INCR_ACTUAL_CP_BUDGET      ? Optional.of(INCR_ACTUAL_CP_BUDGET)    : Optional.empty();
-        this.NANOSECONDS_PER_INVOCATION =   0 != SECONDS_PER_INVOCATION     ? Optional.of(SECONDS_PER_INVOCATION * 1_000_000_000) : Optional.empty();
-        this.MAX_FAILS =                0 != MAX_FAILS                  ? Optional.of(MAX_FAILS) : Optional.empty();
-        this.MAX_PATH_SOLUTIONS =       0 != MAX_PATH_SOLUTIONS         ? Optional.of(MAX_PATH_SOLUTIONS) : Optional.empty();
-        this.MAX_EXCEEDED_BUDGETS =     0 != MAX_EXCEEDED_BUDGETS       ? Optional.of(MAX_EXCEEDED_BUDGETS) : Optional.empty();
+        this.BUDGETS_FIXED_ACTUAL_CP =   0 != BUDGETS_FIXED_ACTUAL_CP ? Optional.of(BUDGETS_FIXED_ACTUAL_CP)   : Optional.empty();
+        this.BUDGETS_INCR_ACTUAL_CP =    0 != BUDGETS_INCR_ACTUAL_CP ? Optional.of(BUDGETS_INCR_ACTUAL_CP)    : Optional.empty();
+        this.BUDGETS_GLOBAL_TIME_IN_NANOSECONDS =   0 != SECONDS_PER_INVOCATION     ? Optional.of(SECONDS_PER_INVOCATION * 1_000_000_000) : Optional.empty();
+        this.BUDGETS_MAX_FAILS =                0 != BUDGETS_MAX_FAILS ? Optional.of(BUDGETS_MAX_FAILS) : Optional.empty();
+        this.BUDGETS_MAX_PATH_SOLUTIONS =       0 != BUDGETS_MAX_PATH_SOLUTIONS ? Optional.of(BUDGETS_MAX_PATH_SOLUTIONS) : Optional.empty();
+        this.BUDGETS_MAX_EXCEEDED_BUDGET =     0 != BUDGETS_MAX_EXCEEDED_BUDGET ? Optional.of(BUDGETS_MAX_EXCEEDED_BUDGET) : Optional.empty();
         this.TRANSF_IGNORE_FROM_PACKAGES = Set.copyOf(TRANSF_IGNORE_FROM_PACKAGES);
         this.TRANSF_IGNORE_CLASSES = Set.copyOf(TRANSF_IGNORE_CLASSES);
         this.TRANSF_IGNORE_SUBCLASSES_OF = Set.copyOf(TRANSF_IGNORE_SUBCLASSES_OF);
@@ -938,40 +930,40 @@ public class MulibConfig {
         this.TRANSF_USE_DEFAULT_MODEL_CLASSES = TRANSF_USE_DEFAULT_MODEL_CLASSES;
         this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = Map.copyOf(TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS);
         this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
-        this.PARALLEL_TIMEOUT_IN_MS = PARALLEL_TIMEOUT_IN_MS;
-        this.CHOICE_OPTION_DEQUE_TYPE = CHOICE_OPTION_DEQUE_TYPE;
-        this.ACTIVATE_PARALLEL_FOR = ACTIVATE_PARALLEL_FOR < 1 ? Optional.empty() : Optional.of(ACTIVATE_PARALLEL_FOR);
-        this.SYMSINT_LB =    SYMSINT_LB.isEmpty() ? Optional.empty() :    Optional.of(Sint.concSint(SYMSINT_LB.get()));
-        this.SYMSINT_UB =    SYMSINT_UB.isEmpty() ? Optional.empty() :    Optional.of(Sint.concSint(SYMSINT_UB.get()));
-        this.SYMSDOUBLE_LB = SYMSDOUBLE_LB.isEmpty() ? Optional.empty() : Optional.of(Sdouble.concSdouble(SYMSDOUBLE_LB.get()));
-        this.SYMSDOUBLE_UB = SYMSDOUBLE_UB.isEmpty() ? Optional.empty() : Optional.of(Sdouble.concSdouble(SYMSDOUBLE_UB.get()));
-        this.SYMSFLOAT_LB =  SYMSFLOAT_LB.isEmpty() ? Optional.empty() :  Optional.of(Sfloat.concSfloat(SYMSFLOAT_LB.get()));
-        this.SYMSFLOAT_UB =  SYMSFLOAT_UB.isEmpty() ? Optional.empty() :  Optional.of(Sfloat.concSfloat(SYMSFLOAT_UB.get()));
-        this.SYMSLONG_LB =   SYMSLONG_LB.isEmpty() ? Optional.empty() :   Optional.of(Slong.concSlong(SYMSLONG_LB.get()));
-        this.SYMSLONG_UB =   SYMSLONG_UB.isEmpty() ? Optional.empty() :   Optional.of(Slong.concSlong(SYMSLONG_UB.get()));
-        this.SYMSSHORT_LB =  SYMSSHORT_LB.isEmpty() ? Optional.empty() :  Optional.of(Sshort.concSshort(SYMSSHORT_LB.get()));
-        this.SYMSSHORT_UB =  SYMSSHORT_UB.isEmpty() ? Optional.empty() :  Optional.of(Sshort.concSshort(SYMSSHORT_UB.get()));
-        this.SYMSBYTE_LB =   SYMSBYTE_LB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_LB.get()));
-        this.SYMSBYTE_UB =   SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(SYMSBYTE_UB.get()));
-        this.SYMSCHAR_LB =   SYMSCHAR_LB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(SYMSCHAR_LB.get()));
-        this.SYMSCHAR_UB =   SYMSCHAR_UB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(SYMSCHAR_UB.get()));
+        this.SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS = SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS;
+        this.SEARCH_CHOICE_OPTION_DEQUE_TYPE = SEARCH_CHOICE_OPTION_DEQUE_TYPE;
+        this.SEARCH_ACTIVATE_PARALLEL_FOR = SEARCH_ACTIVATE_PARALLEL_FOR < 1 ? Optional.empty() : Optional.of(SEARCH_ACTIVATE_PARALLEL_FOR);
+        this.VALS_SYMSINT_LB =    VALS_SYMSINT_LB.isEmpty() ? Optional.empty() :    Optional.of(Sint.concSint(VALS_SYMSINT_LB.get()));
+        this.VALS_SYMSINT_UB =    VALS_SYMSINT_UB.isEmpty() ? Optional.empty() :    Optional.of(Sint.concSint(VALS_SYMSINT_UB.get()));
+        this.VALS_SYMSDOUBLE_LB = VALS_SYMSDOUBLE_LB.isEmpty() ? Optional.empty() : Optional.of(Sdouble.concSdouble(VALS_SYMSDOUBLE_LB.get()));
+        this.VALS_SYMSDOUBLE_UB = VALS_SYMSDOUBLE_UB.isEmpty() ? Optional.empty() : Optional.of(Sdouble.concSdouble(VALS_SYMSDOUBLE_UB.get()));
+        this.VALS_SYMSFLOAT_LB =  VALS_SYMSFLOAT_LB.isEmpty() ? Optional.empty() :  Optional.of(Sfloat.concSfloat(VALS_SYMSFLOAT_LB.get()));
+        this.VALS_SYMSFLOAT_UB =  VALS_SYMSFLOAT_UB.isEmpty() ? Optional.empty() :  Optional.of(Sfloat.concSfloat(VALS_SYMSFLOAT_UB.get()));
+        this.VALS_SYMSLONG_LB =   VALS_SYMSLONG_LB.isEmpty() ? Optional.empty() :   Optional.of(Slong.concSlong(VALS_SYMSLONG_LB.get()));
+        this.VALS_SYMSLONG_UB =   VALS_SYMSLONG_UB.isEmpty() ? Optional.empty() :   Optional.of(Slong.concSlong(VALS_SYMSLONG_UB.get()));
+        this.VALS_SYMSSHORT_LB =  VALS_SYMSSHORT_LB.isEmpty() ? Optional.empty() :  Optional.of(Sshort.concSshort(VALS_SYMSSHORT_LB.get()));
+        this.VALS_SYMSSHORT_UB =  VALS_SYMSSHORT_UB.isEmpty() ? Optional.empty() :  Optional.of(Sshort.concSshort(VALS_SYMSSHORT_UB.get()));
+        this.VALS_SYMSBYTE_LB =   VALS_SYMSBYTE_LB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(VALS_SYMSBYTE_LB.get()));
+        this.VALS_SYMSBYTE_UB =   VALS_SYMSBYTE_UB.isEmpty() ? Optional.empty() :   Optional.of(Sbyte.concSbyte(VALS_SYMSBYTE_UB.get()));
+        this.VALS_SYMSCHAR_LB =   VALS_SYMSCHAR_LB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(VALS_SYMSCHAR_LB.get()));
+        this.VALS_SYMSCHAR_UB =   VALS_SYMSCHAR_UB.isEmpty() ? Optional.empty() :   Optional.of(Schar.concSchar(VALS_SYMSCHAR_UB.get()));
 
-        this.TREAT_BOOLEANS_AS_INTS = TREAT_BOOLEANS_AS_INTS;
-        this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
-        this.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
-        this.THROW_EXCEPTION_ON_OOB = THROW_EXCEPTION_ON_OOB;
-        this.HIGH_LEVEL_FREE_ARRAY_THEORY = HIGH_LEVEL_FREE_ARRAY_THEORY;
-        this.CONCOLIC = CONCOLIC;
-        this.ALLOW_EXCEPTIONS = ALLOW_EXCEPTIONS;
-        this.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
-        this.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
-        this.ALIASING_FOR_FREE_OBJECTS = ALIASING_FOR_FREE_OBJECTS;
+        this.VALS_TREAT_BOOLEANS_AS_INTS = VALS_TREAT_BOOLEANS_AS_INTS;
+        this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+        this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+        this.ARRAYS_THROW_EXCEPTION_ON_OOB = ARRAYS_THROW_EXCEPTION_ON_OOB;
+        this.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH = SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
+        this.SEARCH_CONCOLIC = SEARCH_CONCOLIC;
+        this.SEARCH_ALLOW_EXCEPTIONS = SEARCH_ALLOW_EXCEPTIONS;
+        this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+        this.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+        this.FREE_INIT_ALIASING_FOR_FREE_OBJECTS = FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
         this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
         this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
-        this.PATH_SOLUTION_CALLBACK = PATH_SOLUTION_CALLBACK;
-        this.BACKTRACK_CALLBACK = BACKTRACK_CALLBACK;
-        this.FAIL_CALLBACK = FAIL_CALLBACK;
-        this.EXCEEDED_BUDGET_CALLBACK = EXCEEDED_BUDGET_CALLBACK;
+        this.CALLBACK_PATH_SOLUTION = CALLBACK_PATH_SOLUTION;
+        this.CALLBACK_BACKTRACK = CALLBACK_BACKTRACK;
+        this.CALLBACK_FAIL = CALLBACK_FAIL;
+        this.CALLBACK_EXCEEDED_BUDGET = CALLBACK_EXCEEDED_BUDGET;
         this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
         this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
         this.CFG_USE_GUIDANCE_DURING_EXECUTION = CFG_USE_GUIDANCE_DURING_EXECUTION;
@@ -982,21 +974,21 @@ public class MulibConfig {
     @Override
     public String toString() {
         return "MulibConfig{"
-                + "GLOBAL_SEARCH_STRATEGY=" + GLOBAL_SEARCH_STRATEGY
-                + (ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ? "" : ",ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + ADDITIONAL_PARALLEL_SEARCH_STRATEGIES)
-                + ",GLOBAL_SOLVER_TYPE=" + GLOBAL_SOLVER_TYPE
-                + ",HIGH_LEVEL_FREE_ARRAY_THEORY=" + HIGH_LEVEL_FREE_ARRAY_THEORY
-                + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS=" + USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS
-                + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS=" + USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS
+                + "GLOBAL_SEARCH_STRATEGY=" + SEARCH_MAIN_STRATEGY
+                + (SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.isEmpty() ? "" : ",ADDITIONAL_PARALLEL_SEARCH_STRATEGIES=" + SEARCH_ADDITIONAL_PARALLEL_STRATEGIES)
+                + ",GLOBAL_SOLVER_TYPE=" + SOLVER_GLOBAL_TYPE
+                + ",HIGH_LEVEL_FREE_ARRAY_THEORY=" + SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH
+                + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS=" + ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS
+                + ",USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS=" + ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS
                 + (!SOLVER_ARGS.isEmpty() ? "SOLVER_ARGS=" + SOLVER_ARGS : "")
-                + ",CONCOLIC=" + CONCOLIC
-                + (ENLIST_LEAVES ? ",ENLIST_LEAVES=" + true : "")
-                + FIXED_ACTUAL_CP_BUDGET.map(v -> ",FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + INCR_ACTUAL_CP_BUDGET.map(v -> ",INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
-                + NANOSECONDS_PER_INVOCATION.map(v -> ",NANOSECONDS_PER_INVOCATION=" + v).orElse("")
-                + MAX_FAILS.map(v -> ",MAX_FAILS=" + v).orElse("")
-                + MAX_PATH_SOLUTIONS.map(v -> ",MAX_PATH_SOLUTIONS=" + v).orElse("")
-                + MAX_EXCEEDED_BUDGETS.map(v -> ",MAX_EXCEEDED_BUDGETS=" + v).orElse("")
+                + ",CONCOLIC=" + SEARCH_CONCOLIC
+                + (TREE_ENLIST_LEAVES ? ",ENLIST_LEAVES=" + true : "")
+                + BUDGETS_FIXED_ACTUAL_CP.map(v -> ",FIXED_ACTUAL_CP_BUDGET=" + v).orElse("")
+                + BUDGETS_INCR_ACTUAL_CP.map(v -> ",INCR_ACTUAL_CP_BUDGET=" + v).orElse("")
+                + BUDGETS_GLOBAL_TIME_IN_NANOSECONDS.map(v -> ",NANOSECONDS_PER_INVOCATION=" + v).orElse("")
+                + BUDGETS_MAX_FAILS.map(v -> ",MAX_FAILS=" + v).orElse("")
+                + BUDGETS_MAX_PATH_SOLUTIONS.map(v -> ",MAX_PATH_SOLUTIONS=" + v).orElse("")
+                + BUDGETS_MAX_EXCEEDED_BUDGET.map(v -> ",MAX_EXCEEDED_BUDGETS=" + v).orElse("")
                 + ",TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER=" + TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER
                 + "}";
     }

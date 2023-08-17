@@ -17,14 +17,14 @@ public class GlobalExecutionBudgetManager {
      */
     public GlobalExecutionBudgetManager(
             MulibConfig config) {
-        this.timeBudget = config.NANOSECONDS_PER_INVOCATION.isEmpty() ?
-                NullBudget.INSTANCE : TimeBudget.getTimeBudget(config.NANOSECONDS_PER_INVOCATION.get());
-        this.failBudget = config.MAX_FAILS.isEmpty() ?
-                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.MAX_FAILS.get());
-        this.pathSolutionsBudget = config.MAX_PATH_SOLUTIONS.isEmpty() ?
-                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.MAX_PATH_SOLUTIONS.get());
-        this.exceededBudgetsBudget = config.MAX_EXCEEDED_BUDGETS.isEmpty() ?
-                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.MAX_EXCEEDED_BUDGETS.get());
+        this.timeBudget = config.BUDGETS_GLOBAL_TIME_IN_NANOSECONDS.isEmpty() ?
+                NullBudget.INSTANCE : TimeBudget.getTimeBudget(config.BUDGETS_GLOBAL_TIME_IN_NANOSECONDS.get());
+        this.failBudget = config.BUDGETS_MAX_FAILS.isEmpty() ?
+                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.BUDGETS_MAX_FAILS.get());
+        this.pathSolutionsBudget = config.BUDGETS_MAX_PATH_SOLUTIONS.isEmpty() ?
+                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.BUDGETS_MAX_PATH_SOLUTIONS.get());
+        this.exceededBudgetsBudget = config.BUDGETS_MAX_EXCEEDED_BUDGET.isEmpty() ?
+                NullBudget.INSTANCE : CountingBudget.getFixedBudget(config.BUDGETS_MAX_EXCEEDED_BUDGET.get());
     }
 
     /**

@@ -68,7 +68,7 @@ public enum Solvers {
      * @return The solver manager according to the configuration
      */
     public static SolverManager getSolverManager(MulibConfig config) {
-        switch (config.GLOBAL_SOLVER_TYPE) {
+        switch (config.SOLVER_GLOBAL_TYPE) {
             case Z3_INCREMENTAL:
                 return new Z3IncrementalSolverManager(config);
             case Z3_GLOBAL_LEARNING:

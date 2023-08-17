@@ -12,7 +12,7 @@ import java.util.stream.Collectors;
  * Class capturing information on aliasing for objects created with {@link de.wwu.mulib.Mulib#freeObject(Class)} etc.
  * This class is implemented using {@link ThreadLocal}s rather than a single version for each {@link AbstractMulibExecutor}
  * as it is not expected that aliasing is used in many scenarios.
- * To enable aliasing in the initialization of new symbolic objects, {@link de.wwu.mulib.MulibConfig#ALIASING_FOR_FREE_OBJECTS}
+ * To enable aliasing in the initialization of new symbolic objects, {@link de.wwu.mulib.MulibConfig#FREE_INIT_ALIASING_FOR_FREE_OBJECTS}
  * must be enabled.
  * TODO This does not yet regard subtyping
  */

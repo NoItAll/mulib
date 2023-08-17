@@ -332,7 +332,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         // We encounter a new ChoiceOption. We check if a next ChoiceOption is present and which option is chosen.
         Optional<Boolean> possibleResult = checkIfStillOnKnownPath(se);
         if (possibleResult.isPresent()) {
-            assert !config.CONCOLIC || (!se.nextIsOnKnownPath() || (ConcolicConstraintContainer.getConcSboolFromConcolic(c).isTrue() == possibleResult.get())) : config;
+            assert !config.SEARCH_CONCOLIC || (!se.nextIsOnKnownPath() || (ConcolicConstraintContainer.getConcSboolFromConcolic(c).isTrue() == possibleResult.get())) : config;
             return possibleResult.get();
         }
 

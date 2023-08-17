@@ -20,11 +20,11 @@ public class RememberSupportExec {
         TestUtility.getAllSolutions(
                 mb -> {
                     // TODO If support for solver-internal theories for symbolic aliasing is introduced, get rid of this config:
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true); // This test uses aliasing and free objects in some parts
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true); // This test uses aliasing and free objects in some parts
                     // No nulls or aliasing
-                    mb.setENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(false)
-                            .setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(false)
-                            .setALIASING_FOR_FREE_OBJECTS(false);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(false)
+                            .setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(false)
+                            .setFREE_INIT_ALIASING_FOR_FREE_OBJECTS(false);
                     List<PathSolution> result0 = TestUtility.executeMulib(
                             "check0",
                             RememberSupport.class,

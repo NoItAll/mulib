@@ -145,7 +145,7 @@ public class FreeArraysExec {
     public void testArrayArrayEncodingCapacityAssignmentWithPreProduction() {
         TestUtility.getAllSolutions(
                 (mb) -> {
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
                     List<Solution> result = TestUtility.getUpToNSolutions(
                             1,
                             "assignWithPreproduction",
@@ -178,8 +178,8 @@ public class FreeArraysExec {
     }
 
     private static void withPreproduction(boolean eagerArrayIndices, MulibConfig.MulibConfigBuilder mb) {
-        mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-        mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(eagerArrayIndices);
+        mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+        mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(eagerArrayIndices);
         List<Solution> result;
         result = TestUtility.getUpToNSolutions(
                 200,
@@ -228,7 +228,7 @@ public class FreeArraysExec {
     public void testFreeArraysOfObjects() {
         TestUtility.getAllSolutions(
                 (mb) -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> result = TestUtility.getUpToNSolutions(
                             5,
                             "assignMaterials",
@@ -331,7 +331,7 @@ public class FreeArraysExec {
     public void testMachineContainerEncoding() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
                     MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
@@ -414,7 +414,7 @@ public class FreeArraysExec {
                     assertEquals(2, sols.size());
 
                     // NOW FOR EAGER
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setMAX_PATH_SOLUTIONS(10);
+                    mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setBUDGET_MAX_PATH_SOLUTIONS(10);
                     machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
@@ -505,7 +505,7 @@ public class FreeArraysExec {
     public void testMachineContainerEncodingMutateField() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
                     MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
@@ -588,7 +588,7 @@ public class FreeArraysExec {
                     assertEquals(2, sols.size());
 
                     // NOW FOR EAGER
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setMAX_PATH_SOLUTIONS(10);
+                    mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true).setBUDGET_MAX_PATH_SOLUTIONS(10);
                     machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2),
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
@@ -679,7 +679,7 @@ public class FreeArraysExec {
     public void testMultiPeriodMachineContainerEncoding() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
                     MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
@@ -775,7 +775,7 @@ public class FreeArraysExec {
                     assertEquals(0, sols.size());
 
                     // NOW EAGER
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
                     machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
@@ -878,7 +878,7 @@ public class FreeArraysExec {
     public void testMultiPeriodMachineContainerEncodingMutateField() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
                     MachineCAP.Machine[] machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
@@ -974,7 +974,7 @@ public class FreeArraysExec {
                     assertEquals(0, sols.size());
 
                     // NOW EAGER
-                    mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
+                    mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true);
                     machines = new MachineCAP.Machine[] {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
@@ -1077,7 +1077,7 @@ public class FreeArraysExec {
     public void testDlspVariant() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false);
                     DlspVariant.Machine[] machines = new DlspVariant.Machine[] {
                             new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
                             new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),

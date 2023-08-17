@@ -28,8 +28,8 @@ public class TcgTests {
         mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(false, true, false)
                 .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                 .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH)
-                .setSECONDS_PER_INVOCATION(2)
-                .setFIXED_ACTUAL_CP_BUDGET(200);
+                .setBUDGET_GLOBAL_TIME_IN_SECONDS(2)
+                .setBUDGET_FIXED_ACTUAL_CP(200);
         String result = Mulib.generateTestCases(
                 "execForTcg",
                 SatHanoi01Transf.class,
@@ -48,16 +48,16 @@ public class TcgTests {
     public void testTSPDriver() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setFIXED_ACTUAL_CP_BUDGET(48)
-                            .setCONCOLIC(false)
-                            .setMAX_EXCEEDED_BUDGETS(150_000)
-                            .setSECONDS_PER_INVOCATION(3)
+                    mb.setBUDGET_FIXED_ACTUAL_CP(48)
+                            .setSEARCH_CONCOLIC(false)
+                            .setBUDGET_MAX_EXCEEDED(150_000)
+                            .setBUDGET_GLOBAL_TIME_IN_SECONDS(3)
                             .setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, false, false)
                             .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                             .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH)
                             // TODO If we implement representing objects symbolically not using the custom procedure,
                             //  deactivate this.
-                            .setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                            .setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     String result = Mulib.generateTestCases(
                             "driver",
                             TSP.class,
@@ -78,10 +78,10 @@ public class TcgTests {
     public void testSortDriver() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setFIXED_ACTUAL_CP_BUDGET(50)
-                            .setCONCOLIC(false)
-                            .setMAX_EXCEEDED_BUDGETS(150_000)
-                            .setSECONDS_PER_INVOCATION(3)
+                    mb.setBUDGET_FIXED_ACTUAL_CP(50)
+                            .setSEARCH_CONCOLIC(false)
+                            .setBUDGET_MAX_EXCEEDED(150_000)
+                            .setBUDGET_GLOBAL_TIME_IN_SECONDS(3)
                             .setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, false, false)
                             .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                             .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH);
@@ -105,10 +105,10 @@ public class TcgTests {
     public void testSortDriverWithEarlyTermination() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setFIXED_ACTUAL_CP_BUDGET(60)
-                            .setCONCOLIC(false)
-                            .setMAX_EXCEEDED_BUDGETS(150_000)
-                            .setSECONDS_PER_INVOCATION(3)
+                    mb.setBUDGET_FIXED_ACTUAL_CP(60)
+                            .setSEARCH_CONCOLIC(false)
+                            .setBUDGET_MAX_EXCEEDED(150_000)
+                            .setBUDGET_GLOBAL_TIME_IN_SECONDS(3)
                             .setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, true, false)
                             .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                             .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH);

@@ -107,14 +107,14 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         this.config = config;
         this.mulibValueTransformer = mulibValueTransformer;
         this.prototypicalExecutionBudgetManager = ExecutionBudgetManager.newInstance(config);
-        this.pathSolutionCallback = config.PATH_SOLUTION_CALLBACK;
+        this.pathSolutionCallback = config.CALLBACK_PATH_SOLUTION;
         this.searchRegionMethod = searchRegionMethod;
         this.staticVariables = staticVariables.copyFromPrototype();
         this.searchRegionArgs = searchRegionArgs;
         this.rememberedSprimitives = new HashMap<>();
-        this.failCallback = config.FAIL_CALLBACK;
-        this.exceededBudgetCallback = config.EXCEEDED_BUDGET_CALLBACK;
-        this.backtrackCallback = config.BACKTRACK_CALLBACK;
+        this.failCallback = config.CALLBACK_FAIL;
+        this.exceededBudgetCallback = config.CALLBACK_EXCEEDED_BUDGET;
+        this.backtrackCallback = config.CALLBACK_BACKTRACK;
     }
 
     @Override
@@ -203,7 +203,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     createExecution();
             if (possibleSymbolicExecution.isPresent()) {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
-                if (config.CONCOLIC && !solverManager.isSatisfiable()) {
+                if (config.SEARCH_CONCOLIC && !solverManager.isSatisfiable()) {
                     // Be skeptical with concolic execution; - choice options might be unsatisfiable here if a labeling
                     // has become stale
                     currentChoiceOption.setUnsatisfiable();
@@ -246,7 +246,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     this.mulibExecutorManager.addToExceededBudgets(exceededBudget);
                     this.exceededBudgetCallback.accept(this, exceededBudget, solverManager);
                 } catch (MulibException e) {
-                    if (config.CONCOLIC && !solverManager.isSatisfiable()) {
+                    if (config.SEARCH_CONCOLIC && !solverManager.isSatisfiable()) {
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
@@ -259,7 +259,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         currentChoiceOption.setUnsatisfiable();
                         continue;
                     }
-                    if (config.ALLOW_EXCEPTIONS) {
+                    if (config.SEARCH_ALLOW_EXCEPTIONS) {
                         PathSolution solution = getPathSolution(e, true);
                         this.mulibExecutorManager.addToPathSolutions(solution, this);
                         return Optional.of(solution);
@@ -331,7 +331,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         staticVariables.reset();
         // Remove symbolic execution for this thread;
         SymbolicExecution.remove();
-        if (config.ALIASING_FOR_FREE_OBJECTS) {
+        if (config.FREE_INIT_ALIASING_FOR_FREE_OBJECTS) {
             // Reset aliasing information for this thread
             AliasingInformation.resetAliasingTargets();
         }
@@ -527,7 +527,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
         int otherNumber = choiceOption.choiceOptionNumber == 0 ? 1 : 0;
         Choice.ChoiceOption other = choiceOption.getChoice().getOption(otherNumber);
-        if (!config.CONCOLIC // Exclude concolic execution; - the solver manager might be unsatisfiable here
+        if (!config.SEARCH_CONCOLIC // Exclude concolic execution; - the solver manager might be unsatisfiable here
                 && choiceOption.getChoice().getChoiceOptions().size() == 2
                 && other.isUnsatisfiable()
                 && choiceOption.getParent().isEvaluated()

@@ -204,7 +204,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         private final boolean treatSboolsAsInts;
 
         Z3MulibAdapter(MulibConfig config, Context ctx) {
-            this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
+            this.treatSboolsAsInts = config.VALS_TREAT_BOOLEANS_AS_INTS;
             this.ctx = ctx;
         }
 

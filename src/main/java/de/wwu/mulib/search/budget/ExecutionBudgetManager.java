@@ -11,12 +11,12 @@ public class ExecutionBudgetManager {
     private final Budget incrementalActualChoicePointBudget;
 
     private ExecutionBudgetManager(MulibConfig config) {
-        this.fixedActualChoicePointBudget = config.FIXED_ACTUAL_CP_BUDGET.isPresent() ?
-                CountingBudget.getFixedBudget(config.FIXED_ACTUAL_CP_BUDGET.get())
+        this.fixedActualChoicePointBudget = config.BUDGETS_FIXED_ACTUAL_CP.isPresent() ?
+                CountingBudget.getFixedBudget(config.BUDGETS_FIXED_ACTUAL_CP.get())
                 :
                 NullBudget.INSTANCE;
-        this.incrementalActualChoicePointBudget = config.INCR_ACTUAL_CP_BUDGET.isPresent() ?
-                CountingBudget.getIncrementalBudget(config.INCR_ACTUAL_CP_BUDGET.get())
+        this.incrementalActualChoicePointBudget = config.BUDGETS_INCR_ACTUAL_CP.isPresent() ?
+                CountingBudget.getIncrementalBudget(config.BUDGETS_INCR_ACTUAL_CP.get())
                 :
                 NullBudget.INSTANCE;
     }

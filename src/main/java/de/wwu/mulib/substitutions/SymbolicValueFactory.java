@@ -331,7 +331,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final StampedLock zeroOrOneDelegateLock = new StampedLock();
     private final Map<Sbool.SymSbool, Sbool.SymSbool> createdZeroOrOneDelegates = new HashMap<>();
     private Sbool.SymSbool symSboolDomain(SymbolicExecution se, final Sbool.SymSbool b) {
-        if (config.TREAT_BOOLEANS_AS_INTS) {
+        if (config.VALS_TREAT_BOOLEANS_AS_INTS) {
             Sbool.SymSbool leaf;
             if (b instanceof Sbool.SymSboolLeaf) {
                 leaf = b;
@@ -383,50 +383,50 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     private static Function<Sint.SymSint, Sint.SymSint> optionalSintRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSINT_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSINT_LB.get(), config.SYMSINT_UB.get())
+        return config.VALS_SYMSINT_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSINT_LB.get(), config.VALS_SYMSINT_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Sdouble.SymSdouble, Sdouble.SymSdouble> optionalSdoubleRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSDOUBLE_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSDOUBLE_LB.get(), config.SYMSDOUBLE_UB.get())
+        return config.VALS_SYMSDOUBLE_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSDOUBLE_LB.get(), config.VALS_SYMSDOUBLE_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Sfloat.SymSfloat, Sfloat.SymSfloat> optionalSfloatRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSFLOAT_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSFLOAT_LB.get(), config.SYMSFLOAT_UB.get())
+        return config.VALS_SYMSFLOAT_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSFLOAT_LB.get(), config.VALS_SYMSFLOAT_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Slong.SymSlong, Slong.SymSlong> optionalSlongRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSLONG_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSLONG_LB.get(), config.SYMSLONG_UB.get())
+        return config.VALS_SYMSLONG_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSLONG_LB.get(), config.VALS_SYMSLONG_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Sshort.SymSshort, Sshort.SymSshort> optionalSshortRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSSHORT_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSSHORT_LB.get(), config.SYMSSHORT_UB.get())
+        return config.VALS_SYMSSHORT_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSSHORT_LB.get(), config.VALS_SYMSSHORT_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Schar.SymSchar, Schar.SymSchar> optionalScharRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSCHAR_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSCHAR_LB.get(), config.SYMSCHAR_UB.get())
+        return config.VALS_SYMSCHAR_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSCHAR_LB.get(), config.VALS_SYMSCHAR_UB.get())
                 :
                 r -> r;
     }
 
     private static Function<Sbyte.SymSbyte, Sbyte.SymSbyte> optionalSbyteRestriction(SymbolicExecution se, MulibConfig config) {
-        return config.SYMSBYTE_LB.isPresent() ?
-                r -> symNumericExpressionSprimitiveDomain(se, r, config.SYMSBYTE_LB.get(), config.SYMSBYTE_UB.get())
+        return config.VALS_SYMSBYTE_LB.isPresent() ?
+                r -> symNumericExpressionSprimitiveDomain(se, r, config.VALS_SYMSBYTE_LB.get(), config.VALS_SYMSBYTE_UB.get())
                 :
                 r -> r;
     }

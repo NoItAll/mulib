@@ -22,7 +22,7 @@ public class AbsValueMul {
 
     @Test
     public void testAbsMul() {
-        TestUtility.getAllSolutions(c->c.setLABEL_RESULT_VALUE(false), this::_testAbsMul, "absMul");
+        TestUtility.getAllSolutions(c->c.setSEARCH_LABEL_RESULT_VALUE(false), this::_testAbsMul, "absMul");
     }
 
     private List<PathSolution> _testAbsMul(MulibConfig.MulibConfigBuilder mb) {

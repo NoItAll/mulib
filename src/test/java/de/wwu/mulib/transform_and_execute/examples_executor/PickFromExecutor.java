@@ -36,10 +36,10 @@ public class PickFromExecutor {
 
     private void runChecks(MulibConfig.MulibConfigBuilder mb, boolean runEager) {
         if (runEager) {
-            mb.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true)
-                    .setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(true);
+            mb.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true)
+                    .setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(true);
         } else {
-            mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+            mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
         }
         mb.setTRANSF_REGARD_SPECIAL_CASE(List.of(GraphEdge.class));
         List<Solution> resultInts = TestUtility.getUpToNSolutions(

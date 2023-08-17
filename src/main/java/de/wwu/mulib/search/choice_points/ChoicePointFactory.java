@@ -16,7 +16,7 @@ public interface ChoicePointFactory {
      * @return The new ChoicePointFactory
      */
     static ChoicePointFactory getInstance(MulibConfig config, CoverageCfg coverageCfg) {
-        if (config.CONCOLIC) {
+        if (config.SEARCH_CONCOLIC) {
             return ConcolicChoicePointFactory.getInstance(config, coverageCfg);
         } else {
             return SymbolicChoicePointFactory.getInstance(config, coverageCfg);

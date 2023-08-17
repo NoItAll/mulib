@@ -158,8 +158,8 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccessWithOOB() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setTHROW_EXCEPTION_ON_OOB(true);
-            mb.setALLOW_EXCEPTIONS(true);
+            mb.setARRAYS_THROW_EXCEPTION_ON_OOB(true);
+            mb.setSEARCH_ALLOW_EXCEPTIONS(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -204,8 +204,8 @@ public class ArrayChecks {
     @Test
     public void checkConcreteIllegalAccess() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setTHROW_EXCEPTION_ON_OOB(false);
-            mb.setALLOW_EXCEPTIONS(true);
+            mb.setARRAYS_THROW_EXCEPTION_ON_OOB(false);
+            mb.setSEARCH_ALLOW_EXCEPTIONS(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "checkConcreteIllegalAccess0",
                     ArrayChecks.class,
@@ -363,8 +363,8 @@ public class ArrayChecks {
             );
             assertEquals(0, result.size());
 
-            mb.setALLOW_EXCEPTIONS(true);
-            mb.setTHROW_EXCEPTION_ON_OOB(true);
+            mb.setSEARCH_ALLOW_EXCEPTIONS(true);
+            mb.setARRAYS_THROW_EXCEPTION_ON_OOB(true);
             result = TestUtility.executeMulib(
                     "checkSymSelect0",
                     ArrayChecks.class,
@@ -508,8 +508,8 @@ public class ArrayChecks {
             assertEquals(1, result.size());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
 
-            mb.setTHROW_EXCEPTION_ON_OOB(true);
-            mb.setALLOW_EXCEPTIONS(true);
+            mb.setARRAYS_THROW_EXCEPTION_ON_OOB(true);
+            mb.setSEARCH_ALLOW_EXCEPTIONS(true);
             result = TestUtility.executeMulib(
                     "checkSymStore0",
                     ArrayChecks.class,
@@ -615,8 +615,8 @@ public class ArrayChecks {
             assertEquals(7, result.size());
             assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
 
-            mb.setTHROW_EXCEPTION_ON_OOB(true);
-            mb.setALLOW_EXCEPTIONS(true);
+            mb.setARRAYS_THROW_EXCEPTION_ON_OOB(true);
+            mb.setSEARCH_ALLOW_EXCEPTIONS(true);
             result = TestUtility.executeMulib(
                     "checkMultipleArrays0",
                     ArrayChecks.class,
@@ -881,7 +881,7 @@ public class ArrayChecks {
     public void testArrayArraySimpleSumWithNonEagerIndices() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             1,
                             "simpleSumNonEager0",
@@ -1013,7 +1013,7 @@ public class ArrayChecks {
     public void testAssignWithPreproduction() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             3,
                             "assignWithPreproduction0",
@@ -1172,7 +1172,7 @@ public class ArrayChecks {
     public void testAssignWithPreproductionMoreComplex() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             20,
                             "assignWithPreproductionMoreComplex",
@@ -1287,8 +1287,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithNulls() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> solutions = TestUtility.executeMulib(
                             "sarraySarraysWithNulls",
                             ArrayChecks.class,
@@ -1321,7 +1321,7 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls",
@@ -1359,7 +1359,7 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls1",
@@ -1398,7 +1398,7 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls2() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls2",
@@ -1437,7 +1437,7 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls3() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls3",
@@ -1480,7 +1480,7 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls4() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls4",
@@ -1523,7 +1523,7 @@ public class ArrayChecks {
     public void testSarraySarraySarrayCache() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             20,
                             "sarraySarraySarrayCache",
@@ -1577,9 +1577,9 @@ public class ArrayChecks {
     public void testSarraySarraysWithNullsWithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setALLOW_EXCEPTIONS(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<PathSolution> solutions = TestUtility.executeMulib(
                             "sarraySarraysWithNullsWithSymbolicLength",
                             ArrayChecks.class,
@@ -1616,8 +1616,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNullsWithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNullsWithSymbolicLength",
@@ -1659,8 +1659,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls1WithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls1WithSymbolicLength",
@@ -1703,8 +1703,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls2WithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls2WithSymbolicLength",
@@ -1751,8 +1751,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls3WithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls3WithSymbolicLength",
@@ -1799,8 +1799,8 @@ public class ArrayChecks {
     public void testSarraySarraysWithoutNulls4WithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarraySarraysWithoutNulls4WithSymbolicLength",
@@ -1855,8 +1855,8 @@ public class ArrayChecks {
     public void testSarraySarraySarrayCacheWithSymbolicLength() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             20,
                             "sarraySarraySarrayCacheWithSymbolicLength",
@@ -1917,8 +1917,8 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues0() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarrayWithDefaultValues0",
@@ -1963,8 +1963,8 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithDefaultValues1",
                             ArrayChecks.class,
@@ -2020,9 +2020,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues2() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithDefaultValues2",
                             ArrayChecks.class,
@@ -2085,9 +2085,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues3() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithDefaultValues3",
                             ArrayChecks.class,
@@ -2152,9 +2152,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues4() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithDefaultValues4",
                             ArrayChecks.class,
@@ -2219,9 +2219,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues5() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithDefaultValues5",
                             ArrayChecks.class,
@@ -2305,8 +2305,8 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValues6() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarrayWithDefaultValues6",
@@ -2340,9 +2340,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValue7() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             7,
                             "sarrayWithDefaultValues7",
@@ -2387,9 +2387,9 @@ public class ArrayChecks {
     public void testSarrayWithDefaultValue8() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             7,
                             "sarrayWithDefaultValues8",
@@ -2434,9 +2434,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls0() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<Solution> solutions = TestUtility.getUpToNSolutions(
                             5,
                             "sarrayWithInsertedNulls0",
@@ -2486,9 +2486,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls1",
                             ArrayChecks.class,
@@ -2556,9 +2556,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls2() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls2",
                             ArrayChecks.class,
@@ -2638,9 +2638,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls3() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls3",
                             ArrayChecks.class,
@@ -2716,9 +2716,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls4() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls4",
                             ArrayChecks.class,
@@ -2790,9 +2790,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls5() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls5",
                             ArrayChecks.class,
@@ -2866,9 +2866,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls6() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls6",
                             ArrayChecks.class,
@@ -2937,9 +2937,9 @@ public class ArrayChecks {
     public void testSarrayWithInsertedNulls7() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithInsertedNulls7",
                             ArrayChecks.class,
@@ -3014,8 +3014,8 @@ public class ArrayChecks {
     public void testSarrayWithOverwrittenNulls0() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithOverwrittenNulls0",
                             ArrayChecks.class,
@@ -3105,9 +3105,9 @@ public class ArrayChecks {
     public void testSarrayWithOverwrittenNulls1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithOverwrittenNulls1",
                             ArrayChecks.class,
@@ -3203,9 +3203,9 @@ public class ArrayChecks {
     public void testSarrayWithOverwrittenNulls2() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
-                    mb.setENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+                    mb.setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> pathSolutions = TestUtility.executeMulib(
                             "sarrayWithOverwrittenNulls2",
                             ArrayChecks.class,

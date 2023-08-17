@@ -20,7 +20,7 @@ public class ReplacementExec {
     public void checkTransformIntegerReplacement() {
         TestUtility.getAllSolutions(
                 (mb) -> {
-                    mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                    mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     mb.setTRANSF_REGARD_SPECIAL_CASE(List.of(IntegerScenario.class, NumberReplacement.class, IntegerReplacement.class));
                     List<PathSolution> result = TestUtility.executeMulib(
                             "checkInit",

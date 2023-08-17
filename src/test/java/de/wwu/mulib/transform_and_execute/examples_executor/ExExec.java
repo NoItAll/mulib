@@ -166,7 +166,7 @@ public class ExExec {
     public void testExSymExeLongBytecodes_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeLongBytecodes_false.class,
@@ -186,7 +186,7 @@ public class ExExec {
     public void testExSymExeResearch_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeResearch_false.class,
@@ -206,7 +206,7 @@ public class ExExec {
     public void testExSymExeF2L_falseExec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             ExSymExeF2L_false.class,
@@ -225,7 +225,7 @@ public class ExExec {
     public void testExSymExeLCMP_falseExec0() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec0",
                             ExSymExeLCMP_false.class,
@@ -244,7 +244,7 @@ public class ExExec {
     public void testExSymExeLCMP_falseExec1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec1",
                             ExSymExeLCMP_false.class,
@@ -371,7 +371,7 @@ public class ExExec {
     public void testBooleanIntChecksExec6() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec6",
                             BooleanIntChecks.class,
@@ -391,7 +391,7 @@ public class ExExec {
     public void testBooleanIntChecksExec7() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec7",
                             BooleanIntChecks.class,
@@ -411,7 +411,7 @@ public class ExExec {
     public void testWBSProp1Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp1.class,
@@ -445,7 +445,7 @@ public class ExExec {
     public void testWBSProp3Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp3.class,
@@ -463,7 +463,7 @@ public class ExExec {
     public void testWBSProp4Exec() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec",
                             WBSProp4.class,
@@ -481,7 +481,7 @@ public class ExExec {
     public void testInfiniteLoopExec0() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec0",
                             InfiniteLoop.class,
@@ -498,7 +498,7 @@ public class ExExec {
     public void testSort() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setFIXED_ACTUAL_CP_BUDGET(12);
+                    mb.setBUDGET_FIXED_ACTUAL_CP(12);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "sort",
                             Sort.class,
@@ -524,10 +524,10 @@ public class ExExec {
     public void testTSPDriver() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setFIXED_ACTUAL_CP_BUDGET(30)
+                    mb.setBUDGET_FIXED_ACTUAL_CP(30)
                             // TODO If we implement representing objects symbolically not using the custom procedure,
                             //  deactivate this.
-                            .setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+                            .setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "execute",
                             TSP.class,
@@ -558,7 +558,7 @@ public class ExExec {
     public void testInfiniteLoopExec1() {
         TestUtility.getAllSolutions(
                 mb -> {
-                    mb.setALLOW_EXCEPTIONS(true);
+                    mb.setSEARCH_ALLOW_EXCEPTIONS(true);
                     List<PathSolution> result = TestUtility.executeMulib(
                             "exec1",
                             InfiniteLoop.class,

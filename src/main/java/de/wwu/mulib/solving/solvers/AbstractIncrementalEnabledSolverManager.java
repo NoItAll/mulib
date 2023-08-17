@@ -110,7 +110,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     @Override
     public PartnerClassObjectInformation getAvailableInformationOnPartnerClassObject(Sint id, String field, int depth) {
         assert id != null : "Must not be null";
-        if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+        if (!config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
@@ -122,7 +122,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     @Override
     public ArrayInformation getAvailableInformationOnArray(Sint id, int depth) {
         assert id != null : "Must not be null";
-        if (!config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+        if (!config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
             // TODO Potentially implement for solver-internal array theories
             throw new MisconfigurationException("The config option HIGH_LEVEL_FREE_ARRAY_THEORY must be set");
         }
@@ -173,7 +173,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         assert !(pc instanceof ArrayConstraint);
         if (pc instanceof PartnerClassObjectRememberConstraint) {
             incrementalSolverState.addPartnerClassObjectConstraint(pc);
-        } else if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+        } else if (config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
             if (pc instanceof PartnerClassObjectFieldConstraint) {
                 _objectCompatibilityLayerFieldAccessTreatment((PartnerClassObjectFieldConstraint) pc);
                 incrementalSolverState.addPartnerClassObjectConstraint(pc);
@@ -223,7 +223,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     private void addArrayConstraint(ArrayConstraint ac) {
         if (ac instanceof PartnerClassObjectRememberConstraint) {
             incrementalSolverState.addArrayConstraint(ac);
-        } else if (config.HIGH_LEVEL_FREE_ARRAY_THEORY) {
+        } else if (config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
             if (ac instanceof ArrayAccessConstraint) {
                 _freeArrayCompatibilityLayerArrayConstraintTreatement((ArrayAccessConstraint) ac);
                 incrementalSolverState.addArrayConstraint(ac);
@@ -485,7 +485,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
 
         // Label return value: All updates are relevant!
-        Object labeledReturnValue = config.LABEL_RESULT_VALUE
+        Object labeledReturnValue = config.SEARCH_LABEL_RESULT_VALUE
                 ?
                 _getLabel(returnValue, null, allPartnerClassObjectConstraints)
                 :
@@ -703,7 +703,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         } else {
             // This can only occur if lazy initialization is combined with naming
             // Can theoretically also be deduced from the field of the containing object
-            assert config.HIGH_LEVEL_FREE_ARRAY_THEORY : "Currently only implemented for high-level array theory";
+            assert config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH : "Currently only implemented for high-level array theory";
             Sint sarrayId = allRelevantConstraints[0].getPartnerClassObjectId();
             ArraySolverRepresentation asr = (ArraySolverRepresentation) incrementalSolverState.getCurrentArrayRepresentation(sarrayId);
             length = asr.getLength();
@@ -823,7 +823,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
         // This can only occur if lazy initialization is combined with naming
         // Can theoretically also be deduced from the field of the containing object
-        assert config.HIGH_LEVEL_FREE_ARRAY_THEORY : "Currently only implemented for high-level array theory";
+        assert config.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH : "Currently only implemented for high-level array theory";
         Sint id = allRelevantConstraints[0].getPartnerClassObjectId();
         PartnerClassObjectSolverRepresentation pcosr = ((PartnerClassObjectSolverRepresentation) incrementalSolverState.getCurrentPartnerClassObjectRepresentation(id));
         return pcosr.getClazz();

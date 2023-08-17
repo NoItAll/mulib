@@ -44,7 +44,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             Configuration config = Configuration.defaultConfiguration();
             ShutdownManager shutdown = ShutdownManager.create();
             try {
-                Solvers solverType = mulibConfig.GLOBAL_SOLVER_TYPE;
+                Solvers solverType = mulibConfig.SOLVER_GLOBAL_TYPE;
                 SolverContextFactory.Solvers chosenSolver;
                 switch (solverType) {
                     case JSMT_Z3:
@@ -276,7 +276,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 bitvectorFormulaManager = null;
             }
             this.bitvectorFormulaManager = bitvectorFormulaManager;
-            this.treatSboolsAsInts = config.TREAT_BOOLEANS_AS_INTS;
+            this.treatSboolsAsInts = config.VALS_TREAT_BOOLEANS_AS_INTS;
         }
 
         NumeralFormula getFormulaForNumericExpression(NumericExpression numericExpression) {

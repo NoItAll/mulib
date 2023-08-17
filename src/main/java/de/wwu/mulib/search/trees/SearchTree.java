@@ -48,10 +48,10 @@ public final class SearchTree {
             MulibConfig config) {
         this.config = config;
         this.indentBy = config.TREE_INDENTATION;
-        this.enlistLeaves = config.ENLIST_LEAVES;
+        this.enlistLeaves = config.TREE_ENLIST_LEAVES;
         this.root = new Choice(null, Sbool.ConcSbool.TRUE);
         this.root.getOption(0).setSatisfiable();
-        if (!config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty()) {
+        if (!config.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.isEmpty()) {
             solutionsList = Collections.synchronizedList(new ArrayList<>());
             if (enlistLeaves) {
                 failsList = Collections.synchronizedList(new ArrayList<>());

@@ -47,7 +47,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sprimitive select(SymbolicExecution se, Sarray sarray, Sint index) {
         sarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
             return (Sprimitive) _selectWithEagerIndexes(se, sarray, index);
         } else {
             return (Sprimitive) _selectWithSymbolicIndexes(se, sarray, index);
@@ -57,7 +57,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sprimitive store(SymbolicExecution se, Sarray sarray, Sint index, Sprimitive value) {
         sarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
             return (Sprimitive) _storeWithEagerIndexes(se, sarray, index, value);
         } else {
             return (Sprimitive) _storeWithSymbolicIndexes(se, sarray, index, value);
@@ -67,7 +67,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sarray<?> select(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index) {
         sarraySarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (Sarray<?>) _selectWithEagerIndexes(se, sarraySarray, index);
         } else {
             return (Sarray<?>) _selectWithSymbolicIndexes(se, sarraySarray, index);
@@ -77,7 +77,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value) {
         sarraySarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (Sarray<?>) _storeWithEagerIndexes(se, sarraySarray, index, value);
         } else {
             return (Sarray<?>) _storeWithSymbolicIndexes(se, sarraySarray, index, value);
@@ -87,7 +87,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final PartnerClass select(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index) {
         partnerClassSarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (PartnerClass) _selectWithEagerIndexes(se, partnerClassSarray, index);
         } else {
             return (PartnerClass) _selectWithSymbolicIndexes(se, partnerClassSarray, index);
@@ -97,7 +97,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
     @Override
     public final PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value) {
         partnerClassSarray.__mulib__nullCheck();
-        if (config.USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
+        if (config.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             return (PartnerClass) _storeWithEagerIndexes(se, partnerClassSarray, index, value);
         } else {
             return (PartnerClass) _storeWithSymbolicIndexes(se, partnerClassSarray, index, value);
@@ -167,7 +167,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                     se.lt(i, sarray._getLengthWithoutCheckingForIsNull()),
                     se.lte(Sint.ConcSint.ZERO, i)
             );
-            if (config.THROW_EXCEPTION_ON_OOB) {
+            if (config.ARRAYS_THROW_EXCEPTION_ON_OOB) {
                 boolean inBounds = se.boolChoice(indexInBound);
                 if (!inBounds) {
                     throw new ArrayIndexOutOfBoundsException();

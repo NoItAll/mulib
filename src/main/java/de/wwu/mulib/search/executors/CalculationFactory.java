@@ -39,7 +39,7 @@ public interface CalculationFactory {
      * @return The new calculation factory
      */
     static CalculationFactory getInstance(MulibConfig config, ValueFactory vf) {
-        if (config.CONCOLIC) {
+        if (config.SEARCH_CONCOLIC) {
             return ConcolicCalculationFactory.getInstance(config, vf);
         } else {
             return SymbolicCalculationFactory.getInstance(config, vf);

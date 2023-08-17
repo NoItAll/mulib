@@ -15,7 +15,7 @@ public class AliasingAndIdsEqTransfExec {
     @Test
     public void testObjectEqsAndAliasing() {
         TestUtility.getAllSolutions((mb) -> {
-            mb.setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+            mb.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
             List<PathSolution> result = TestUtility.executeMulib(
                     "objectsEq",
                     AliasingAndIdsEq.class,
@@ -43,7 +43,7 @@ public class AliasingAndIdsEqTransfExec {
                 assertEquals(3, ((AliasingAndIdsEq.ResultContainer) s1.returnValue).getResultIndicator());
             }
 
-            mb.setALIASING_FOR_FREE_OBJECTS(true);
+            mb.setFREE_INIT_ALIASING_FOR_FREE_OBJECTS(true);
             result = TestUtility.executeMulib(
                     "objectsEq",
                     AliasingAndIdsEq.class,

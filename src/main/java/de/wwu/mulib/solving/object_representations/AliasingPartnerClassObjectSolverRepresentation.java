@@ -103,7 +103,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
             canBeNull = false;
             metadataEqualsDependingOnId = Sbool.ConcSbool.FALSE;
         } else {
-            canBeNull = config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+            canBeNull = config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
             metadataEqualsDependingOnId = Eq.newInstance(id, reservedId);
         }
         for (Sint id : potentialIds) {
@@ -202,7 +202,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                         config,
                         id,
                         !_fieldIsSet(field) ?
-                                config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ? Sbool.newInputSymbolicSbool() : Sbool.ConcSbool.FALSE
+                                config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ? Sbool.newInputSymbolicSbool() : Sbool.ConcSbool.FALSE
                                 :
                                 partnerClassFieldCanPotentiallyContainNull(field) ?
                                     Sbool.newInputSymbolicSbool()
@@ -289,7 +289,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
                                     Sint.ConcSint.ZERO,
                                     value,
                                     true,
-                                    config.ALIASING_FOR_FREE_OBJECTS,
+                                    config.FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                                     fieldToType.get(fieldName),
                                     false
                             )

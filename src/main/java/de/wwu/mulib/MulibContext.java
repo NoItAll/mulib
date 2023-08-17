@@ -112,7 +112,7 @@ public final class MulibContext {
         ChoicePointFactory choicePointFactory = ChoicePointFactory.getInstance(config, coverageCfg);
         ValueFactory valueFactory = ValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
         CalculationFactory calculationFactory = CalculationFactory.getInstance(config, valueFactory);
-        MulibExecutorManager result = config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty() ?
+        MulibExecutorManager result = config.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.isEmpty() ?
                 new SingleExecutorManager(
                         config,
                         searchTree,

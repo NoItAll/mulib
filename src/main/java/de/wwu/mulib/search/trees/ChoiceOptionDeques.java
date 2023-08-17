@@ -21,7 +21,7 @@ public enum ChoiceOptionDeques {
 
 
     static ChoiceOptionDeque getChoiceOptionDeque(MulibConfig config, Choice.ChoiceOption rootOption) {
-        switch (config.CHOICE_OPTION_DEQUE_TYPE) {
+        switch (config.SEARCH_CHOICE_OPTION_DEQUE_TYPE) {
             case SIMPLE:
                 return new SimpleChoiceOptionDeque(rootOption);
             case DIRECT_ACCESS:

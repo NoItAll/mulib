@@ -29,7 +29,7 @@ import java.util.Map;
 public interface ValueFactory {
 
     static ValueFactory getInstance(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
-        if (config.CONCOLIC) {
+        if (config.SEARCH_CONCOLIC) {
             return ConcolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);
         } else {
             return SymbolicValueFactory.getInstance(config, arrayTypesToSpecializedSarrayClass);

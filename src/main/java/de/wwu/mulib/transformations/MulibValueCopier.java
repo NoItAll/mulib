@@ -29,7 +29,7 @@ public class MulibValueCopier {
             MulibConfig config) {
         this.se = se;
         this.classesToCopyFunction = config.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
-        this.isConcolic = config.CONCOLIC;
+        this.isConcolic = config.SEARCH_CONCOLIC;
     }
 
     public void registerCopy(Object original, Object copy) {

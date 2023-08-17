@@ -18,7 +18,7 @@ public class SatHanoi01TransfExec {
     @Test
     public void testSatHanoi01Transf() {
         TestUtility.getAllSolutions(
-                mulibConfig -> mulibConfig.setFIXED_ACTUAL_CP_BUDGET(2500),
+                mulibConfig -> mulibConfig.setBUDGET_FIXED_ACTUAL_CP(2500),
                 this::_testSatHanoi01,
                 "exec"
         );

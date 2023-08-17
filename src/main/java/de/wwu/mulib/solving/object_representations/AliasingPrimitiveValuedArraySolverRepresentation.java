@@ -141,7 +141,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                 // If defaultIsSymbolic, we might address a completely new array. This "array" might still be null
                 // and will be initialized with isNull as an unrestricted SymSbool.
                 metadataEqualsDependingOnId = Eq.newInstance(arrayId, reservedId);
-                if (config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
+                if (config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
                     canBeNull = true;
                 }
             } else {
@@ -227,7 +227,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
                     index,
                     selectedValue,
                     isCompletelyInitialized,
-                    config.ALIASING_FOR_FREE_OBJECTS,
+                    config.FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                     valueType,
                     !defaultIsSymbolic && canPotentiallyContainCurrentlyUnrepresentedNonSymbolicDefault
             );

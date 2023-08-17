@@ -73,7 +73,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
         PartnerClassObjectSolverRepresentation result = new SimplePartnerClassObjectSolverRepresentation(
                 config,
                 id,
-                config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ?
+                config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL ?
                         Sbool.newInputSymbolicSbool()
                         :
                         Sbool.ConcSbool.FALSE,
@@ -97,7 +97,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         config,
                         id,
                         Sint.newInputSymbolicSint(),
-                        config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
+                        config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()
                                 :
                                 Sbool.ConcSbool.FALSE,
@@ -105,14 +105,14 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                         defaultIsSymbolic,
                         sps.getCurrentLevel(),
                         false,
-                        Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ? config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL : config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL
+                        Sarray.SarraySarray.class.isAssignableFrom(typeOfField) ? config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL : config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL
                 )
                 :
                 new PrimitiveValuedArraySolverRepresentation(
                         config,
                         id,
                         Sint.newInputSymbolicSint(),
-                        config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
+                        config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL ?
                                 Sbool.newInputSymbolicSbool()
                                 :
                                 Sbool.ConcSbool.FALSE,
@@ -140,7 +140,7 @@ public class SimplePartnerClassObjectSolverRepresentation extends AbstractPartne
                 Sint.ConcSint.ZERO,
                 value,
                 true,
-                config.ALIASING_FOR_FREE_OBJECTS,
+                config.FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                 fieldToType.get(fieldName),
                 false
         );

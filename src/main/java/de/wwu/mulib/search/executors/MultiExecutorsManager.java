@@ -53,10 +53,10 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         super(config, Collections.synchronizedList(new ArrayList<>()), observedTree,
                 choicePointFactory, valueFactory, calculationFactory, mulibValueTransformer,
                 searchRegionMethod, staticVariables, searchRegionArgs, coverageCfg);
-        this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES);
+        this.nextStrategiesToInitialize = new SimpleSyncedQueue<>(config.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES);
         this.executorService = Executors.newCachedThreadPool(new ExceptionThrowingThreadFactory(this));
         this.idle = new SimpleSyncedQueue<>();
-        this.activateParallelFor = config.ACTIVATE_PARALLEL_FOR.isPresent() ? config.ACTIVATE_PARALLEL_FOR.get() : 1;
+        this.activateParallelFor = config.SEARCH_ACTIVATE_PARALLEL_FOR.isPresent() ? config.SEARCH_ACTIVATE_PARALLEL_FOR.get() : 1;
     }
 
     private static class SimpleSyncedQueue<T> {
@@ -160,7 +160,7 @@ public class MultiExecutorsManager extends MulibExecutorManager {
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
             executorService.shutdown();
             try {
-                boolean terminated = executorService.awaitTermination(config.PARALLEL_TIMEOUT_IN_MS, TimeUnit.MILLISECONDS);
+                boolean terminated = executorService.awaitTermination(config.SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS, TimeUnit.MILLISECONDS);
                 if (!terminated) {
                     throw new MulibRuntimeException("Executor service did not terminate in time");
                 }

@@ -122,7 +122,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
 
         }
         this.config = config;
-        if (config.CONCOLIC) {
+        if (config.SEARCH_CONCOLIC) {
             tryGetSymFromSnumber = ConcolicNumericContainer::tryGetSymFromConcolic;
             tryGetSymFromSbool = ConcolicConstraintContainer::tryGetSymFromConcolic;
         } else {
@@ -138,54 +138,54 @@ public abstract class AbstractValueFactory implements ValueFactory {
                 len,
                 defaultIsSymbolic,
                 // defaultIsSymbolic also acts as a way to check whether the array should be initializable to null
-                config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic
+                config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic
         );
     }
 
     @Override
     public final Sarray.SdoubleSarray sdoubleSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sdoubleSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sdoubleSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SfloatSarray sfloatSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sfloatSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sfloatSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SlongSarray slongSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return slongSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return slongSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
 
     }
 
     @Override
     public final Sarray.SshortSarray sshortSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sshortSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sshortSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SbyteSarray sbyteSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sbyteSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sbyteSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SboolSarray sboolSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return sboolSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sboolSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.ScharSarray scharSarray(SymbolicExecution se, Sint len, boolean defaultIsSymbolic) {
-        return scharSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return scharSarray(se, len, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override @SuppressWarnings("rawtypes")
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
-        return partnerClassSarray(se, len, clazz, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return partnerClassSarray(se, len, clazz, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
     public final Sarray.SarraySarray sarraySarray(SymbolicExecution se, Sint len, Class<?> clazz, boolean defaultIsSymbolic) {
-        return sarraySarray(se, len, clazz, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
+        return sarraySarray(se, len, clazz, defaultIsSymbolic, config.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
     @Override
@@ -278,7 +278,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
     @Override
     public <T extends PartnerClass> T symObject(SymbolicExecution se, Class<T> toGetInstanceOf) {
         // defaultIsSymbolic is assumed
-        return symObject(se, toGetInstanceOf, config.ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL);
+        return symObject(se, toGetInstanceOf, config.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL);
     }
 
     @Override
@@ -298,13 +298,13 @@ public abstract class AbstractValueFactory implements ValueFactory {
     }
 
     private void decideOnAddToAliasingAndRepresentation(Class<?> c, PartnerClass pc, SymbolicExecution se) {
-        if (config.ALIASING_FOR_FREE_OBJECTS && pc.__mulib__defaultIsSymbolic()) {
+        if (config.FREE_INIT_ALIASING_FOR_FREE_OBJECTS && pc.__mulib__defaultIsSymbolic()) {
             pc.__mulib__prepareForAliasingAndBlockCache(se);
             Sint reservedId = se.concSint(se.getNextNumberInitializedSymObject());
             pc.__mulib__setAsRepresentedInSolver();
 
             if (!se.nextIsOnKnownPath()) {
-                Set<Sint> potentialIds = AliasingInformation.getAliasingTargetIdsForClass(c, config.CONCOLIC);
+                Set<Sint> potentialIds = AliasingInformation.getAliasingTargetIdsForClass(c, config.SEARCH_CONCOLIC);
                 Sint id = (Sint) tryGetSymFromSnumber.apply(pc.__mulib__getId());
                 Sbool isNull = tryGetSymFromSbool.apply(pc.__mulib__isNull());
                 PartnerClassObjectConstraint pcoc;
@@ -363,7 +363,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
             if (((ConcSnumber) len).intVal() < 0) {
                 throw new NegativeArraySizeException();
             }
-        } else if (config.THROW_EXCEPTION_ON_OOB) {
+        } else if (config.ARRAYS_THROW_EXCEPTION_ON_OOB) {
             Sbool outOfBounds = se.gt(Sint.ConcSint.ZERO, len);
             if (se.boolChoice(outOfBounds)) {
                 throw new NegativeArraySizeException();

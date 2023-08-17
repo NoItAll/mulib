@@ -107,7 +107,7 @@ public abstract class MulibExecutorManager {
      * Constructs a new instance
      * @param config The config
      * @param mulibExecutorsList The list of additional executors managed by this manager, i.e.,
-     *                           executors not defined via {@link MulibConfig#GLOBAL_SEARCH_STRATEGY}
+     *                           executors not defined via {@link MulibConfig#SEARCH_MAIN_STRATEGY}
      * @param observedTree The search tree representing the evaluation of the search region
      * @param choicePointFactory The choice point factory; - must be compatible with the value and calculation factory
      * @param valueFactory The value factory; - must be compatible with the choice point and calculation factory
@@ -145,7 +145,7 @@ public abstract class MulibExecutorManager {
                 this,
                 this.mulibValueTransformer,
                 config,
-                config.GLOBAL_SEARCH_STRATEGY,
+                config.SEARCH_MAIN_STRATEGY,
                 searchRegionMethod,
                 staticVariables,
                 searchRegionArgs
@@ -153,7 +153,7 @@ public abstract class MulibExecutorManager {
         this.globalExecutionManagerBudgetManager = new GlobalExecutionBudgetManager(config);
         this.mainExecutor = this.mulibExecutors.get(0);
         this.solutions =
-                config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.isEmpty()
+                config.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.isEmpty()
                         ?
                         new ArrayList<>()
                         :
@@ -161,10 +161,10 @@ public abstract class MulibExecutorManager {
         this.numberRequestedSolutions = null;
         this.startTime = config.LOG_TIME_FOR_EACH_PATH_SOLUTION || config.LOG_TIME_FOR_FIRST_PATH_SOLUTION ? System.nanoTime() : 0L;
         this.globalIddfsSynchronizer =
-                (config.GLOBAL_SEARCH_STRATEGY == SearchStrategy.IDDSAS
-                || config.ADDITIONAL_PARALLEL_SEARCH_STRATEGIES.contains(SearchStrategy.IDDSAS))
+                (config.SEARCH_MAIN_STRATEGY == SearchStrategy.IDDSAS
+                || config.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES.contains(SearchStrategy.IDDSAS))
                 ?
-                new GlobalIddfsSynchronizer(config.INCR_ACTUAL_CP_BUDGET.get().intValue())
+                new GlobalIddfsSynchronizer(config.BUDGETS_INCR_ACTUAL_CP.get().intValue())
                 :
                 null;
         this.coverageCfg = coverageCfg;
@@ -338,7 +338,7 @@ public abstract class MulibExecutorManager {
                 b.append(linebreak);
             }
         }
-        if (config.ENLIST_LEAVES) {
+        if (config.TREE_ENLIST_LEAVES) {
             b.append(linebreak)
                     .append(indent)
                     .append(", numberPathSolutions: ")
