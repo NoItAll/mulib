@@ -1,9 +1,10 @@
-package de.wwu.mulib.substitutions.primitives;
+package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -13,6 +14,13 @@ import java.util.concurrent.locks.StampedLock;
 import java.util.function.Function;
 import java.util.function.Supplier;
 
+/**
+ * A thread-safe value factory for symbolic values.
+ * Caches all {@link SymSprimitiveLeaf}s created by it for reuse. The counters in {@link SymbolicExecution} are used
+ * to determine the cached {@link SymSprimitiveLeaf}s of the respective type to use next.
+ * Due to mutability, {@link de.wwu.mulib.substitutions.PartnerClass} objects are not cached and instead use the number
+ * provided by this factory to set the identifier {@link PartnerClass#__mulib__getId()}.
+ */
 public class SymbolicValueFactory extends AbstractValueFactory {
     private final StampedLock atomicSymSintLock = new StampedLock();
     private final StampedLock atomicSymSdoubleLock = new StampedLock();
@@ -33,7 +41,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     private final List<Schar.SymSchar> createdAtomicSymSchars = new ArrayList<>();
 
     private final MulibConfig config;
-    protected SymbolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
+
+    SymbolicValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
         super(config, arrayTypesToSpecializedSarrayClass);
         this.config = config;
     }

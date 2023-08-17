@@ -16,6 +16,7 @@ import de.wwu.mulib.solving.object_representations.AbstractPartnerClassObjectSol
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.*;
@@ -23,14 +24,14 @@ import java.util.function.Supplier;
 
 /**
  * Implements the facade pattern.
- * For each exploration of the search region, a new instance of SymbolicExecution is stored.
+ * For each exploration of the search region, a new instance of SymbolicExecution is created and stored in a {@link ThreadLocal}.
  * This instance of symbolic execution contains all trails relevant for validly exploring the search region.
  * It stores a trail of predetermined choice options so that we can easily navigate to the unexplored choice option
  * that should be explored next.
  * It furthermore contains identifier-counter for ensuring that symbolic values that are already involved in constraints stored
  * in the constraint solver, are recreated so that the constraint stack is valid with regards to the current state of the execution.
  * In other words: If on the constraint solver there is a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf) with
- * the id {@link Sint.SymSintLeaf#getId()} "Sint1", {@link SymbolicExecution} will contact the {@link ValueFactory} to
+ * the id {@link Sint.SymSintLeaf#getId()} "Sint1", {@link SymbolicExecution} will contact the {@link ValueFactory } to
  * create such a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf} at the correct location during the execution.
  * Similarly, for all other {@link Sprimitive}s, numbers are maintained and so are concrete identifiers of objects that
  * will be represented for the constraint solver.

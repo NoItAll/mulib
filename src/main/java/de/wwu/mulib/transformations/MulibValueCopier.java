@@ -8,7 +8,7 @@ import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
-import de.wwu.mulib.substitutions.primitives.AssignConcolicLabelEnabledValueFactory;
+import de.wwu.mulib.substitutions.AssignConcolicLabelEnabledValueFactory;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;

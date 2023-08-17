@@ -15,6 +15,10 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+/**
+ * Represents arrays
+ * @param <T> The component type
+ */
 @SuppressWarnings({"unchecked", "rawtypes"})
 public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerClass {
     private final Sint len;
@@ -22,21 +26,40 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     private final Class<T> clazz;
     protected final Map<Sint, T> cachedElements;
 
-    /** New instance constructor */
-    protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
+    /**
+     * New instance constructor
+     * @param componentType The component type
+     * @param len The length of the sarray
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param defaultIsSymbolic Whether unknown elements are symbolic by default
+     * @param isNull Whether the sarray can be null
+     */
+    protected Sarray(Class<T> componentType, Sint len, SymbolicExecution se,
                      boolean defaultIsSymbolic,
                      Sbool isNull) {
-        this(clazz, len, se, defaultIsSymbolic, isNull, true);
+        this(componentType, len, se, defaultIsSymbolic, isNull, true);
     }
 
-    protected Sarray(Class<T> clazz, Sint len, SymbolicExecution se,
+    /**
+     * New instance constructor
+     * @param componentType The component type
+     * @param len The length of the sarray
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param defaultIsSymbolic Whether unknown elements are symbolic by default
+     * @param isNull Whether the sarray can be null
+     * @param initializeImmediately Whether the array should be initialized immediately at this position.
+     *                              This is set to false by {@link PartnerClassSarray} per default to employ a custom mechanism.
+     */
+    protected Sarray(Class<T> componentType,
+                     Sint len,
+                     SymbolicExecution se,
                      boolean defaultIsSymbolic,
                      Sbool isNull,
                      boolean initializeImmediately) {
-        assert clazz != null && len != null;
+        assert componentType != null && len != null;
         this.id = null;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
-        this.clazz = clazz;
+        this.clazz = componentType;
         if (defaultIsSymbolic) {
             __mulib__setDefaultIsSymbolic();
         }
@@ -48,6 +71,11 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Initializes the elements of this array if the length is concrete.
+     * Calls {@link Sarray#getNewValueForSelect(SymbolicExecution, Sint)} to determine the elements for this.
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     */
     protected void _initializeCachedElements(SymbolicExecution se) {
         if (len instanceof ConcSnumber) {
             int length = ((ConcSnumber) len).intVal();
@@ -58,7 +86,10 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
-    /** Transformation constructor */
+    /**
+     * Transformation constructor
+     * @param arrayElements The elements of this sarray
+     */
     protected Sarray(
             T[] arrayElements) {
         this.id = null;
@@ -72,15 +103,23 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
-    /** Copy constructor for all Sarrays but SarraySarray */
+    /**
+     * Copy constructor for all Sarrays but SarraySarray
+     * @param mvt The value copier
+     * @param s The sarray to copy
+     */
     protected Sarray(MulibValueCopier mvt, Sarray<T> s) {
         this(mvt, s, new HashMap<>(s.cachedElements));
     }
 
-    /** Copy constructor for SarraySarrays */
-    protected Sarray(MulibValueCopier mvt, Sarray<T> s, Map<Sint, T> cachedElements) {
-        super(s, mvt);
-        mvt.registerCopy(s, this);
+    /**
+     * Copy constructor for PartnerClassSarray as there a specialized type of copying is implemented
+     * @param mvc The value copier
+     * @param s To-copy
+     * @param cachedElements The already-copied elements of to-copy
+     */
+    protected Sarray(MulibValueCopier mvc, Sarray<T> s, Map<Sint, T> cachedElements) {
+        super(s, mvc);
         this.clazz = s.clazz;
         this.cachedElements = cachedElements;
         this.len = s.len;
@@ -91,10 +130,23 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         return "Sarray[" + id + "]{repState=" + representationState + ",elements=" + cachedElements + "}";
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param index The index to generate the symbolic default value for
+     * @return The symbolic default element according to this sarrays component type
+     */
     protected abstract T symbolicDefault(SymbolicExecution se, Sint index);
 
+    /**
+     * @return The concrete default element, e.g. null in the case of {@link PartnerClassSarray}
+     */
     protected abstract T nonSymbolicDefaultElement();
 
+    /**
+     * Clears the elements of this sarray.
+     * This is done if we block the cache since the given array becomes a potential target for symbolic aliasing.
+     * Subsequent calls are then delegated to the constraint solver via {@link de.wwu.mulib.constraints.ArrayAccessConstraint}s.
+     */
     public void clearCache() {
         cachedElements.clear();
     }
@@ -110,71 +162,98 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     }
 
     /**
-     * Is equivalent tp Sarray.getClazz() except for SarraySarray.
+     * Is equivalent tp Sarray.getClazz() except for SarraySarray. For SarraySarrays a Java representation of an int
+     * is returned, e.g., Sint[][].class
+     * TODO Having generated specialized PartnerClassSarrays and SarraySarrays this can be refactored
      * @return The class that stores the actual type stored in the Sarray
-     * @see SarraySarray#getElementType()
      */
     public Class<?> getElementType() {
         return getClazz();
     }
 
+    /**
+     * Performs a select operation delegating to symbolic execution
+     * @param i The index to select from
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The selected value
+     */
     public abstract T select(Sint i, SymbolicExecution se);
 
+    /**
+     * Performs a store operation delegating to symbolic execution
+     * @param i The index to store in
+     * @param val The value to store
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     */
     public abstract void store(Sint i, T val, SymbolicExecution se);
-    
+
+    /**
+     * @return The indices of this sarray
+     */
     public final Set<Sint> getCachedIndices() {
         return cachedElements.keySet();
     }
 
+    /**
+     * @return The values of this sarray
+     */
     public final Collection<T> getCachedElements() {
         return cachedElements.values();
     }
 
+    /**
+     * @return The length of ths sarray without performing {@link PartnerClass#__mulib__nullCheck()}
+     */
     public final Sint _getLengthWithoutCheckingForIsNull() {
         return len;
     }
 
-    public final Sint getLength() {
+    /**
+     * @return The length of this sarray after performing {@link PartnerClass#__mulib__nullCheck()}
+     */
+    public final Sint length() {
         __mulib__nullCheck();
         return len;
     }
 
-    public final Sint length() {
-        return getLength();
-    }
-
+    /**
+     * @param index The index
+     * @return The value from the elements of the array
+     */
     public final T getFromCacheForIndex(Sint index) {
         return cachedElements.get(index);
     }
 
-    public void setInCacheForIndexForSelect(Sint index, T value) {
+    /**
+     * Sets a value for the index if {@link PartnerClass#__mulib__cacheIsBlocked()} is false, else does nothing
+     * @param index The index
+     * @param value The value
+     */
+    public void setInCacheForIndex(Sint index, T value) {
         if (!__mulib__cacheIsBlocked()) {
             cachedElements.put(index, value);
         }
     }
 
-    public void setInCacheForIndexForStore(Sint index, T value) {
-        if (!__mulib__cacheIsBlocked()) {
-            cachedElements.put(index, value);
-        }
-    }
-
-    @Override
-    public void __mulib__blockCache() {
-        super.__mulib__blockCache();
-    }
-
-    public abstract Sarray<T> copy(MulibValueCopier mvt);
-
+    /**
+     * Throws an exception since this case must be treated by an external labeler
+     * @param o An empty object the values of which shall be set
+     * @param solverManager The solver manager
+     */
     @Override
     public Object label(Object o, SolverManager solverManager) {
         throw new MulibIllegalStateException("Should not occur");
     }
 
+    /**
+     * Helper method for determining whether a value can be stored in a sarray.
+     * If this does not work, an ArrayStoreException is thrown.
+     * @param sarray The sarray
+     * @param value The value
+     */
     @SuppressWarnings("rawtypes")
     public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
         if (!(sarray instanceof Sarray.SarraySarray)) {
-            // Either is no SarraySarray
             if (value == null && Sprimitive.class.isAssignableFrom(sarray.getClazz())
                     || (value != null && !sarray.getClazz().isInstance(value))) {
                 // Then an ArrayStoreException should be thrown if null is to be stored and the Sarray does hold primitive values.
@@ -208,12 +287,20 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Based on {@link PartnerClass#__mulib__defaultIsSymbolic()}, determines the type of value to be returned
+     * for an unknown index. Is also used to fill up the array if it is eagerly filled.
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param index The index
+     * @return The value at the index
+     */
     public T getNewValueForSelect(SymbolicExecution se, Sint index) {
         T result;
         if (!__mulib__defaultIsSymbolic() && !__mulib__shouldBeRepresentedInSolver()) {
             result = nonSymbolicDefaultElement();
         } else {
-            // If symbolic is required, optional aliasing etc. is handled here
+            // If symbolic is required, optional aliasing etc. is handled here. If default values are enforced,
+            // this is also handled here
             result = symbolicDefault(se, index);
         }
         return result;
@@ -233,26 +320,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
     protected final void __mulib__blockCacheInPartnerClassFields() {
     }
 
+    /**
+     * represents int[]
+     */
     public static class SintSarray extends Sarray<Sint> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SintSarray(Sint[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SintSarray(Sint[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SintSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sint.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SintSarray(MulibValueCopier mvt, SintSarray s) {
             super(mvt, s);
         }
@@ -288,26 +394,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Represents double[]
+     */
     public static class SdoubleSarray extends Sarray<Sdouble> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SdoubleSarray(Sdouble[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SdoubleSarray(Sdouble[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SdoubleSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sdouble.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SdoubleSarray(MulibValueCopier mvt, SdoubleSarray s) {
             super(mvt, s);
         }
@@ -343,26 +468,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * represents float[]
+     */
     public static class SfloatSarray extends Sarray<Sfloat> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SfloatSarray(Sfloat[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SfloatSarray(Sfloat[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SfloatSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sfloat.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SfloatSarray(MulibValueCopier mvt, SfloatSarray s) {
             super(mvt, s);
         }
@@ -398,26 +542,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Represents long[]
+     */
     public static class SlongSarray extends Sarray<Slong> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SlongSarray(Slong[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SlongSarray(Slong[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SlongSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Slong.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SlongSarray(MulibValueCopier mvt, SlongSarray s) {
             super(mvt, s);
         }
@@ -453,26 +616,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * represents short[]
+     */
     public static class SshortSarray extends Sarray<Sshort> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SshortSarray(Sshort[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SshortSarray(Sshort[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SshortSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sshort.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SshortSarray(MulibValueCopier mvt, SshortSarray s) {
             super(mvt, s);
         }
@@ -508,26 +690,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * represents char[]
+     */
     public static class ScharSarray extends Sarray<Schar> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public ScharSarray(Schar[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public ScharSarray(Schar[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public ScharSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Schar.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public ScharSarray(MulibValueCopier mvt, ScharSarray s) {
             super(mvt, s);
         }
@@ -563,26 +764,45 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * represents byte[]
+     */
     public static class SbyteSarray extends Sarray<Sbyte> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SbyteSarray(Sbyte[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SbyteSarray(Sbyte[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SbyteSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sbyte.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SbyteSarray(MulibValueCopier mvt, SbyteSarray s) {
             super(mvt, s);
         }
@@ -618,25 +838,44 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * represents boolean[]
+     */
     public static class SboolSarray extends Sarray<Sbool> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public SboolSarray(Sbool[] values) {
             super(values);
         }
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public SboolSarray(Sbool[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public SboolSarray(Sint len, SymbolicExecution se, boolean defaultIsSymbolic, Sbool isNull) {
             super(Sbool.class, len, se, defaultIsSymbolic, isNull);
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SboolSarray(MulibValueCopier mvt, SboolSarray s) {
             super(mvt, s);
         }
@@ -672,22 +911,39 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Superclass of all arrays of reference-typed elements
+     * @param <T> The type of the reference-typed elements
+     */
     public static class PartnerClassSarray<T extends PartnerClass> extends Sarray<T> {
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         */
         public PartnerClassSarray(T[] values) {
             super(values);
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param mvt Not used
          */
         public PartnerClassSarray(T[] values, MulibValueTransformer mvt) {
             this(values);
         }
 
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param clazz The component type
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         */
         public PartnerClassSarray(Class<T> clazz, Sint len, SymbolicExecution se,
                                   boolean defaultIsSymbolic, Sbool isNull) {
             super(clazz, len, se, defaultIsSymbolic, isNull);
@@ -696,6 +952,15 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
 
         /**
          * New instance constructor for SarraySarray
+         * @param clazz The component type
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param isNull Whether the sarray can be null
+         * @param initializeImmediately Is always set to be false and only used to differentiate this constructor from
+         *                              the other new instance constructor
+         *
+         *                              TODO Refactor
          */
         protected PartnerClassSarray(
                 Class<T> clazz,
@@ -709,22 +974,15 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         /**
-         * Copy constructor for PartnerClassSarray
+         * Copy constructor
+         * @param mvc The copier
+         * @param s To-copy
          */
-        protected PartnerClassSarray(
-                MulibValueCopier mvt,
-                Sarray<T> s,
-                Map<Sint, T> elements) {
-            super(mvt, s, elements);
-            assert s instanceof PartnerClassSarray;
+        public PartnerClassSarray(MulibValueCopier mvc, PartnerClassSarray s) {
+            super(mvc, s, copyArrayElementsOfNonSarraySarrayPartnerClassSarray(mvc, s.cachedElements));
         }
 
-        /** Copy constructor */
-        public PartnerClassSarray(MulibValueCopier mvt, PartnerClassSarray s) {
-            this(mvt, s, copyArrayElements(mvt, s.cachedElements));
-        }
-
-        private static Map<Sint, PartnerClass> copyArrayElements(MulibValueCopier mvt, Map<Sint, PartnerClass> elementCache) {
+        private static Map<Sint, PartnerClass> copyArrayElementsOfNonSarraySarrayPartnerClassSarray(MulibValueCopier mvt, Map<Sint, PartnerClass> elementCache) {
             Map<Sint, PartnerClass> elements = new HashMap<>();
             for (Sint i : elementCache.keySet()) {
                 PartnerClass pc = elementCache.get(i);
@@ -804,6 +1062,12 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             return result;
         }
 
+        /**
+         * Generates a new symbolic instance of the component type of this partner class sarray without any checks
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param canBeNull Whether the sarray can be null
+         * @return A new instance
+         */
         protected T generateSymbolicDefault(SymbolicExecution se, boolean canBeNull) {
             T result = se.getValueFactory().symObject(se, this.getClazz(), canBeNull);
             return result;
@@ -839,6 +1103,9 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
     }
 
+    /**
+     * Supertype of all sarrays where the component type also is a sarray-type
+     */
     @SuppressWarnings("rawtypes")
     public static class SarraySarray extends PartnerClassSarray<Sarray> {
         private final int dim;
@@ -846,7 +1113,11 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         // Sarray.clazz would represent them all as Sarray.
         private final Class<?> elementType;
 
-        /** Transformation constructor */
+        /**
+         * Transformation constructor
+         * @param values The values
+         * @param elementType The component type
+         */
         public SarraySarray(Sarray[] values, Class<?> elementType) {
             super(values);
             this.elementType = elementType;
@@ -854,14 +1125,25 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
         }
 
         /**
-         * Transformation constructor to keep a consistent constructor signature
+         * Transformation constructor to keep a consistent constructor signature with other
+         * partner class objects
+         * @param values The values
+         * @param elementType The component type in the form of, e.g., Sint[][]
+         * @param mvt Not used
          */
         public SarraySarray(Sarray[] values, Class<?> elementType, MulibValueTransformer mvt) {
             this(values, elementType);
         }
 
 
-        /** New instance constructor */
+        /**
+         * New instance constructor
+         * @param len The length
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param defaultIsSymbolic Whether the default of this array for uninitialized values is symbolic
+         * @param elementType The component type in the form of, e.g., Sint[][]
+         * @param isNull Whether the sarray can be null
+         */
         public SarraySarray(Sint len, SymbolicExecution se,
                             boolean defaultIsSymbolic,
                             Class<?> elementType,
@@ -874,8 +1156,12 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             assert !(len instanceof ConcSnumber) || ((ConcSnumber) len).intVal() == getCachedIndices().size();
         }
 
-        /** Other new instance constructor for MULTIANEWARRAY bytecode. This is not implemented too efficiently
+        /**
+         * Other new instance constructor for MULTIANEWARRAY bytecode. This is not implemented too efficiently
          * if any of the lengths is symbolic.
+         * @param lengths An array where each element represents the dimensionality in the nested sarray
+         * @param se The current instance of {@link SymbolicExecution} for this run
+         * @param elementType The component type
          */
         @SuppressWarnings("unchecked")
         public SarraySarray(
@@ -888,7 +1174,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             assert dim >= lengths.length : "Dim is always >= the total number of specified lengths";
             this.elementType = elementType;
             Sint i = Sint.ConcSint.ZERO;
-            while (i.ltChoice(getLength(), se)) {
+            while (i.ltChoice(length(), se)) {
                 Sint[] nextLengths = new Sint[lengths.length-1];
                 System.arraycopy(lengths, 1, nextLengths, 0, nextLengths.length);
                 se.store(this,
@@ -904,9 +1190,13 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             assert !(_getLengthWithoutCheckingForIsNull() instanceof ConcSnumber) || ((ConcSnumber) _getLengthWithoutCheckingForIsNull()).intVal() == getCachedIndices().size();
         }
 
-        /** Copy constructor */
+        /**
+         * Copy constructor
+         * @param mvt The copier
+         * @param s To-copy
+         */
         public SarraySarray(MulibValueCopier mvt, SarraySarray s) {
-            super(mvt, s, copyArrayElements(mvt, s.cachedElements));
+            super(mvt, s);
             this.dim = s.dim;
             this.elementType = s.elementType;
         }
@@ -928,21 +1218,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             }
         }
 
-        private static Map<Sint, Sarray> copyArrayElements(MulibValueCopier mvt, Map<Sint, Sarray> elementCache) {
-            Map<Sint, Sarray> elements = new HashMap<>();
-            for (Sint i : elementCache.keySet()) {
-                Sarray s = elementCache.get(i);
-                Sarray copy;
-                if (s != null) {
-                    copy = s.copy(mvt);
-                } else {
-                    copy = null;
-                }
-                elements.put(i, copy);
-            }
-            return elements;
-        }
-
         private static int determineDimFromInnerElementType(Class<?> innerElementType) {
             int i = 1; // The SarraySarray this belongs to also counts
             while (innerElementType.getComponentType() != null) {
@@ -957,7 +1232,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
             return elementType;
         }
 
-        public boolean elementsAreSarraySarrays() {
+        boolean elementsAreSarraySarrays() {
             return dim > 2;
         }
 
@@ -1108,11 +1383,6 @@ public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerCl
                 val.clearCache();
             }
             super.clearCache();
-        }
-
-        @Override
-        public Class<?> __mulib__getOriginalClass() {
-            throw new NotYetImplementedException();
         }
     }
 

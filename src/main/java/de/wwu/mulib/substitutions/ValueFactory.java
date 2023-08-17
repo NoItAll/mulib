@@ -1,16 +1,15 @@
-package de.wwu.mulib.substitutions.primitives;
+package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Map;
 
 /**
- * Interface for all value factories.
+ * Interface for all value factories. Value factories should be thread-safe.
  * Constructs instances of sarrays and specialized {@link de.wwu.mulib.substitutions.Sarray.PartnerClassSarray}s and
  * {@link de.wwu.mulib.substitutions.Sarray.SarraySarray}s.
  * Might cache values, yet, has to assure that a trail of values is created that equals to the one provided to the

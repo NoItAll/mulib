@@ -1,4 +1,4 @@
-package de.wwu.mulib.substitutions.primitives;
+package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
@@ -8,8 +8,7 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.AliasingInformation;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.lang.invoke.MethodHandle;
 import java.lang.invoke.MethodHandles;
@@ -24,6 +23,10 @@ import java.util.function.Function;
 
 /**
  * Supertype of value factories. Implements the generation of {@link PartnerClass} objects and {@link Sarray}s.
+ * Maintains a method handle for each of the specialized ways to create a subtype of {@link de.wwu.mulib.substitutions.Sarray.PartnerClassSarray}
+ * and {@link de.wwu.mulib.substitutions.Sarray.SarraySarray}.
+ * TODO Instead of having to maintain these maps of specialized constructors, we might just call the constructor
+ *  directly in the search region. This constructor might then call SymbolicExecution to set the field values.
  */
 public abstract class AbstractValueFactory implements ValueFactory {
     /**
@@ -34,7 +37,12 @@ public abstract class AbstractValueFactory implements ValueFactory {
      * Can be used to extract the symbolic value from {@link ConcolicConstraintContainer}
      */
     protected final Function<Sbool, Sbool> tryGetSymFromSbool;
+    // Contains pairs of (component type, constructor of array as a method handle)
+    // The constructor of the sarray has the following parameter types: Class.class, Sint.class, SymbolicExecution.class, boolean.class, Sbool.class
     private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedConstructor;
+    // Contains pairs of (component type, constructor of array as a method handle) for generating multi-dimensional array
+    // This corresponds to the MULTIANEWARRAY bytecode instruction
+    // The constructor of the sarray has the following parameter types: Sint[].class, SymbolicExecution.class, Class.class
     private final Map<Class<?>, MethodHandle> arrayTypesToSpecializedMultiDimensionalSarraySarrayConstructors;
     private final BiFunction<Class<?>, Object[], Sarray.PartnerClassSarray<?>> getSarrayConstructor;
     private final BiFunction<Class<?>, Object[], Sarray.SarraySarray> getMultiDimensionalSarraySarrayConstructor;
@@ -44,7 +52,12 @@ public abstract class AbstractValueFactory implements ValueFactory {
      */
     protected final MulibConfig config;
 
-    @SuppressWarnings("unchecked")
+    /**
+     * Constructs a new instance
+     * @param config The configuration
+     * @param arrayTypesToSpecializedSarrayClass A map with (array-type java class, generated partner class sarray or sarray sarray)-pairs
+     */
+    @SuppressWarnings({"unchecked", "rawtypes"})
     protected AbstractValueFactory(MulibConfig config, Map<Class<?>, Class<?>> arrayTypesToSpecializedSarrayClass) {
         boolean transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
         // Generate the initializers for, statically unknown, Sarray subclasses.
@@ -165,7 +178,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
         return scharSarray(se, len, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
 
-    @Override
+    @Override @SuppressWarnings("rawtypes")
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic) {
         return partnerClassSarray(se, len, clazz, defaultIsSymbolic, config.ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL && defaultIsSymbolic);
     }
@@ -239,7 +252,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
         return result;
     }
 
-    @Override
+    @Override @SuppressWarnings("rawtypes")
     public final Sarray.PartnerClassSarray partnerClassSarray(SymbolicExecution se, Sint len, Class<? extends PartnerClass> clazz, boolean defaultIsSymbolic, boolean canBeNull) {
         restrictLength(se, len);
         Sarray.PartnerClassSarray result = getSarrayConstructor.apply(clazz, new Object[] { clazz, len, se, defaultIsSymbolic, canBeNull ? se.symSbool() : Sbool.ConcSbool.FALSE });
@@ -280,8 +293,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
             decideOnAddToAliasingAndRepresentation(toGetInstanceOf, result, se);
             return result;
         } catch (InvocationTargetException | InstantiationException | IllegalAccessException | NoSuchMethodException e) {
-            e.printStackTrace();
-            throw new MulibIllegalStateException("The SymbolicExecution-constructor must be there!");
+            throw new MulibIllegalStateException("The SymbolicExecution-constructor must be there!", e);
         }
     }
 
@@ -297,7 +309,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
                 Sbool isNull = tryGetSymFromSbool.apply(pc.__mulib__isNull());
                 PartnerClassObjectConstraint pcoc;
                 if (pc instanceof Sarray) {
-                    Sint length = (Sint) tryGetSymFromSnumber.apply(((Sarray<?>) pc).getLength());
+                    Sint length = (Sint) tryGetSymFromSnumber.apply(((Sarray<?>) pc).length());
                     if (potentialIds.isEmpty()) {
                         pcoc = new ArrayInitializationConstraint(
                                 id,

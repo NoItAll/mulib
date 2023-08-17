@@ -18,6 +18,10 @@ import java.util.Optional;
  * Overrides {@link SymbolicChoicePointFactory#determineBooleanWithNewBinaryChoice(SymbolicExecution, Constraint, Choice.ChoiceOption)}
  * to not let the {@link de.wwu.mulib.search.executors.MulibExecutor} decide on the next choice option, but rather
  * let the already labeled symbolic values guide the execution.
+ * It can happen that during concolic execution, some labels become stale because a constraint has been added that violates
+ * them and that does not lead to a choice point (it might, for instance, be assumed that an index is contained in an array,
+ * invalidating the actual given label).
+ * In this case, we finish the evaluation and check for satisfiability at the very end in {@link de.wwu.mulib.search.executors.MulibExecutor}.
  */
 public class ConcolicChoicePointFactory extends SymbolicChoicePointFactory {
 

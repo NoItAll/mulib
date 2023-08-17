@@ -8,10 +8,12 @@ import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 /**
  * Factory for performing calculations and more complex operations with regards to objects in the search region.
+ * Calculation factories should be thread-safe.
  * Aside from arithmetic operations, array operation such as selecting or storing in an element and potentially representing
  * an object for the constraint solver are dealt with here. Furthermore, if needed, the fields of a lazily initialized objects
  * are initialized here.

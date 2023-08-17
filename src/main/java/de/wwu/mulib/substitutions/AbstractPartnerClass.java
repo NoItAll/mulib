@@ -9,16 +9,44 @@ import de.wwu.mulib.transformations.MulibValueCopier;
 import java.util.HashMap;
 import java.util.Map;
 
+/**
+ * Supertype of all generated partner classes.
+ * Contains the metadata relevant for the Mulib backend.
+ */
 public abstract class AbstractPartnerClass implements PartnerClass {
+    /**
+     * The identifier.
+     * If this partner class object is not represented in the solver, this is null.
+     */
     protected Sint id = null;
+    /**
+     * A byte containing information on the various states of this partner class object.
+     */
     protected byte representationState;
+    /**
+     * Whether the partner class object can be null.
+     * This is mutable since we change it after knowing the result of calling
+     * {@link AbstractPartnerClass#__mulib__nullCheck()}.
+     */
     protected Sbool isNull;
 
+    /**
+     * Constructor for creating a new instance.
+     * {@link AbstractPartnerClass#isNull} is set to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE}.
+     * {@link AbstractPartnerClass#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
+     */
     protected AbstractPartnerClass() {
         this.isNull = Sbool.ConcSbool.FALSE;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
     }
 
+    /**
+     * Constructor for copying.
+     * The metadata, such as the identifier, the representation state, as well as whether 'toCopy' is null is copied
+     * and the copy is registered in the copier.
+     * @param toCopy To-copy
+     * @param mvc The copier used for this copy procedure
+     */
     protected AbstractPartnerClass(AbstractPartnerClass toCopy, MulibValueCopier mvc) {
         mvc.registerCopy(toCopy, this);
         this.representationState = toCopy.representationState;

@@ -146,7 +146,9 @@ public interface PartnerClass extends SubstitutedVar {
     boolean __mulib__defaultIsSymbolic();
 
     /**
-     * Changes the state so that {@link PartnerClass#__mulib__defaultIsSymbolic()} returns true
+     * Changes the state so that {@link PartnerClass#__mulib__defaultIsSymbolic()} returns true.
+     * Should be used with care only when initializing an object. It is not possible to change this setting
+     * at any time.
      */
     void __mulib__setDefaultIsSymbolic();
 

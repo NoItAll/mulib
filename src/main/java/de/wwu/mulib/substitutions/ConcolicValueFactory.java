@@ -1,4 +1,4 @@
-package de.wwu.mulib.substitutions.primitives;
+package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
@@ -7,10 +7,19 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.Map;
 import java.util.function.Function;
 
+/**
+ * Value factory for concolic execution.
+ * Uses an instance of {@link SymbolicValueFactory} to generate symbolic values.
+ * For the generation of leafs, these symbolic values are labeled using the constraint solver and a
+ * wrapping {@link Sprimitive} is returned.
+ * The construction of wrappers is completely delegated to the {@link SymbolicValueFactory}; - the wrapping into the
+ * {@link ConcolicNumericContainer} or {@link ConcolicConstraintContainer} occurs in the {@link de.wwu.mulib.search.executors.ConcolicCalculationFactory}.
+ */
 public class ConcolicValueFactory extends AbstractValueFactory implements AssignConcolicLabelEnabledValueFactory {
 
     private final SymbolicValueFactory svf;

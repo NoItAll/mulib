@@ -1,24 +1,45 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Represents char values
+ */
 public abstract class Schar extends Sint {
     private Schar() {}
 
-    public static Schar.ConcSchar concSchar(char s) {
-        return new Schar.ConcSchar(s);
+    /**
+     * Might cache some values
+     * @param c A char to wrap
+     * @return The representation of a concrete char
+     */
+    public static Schar.ConcSchar concSchar(char c) {
+        return new Schar.ConcSchar(c);
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @return A new leaf
+     */
     public static Schar.SymSchar newInputSymbolicSchar() {
         return new Schar.SymScharLeaf();
     }
 
+    /**
+     * @param representedExpression The numeric expression to wrap
+     * @return A symbolic value wrapping a numeric expression
+     */
     public static Schar.SymSchar newExpressionSymbolicSchar(NumericExpression representedExpression) {
         return new Schar.SymSchar(representedExpression);
     }
 
+    /**
+     * Class representing a concrete Schar
+     */
     public static class ConcSchar extends Schar implements ConcSnumber {
         public static final ConcSchar ZERO = new ConcSchar((char) 0);
 
@@ -74,6 +95,9 @@ public abstract class Schar extends Sint {
         }
     }
 
+    /**
+     * Class for wrapping numeric expressions
+     */
     public static class SymSchar extends Schar implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
@@ -109,6 +133,9 @@ public abstract class Schar extends Sint {
         }
     }
 
+    /**
+     * Class for representing simple symbolic chars; - there are no composite numeric expressions here
+     */
     public static class SymScharLeaf extends Schar.SymSchar implements SymSprimitiveLeaf {
         protected static final AtomicLong nextId = new AtomicLong(0);
         private final String id;

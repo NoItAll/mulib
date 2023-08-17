@@ -6,6 +6,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import static de.wwu.mulib.constraints.ConcolicConstraintContainer.getConcSboolFromConcolic;
@@ -17,8 +18,6 @@ import static de.wwu.mulib.expressions.ConcolicNumericContainer.tryGetSymFromCon
  * Calculation factory implementing concolic execution. The returned elements either are an instance of {@link de.wwu.mulib.substitutions.Conc},
  * i.e., not carrying any symbolic information, or are wrappers carrying a {@link ConcolicNumericContainer} or a {@link ConcolicConstraintContainer}.
  * These two container types carry the symbolic value and, additionally, a label for the given execution run.
- * It can happen that during concolic execution, some labels become stale because a constraint has been added that violates
- * them. In this case, we finish the evaluation and check for satisfiability at the very end.
  */
 public final class ConcolicCalculationFactory extends AbstractCalculationFactory {
 

@@ -3204,9 +3204,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             assert conditionExpr instanceof NeExpr || conditionExpr instanceof EqExpr;
             // We choose the method comparing two Sbools if both are Sbools
             if (config.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID) {
-                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_NEGATED_BOOL_CHOICE_WITH_ID.makeRef() : v.SM_SBOOL_BOOL_CHOICE_WITH_ID.makeRef();
+                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_BOOL_CHOICE_WITH_ID.makeRef() : v.SM_SBOOL_NEGATED_BOOL_CHOICE_WITH_ID.makeRef();
             } else {
-                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_NEGATED_BOOL_CHOICE.makeRef() : v.SM_SBOOL_BOOL_CHOICE.makeRef();
+                used = conditionExpr instanceof EqExpr ? v.SM_SBOOL_BOOL_CHOICE.makeRef() : v.SM_SBOOL_NEGATED_BOOL_CHOICE.makeRef();
             }
 //            assert args.isTainted(lhsCondition) || args.isTainted(rhsCondition);
             if (!args.isTainted(lhsCondition)) {

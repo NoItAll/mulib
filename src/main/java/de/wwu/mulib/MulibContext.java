@@ -8,6 +8,7 @@ import de.wwu.mulib.search.executors.*;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.tcg.*;
 import de.wwu.mulib.transformations.MulibTransformer;

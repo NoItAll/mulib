@@ -47,7 +47,7 @@ public class ArrayChecks {
         SymbolicExecution se = SymbolicExecution.get();
         for (int i = 0; i < 2; i++) {
             Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-            if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+            if (objs.length().notEqChoice(se.concSint(2), se)) {
                 throw Mulib.fail();
             }
             Sint temp = objs.select(se.concSint(1), se);
@@ -109,7 +109,7 @@ public class ArrayChecks {
         SymbolicExecution se = SymbolicExecution.get();
         for (int i = 0; i < 2; i++) {
             Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-            if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+            if (objs.length().notEqChoice(se.concSint(2), se)) {
                 throw Mulib.fail();
             }
             objs.store(se.concSint(1), se.concSint(1), se);
@@ -409,7 +409,7 @@ public class ArrayChecks {
     public static Sbool checkSymSelect0() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-        if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+        if (objs.length().notEqChoice(se.concSint(2), se)) {
             throw Mulib.fail();
         }
         Sint temp = objs.select(se.symSint(), se);
@@ -420,7 +420,7 @@ public class ArrayChecks {
     public static Sbool checkSymSelect1() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SintSarray objs = se.sintSarray(se.concSint(2), true);
-        if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+        if (objs.length().notEqChoice(se.concSint(2), se)) {
             throw Mulib.fail();
         }
         Sint temp = objs.select(se.symSint(), se);
@@ -430,7 +430,7 @@ public class ArrayChecks {
     public static Sbool checkSymSelect2() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SintSarray objs = se.sintSarray(se.concSint(2), true);
-        if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+        if (objs.length().notEqChoice(se.concSint(2), se)) {
             throw Mulib.fail();
         }
         Sint index0 = se.symSint();
@@ -477,7 +477,7 @@ public class ArrayChecks {
     public static Sbool checkSymSelect3() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-        if (objs.getLength().notEqChoice(se.concSint(2), se)) {
+        if (objs.length().notEqChoice(se.concSint(2), se)) {
             throw Mulib.fail();
         }
 
@@ -535,7 +535,7 @@ public class ArrayChecks {
     public static Sbool checkSymStore0() {
         SymbolicExecution se = SymbolicExecution.get();
         Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-        if (objs.getLength().notEqChoice(se.concSint(1), se)) {
+        if (objs.length().notEqChoice(se.concSint(1), se)) {
             throw Mulib.fail();
         }
         Sint temp0 = objs.select(se.symSint(), se);
@@ -643,7 +643,7 @@ public class ArrayChecks {
         SymbolicExecution se = SymbolicExecution.get();
         for (int i = 0; i < 5; i++) {
             Sarray.SintSarray objs = se.sintSarray(se.symSint(), true);
-            if (objs.getLength().notEqChoice(se.concSint(1), se)) {
+            if (objs.length().notEqChoice(se.concSint(1), se)) {
                 throw Mulib.fail();
             }
             Sint temp0 = objs.select(se.symSint(), se);
@@ -766,7 +766,7 @@ public class ArrayChecks {
         Sarray.SintSarray idx = se.sintSarray(se.symSint(), true);
         Sarray.SboolSarray usedIdx = se.sboolSarray(se.symSint(), true);
         Sarray.SintSarray a = se.sintSarray(se.symSint(), true);
-        if (se.notEqChoice(a.getLength(), se.concSint(b.length))) {
+        if (se.notEqChoice(a.length(), se.concSint(b.length))) {
             throw Mulib.fail();
         }
         for (int i = 0; se.concSint(i).ltChoice(se.concSint(b.length), se); i++) {

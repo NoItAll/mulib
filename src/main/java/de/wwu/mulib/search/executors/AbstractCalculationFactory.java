@@ -5,10 +5,7 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
-import de.wwu.mulib.substitutions.Sym;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.MulibValueCopier;
 
@@ -119,12 +116,12 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         Sint concsIndex = decideOnConcreteIndex(se, index);
         result = sarray.getFromCacheForIndex(concsIndex);
         if (result != null) {
-            sarray.setInCacheForIndexForSelect(index, result);
+            sarray.setInCacheForIndex(index, result);
             return result;
         }
         result = sarray.getNewValueForSelect(se, index);
-        sarray.setInCacheForIndexForSelect(concsIndex, result);
-        sarray.setInCacheForIndexForSelect(index, result);
+        sarray.setInCacheForIndex(concsIndex, result);
+        sarray.setInCacheForIndex(index, result);
         return result;
     }
 
@@ -136,8 +133,8 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         // this array in the constraint solver, hence, aliasing is not an issue. This is the case since we forbid the use
         // of eager indexes for arrays with primitive elements if this is not also enabled for arrays with object element
         // types
-        sarray.setInCacheForIndexForSelect(concsIndex, value);
-        sarray.setInCacheForIndexForSelect(index, value);
+        sarray.setInCacheForIndex(concsIndex, value);
+        sarray.setInCacheForIndex(index, value);
         return value;
     }
 
@@ -163,7 +160,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
             throw new ArrayIndexOutOfBoundsException();
         }
         // Use sarray.getLength to also check for null
-        if (sarray.getLength() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
+        if (sarray.length() instanceof Sint.SymSint || i instanceof Sint.SymSint) {
             // If either the length or the index are symbolic, there can potentially be an
             // ArrayIndexOutOfBoundsException.
             Sbool indexInBound = se.and(
@@ -719,7 +716,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
         result = sarray.getNewValueForSelect(se, index);
         addSelectConstraintIfNeeded(se, sarray, index, result);
-        sarray.setInCacheForIndexForSelect(index, result);
+        sarray.setInCacheForIndex(index, result);
         return result;
     }
 
@@ -745,7 +742,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 se.addNewPartnerClassObjectConstraint(storeConstraint);
             }
         }
-        sarray.setInCacheForIndexForStore(index, value);
+        sarray.setInCacheForIndex(index, value);
         return value;
     }
 }

@@ -3,94 +3,191 @@ package de.wwu.mulib.substitutions.primitives;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Represents boolean values
+ */
 public abstract class Sbool extends Sint implements Sprimitive, Constraint {
 
     private Sbool() {}
 
+    /**
+     * @param b A boolean to wrap
+     * @return {@link ConcSbool#TRUE} if b is true, else {@link ConcSbool#FALSE}
+     */
     public static Sbool.ConcSbool concSbool(boolean b) {
         return b ? ConcSbool.TRUE : ConcSbool.FALSE;
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @return A new leaf
+     */
     public static Sbool.SymSbool newInputSymbolicSbool() {
         return new SymSboolLeaf();
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param c The constraint to wrap
+     * @return A symbolic value wrapping a constraint
+     */
     public static Sbool.SymSbool newConstraintSbool(Constraint c) {
         assert !(c instanceof SymSbool || c instanceof ConcSbool);
         return new SymSbool(c);
     }
 
+    /**
+     * @param rhs The other bool
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The wrapped result of this ^ rhs
+     */
     public final Sbool xor(Sbool rhs, SymbolicExecution se) {
         return se.xor(this, rhs);
     }
 
+    /**
+     * @param rhs The other bool
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The wrapped result of this && rhs
+     */
     public final Sbool and(Sbool rhs, SymbolicExecution se) {
        return se.and(this, rhs);
     }
 
+    /**
+     * @param rhs The other bool
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The wrapped result of this || rhs
+     */
     public final Sbool or(Sbool rhs, SymbolicExecution se) {
         return se.or(this, rhs);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The wrapped result of !this
+     */
     public final Sbool not(SymbolicExecution se) {
         return se.not(this);
     }
 
-    public final Sbool isEqualTo(Sbool other, SymbolicExecution se) {
-        return se.or(se.and(this, other), se.and(se.not(this), se.not(other)));
+    /**
+     * @param rhs The other bool
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return The wrapped result of this == rhs
+     */
+    public final Sbool isEqualTo(Sbool rhs, SymbolicExecution se) {
+        return se.or(se.and(this, rhs), se.and(se.not(this), se.not(rhs)));
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return true if we assume 'this' to be true in the following, else false
+     */
     public final boolean boolChoice(SymbolicExecution se) {
         return se.boolChoice(this);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return true if we assume 'this' to be false in the following, else false
+     */
     public final boolean negatedBoolChoice(SymbolicExecution se) {
         return se.negatedBoolChoice(this);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return true if we assume 'this == other' to be true in the following, else false
+     */
     public final boolean boolChoice(Sbool other, SymbolicExecution se) {
-        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))));
-    }
-
-    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se) {
         return se.boolChoice(isEqualTo(other, se));
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @return true if we assume 'this != other' to be true in the following, else false
+     */
+    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se) {
+        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))));
+    }
+
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param id The identifier to find this choice point in the control flow graph
+     * @return true if we assume 'this' to be true in the following, else false
+     */
     public final boolean boolChoice(SymbolicExecution se, long id) {
         return se.boolChoice(this, id);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param id The identifier to find this choice point in the control flow graph
+     * @return true if we assume 'this' to be false in the following, else false
+     */
     public final boolean negatedBoolChoice(SymbolicExecution se, long id) {
         return se.negatedBoolChoice(this, id);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param id The identifier to find this choice point in the control flow graph
+     * @return true if we assume 'this == other' to be true in the following, else false
+     */
     public final boolean boolChoice(Sbool other, SymbolicExecution se, long id) {
-        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))), id);
-    }
-
-    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se, long id) {
         return se.boolChoice(isEqualTo(other, se), id);
     }
 
+    /**
+     * @param se The current instance of {@link SymbolicExecution} for this run
+     * @param id The identifier to find this choice point in the control flow graph
+     * @return true if we assume 'this != other' to be true in the following, else false
+     */
+    public final boolean negatedBoolChoice(Sbool other, SymbolicExecution se, long id) {
+        return se.boolChoice(se.or(se.and(se.not(this), other), se.and(this, se.not(other))), id);
+    }
+
+    /**
+     * Class representing a concrete Sbool
+     */
     public static final class ConcSbool extends Sbool implements ConcSnumber {
+        /**
+         * True
+         */
         public final static ConcSbool TRUE = new ConcSbool(true);
+        /**
+         * False
+         */
         public final static ConcSbool FALSE = new ConcSbool(false);
         private final boolean value;
-        private ConcSbool(final boolean value) {
+        ConcSbool(final boolean value) {
             this.value = value;
         }
 
+        /**
+         * @return true, if a true value is represented, else false
+         */
         public boolean isTrue() {
             return value;
         }
 
+        /**
+         * @return false, if a true value is represented, else true
+         */
         public boolean isFalse() {
             return !value;
         }
 
+        /**
+         * @return The negated ConcSbool
+         */
         public Sbool negate() {
             return isTrue() ? FALSE : TRUE;
         }
@@ -141,8 +238,11 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
     }
 
+    /**
+     * Class for wrapping constraints
+     */
     public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
-        protected final Constraint representedConstraint;
+        private final Constraint representedConstraint;
 
         private SymSbool() {
             this.representedConstraint = this;
@@ -152,6 +252,9 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
             this.representedConstraint = representedConstraint;
         }
 
+        /**
+         * @return The represented constraint
+         */
         public final Constraint getRepresentedConstraint() {
             return representedConstraint;
         }
@@ -180,8 +283,11 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
     }
 
+    /**
+     * Class for representing simple symbolic booleans; - there are no composite constrains here
+     */
     public static class SymSboolLeaf extends SymSbool implements SymSprimitiveLeaf {
-        protected static final AtomicLong nextId = new AtomicLong(0);
+        private static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
         private SymSboolLeaf() {

@@ -1,25 +1,46 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Represents short values
+ */
 public abstract class Sshort extends Sint {
 
     private Sshort() {}
 
+    /**
+     * Might cache some values
+     * @param s A short to wrap
+     * @return The representation of a concrete short
+     */
     public static Sshort.ConcSshort concSshort(short s) {
         return new Sshort.ConcSshort(s);
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @return A new leaf
+     */
     public static Sshort.SymSshort newInputSymbolicSshort() {
         return new Sshort.SymSshortLeaf();
     }
 
+    /**
+     * @param representedExpression The numeric expression to wrap
+     * @return A symbolic value wrapping a numeric expression
+     */
     public static Sshort.SymSshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
         return new Sshort.SymSshort(representedExpression);
     }
-    
+
+    /**
+     * Class representing a concrete Sshort
+     */
     public static final class ConcSshort extends Sshort implements ConcSnumber {
         public static final ConcSshort ZERO = new ConcSshort((short) 0);
 
@@ -75,6 +96,9 @@ public abstract class Sshort extends Sint {
         }
     }
 
+    /**
+     * Class for wrapping numeric expressions
+     */
     public static class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
@@ -110,6 +134,9 @@ public abstract class Sshort extends Sint {
         }
     }
 
+    /**
+     * Class for representing simple symbolic chars; - there are no composite numeric expressions here
+     */
     public static class SymSshortLeaf extends SymSshort implements SymSprimitiveLeaf {
         protected static final AtomicLong nextId = new AtomicLong(0);
         private final String id;

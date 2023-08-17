@@ -1,30 +1,55 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
 
+/**
+ * Represents byte values. All methods w.r.t. calculation are implemented in {@link Sint}
+ */
 public abstract class Sbyte extends Sint {
 
     private Sbyte() {}
 
+    /**
+     * @param b A byte to wrap
+     * @return The representation of a concrete byte
+     */
     public static Sbyte.ConcSbyte concSbyte(byte b) {
         return new Sbyte.ConcSbyte(b);
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @return A new leaf
+     */
     public static Sbyte.SymSbyte newInputSymbolicSbyte() {
         return new Sbyte.SymSbyteLeaf();
     }
 
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param representedExpression The numeric expression to wrap
+     * @return A symbolic value wrapping a numeric expression
+     */
     public static Sbyte.SymSbyte newExpressionSymbolicSbyte(NumericExpression representedExpression) {
         return new Sbyte.SymSbyte(representedExpression);
     }
 
+    /**
+     * Class representing a concrete Sbyte
+     */
     public static final class ConcSbyte extends Sbyte implements ConcSnumber {
+        /**
+         * Zero
+         */
         public static final ConcSbyte ZERO = new ConcSbyte((byte) 0);
         private final byte value;
 
-        private ConcSbyte(byte value) {
+        ConcSbyte(byte value) {
             this.value = value;
         }
 
@@ -74,6 +99,9 @@ public abstract class Sbyte extends Sint {
         }
     }
 
+    /**
+     * Class for wrapping numeric expressions
+     */
     public static class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
         private final NumericExpression representedExpression;
 
@@ -109,8 +137,11 @@ public abstract class Sbyte extends Sint {
         }
     }
 
+    /**
+     * Class for representing simple symbolic bytes; - there are no composite numeric expressions here
+     */
     public static class SymSbyteLeaf extends SymSbyte implements SymSprimitiveLeaf {
-        protected static final AtomicLong nextId = new AtomicLong(0);
+        private static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
         private SymSbyteLeaf() {
