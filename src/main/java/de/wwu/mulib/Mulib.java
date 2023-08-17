@@ -12,6 +12,10 @@ import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
+/**
+ * The access point of users of Mulib.
+ * Contains all frontend methods needed to create a search region and call it from another class.
+ */
 public final class Mulib {
 
     public static final Logger log = Logger.getLogger("mulib");
@@ -116,12 +120,12 @@ public final class Mulib {
     /**
      * Extracts a single path solution from the search region. See {@link Mulib#executeMulib(String, Class, MulibConfig.MulibConfigBuilder, Class[], Object...)}
      * for more details
-     * @param methodName
-     * @param methodOwnerClass
-     * @param mb
-     * @param argTypes
-     * @param args
-     * @return
+     * @param methodName The method of the driver method for calling the method under test
+     * @param methodOwnerClass The class declaring the driver
+     * @param mb The config builder from which an instance of MulibConfig is built
+     * @param argTypes The explicitly passed argument types to find the appropriate method with
+     * @param args The arguments passed to the search region
+     * @return A path solution, if any can be extracted
      */
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
         return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolution(args);
@@ -130,11 +134,11 @@ public final class Mulib {
     /**
      * Extracts a single path solution from the search region. See {@link Mulib#executeMulib(String, Class, MulibConfig.MulibConfigBuilder, Object...)}
      * for more details
-     * @param methodName
-     * @param methodOwnerClass
-     * @param mb
-     * @param args
-     * @return
+     * @param methodName The method of the driver method for calling the method under test
+     * @param methodOwnerClass The class declaring the driver
+     * @param mb The config builder from which an instance of MulibConfig is built
+     * @param args The arguments passed to the search region
+     * @return A path solution, if any can be extracted
      */
     public static Optional<PathSolution> executeMulibForOne(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
         return executeMulibForOne(methodName, methodOwnerClass, mb, null, args);

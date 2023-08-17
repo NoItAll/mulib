@@ -23,6 +23,16 @@ import java.util.*;
 import java.util.function.Function;
 import java.util.regex.Matcher;
 
+/**
+ * While retrieving {@link PathSolution}s mostly is a one-off job, i.e., we generate test cases once, retrieving 
+ * {@link Solution}s can be expected to be done recurrently. 
+ * This class holds a prepared version of the search region, i.e., the classes have already been transformed and the
+ * method handle of the search region was already found.
+ * Thus, this class can be used to recurrently execute, e.g., {@link MulibContext#getUpToNSolutions(int, Object...)} 
+ * with varying arguments. 
+ * Behind the scenes, all functionality of {@link Mulib} creates a temporary instance of {@link MulibContext} to provide
+ * its functionality, anyway. 
+ */
 public final class MulibContext {
     private final MulibConfig config;
     private final Class<?>[] transformedArgTypes;
@@ -142,22 +152,47 @@ public final class MulibContext {
         return result;
     }
 
+    /**
+     * @param args The arguments to the search region, if any
+     * @return The path solutions
+     * @see Mulib#executeMulib 
+     */
     public List<PathSolution> getAllPathSolutions(Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
     }
 
+    /**
+     * @param args The arguments to the search region, if any
+     * @return A path solution, if any could be extracted
+     * @see Mulib#executeMulib
+     */
     public Optional<PathSolution> getPathSolution(Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getPathSolution());
     }
 
+    /**
+     * Extracts all solutions, if possible under the budgets of this mulib context
+     * @param args The arguments to the search region, if any could be found given the budgets
+     * @return The solutions
+     */
     public List<Solution> getAllSolutions(Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(Integer.MAX_VALUE));
     }
 
+    /**
+     * Extracts up to N solutions, if possible under the budgets of this mulib context
+     * @param args The arguments to the search region, if any
+     * @return The solutions
+     */
     public List<Solution> getUpToNSolutions(int N, Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(N));
     }
 
+    /**
+     * Extracts a solution, if possible under the budgets of this mulib context
+     * @param args The arguments to the search region, if any
+     * @return A solution, if any could be found given the budgets
+     */
     public Optional<Solution> getSolution(Object... args) {
         List<Solution> result = _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(1));
         if (result.size() > 0) {
@@ -167,6 +202,13 @@ public final class MulibContext {
         }
     }
 
+    /**
+     * @param methodUnderTest The method under test
+     * @param tcgConfigBuilder The config builder
+     * @param args The arguments
+     * @return A String representation of the tests
+     * @see Mulib#generateTestCases  
+     */
     public String generateTestCases(Method methodUnderTest, TcgConfig.TcgConfigBuilder tcgConfigBuilder, Object... args) {
         // First get all path solutions
         List<PathSolution> pathSolutions =
