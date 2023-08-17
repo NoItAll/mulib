@@ -1,7 +1,9 @@
 package de.wwu.mulib.substitutions;
 
+import de.wwu.mulib.exceptions.MulibIllegalStateException;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.transformations.MulibValueCopier;
@@ -11,9 +13,19 @@ import java.util.Map;
 
 /**
  * Supertype of all generated partner classes.
+ * Basically is to partner classes of Mulib's Muli implementation what Java's {@link Object} is to all objects, with
+ * the exception that interfaces cannot extend this. Thus, interfaces must implement {@link PartnerClass}.
  * Contains the metadata relevant for the Mulib backend.
+ * Classes implementing this method must implement the following methods:
+ * {@link PartnerClassObject#__mulib__blockCacheInPartnerClassFields()} : should include a call to super.__mulib__blockCacheInPartnerClassFields()
+ * {@link PartnerClassObject#__mulib__initializeLazyFields(SymbolicExecution)} : should include a call to super.__mulib__initializeLazyFields(...)
+ * {@link PartnerClassObject#copy(MulibValueCopier)} : should include a call to the super-copy constructor
+ * {@link PartnerClassObject#__mulib__getFieldNameToSubstitutedVar()} : should include a call to
+ * super.__mulib__getFieldNameToSubstitutedVar() for also retrieving those fields
+ * {@link PartnerClassObject#__mulib__getOriginalClass()}
+ * {@link PartnerClassObject#PartnerClassObject(PartnerClassObject, MulibValueCopier)} : An own constructor should be created calling super
  */
-public abstract class AbstractPartnerClass implements PartnerClass {
+public class PartnerClassObject implements PartnerClass {
     /**
      * The identifier.
      * If this partner class object is not represented in the solver, this is null.
@@ -26,16 +38,16 @@ public abstract class AbstractPartnerClass implements PartnerClass {
     /**
      * Whether the partner class object can be null.
      * This is mutable since we change it after knowing the result of calling
-     * {@link AbstractPartnerClass#__mulib__nullCheck()}.
+     * {@link PartnerClassObject#__mulib__nullCheck()}.
      */
     protected Sbool isNull;
 
     /**
      * Constructor for creating a new instance.
-     * {@link AbstractPartnerClass#isNull} is set to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE}.
-     * {@link AbstractPartnerClass#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
+     * {@link PartnerClassObject#isNull} is set to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE}.
+     * {@link PartnerClassObject#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
      */
-    protected AbstractPartnerClass() {
+    protected PartnerClassObject() {
         this.isNull = Sbool.ConcSbool.FALSE;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
     }
@@ -47,7 +59,7 @@ public abstract class AbstractPartnerClass implements PartnerClass {
      * @param toCopy To-copy
      * @param mvc The copier used for this copy procedure
      */
-    protected AbstractPartnerClass(AbstractPartnerClass toCopy, MulibValueCopier mvc) {
+    protected PartnerClassObject(PartnerClassObject toCopy, MulibValueCopier mvc) {
         mvc.registerCopy(toCopy, this);
         this.representationState = toCopy.representationState;
         this.id = toCopy.id;
@@ -93,7 +105,30 @@ public abstract class AbstractPartnerClass implements PartnerClass {
         }
     }
 
-    protected abstract void __mulib__blockCacheInPartnerClassFields();
+    /**
+     * Blocks the cache of all reference-typed classes in all fields
+     */
+    protected void __mulib__blockCacheInPartnerClassFields() {
+    }
+
+    @Override
+    public void __mulib__initializeLazyFields(SymbolicExecution se) {
+    }
+
+    @Override
+    public Object label(Object originalContainer, SolverManager solverManager) {
+        throw new MulibIllegalStateException("Must be overridden by implementing subclasses");
+    }
+
+    @Override
+    public Object copy(MulibValueCopier mulibValueCopier) {
+        return new PartnerClassObject(this, mulibValueCopier);
+    }
+
+    @Override
+    public Class<?> __mulib__getOriginalClass() {
+        return Object.class;
+    }
 
     @Override
     public final boolean __mulib__cacheIsBlocked() {
@@ -123,7 +158,7 @@ public abstract class AbstractPartnerClass implements PartnerClass {
         return new HashMap<>();
     }
 
-    protected void __mulib__initializeId(Sint id) {
+    private void __mulib__initializeId(Sint id) {
         if (this.id != null) {
             throw new MulibRuntimeException("Must not set already set id");
         }

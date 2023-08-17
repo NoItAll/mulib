@@ -1,7 +1,7 @@
 package de.wwu.mulib.util;
 
 import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.substitutions.AbstractPartnerClass;
+import de.wwu.mulib.substitutions.PartnerClassObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
@@ -18,7 +18,7 @@ public final class Utility {
         List<Field> fields = new ArrayList<>(List.of(getNonStaticFields(c.getDeclaredFields())));
 
         Class<?> currentClass = c;
-        while (currentClass.getSuperclass() != AbstractPartnerClass.class
+        while (currentClass.getSuperclass() != PartnerClassObject.class
                 && currentClass.getSuperclass() != Object.class) {
             currentClass = currentClass.getSuperclass();
             fields.addAll(List.of(getNonStaticFields(c.getDeclaredFields())));

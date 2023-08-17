@@ -5,7 +5,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.AbstractPartnerClass;
+import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -57,7 +57,7 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSBOOL;
     public final SootClass SC_CONCSCHAR;
     public final SootClass SC_PARTNER_CLASS;
-    public final SootClass SC_ABSTRACT_PARTNER_CLASS;
+    public final SootClass SC_PARTNER_CLASS_OBJECT;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
     public final SootClass SC_SFLOATSARRAY;
@@ -145,7 +145,7 @@ public class SootMulibClassesAndMethods {
     public final SootField SF_PARTNER_CLASS_CACHE_IS_BLOCKED;
     public final SootField SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC;
     public final SootField SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED;
-    public final SootField SF_ABSTRACT_PARTNER_CLASS_REPRESENTATION_STATE;
+    public final SootField SF_PARTNER_CLASS_OBJECT_REPRESENTATION_STATE;
 
     /* SPECIAL METHODS */
     // Unwrap methods
@@ -525,8 +525,8 @@ public class SootMulibClassesAndMethods {
     public final SootMethod SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS;
     public final SootMethod SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED;
     public final SootMethod SM_PARTNER_CLASS_GET_ORIGINAL_CLASS;
-    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT;
-    public final SootMethod SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID;
+    public final SootMethod SM_PARTNER_CLASS_OBJECT_EMPTY_INIT;
+    public final SootMethod SM_PARTNER_CLASS_OBJECT_INITIALIZE_ID;
     public final SootMethod SM_SBOOL_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_NEGATED_BOOL_CHOICE_S;
     public final SootMethod SM_SBOOL_BOOL_CHOICE;
@@ -576,7 +576,7 @@ public class SootMulibClassesAndMethods {
         SC_CONCSBOOL    = Scene.v().forceResolve(Sbool.ConcSbool.class.getName(), SootClass.SIGNATURES);
         SC_CONCSCHAR    = Scene.v().forceResolve(Schar.ConcSchar.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
-        SC_ABSTRACT_PARTNER_CLASS = Scene.v().forceResolve(AbstractPartnerClass.class.getName(), SootClass.SIGNATURES);
+        SC_PARTNER_CLASS_OBJECT = Scene.v().forceResolve(PartnerClassObject.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
         SC_SINTSARRAY           = Scene.v().forceResolve(Sarray.SintSarray.class.getName(), SootClass.SIGNATURES);
         SC_SDOUBLESARRAY        = Scene.v().forceResolve(Sarray.SdoubleSarray.class.getName(), SootClass.SIGNATURES);
@@ -664,7 +664,7 @@ public class SootMulibClassesAndMethods {
         SF_PARTNER_CLASS_CACHE_IS_BLOCKED                 = SC_PARTNER_CLASS.getField("CACHE_IS_BLOCKED", TYPE_BYTE);
         SF_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getField("DEFAULT_IS_SYMBOLIC", TYPE_BYTE);
         SF_PARTNER_CLASS_IS_LAZILY_INITIALIZED            = SC_PARTNER_CLASS.getField("IS_LAZILY_INITIALIZED", TYPE_BYTE);
-        SF_ABSTRACT_PARTNER_CLASS_REPRESENTATION_STATE    = SC_ABSTRACT_PARTNER_CLASS.getField("representationState", TYPE_BYTE);
+        SF_PARTNER_CLASS_OBJECT_REPRESENTATION_STATE    = SC_PARTNER_CLASS_OBJECT.getField("representationState", TYPE_BYTE);
 
         SM_INTEGER_GETVAL   = SC_INTEGER.getMethod("intValue", List.of(), TYPE_INT);
         SM_LONG_GETVAL      = SC_LONG.getMethod("longValue", List.of(), TYPE_LONG);
@@ -1052,8 +1052,8 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_ORIGINAL_CLASS                                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), TYPE_CLASS);
-        SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants.init, List.of());
-        SM_ABSTRACT_PARTNER_CLASS_INITIALIZE_ID = SC_ABSTRACT_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
+        SM_PARTNER_CLASS_OBJECT_EMPTY_INIT = SC_PARTNER_CLASS_OBJECT.getMethod(StringConstants.init, List.of());
+        SM_PARTNER_CLASS_OBJECT_INITIALIZE_ID = SC_PARTNER_CLASS_OBJECT.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
 
         SM_SBOOL_BOOL_CHOICE                    = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE            = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);

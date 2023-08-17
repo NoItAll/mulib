@@ -20,7 +20,7 @@ import java.util.Set;
  * @param <T> The component type
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class Sarray<T extends SubstitutedVar> extends AbstractPartnerClass {
+public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObject {
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;

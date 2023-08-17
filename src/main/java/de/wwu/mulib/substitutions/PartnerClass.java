@@ -11,6 +11,8 @@ import java.util.Map;
 /**
  * Interface representing a Sarray or another partner class.
  * It is necessary to define it as an interface since these methods should also be addressable by interfaces types.
+ * Generated partner classes (not interfaces!) should instead (implicitly) extend {@link PartnerClassObject} that also
+ * documents the methods that still need to be overridden.
  */
 public interface PartnerClass extends SubstitutedVar {
 
@@ -91,6 +93,8 @@ public interface PartnerClass extends SubstitutedVar {
     void __mulib__initializeLazyFields(SymbolicExecution se);
 
     /**
+     * Implementing classes should also add the result of super.__mulib__getFieldNameToSubstitutedVar() to
+     * the resulting map.
      * @return A map of (packageName.className.fieldName, value)-pairs
      */
     Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar();

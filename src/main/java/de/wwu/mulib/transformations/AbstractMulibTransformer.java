@@ -7,6 +7,7 @@ import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -75,6 +76,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             replacementMethods.putAll(ModelMethods.readDefaultModelMethods(this));
         }
         this.replaceMethodCallOfNonSubstitutedClassWith = replacementMethods;
+        this.addTransformedClass(Object.class.getName(), PartnerClassObject.class);
     }
 
     /* PUBLIC METHODS */

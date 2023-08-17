@@ -598,7 +598,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         InvokeStmt invokeSuperConstructorStmt;
         // Add super-constructor call
         // TODO Clean up
-        if (cc == ChosenConstructor.COPY_CONSTR && (superClass.equals(v.SC_ABSTRACT_PARTNER_CLASS) || shouldBeTransformed(superClass.getName().replace(_TRANSFORMATION_PREFIX, "")))) {
+        if (cc == ChosenConstructor.COPY_CONSTR && (superClass.equals(v.SC_PARTNER_CLASS_OBJECT) || shouldBeTransformed(superClass.getName().replace(_TRANSFORMATION_PREFIX, "")))) {
             // Call super-constructor
             invokeSuperConstructorStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(
                     thisLocal, Scene.v().makeConstructorRef(superClass, List.of(superClass.getType(), v.TYPE_MULIB_VALUE_COPIER)), additionalLocal, seOrMvtLocal
@@ -2444,7 +2444,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private void replaceObjectConstructorCallIfNeeded(SootClass c, SootMethod sm) {
-        if (!c.getSuperclass().equals(v.SC_ABSTRACT_PARTNER_CLASS)) {
+        if (!c.getSuperclass().equals(v.SC_PARTNER_CLASS_OBJECT)) {
             return;
         }
         UnitPatchingChain upc = sm.retrieveActiveBody().getUnits();
@@ -2452,7 +2452,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             if (u instanceof InvokeStmt && ((InvokeStmt) u).getInvokeExpr() instanceof SpecialInvokeExpr) {
                 SpecialInvokeExpr sie = (SpecialInvokeExpr) ((InvokeStmt) u).getInvokeExpr();
                 if (sie.getMethodRef().getDeclaringClass().equals(v.SC_OBJECT)) {
-                    sie.setMethodRef(v.SM_ABSTRACT_PARTNER_CLASS_EMPTY_INIT.makeRef());
+                    sie.setMethodRef(v.SM_PARTNER_CLASS_OBJECT_EMPTY_INIT.makeRef());
                 }
             }
         }
@@ -2477,7 +2477,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootClass sootSuperClass = transformEnrichAndValidateIfNotSpecialCase(toTransform.getSuperclass().getName());
         if (sootSuperClass.equals(v.SC_OBJECT) && !toTransform.isInterface()) {
             // We rectify calls to the Object constructor for interfaces when dealing with constructors dedicatedly
-            sootSuperClass = v.SC_ABSTRACT_PARTNER_CLASS;
+            sootSuperClass = v.SC_PARTNER_CLASS_OBJECT;
         }
         result.setSuperclass(sootSuperClass);
         if (toTransform.isInterface()) {
