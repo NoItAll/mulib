@@ -6,20 +6,18 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.exceptions.NotYetImplementedException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
+import de.wwu.mulib.substitutions.AssignConcolicLabelEnabledValueFactory;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
-import de.wwu.mulib.substitutions.AssignConcolicLabelEnabledValueFactory;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 public class MulibValueCopier {
 
-    private final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> classesToCopyFunction;
     private final boolean isConcolic;
     private final Map<Object, Object> alreadyCopiedObjects = new IdentityHashMap<>();
     private final SymbolicExecution se;
@@ -28,7 +26,6 @@ public class MulibValueCopier {
             SymbolicExecution se,
             MulibConfig config) {
         this.se = se;
-        this.classesToCopyFunction = config.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
         this.isConcolic = config.SEARCH_CONCOLIC;
     }
 
@@ -69,11 +66,7 @@ public class MulibValueCopier {
             result = ((PartnerClass) o).copy(this);
             return result;
         }
-        BiFunction<MulibValueCopier, Object, Object> copier = classesToCopyFunction.get(o.getClass());
-        if (copier == null) {
-            return o;
-        }
-        return copier.apply(this, o);
+        return o;
     }
 
     public Object copySprimitive(Sprimitive o) {

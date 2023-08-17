@@ -24,7 +24,6 @@ import java.util.function.BiFunction;
 public final class MulibValueTransformer {
 
     private final MulibTransformer mulibTransformer;
-    private final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> classesToTransformation;
     // Stores the objects for transformation, i.e., to-transform -> transformed, but also transformed -> transformed (copied)
     private final Map<Object, Object> alreadyTransformedObjects = new IdentityHashMap<>();
     // If the method at hand did not need to be transformed, we do not have to label or transform into the library-/
@@ -33,7 +32,6 @@ public final class MulibValueTransformer {
     private int nextPartnerClassObjectNr = 0;
     public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer) {
         this.mulibTransformer = mulibTransformer;
-        this.classesToTransformation = config.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
@@ -127,15 +125,8 @@ public final class MulibValueTransformer {
                 throw new MulibRuntimeException(e);
             }
         } else {
-            BiFunction<MulibValueTransformer, Object, Object> transformationFunction = classesToTransformation.get(beforeTransformation);
-            if (transformationFunction != null) {
-                result = transformationFunction.apply(this, currentValue);
-                alreadyTransformedObjects.put(currentValue, result);
-                return result;
-            } else {
-                alreadyTransformedObjects.put(currentValue, currentValue);
-                return currentValue;
-            }
+            alreadyTransformedObjects.put(currentValue, currentValue);
+            return currentValue;
         }
     }
 

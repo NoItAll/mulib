@@ -32,7 +32,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
     protected final boolean includePackageName;
     protected final Set<String> ignoreFromPackages;
     protected final Set<Class<?>> ignoreClasses;
-    protected final Set<Class<?>> ignoreSubclassesOf;
     protected final Set<Class<?>> regardSpecialCase;
     protected final Map<Method, Method> replaceMethodCallOfNonSubstitutedClassWith;
     protected final Map<Class<?>, Class<?>> replaceToBeTransformedClassWithSpecifiedClass;
@@ -63,7 +62,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         this.generatedClassesPathPattern = generatedClassesPath + "%s.class";
         this.ignoreFromPackages = config.TRANSF_IGNORE_FROM_PACKAGES;
         this.ignoreClasses = config.TRANSF_IGNORE_CLASSES;
-        this.ignoreSubclassesOf = config.TRANSF_IGNORE_SUBCLASSES_OF;
         this.regardSpecialCase = config.TRANSF_REGARD_SPECIAL_CASE;
         this.concretizeFor = config.TRANSF_CONCRETIZE_FOR;
         this.generalizeMethodCallsFor = config.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
@@ -630,8 +628,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 !explicitlyAddedClasses.contains(toTransform)
                         && regardSpecialCase.stream().noneMatch(x -> x.equals(toTransform))
                         && (ignoreFromPackages.stream().anyMatch(x -> toTransform.getPackageName().startsWith(x)) // (Multi-dimensional) arrays of primitives are treated separately in the transformation
-                        || ignoreClasses.stream().anyMatch(x -> x.equals(toTransform))
-                        || ignoreSubclassesOf.stream().anyMatch(x -> x.isAssignableFrom(toTransform)))
+                        || ignoreClasses.stream().anyMatch(x -> x.equals(toTransform)))
         );
     }
 

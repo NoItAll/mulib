@@ -402,7 +402,7 @@ public class SymbolicChoicePointFactory implements ChoicePointFactory {
         CoverageCfg.CoverageInformation coverageInformation = cfg.getCoverageInformationForCurrentNode();
         if (coverageInformation == CoverageCfg.CoverageInformation.ALL_COVERED
                 || coverageInformation == CoverageCfg.CoverageInformation.BOTH_NOT_COVERED
-                || coverageInformation == CoverageCfg.CoverageInformation.NO_INFORMATION) {
+                || coverageInformation == CoverageCfg.CoverageInformation.NO_INFO) {
             return decisionNotBasedOnCfg(se, newChoice);
         }
         final List<Choice.ChoiceOption> allOptions = newChoice.getChoiceOptions();

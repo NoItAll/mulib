@@ -12,8 +12,6 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformations.MulibValueCopier;
-import de.wwu.mulib.transformations.MulibValueTransformer;
 import de.wwu.mulib.util.TriConsumer;
 
 import java.io.PrintStream;
@@ -31,101 +29,323 @@ import java.util.function.Function;
 public class MulibConfig {
 
     /* Tree */
+    /**
+     * For representing this tree as a String: how much to indent between the different depths?
+     */
     public final String TREE_INDENTATION;
+    /**
+     * Whether we should enlist all leaves of the search tree, is useful for debugging
+     */
     public final boolean TREE_ENLIST_LEAVES;
     /* Search */
+    /**
+     * The search strategy. If {@link MulibConfig#SEARCH_ADDITIONAL_PARALLEL_STRATEGIES} are used, the seed strategy
+     */
     public final SearchStrategy SEARCH_MAIN_STRATEGY;
+    /**
+     * Additional search strategies that will be "activated" in-order
+     */
     public final List<SearchStrategy> SEARCH_ADDITIONAL_PARALLEL_STRATEGIES;
+    /**
+     * The type of {@link de.wwu.mulib.search.trees.ChoiceOptionDeque} used
+     */
     public final ChoiceOptionDeques SEARCH_CHOICE_OPTION_DEQUE_TYPE;
+    /**
+     * How many choice options need to be retrieved until we activate one of the search strategies from
+     * {@link MulibConfig#SEARCH_ADDITIONAL_PARALLEL_STRATEGIES}?
+     */
     public final Optional<Long> SEARCH_ACTIVATE_PARALLEL_FOR;
+    /**
+     * True, if we want to execute the search region in concolc mode, false leads to a purely symbolic search
+     */
     public final boolean SEARCH_CONCOLIC;
+    /**
+     * Whether we throw an exception once we find an {@link Throwable} in the search region, or not
+     */
     public final boolean SEARCH_ALLOW_EXCEPTIONS;
+    /**
+     * Useful for debugging: Should the result be labeled?
+     */
     public final boolean SEARCH_LABEL_RESULT_VALUE;
     /* Shutdown */
+    /**
+     * Timeout for shutting down the executors
+     */
     public final long SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS;
     /* Logging */
+    /**
+     * Log the time for finding each path solution
+     */
     public final boolean LOG_TIME_FOR_EACH_PATH_SOLUTION;
+    /**
+     * Log the time for finding only the first path solution
+     */
     public final boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION;
     /* Callbacks */
+    /**
+     * Callback that is invoked after finding each path solution
+     * The arguments are the executor finding this path solution, the path solution, and the solver manager of the
+     * executor
+     */
     public final TriConsumer<MulibExecutor, PathSolution, SolverManager> CALLBACK_PATH_SOLUTION;
+    /**
+     * Callback that is invoked after backtracking
+     * The arguments are the executor that is backtracking, the backtrack object, and the solver manager of the
+     * executor
+     */
     public final TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK;
+    /**
+     * Callback that is invoked after an explicit {@link Fail} has been thrown
+     * The arguments are the executor finding this fail, the fail node in the search tree, and the solver manager of the
+     * executor
+     */
     public final TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL;
+    /**
+     * Callback that is invoked after exceeding a budget
+     * The arguments are the executor finding exceeded budget, the exceeded budget node in the search tree,
+     * and the solver manager of the executor
+     */
     public final TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET;
     /* Values */
+    /**
+     * Lower bound
+     */
     public final Optional<Sint> VALS_SYMSINT_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Sint> VALS_SYMSINT_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Slong> VALS_SYMSLONG_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Slong> VALS_SYMSLONG_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Sdouble> VALS_SYMSDOUBLE_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Sdouble> VALS_SYMSDOUBLE_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Sfloat> VALS_SYMSFLOAT_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Sfloat> VALS_SYMSFLOAT_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Sshort> VALS_SYMSSHORT_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Sshort> VALS_SYMSSHORT_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Sbyte> VALS_SYMSBYTE_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Sbyte> VALS_SYMSBYTE_UB;
-
+    /**
+     * Lower bound
+     */
     public final Optional<Schar> VALS_SYMSCHAR_LB;
+    /**
+     * Upper bound
+     */
     public final Optional<Schar> VALS_SYMSCHAR_UB;
-
+    /**
+     * Usually, this is not possible in Java, but the bytecode allows for adding and subtracting from and using
+     * booleans. The current implementation deals with this case rather inefficiently, and thus, it must be
+     * explicitly activated
+     */
     public final boolean VALS_TREAT_BOOLEANS_AS_INTS;
 
     /* Free Arrays */
+    /**
+     * Should eager indexes be used for dealing with arrays containing objects?
+     */
     public final boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
+    /**
+     * Should eager indexes be used for dealing with arrays containing primitives?
+     * If this is true, {@link MulibConfig#ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS} must be true as well.
+     */
     public final boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
+    /**
+     * Should the symbolic execution check for out-of-bounds exceptions that are possible in arrays?
+     */
     public final boolean ARRAYS_THROW_EXCEPTION_ON_OOB;
     /* Solver */
+    /**
+     * The solver that is used for the search strategy/search strategies
+     */
     public final Solvers SOLVER_GLOBAL_TYPE;
+    /**
+     * Arguments that should be passed to the solver
+     */
     public final Map<String, Object> SOLVER_ARGS;
+    /**
+     * Whether we should enable the solver-independent approach for dealing with symbolic arrays and symbolic objects
+     */
     public final boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
 
     /* Budget */
+    /**
+     * The maximal depth in the search tree
+     */
     public final Optional<Long> BUDGETS_FIXED_ACTUAL_CP;
+    /**
+     * The incremental budget. Used by {@link SearchStrategy#IDDFS} and {@link SearchStrategy#IDDSAS}
+     */
     public final Optional<Long> BUDGETS_INCR_ACTUAL_CP;
+    /**
+     * The time allowed for executing the search region in nano seconds
+     */
     public final Optional<Long> BUDGETS_GLOBAL_TIME_IN_NANOSECONDS;
+    /**
+     * The maximal number of fails encountered during search
+     */
     public final Optional<Long> BUDGETS_MAX_FAILS;
+    /**
+     * The maximal number of path solutions encountered during search
+     */
     public final Optional<Long> BUDGETS_MAX_PATH_SOLUTIONS;
+    /**
+     * The maximal number of exceeded budgets encountered during search
+     */
     public final Optional<Long> BUDGETS_MAX_EXCEEDED_BUDGET;
 
     /* Free Initialization */
+    /**
+     * Should we allow arrays initialized via {@link Mulib#freeObject(Class)} etc. to be null?
+     */
     public final boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
+    /**
+     * Should we allow objects initialized via {@link Mulib#freeObject(Class)} etc. to be null?
+     */
     public final boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
+    /**
+     * Should we initialize objects via {@link Mulib#freeObject(Class)} etc. to be potential targets for aliasing
+     * of subsequently initialized objects?
+     */
     public final boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
 
     /* Transformation */
     private final boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
+    /**
+     * A map of (original class, replacement of some class that will be transformed instead)-pairs in the search region.
+     * The replacement class will be transformed and all references of the original class will be removed.
+     * Used for custom model classes such as {@link IntegerReplacement}.
+     */
     public final Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
+    /**
+     * Should the methods specified in {@link de.wwu.mulib.model.ModelMethods} be used in place of the
+     * replaced methods?
+     */
     public final boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
+    /**
+     * A map of (original method, replacement method)-pairs. In the search region, all occurrences of calls to
+     * 'original method' will be replaced by calls to 'replacement method'
+     */
     public final Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
+    /**
+     * Classes from the specified packages will not be transformed
+     * Should be used with care so that class hierachies are not broken
+     */
     public final Set<String> TRANSF_IGNORE_FROM_PACKAGES;
+    /**
+     * Classes in the set will not be transformed
+     * Should be used with care so that class hierachies are not broken
+     */
     public final Set<Class<?>> TRANSF_IGNORE_CLASSES;
-    public final Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
+    /**
+     * Used to mark classes that usually are ignored but should be transformed nonetheless
+     * Should be used carefully, is useful for writing test cases for Mulib
+     */
+    @Deprecated
     public final Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
+    /**
+     * The set of classes is ignored.
+     * If a method of this class is called, the inputs will be concretized.
+     * Should be used with care so that class hierachies are not broken
+     */
     public final Set<Class<?>> TRANSF_CONCRETIZE_FOR;
+    /**
+     * The set of classes is ignored
+     * If a method of this class is called, it is tried to generalize the input types so a {@link Object} parameter
+     * is used instead
+     * Should be used with care so that class hierachies are not broken
+     */
+    @Deprecated
     public final Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-    public final Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
-    public final Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
+    /**
+     * If there are ignored classes that still are generated in the search region, and they are part of the final
+     * {@link de.wwu.mulib.solving.Solution} object, they must be labeled. To do so, such a method must be supplied
+     * here.
+     */
     public final Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
+    /**
+     * If {@link MulibConfig#TRANSF_WRITE_TO_FILE} is true, should already existing files be overwritten?
+     */
     public final boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
+    /**
+     * Should we write the transformed partner classes onto disk?
+     */
     public final boolean TRANSF_WRITE_TO_FILE;
+    /**
+     * Where should we try to write the generated partner classes?
+     */
     public final String TRANSF_GENERATED_CLASSES_PATH;
+    /**
+     * Should the partner class be validated after generation? This is useful for debugging
+     */
     public final boolean TRANSF_VALIDATE_TRANSFORMATION;
-    // For debugging and testing, it sometimes is helpful to directly write library-code without a transformation
+    /**
+     * For debugging and testing, it sometimes is helpful to directly write library-code without a transformation.
+     * If this is false, the {@link de.wwu.mulib.transformations.MulibTransformer} will not try to
+     * transform the search region
+     */
     public final boolean TRANSF_TRANSFORMATION_REQUIRED;
-    // For the system classloader to work, it is required that TRANSF_GENERATED_CLASSES_PATH is set to the same root
-    // folder of the usual system classes.
+    /**
+     * For the system classloader to work, it is required that {@link #TRANSF_GENERATED_CLASSES_PATH} is set to the same root
+     * folder of the usual system classes
+     */
     public final boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
+    /**
+     * If true, the generated file will be in a folder structure according to its package name
+     */
     public final boolean TRANSF_INCLUDE_PACKAGE_NAME;
+    /**
+     * Currently only done for the integration with Dacite: Some code is treated as a special case
+     */
     public final boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS;
+    /**
+     * Should the choice points be generated with an identifier for using {@link de.wwu.mulib.search.choice_points.CoverageCfg}?
+     */
     public final boolean TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID;
     /* CFG */
+    /**
+     * Should the symbolic execution consult the {@link de.wwu.mulib.search.choice_points.CoverageCfg} to determine
+     * which of the two choice options should be used? If this is the case, {@link de.wwu.mulib.search.choice_points.CoverageCfg}
+     * will check if either of these choices has not yet been executed
+     */
     public final boolean CFG_USE_GUIDANCE_DURING_EXECUTION;
+    /**
+     * If we can prove that all nodes in the control flow graph have been visited, should we terminate early?
+     */
     public final boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
+    /**
+     * Should a search strategy prefer choice options with uncovered nodes on the control flow graph during execution?
+     */
     public final boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
 
     public static MulibConfigBuilder builder() {
@@ -146,12 +366,9 @@ public class MulibConfig {
         private boolean TREE_ENLIST_LEAVES;
         private Set<String> TRANSF_IGNORE_FROM_PACKAGES;
         private Set<Class<?>> TRANSF_IGNORE_CLASSES;
-        private Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF;
         private Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE;
         private Set<Class<?>> TRANSF_CONCRETIZE_FOR;
         private Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-        private Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS;
-        private Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS;
         private Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS;
         private boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
         private Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
@@ -245,8 +462,6 @@ public class MulibConfig {
             this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = Set.of(
                     PrintStream.class
             );
-            this.TRANSF_IGNORE_SUBCLASSES_OF = Set.of(
-            );
             this.TRANSF_REGARD_SPECIAL_CASE = new HashSet<>();
             this.TRANSF_USE_DEFAULT_MODEL_CLASSES = true;
             this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = new HashMap<>();
@@ -262,8 +477,6 @@ public class MulibConfig {
             this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = false;
             this.TRANSF_VALIDATE_TRANSFORMATION = false;
             this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = false;
-            this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = new HashMap<>();
-            this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = new HashMap<>();
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS.put(
                     ArrayList.class,
@@ -308,21 +521,33 @@ public class MulibConfig {
             this.CALLBACK_PATH_SOLUTION = (me, ps, sm) -> {};
         }
 
+        /**
+         * @see MulibConfig#TREE_ENLIST_LEAVES
+         */
         public MulibConfigBuilder setTREE_ENLIST_LEAVES(boolean TREE_ENLIST_LEAVES) {
             this.TREE_ENLIST_LEAVES = TREE_ENLIST_LEAVES;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TREE_INDENTATION
+         */
         public MulibConfigBuilder setTREE_INDENTATION(String TREE_INDENTATION) {
             this.TREE_INDENTATION = TREE_INDENTATION;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_IGNORE_FROM_PACKAGES
+         */
         public MulibConfigBuilder setTRANSF_IGNORE_FROM_PACKAGES(Collection<String> TRANSF_IGNORE_FROM_PACKAGES) {
             this.TRANSF_IGNORE_FROM_PACKAGES = new HashSet<>(TRANSF_IGNORE_FROM_PACKAGES);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_IGNORE_CLASSES
+         */
         public MulibConfigBuilder setTRANSF_IGNORE_CLASSES(Collection<Class<?>> TRANSF_IGNORE_CLASSES) {
             Set<Class<?>> temp = new HashSet<>(TRANSF_IGNORE_CLASSES);
             temp.add(Mulib.class);
@@ -331,147 +556,189 @@ public class MulibConfig {
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORE_SUBCLASSES_OF(Collection<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF) {
-            this.TRANSF_IGNORE_SUBCLASSES_OF = new HashSet<>(TRANSF_IGNORE_SUBCLASSES_OF);
-            return this;
-        }
-
+        /**
+         * @see MulibConfig#TRANSF_REGARD_SPECIAL_CASE
+         */
         public MulibConfigBuilder setTRANSF_REGARD_SPECIAL_CASE(Collection<Class<?>> TRANSF_REGARD_SPECIAL_CASE) {
             this.TRANSF_REGARD_SPECIAL_CASE = new HashSet<>(TRANSF_REGARD_SPECIAL_CASE);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_CONCRETIZE_FOR
+         */
         public MulibConfigBuilder setTRANSF_CONCRETIZE_FOR(Collection<Class<?>> TRANSF_CONCRETIZE_FOR) {
             this.TRANSF_CONCRETIZE_FOR = new HashSet<>(TRANSF_CONCRETIZE_FOR);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR
+         */
         public MulibConfigBuilder setTRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR(Collection<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR) {
             this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = new HashSet<>(TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR);
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_MAIN_STRATEGY
+         */
         public MulibConfigBuilder setSEARCH_MAIN_STRATEGY(SearchStrategy SEARCH_MAIN_STRATEGY) {
             this.SEARCH_MAIN_STRATEGY = SEARCH_MAIN_STRATEGY;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SOLVER_GLOBAL_TYPE
+         */
         public MulibConfigBuilder setSOLVER_GLOBAL_TYPE(Solvers SOLVER_GLOBAL_TYPE) {
             this.SOLVER_GLOBAL_TYPE = SOLVER_GLOBAL_TYPE;
             return this;
         }
 
+        /**
+         * @see MulibConfig#BUDGETS_FIXED_ACTUAL_CP
+         */
         public MulibConfigBuilder setBUDGET_FIXED_ACTUAL_CP(long BUDGET_FIXED_ACTUAL_CP) {
             this.BUDGET_FIXED_ACTUAL_CP = BUDGET_FIXED_ACTUAL_CP;
             return this;
         }
 
+        /**
+         * @see MulibConfig#BUDGETS_INCR_ACTUAL_CP
+         */
         public MulibConfigBuilder setBUDGET_INCR_ACTUAL_CP(long BUDGET_INCR_ACTUAL_CP) {
             this.BUDGET_INCR_ACTUAL_CP = BUDGET_INCR_ACTUAL_CP;
             return this;
         }
-
+        /**
+         * @see MulibConfig#TRANSF_WRITE_TO_FILE
+         */
         public MulibConfigBuilder setTRANSF_WRITE_TO_FILE(boolean TRANSF_WRITE_TO_FILE) {
             this.TRANSF_WRITE_TO_FILE = TRANSF_WRITE_TO_FILE;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_GENERATED_CLASSES_PATH
+         */
         public MulibConfigBuilder setTRANSF_GENERATED_CLASSES_PATH(String TRANSF_GENERATED_CLASSES_PATH) {
             this.TRANSF_GENERATED_CLASSES_PATH = TRANSF_GENERATED_CLASSES_PATH;
             this.TRANSF_INCLUDE_PACKAGE_NAME = true;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_VALIDATE_TRANSFORMATION
+         */
         public MulibConfigBuilder setTRANSF_VALIDATE_TRANSFORMATION(boolean TRANSF_VALIDATE_TRANSFORMATION) {
             this.TRANSF_VALIDATE_TRANSFORMATION = TRANSF_VALIDATE_TRANSFORMATION;
             return this;
         }
 
+        /**
+         * @param BUDGET_GLOBAL_TIME_IN_SECONDS The time budget in seconds
+         * @see MulibConfig#BUDGETS_GLOBAL_TIME_IN_NANOSECONDS
+         */
         public MulibConfigBuilder setBUDGET_GLOBAL_TIME_IN_SECONDS(long BUDGET_GLOBAL_TIME_IN_SECONDS) {
             this.BUDGET_GLOBAL_TIME_IN_SECONDS = BUDGET_GLOBAL_TIME_IN_SECONDS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#BUDGETS_MAX_FAILS
+         */
         public MulibConfigBuilder setBUDGET_MAX_FAILS(long BUDGET_MAX_FAILS) {
             this.BUDGET_MAX_FAILS = BUDGET_MAX_FAILS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#BUDGETS_MAX_PATH_SOLUTIONS
+         */
         public MulibConfigBuilder setBUDGET_MAX_PATH_SOLUTIONS(long BUDGET_MAX_PATH_SOLUTIONS) {
             this.BUDGET_MAX_PATH_SOLUTIONS = BUDGET_MAX_PATH_SOLUTIONS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#BUDGETS_MAX_EXCEEDED_BUDGET
+         */
         public MulibConfigBuilder setBUDGET_MAX_EXCEEDED(long BUDGET_MAX_EXCEEDED) {
             this.BUDGET_MAX_EXCEEDED = BUDGET_MAX_EXCEEDED;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_ADDITIONAL_PARALLEL_STRATEGIES
+         */
         public MulibConfigBuilder setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(SearchStrategy... searchStrategies) {
             this.setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(Arrays.asList(searchStrategies));
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_ADDITIONAL_PARALLEL_STRATEGIES
+         */
         public MulibConfigBuilder setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(List<SearchStrategy> searchStrategies) {
             this.SEARCH_ADDITIONAL_PARALLEL_STRATEGIES = searchStrategies;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS
+         */
         public MulibConfigBuilder setSHUTDOWN_PARALLEL_TIMEOUT_IN_MS(long ms) {
             this.SHUTDOWN_PARALLEL_TIMEOUT_IN_MS = ms;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_CHOICE_OPTION_DEQUE_TYPE
+         */
         public MulibConfigBuilder setSEARCH_CHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques choiceOptionDequeType) {
             this.SEARCH_CHOICE_OPTION_DEQUE_TYPE = choiceOptionDequeType;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_ACTIVATE_PARALLEL_FOR
+         */
         public MulibConfigBuilder setSEARCH_ACTIVATE_PARALLEL_FOR(long setFor) {
             this.SEARCH_ACTIVATE_PARALLEL_FOR = setFor;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_LABEL_RESULT_VALUE
+         */
         public MulibConfigBuilder setSEARCH_LABEL_RESULT_VALUE(boolean b) {
             this.SEARCH_LABEL_RESULT_VALUE = b;
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS(Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> m) {
-            this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = m;
-            return this;
-        }
-
-        public MulibConfigBuilder addTRANSF_IGNORED_CLASS_TO_COPY_FUNCTION(Class<?> clazz, BiFunction<MulibValueCopier, Object, Object> copyFunction) {
-            this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS.put(clazz, copyFunction);
-            return this;
-        }
-
-        public MulibConfigBuilder setTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> m) {
-            this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = m;
-            return this;
-        }
-
+        /**
+         * @see MulibConfig#TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS
+         */
         public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS(Class<?> clazz, BiFunction<SolverManager, Object, Object> transformation) {
             this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS.put(clazz, transformation);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER
+         */
         public MulibConfigBuilder setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(boolean b) {
             this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = b;
             return this;
         }
 
-        public MulibConfigBuilder setTRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS(Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> m) {
-            this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = m;
-            return this;
-        }
-
-        public MulibConfigBuilder addTRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS(Class<?> clazz, BiFunction<MulibValueTransformer, Object, Object> transformation) {
-            this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS.put(clazz, transformation);
-            return this;
-        }
-
+        /**
+         * @param SYMSINT_LB The lower bound
+         * @param SYMSINT_UB The upper bound
+         * @see MulibConfig#VALS_SYMSINT_LB
+         * @see MulibConfig#VALS_SYMSINT_UB
+         */
         public MulibConfigBuilder setVALS_SYMSINT_DOMAIN(int SYMSINT_LB, int SYMSINT_UB) {
             if (SYMSINT_LB > SYMSINT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -481,6 +748,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSLONG_LB The lower bound
+         * @param SYMSLONG_UB The upper bound
+         * @see MulibConfig#VALS_SYMSLONG_LB
+         * @see MulibConfig#VALS_SYMSLONG_UB
+         */
         public MulibConfigBuilder setVALS_SYMSLONG_DOMAIN(long SYMSLONG_LB, long SYMSLONG_UB) {
             if (SYMSLONG_LB > SYMSLONG_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -490,6 +763,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSDOUBLE_LB The lower bound
+         * @param SYMSDOUBLE_UB The upper bound
+         * @see MulibConfig#VALS_SYMSDOUBLE_LB
+         * @see MulibConfig#VALS_SYMSDOUBLE_UB
+         */
         public MulibConfigBuilder setVALS_SYMSDOUBLE_DOMAIN(double SYMSDOUBLE_LB, double SYMSDOUBLE_UB) {
             if (SYMSDOUBLE_LB > SYMSDOUBLE_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -499,6 +778,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSFLOAT_LB The lower bound
+         * @param SYMSFLOAT_UB The upper bound
+         * @see MulibConfig#VALS_SYMSFLOAT_LB
+         * @see MulibConfig#VALS_SYMSFLOAT_UB
+         */
         public MulibConfigBuilder setVALS_SYMSFLOAT_DOMAIN(float SYMSFLOAT_LB, float SYMSFLOAT_UB) {
             if (SYMSFLOAT_LB > SYMSFLOAT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -508,6 +793,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSSHORT_LB The lower bound
+         * @param SYMSSHORT_UB The upper bound
+         * @see MulibConfig#VALS_SYMSSHORT_LB
+         * @see MulibConfig#VALS_SYMSSHORT_UB
+         */
         public MulibConfigBuilder setVALS_SYMSSHORT_DOMAIN(short SYMSSHORT_LB, short SYMSSHORT_UB) {
             if (SYMSSHORT_LB > SYMSSHORT_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -517,6 +808,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSBYTE_LB The lower bound
+         * @param SYMSBYTE_UB The upper bound
+         * @see MulibConfig#VALS_SYMSBYTE_LB
+         * @see MulibConfig#VALS_SYMSBYTE_UB
+         */
         public MulibConfigBuilder setVALS_SYMSBYTE_DOMAIN(byte SYMSBYTE_LB, byte SYMSBYTE_UB) {
             if (SYMSBYTE_LB > SYMSBYTE_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -526,6 +823,12 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @param SYMSCHAR_LB The lower bound
+         * @param SYMSCHAR_UB The upper bound
+         * @see MulibConfig#VALS_SYMSCHAR_LB
+         * @see MulibConfig#VALS_SYMSCHAR_UB
+         */
         public MulibConfigBuilder setVALS_SYMSCHAR_DOMAIN(char SYMSCHAR_LB, char SYMSCHAR_UB) {
             if (SYMSCHAR_LB > SYMSCHAR_UB) {
                 throw new MisconfigurationException("Upper bound must be larger or equal to lower bound.");
@@ -535,17 +838,25 @@ public class MulibConfig {
             return this;
         }
 
-
+        /**
+         * @see MulibConfig#VALS_TREAT_BOOLEANS_AS_INTS
+         */
         public MulibConfigBuilder setVALS_TREAT_BOOLEANS_AS_INTS(boolean VALS_TREAT_BOOLEANS_AS_INTS) {
             this.VALS_TREAT_BOOLEANS_AS_INTS = VALS_TREAT_BOOLEANS_AS_INTS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH
+         */
         public MulibConfigBuilder setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH) {
             this.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH = SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
             return this;
         }
 
+        /**
+         * Assumes some default value ranges that are "high enough"
+         */
         public MulibConfigBuilder assumeMulibDefaultValueRanges() {
             this.VALS_SYMSINT_LB =    Optional.of(Integer.MIN_VALUE);
             this.VALS_SYMSINT_UB =    Optional.of(Integer.MAX_VALUE);
@@ -564,117 +875,187 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_ALLOW_EXCEPTIONS
+         */
         public MulibConfigBuilder setSEARCH_ALLOW_EXCEPTIONS(boolean SEARCH_ALLOW_EXCEPTIONS) {
             this.SEARCH_ALLOW_EXCEPTIONS = SEARCH_ALLOW_EXCEPTIONS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#ARRAYS_THROW_EXCEPTION_ON_OOB
+         */
         public MulibConfigBuilder setARRAYS_THROW_EXCEPTION_ON_OOB(boolean ARRAYS_THROW_EXCEPTION_ON_OOB) {
             this.ARRAYS_THROW_EXCEPTION_ON_OOB = ARRAYS_THROW_EXCEPTION_ON_OOB;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER
+         */
         public MulibConfigBuilder setTRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER(boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER) {
             this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_CONCOLIC
+         */
         public MulibConfigBuilder setSEARCH_CONCOLIC(boolean SEARCH_CONCOLIC) {
             this.SEARCH_CONCOLIC = SEARCH_CONCOLIC;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_TRANSFORMATION_REQUIRED
+         */
         public MulibConfigBuilder setTRANSF_TRANSFORMATION_REQUIRED(boolean TRANSF_TRANSFORMATION_REQUIRED) {
             this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
             return this;
         }
 
+        /**
+         * @see MulibConfig#SOLVER_ARGS
+         */
         public MulibConfigBuilder putSOLVER_ARGS(String key, String val) {
             SOLVER_ARGS.put(key, val);
             return this;
         }
 
+        /**
+         * @see MulibConfig#SOLVER_ARGS
+         */
         public MulibConfigBuilder putSOLVER_ARGS(String key, Function<?, ?> val) {
             SOLVER_ARGS.put(key, val);
             return this;
         }
 
+        /**
+         * @see MulibConfig#ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS
+         */
         public MulibConfigBuilder setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS) {
             this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS
+         */
         public MulibConfigBuilder setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS(boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS) {
             this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_PRIMITIVE_ELEMENTS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#FREE_INIT_ALIASING_FOR_FREE_OBJECTS
+         */
         public MulibConfigBuilder setFREE_INIT_ALIASING_FOR_FREE_OBJECTS(boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS) {
             this.FREE_INIT_ALIASING_FOR_FREE_OBJECTS = FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL
+         */
         public MulibConfigBuilder setFREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL(boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL) {
             this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;
             return this;
         }
 
+        /**
+         * @see MulibConfig#FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL
+         */
         public MulibConfigBuilder setFREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL(boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL) {
             this.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
             return this;
         }
 
+        /**
+         * @see MulibConfig#LOG_TIME_FOR_EACH_PATH_SOLUTION
+         */
         public MulibConfigBuilder setLOG_TIME_FOR_EACH_PATH_SOLUTION(boolean LOG_TIME_FOR_EACH_PATH_SOLUTION) {
             this.LOG_TIME_FOR_EACH_PATH_SOLUTION = LOG_TIME_FOR_EACH_PATH_SOLUTION;
             return this;
         }
 
+        /**
+         * @see MulibConfig#LOG_TIME_FOR_FIRST_PATH_SOLUTION
+         */
         public MulibConfigBuilder setLOG_TIME_FOR_FIRST_PATH_SOLUTION(boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION) {
             this.LOG_TIME_FOR_FIRST_PATH_SOLUTION = LOG_TIME_FOR_FIRST_PATH_SOLUTION;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH
+         */
         public MulibConfigBuilder setTRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH) {
             this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH
+         */
         public MulibConfigBuilder addREPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Method toSubstitute, Method substituteBy) {
             this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH.put(toSubstitute, substituteBy);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH
+         */
         public MulibConfigBuilder setTRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH(boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH) {
             this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS
+         * @see MulibConfig#TRANSF_REGARD_SPECIAL_CASE
+         */
         public MulibConfigBuilder addModelClass(Class<?> toBeModelled, Class<?> modelClass) {
             this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS.put(toBeModelled, modelClass);
             this.TRANSF_REGARD_SPECIAL_CASE.add(toBeModelled);
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_USE_DEFAULT_MODEL_CLASSES
+         */
         public MulibConfigBuilder setTRANSF_USE_DEFAULT_MODEL_CLASSES(boolean val) {
             this.TRANSF_USE_DEFAULT_MODEL_CLASSES = val;
             return this;
         }
 
+        /**
+         * @see MulibConfig#CALLBACK_PATH_SOLUTION
+         */
         public MulibConfigBuilder setCALLBACK_PATH_SOLUTION(TriConsumer<MulibExecutor, PathSolution, SolverManager> callback) {
             this.CALLBACK_PATH_SOLUTION = callback;
             return this;
         }
 
+        /**
+         * @see MulibConfig#CALLBACK_FAIL
+         */
         public MulibConfigBuilder setCALLBACK_FAIL(TriConsumer<MulibExecutor, de.wwu.mulib.search.trees.Fail, SolverManager> CALLBACK_FAIL) {
             this.CALLBACK_FAIL = CALLBACK_FAIL;
             return this;
         }
 
+        /**
+         * @see MulibConfig#CALLBACK_BACKTRACK
+         */
         public MulibConfigBuilder setCALLBACK_BACKTRACK(TriConsumer<MulibExecutor, Backtrack, SolverManager> CALLBACK_BACKTRACK) {
             this.CALLBACK_BACKTRACK = CALLBACK_BACKTRACK;
             return this;
         }
 
+        /**
+         * @see MulibConfig#CALLBACK_EXCEEDED_BUDGET
+         */
         public MulibConfigBuilder setCALLBACK_EXCEEDED_BUDGET(TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET) {
             this.CALLBACK_EXCEEDED_BUDGET = CALLBACK_EXCEEDED_BUDGET;
             return this;
@@ -685,26 +1066,41 @@ public class MulibConfig {
             addModelClass(Integer.class, IntegerReplacement.class);
         }
 
+        /**
+         * @see MulibConfig#TRANSF_TREAT_SPECIAL_METHOD_CALLS
+         */
         public MulibConfigBuilder setTRANSF_TREAT_SPECIAL_METHOD_CALLS(boolean TRANSF_TREAT_SPECIAL_METHOD_CALLS) {
             this.TRANSF_TREAT_SPECIAL_METHOD_CALLS = TRANSF_TREAT_SPECIAL_METHOD_CALLS;
             return this;
         }
 
+        /**
+         * @see MulibConfig#TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID
+         * @see MulibConfig#CFG_USE_GUIDANCE_DURING_EXECUTION
+         * @see MulibConfig#CFG_TERMINATE_EARLY_ON_FULL_COVERAGE
+         * @see MulibConfig#CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE
+         */
         public MulibConfigBuilder setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(
                 boolean CFG_USE_HINTS_DURING_EXECUTION,
                 boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
-                boolean CFG_CHOOSE_NEXT_CHOICE_OPTION_BASED_ON_COVERAGE) {
+                boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE) {
             this.TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID = true;
             this.CFG_USE_GUIDANCE_DURING_EXECUTION = CFG_USE_HINTS_DURING_EXECUTION;
             this.CFG_TERMINATE_EARLY_ON_FULL_COVERAGE = CFG_TERMINATE_EARLY_ON_FULL_COVERAGE;
-            this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = CFG_CHOOSE_NEXT_CHOICE_OPTION_BASED_ON_COVERAGE;
+            this.CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE = CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE;
             return this;
         }
 
+        /**
+         * @return true if the config builder is set to work with concolic execution
+         */
         public boolean isConcolic() {
             return SEARCH_CONCOLIC;
         }
-        
+
+        /**
+         * @return A built MulibConfig
+         */
         public MulibConfig build() {
 
             if (TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER && (!TRANSF_INCLUDE_PACKAGE_NAME || !TRANSF_WRITE_TO_FILE)) {
@@ -767,7 +1163,6 @@ public class MulibConfig {
                     BUDGET_MAX_EXCEEDED,
                     TRANSF_IGNORE_FROM_PACKAGES,
                     TRANSF_IGNORE_CLASSES,
-                    TRANSF_IGNORE_SUBCLASSES_OF,
                     TRANSF_REGARD_SPECIAL_CASE,
                     TRANSF_WRITE_TO_FILE,
                     TRANSF_GENERATED_CLASSES_PATH,
@@ -775,8 +1170,6 @@ public class MulibConfig {
                     TRANSF_VALIDATE_TRANSFORMATION,
                     TRANSF_CONCRETIZE_FOR,
                     TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
-                    TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
-                    TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
                     TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                     TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                     TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
@@ -841,7 +1234,6 @@ public class MulibConfig {
                         long BUDGETS_MAX_EXCEEDED_BUDGET,
                         Set<String> TRANSF_IGNORE_FROM_PACKAGES,
                         Set<Class<?>> TRANSF_IGNORE_CLASSES,
-                        Set<Class<?>> TRANSF_IGNORE_SUBCLASSES_OF,
                         Set<Class<?>> TRANSF_REGARD_SPECIAL_CASE,
                         boolean TRANSF_WRITE_TO_FILE,
                         String TRANSF_GENERATED_CLASSES_PATH,
@@ -849,8 +1241,6 @@ public class MulibConfig {
                         boolean TRANSF_VALIDATE_TRANSFORMATION,
                         Set<Class<?>> TRANSF_CONCRETIZE_FOR,
                         Set<Class<?>> TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR,
-                        Map<Class<?>, BiFunction<MulibValueCopier, Object, Object>> TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS,
-                        Map<Class<?>, BiFunction<MulibValueTransformer, Object, Object>> TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS,
                         Map<Class<?>, BiFunction<SolverManager, Object, Object>> TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS,
                         boolean TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER,
                         boolean TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER,
@@ -912,7 +1302,6 @@ public class MulibConfig {
         this.BUDGETS_MAX_EXCEEDED_BUDGET =     0 != BUDGETS_MAX_EXCEEDED_BUDGET ? Optional.of(BUDGETS_MAX_EXCEEDED_BUDGET) : Optional.empty();
         this.TRANSF_IGNORE_FROM_PACKAGES = Set.copyOf(TRANSF_IGNORE_FROM_PACKAGES);
         this.TRANSF_IGNORE_CLASSES = Set.copyOf(TRANSF_IGNORE_CLASSES);
-        this.TRANSF_IGNORE_SUBCLASSES_OF = Set.copyOf(TRANSF_IGNORE_SUBCLASSES_OF);
         this.TRANSF_REGARD_SPECIAL_CASE = Set.copyOf(TRANSF_REGARD_SPECIAL_CASE);
         this.TRANSF_WRITE_TO_FILE = TRANSF_WRITE_TO_FILE;
         this.TRANSF_GENERATED_CLASSES_PATH = TRANSF_GENERATED_CLASSES_PATH;
@@ -920,8 +1309,6 @@ public class MulibConfig {
         this.TRANSF_VALIDATE_TRANSFORMATION = TRANSF_VALIDATE_TRANSFORMATION;
         this.TRANSF_CONCRETIZE_FOR = TRANSF_CONCRETIZE_FOR;
         this.TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR = TRANSF_TRY_USE_MORE_GENERAL_METHOD_FOR;
-        this.TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_COPY_FUNCTIONS);
-        this.TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_TRANSFORM_FUNCTIONS);
         this.TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS = Map.copyOf(TRANSF_IGNORED_CLASSES_TO_LABEL_FUNCTIONS);
         this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
