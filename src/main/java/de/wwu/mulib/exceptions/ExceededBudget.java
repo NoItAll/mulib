@@ -1,6 +1,5 @@
-package de.wwu.mulib.search;
+package de.wwu.mulib.exceptions;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 
 /**
