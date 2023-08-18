@@ -9,7 +9,7 @@ import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.transformations.MulibTransformer;
-import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;

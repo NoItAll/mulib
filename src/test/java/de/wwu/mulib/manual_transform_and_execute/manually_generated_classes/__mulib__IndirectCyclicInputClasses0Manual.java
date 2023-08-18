@@ -6,7 +6,7 @@ import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.HashSet;

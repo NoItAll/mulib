@@ -28,6 +28,11 @@ import static de.wwu.mulib.transformations.TransformationUtility.determineNestHo
 import static de.wwu.mulib.transformations.TransformationUtility.getClassForName;
 import static de.wwu.mulib.transformations.soot_transformations.SootMulibClassesAndMethods.methodNameImpliesRememberedInitialization;
 
+/**
+ * Current reference implementation for a {@link de.wwu.mulib.transformations.MulibTransformer} using {@link AbstractMulibTransformer}
+ * using Soot.
+ * Contains some obsolete parts.
+ */
 public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     static class TcArgs {
@@ -338,7 +343,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
     private static final SootMulibClassesAndMethods v;
 
-    private final Map<SootMethod, SootMethod> sootReplaceMethodCallOfNonSubstitutedClassWith = new HashMap<>();
+    private final Map<SootMethod, SootMethod> sootReplaceMethodWithOtherMethod = new HashMap<>();
 
     @Override
     public void transformAndLoadClasses(Class<?>... toTransform) {
@@ -395,8 +400,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
      */
     public SootMulibTransformer(MulibConfig config) {
         super(config);
-        for (Map.Entry<Method, Method> e : this.replaceMethodCallOfNonSubstitutedClassWith.entrySet()) {
-            sootReplaceMethodCallOfNonSubstitutedClassWith.put(
+        for (Map.Entry<Method, Method> e : this.replaceMethodCallWithOtherMethodCall.entrySet()) {
+            sootReplaceMethodWithOtherMethod.put(
                     getSootMethodForMethod(e.getKey()),
                     getSootMethodForMethod(e.getValue())
             );
@@ -598,7 +603,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         InvokeStmt invokeSuperConstructorStmt;
         // Add super-constructor call
         // TODO Clean up
-        if (cc == ChosenConstructor.COPY_CONSTR && (superClass.equals(v.SC_PARTNER_CLASS_OBJECT) || shouldBeTransformed(superClass.getName().replace(_TRANSFORMATION_PREFIX, "")))) {
+        if (cc == ChosenConstructor.COPY_CONSTR && (superClass.equals(v.SC_PARTNER_CLASS_OBJECT) || shouldBeTransformed(superClass.getName().replace(_TRANSFORMATION_INDICATOR, "")))) {
             // Call super-constructor
             invokeSuperConstructorStmt = Jimple.v().newInvokeStmt(Jimple.v().newSpecialInvokeExpr(
                     thisLocal, Scene.v().makeConstructorRef(superClass, List.of(superClass.getType(), v.TYPE_MULIB_VALUE_COPIER)), additionalLocal, seOrMvtLocal
@@ -1293,7 +1298,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             List<Type> constructorParameterTypes,
             List<Value> constructorArguments) {
         String className = transformedType.getClassName();
-        String originalClassName = className.replace(_TRANSFORMATION_PREFIX, "");
+        String originalClassName = className.replace(_TRANSFORMATION_INDICATOR, "");
         Local stackLocalForNew = localSpawner.spawnNewStackLocal(transformedType);
         NewExpr newExpr = Jimple.v().newNewExpr(transformedType);
         AssignStmt assignNewToStackLocal = Jimple.v().newAssignStmt(stackLocalForNew, newExpr);
@@ -1356,14 +1361,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootMethod artificialFieldMethod;
         if (forGetField) {
             artificialFieldMethod = new SootMethod(
-                    _ACCESSOR_PREFIX + _TRANSFORMATION_PREFIX + forField.getName(),
+                    _ACCESSOR_PREFIX + forField.getName(),
                     List.of(),
                     forField.getType(),
                     forField.getModifiers()
             );
         } else {
             artificialFieldMethod = new SootMethod(
-                    _SETTER_PREFIX + _TRANSFORMATION_PREFIX + forField.getName(),
+                    _SETTER_PREFIX + forField.getName(),
                     List.of(forField.getType()),
                     v.TYPE_VOID,
                     forField.getModifiers()
@@ -1550,7 +1555,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private boolean isSyntheticMethod(SootMethod sm) {
         // Synthetic methods themselves, symbolic execution-, transformation- and copying-constructors as
         // well as the label method
-        return sm.getName().contains(_TRANSFORMATION_PREFIX)
+        return sm.getName().contains(_TRANSFORMATION_INDICATOR)
                 // Exclude any constructor ('this' cannot be null in there)
                 || (sm.getName().equals(init) &&
                 (sm.getParameterTypes().contains(v.TYPE_SE)
@@ -1645,7 +1650,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             List<Value> params,
             Type returnType,
             UnitPatchingChain upc) {
-        if (result.getSuperclass().getName().contains(_TRANSFORMATION_PREFIX)) {
+        if (result.getSuperclass().getName().contains(_TRANSFORMATION_INDICATOR)) {
             // Add super-call
             InvokeStmt invokeSuperCall = Jimple.v().newInvokeStmt(
                     Jimple.v().newSpecialInvokeExpr(
@@ -1663,16 +1668,16 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     @Override
-    protected void decideOnGenerateIdAndStateAndIsNullFieldAndMethods(SootClass old, SootClass result) {
+    protected void generateBlockCacheInPartnerClassFieldsAndInitializeLazyFieldsAndGetFieldNameToSubstitutedVar(SootClass old, SootClass result) {
         // TODO Split up into finer template methods
         // TODO Regard Exception and RuntimeException dedicatedly
-        boolean superClassIsTransformed = result.getSuperclass().getName().contains(_TRANSFORMATION_PREFIX);
+        boolean superClassIsTransformed = result.getSuperclass().getName().contains(_TRANSFORMATION_INDICATOR);
 
         // If we block the cache, we will also call to block the cache in the objects (indirectly) contained
         // in a field
         SootMethod blockCacheInPartnerClassFields;
         {
-            final String methodName = _TRANSFORMATION_PREFIX + "blockCacheInPartnerClassFields";
+            final String methodName = _TRANSFORMATION_INDICATOR + "blockCacheInPartnerClassFields";
             final List<Type> paramTypes = List.of();
             final Type returnType = v.TYPE_VOID;
             blockCacheInPartnerClassFields = new SootMethod(methodName, paramTypes, returnType,  Modifier.PUBLIC);
@@ -1707,7 +1712,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
 
         {
-            String methodName = _TRANSFORMATION_PREFIX + "initializeLazyFields";
+            String methodName = _TRANSFORMATION_INDICATOR + "initializeLazyFields";
             List<Type> paramTypes = List.of(v.TYPE_SE);
             Type returnType = v.TYPE_VOID;
             SootMethod initializeLazyFields = new SootMethod(methodName, paramTypes, returnType, Modifier.PUBLIC);
@@ -1746,7 +1751,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
         {
             // Generate getFieldNameToSubstitutedVar
-            String methodName = _TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar";
+            String methodName = _TRANSFORMATION_INDICATOR + "getFieldNameToSubstitutedVar";
             List<Type> paramTypes = List.of();
             Type returnType = v.SC_MAP.getType();
 
@@ -1808,7 +1813,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         if (java.lang.reflect.Modifier.isStatic(access)) {
             return false;
         }
-        if (tryUseSystemClassLoader) {
+        if (config.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER) {
             return java.lang.reflect.Modifier.isPrivate(access) || java.lang.reflect.Modifier.isFinal(access);
         } else {
             // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
@@ -2116,7 +2121,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     protected void generateAndAddOriginalClassMethod(SootClass old, SootClass result) {
         boolean reflectionRequiredToGetOriginalClass = reflectionRequiredSinceClassIsNotVisible(old);
         // Create method
-        SootMethod originalClassMethod = new SootMethod(_TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), v.TYPE_CLASS, Modifier.PUBLIC);
+        SootMethod originalClassMethod = new SootMethod(_TRANSFORMATION_INDICATOR + "getOriginalClass", List.of(), v.TYPE_CLASS, Modifier.PUBLIC);
         // Create body
         JimpleBody b = Jimple.v().newBody(originalClassMethod);
         originalClassMethod.setActiveBody(b);
@@ -2287,7 +2292,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             RefType rt = (RefType) t;
             String cn = rt.getClassName();
             if (cn.startsWith("de.wwu.mulib.model.classes.java.lang")) {
-                cn = cn.replace("de.wwu.mulib.model.classes.", "").replace("Replacement", "").replace(_TRANSFORMATION_PREFIX, "");
+                cn = cn.replace("de.wwu.mulib.model.classes.", "").replace("Replacement", "").replace(_TRANSFORMATION_INDICATOR, "");
             }
             return cn.equals(Integer.class.getName()) || cn.equals(Long.class.getName())
                     || cn.equals(Double.class.getName()) || cn.equals(Float.class.getName())
@@ -2298,7 +2303,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private boolean reflectionRequiredSinceClassIsNotVisible(SootClass old) {
         int access = old.getModifiers();
-        if (tryUseSystemClassLoader) {
+        if (config.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER) {
             return Modifier.isPrivate(access);
         } else {
             // Otherwise, it is in another module and friendly as well as protected fields cannot be accessed
@@ -2308,7 +2313,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     @Override
-    protected void generateOrEnhanceClinit(SootClass old, SootClass result) {
+    protected void generateOrReplaceClinit(SootClass old, SootClass result) {
         SootMethod initializer = null;
         for (SootMethod sm : result.getMethods()) {
             if (sm.getName().equals(clinit)) {
@@ -2339,7 +2344,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                                 // Finals are checked statically!
                                 && !f.isFinal()
                                 // Exclude synthetic fields
-                                && !f.getName().contains(_TRANSFORMATION_PREFIX)
+                                && !f.getName().contains(_TRANSFORMATION_INDICATOR)
                                 && ((regardStaticFields && f.isStatic()) || (!regardStaticFields && !f.isStatic())))
                         .collect(Collectors.toSet());
         UnitPatchingChain upc = b.getUnits();
@@ -2418,7 +2423,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         for (SootMethod sm : result.getMethods()) {
             if (sm.isAbstract()
                     || sm.isStatic()
-                    || sm.getName().contains(_TRANSFORMATION_PREFIX)
+                    || sm.getName().contains(_TRANSFORMATION_INDICATOR)
                     || sm.getName().equals(init)
                     || (sm.getName().equals("label") && sm.getParameterCount() == 2 && sm.getParameterType(1).equals(v.TYPE_SOLVER_MANAGER))
                     || (sm.getName().equals("copy") && sm.getParameterCount() == 1 && sm.getParameterType(0).equals(v.TYPE_MULIB_VALUE_COPIER))) {
@@ -2466,7 +2471,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     @Override
     protected SootClass transformClassNode(SootClass toTransform) {
         // Create new SootClass with the transformation prefix
-        SootClass result = new SootClass(addPrefixToName(toTransform.getName()));
+        SootClass result = new SootClass(addTransformationIndicatorToName(toTransform.getName()));
         // Set modifiers
         result.setModifiers(toTransform.getModifiers());
         // The class is already added and added to the set of resolved classes. This is done to ensure that
@@ -2505,9 +2510,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 transformEnrichAndValidateIfNotSpecialCase(innerClassName);
                 result.addTag(
                         new InnerClassTag(
-                                addPrefixToPath(innerClassTag.getInnerClass()),
-                                addPrefixToPath(innerClassTag.getOuterClass()),
-                                addPrefixToName(innerClassName),
+                                addTransformationIndicatorToPath(innerClassTag.getInnerClass()),
+                                addTransformationIndicatorToPath(innerClassTag.getOuterClass()),
+                                addTransformationIndicatorToName(innerClassName),
                                 innerClassTag.getAccessFlags()
                         )
                 );
@@ -2523,7 +2528,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         // Transform methods
         for (SootMethod m : toTransform.getMethods()) {
             if (m.isNative()) {
-                SootMethod substituted = sootReplaceMethodCallOfNonSubstitutedClassWith.get(m);
+                SootMethod substituted = sootReplaceMethodWithOtherMethod.get(m);
                 if (substituted == null) {
                     throw new MulibRuntimeException(m.getSignature() + " is native and should be transformed, " +
                             "but has no substitution");
@@ -2555,7 +2560,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         } else {
             return false;
         }
-        if (rt.getClassName().contains(_TRANSFORMATION_PREFIX)) {
+        if (rt.getClassName().contains(_TRANSFORMATION_INDICATOR)) {
             // Already transformed
             return false;
         }
@@ -4027,7 +4032,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             RefType rt = (RefType) t;
             String className = rt.getClassName();
             String simpleClassName = className.substring(className.lastIndexOf('.') + 1);
-            return simpleClassName.startsWith(_TRANSFORMATION_PREFIX) || className.startsWith("de.wwu.mulib.substitutions");
+            return simpleClassName.startsWith(_TRANSFORMATION_INDICATOR) || className.startsWith("de.wwu.mulib.substitutions");
         } else if (t instanceof ArrayType) {
             Type innermostType = getInnermostTypeInArray((ArrayType) t);
             return hasTransformedRefType(innermostType);
@@ -4234,7 +4239,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             String newValue = ((ClassConstant) c).getValue();
             String adapted = newValue.substring(1, newValue.length()-1).replace("/", ".");
             if (shouldBeTransformed(adapted)) {
-                newValue = addPrefixToPath(newValue);
+                newValue = addTransformationIndicatorToPath(newValue);
             }
             transformed = ClassConstant.v(newValue);
         } else if (c instanceof StringConstant
@@ -4313,7 +4318,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             } else {
                 if (!shouldBeTransformed(invokeExpr.getMethodRef().getDeclaringClass().getName())) {
                     // We check whether there is a replacement for the called method
-                    SootMethod substituteBy = this.sootReplaceMethodCallOfNonSubstitutedClassWith.get(invokeExpr.getMethod());
+                    SootMethod substituteBy = this.sootReplaceMethodWithOtherMethod.get(invokeExpr.getMethod());
                     if (substituteBy != null) {
                         // No transformation
                         invokeExpr.setMethodRef(substituteBy.makeRef());
@@ -4389,14 +4394,14 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             result = v.TYPE_SCHAR;
         } else if (toTransform instanceof RefType) {
             RefType refType = (RefType) toTransform;
-            if (!refType.getClassName().contains(_TRANSFORMATION_PREFIX) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
+            if (!refType.getClassName().contains(_TRANSFORMATION_INDICATOR) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
                 addToClassesToTransform(refType.getClassName());
             }
-            if (refType.getClassName().contains(_TRANSFORMATION_PREFIX) || isIgnored(getClassForName(refType.getClassName(), classLoader))) {
+            if (refType.getClassName().contains(_TRANSFORMATION_INDICATOR) || isIgnored(getClassForName(refType.getClassName(), classLoader))) {
                 result = refType;
             } else {
                 decideOnWhetherStillNeedsToBeAddedToTransformationQueue(refType.getClassName());
-                result = RefType.v(addPrefixToName(refType.getClassName()));
+                result = RefType.v(addTransformationIndicatorToName(refType.getClassName()));
             }
         } else if (toTransform instanceof ArrayType) {
             result = transformArrayType((ArrayType) toTransform, arrayToSarray);
@@ -4470,12 +4475,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             // As we transform it, it must be a ref type
             spawnedClassName =
                     ((RefType) transformType(baseType, true)).getClassName()
+                            + _TRANSFORMATION_INDICATOR
                             + numberDimensions
                             + _SARRAYSARRAY_POSTFIX;
         } else {
             RefType refType = (RefType) at.getElementType();
             superClass = v.SC_PARTNER_CLASSSARRAY;
-            spawnedClassName = addPrefixToName(refType.getClassName()) + _PARTNER_CLASSSARRAY_POSTFIX;
+            spawnedClassName = addTransformationIndicatorToName(refType.getClassName()) + _PARTNER_CLASSSARRAY_POSTFIX;
         }
         result = Scene.v().makeSootClass(spawnedClassName);
         result.setModifiers(Modifier.PUBLIC);
@@ -4571,7 +4577,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             }
         } else if (!(t instanceof PrimType)) {
             RefType refType = (RefType) t;
-            if (refType.getClassName().contains(_TRANSFORMATION_PREFIX) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
+            if (refType.getClassName().contains(_TRANSFORMATION_INDICATOR) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
                 addToClassesToTransform(refType.getClassName());
             }
             result = toSarray ? getSpecificPartnerClassSarrayClassForArrayType(arrayType).getType() : ArrayType.v(transformType(arrayType.baseType), 1);
@@ -4603,7 +4609,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             return original;
         }
         SootClass result;
-        if ((result = resolvedClasses.get(addPrefixToName(original.getName()))) != null) {
+        if ((result = resolvedClasses.get(addTransformationIndicatorToName(original.getName()))) != null) {
             return result;
         }
         return transformEnrichAndValidateIfNotSpecialCase(original.getName());
@@ -4622,7 +4628,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     private SootClass transformEnrichAndValidateIfNotSpecialCase(String toTransformName) {
         synchronized (syncObject) {
             SootClass result;
-            if ((result = resolvedClasses.get(addPrefixToName(toTransformName))) != null) {
+            if ((result = resolvedClasses.get(addTransformationIndicatorToName(toTransformName))) != null) {
                 return result;
             }
             if (shouldBeTransformed(toTransformName)) {
@@ -4630,7 +4636,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     addToClassesToTransform(toTransformName);
                 }
                 Class<?> toTransform = getClassForName(toTransformName, classLoader);
-                toTransform = this.replaceToBeTransformedClassWithSpecifiedClass.getOrDefault(toTransform, toTransform);
+                toTransform = this.config.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS.getOrDefault(toTransform, toTransform);
                 toTransformName = toTransform.getName();
                 assert transformedClassNodes.get(toTransformName) == null;
                 result = transformEnrichAndValidate(toTransformName);

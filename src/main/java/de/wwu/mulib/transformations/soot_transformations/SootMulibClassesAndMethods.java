@@ -10,7 +10,7 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import de.wwu.mulib.transformations.StringConstants;
 import soot.*;
@@ -22,6 +22,10 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+/**
+ * Contains a manifold of classes and methods that Mulib defines and that is parsed via Soot.
+ * This is done as a startup-check if we forgot to synchronize the bytecode transformation with the framework.
+ */
 public class SootMulibClassesAndMethods {
     /* SPECIAL CLASSES */
     public final SootClass SC_CLASS;
@@ -1037,23 +1041,23 @@ public class SootMulibClassesAndMethods {
                 SM_SBOOLSARRAY_STORE.makeRef(), SM_SCHARSARRAY_STORE.makeRef(),
                 SM_SARRAYSARRAY_STORE.makeRef(), SM_PARTNER_CLASSSARRAY_STORE.makeRef());
 
-        SM_PARTNER_CLASS_GET_ID                               = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getId", List.of(), TYPE_SINT);
-        SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
-        SM_PARTNER_CLASS_IS_NULL                              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isNull", List.of(), TYPE_SBOOL);
-        SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER             = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isRepresentedInSolver", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_NULL_CHECK                           = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "nullCheck", List.of(), TYPE_VOID);
-        SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC                  = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "defaultIsSymbolic", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_SET_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setDefaultIsSymbolic", List.of(), TYPE_VOID);
-        SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
-        SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "blockCache", List.of(), TYPE_VOID);
-        SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "cacheIsBlocked", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
-        SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
-        SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_GET_ORIGINAL_CLASS                                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_PREFIX + "getOriginalClass", List.of(), TYPE_CLASS);
+        SM_PARTNER_CLASS_GET_ID                               = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getId", List.of(), TYPE_SINT);
+        SM_PARTNER_CLASS_PREPARE_TO_REPRESENT_SYMBOLICALLY    = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "prepareToRepresentSymbolically", List.of(TYPE_SE), TYPE_VOID);
+        SM_PARTNER_CLASS_IS_NULL                              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "isNull", List.of(), TYPE_SBOOL);
+        SM_PARTNER_CLASS_IS_REPRESENTED_IN_SOLVER             = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "isRepresentedInSolver", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_SHOULD_BE_REPRESENTED_IN_SOLVER      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "shouldBeRepresentedInSolver", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_NULL_CHECK                           = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "nullCheck", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_DEFAULT_IS_SYMBOLIC                  = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "defaultIsSymbolic", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_SET_DEFAULT_IS_SYMBOLIC              = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "setDefaultIsSymbolic", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "blockCache", List.of(), TYPE_VOID);
+        SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "cacheIsBlocked", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
+        SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
+        SM_PARTNER_CLASS_GET_ORIGINAL_CLASS                                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getOriginalClass", List.of(), TYPE_CLASS);
         SM_PARTNER_CLASS_OBJECT_EMPTY_INIT = SC_PARTNER_CLASS_OBJECT.getMethod(StringConstants.init, List.of());
-        SM_PARTNER_CLASS_OBJECT_INITIALIZE_ID = SC_PARTNER_CLASS_OBJECT.getMethod(StringConstants._TRANSFORMATION_PREFIX + "initializeId", List.of(TYPE_SINT));
+        SM_PARTNER_CLASS_OBJECT_INITIALIZE_ID = SC_PARTNER_CLASS_OBJECT.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "initializeId", List.of(TYPE_SINT));
 
         SM_SBOOL_BOOL_CHOICE                    = SC_SBOOL.getMethod("boolChoice",          List.of(TYPE_SBOOL, TYPE_SE),          TYPE_BOOL);
         SM_SBOOL_NEGATED_BOOL_CHOICE            = SC_SBOOL.getMethod("negatedBoolChoice",   List.of(TYPE_SBOOL, TYPE_SE),  TYPE_BOOL);

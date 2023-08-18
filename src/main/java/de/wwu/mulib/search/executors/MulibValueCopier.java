@@ -1,4 +1,4 @@
-package de.wwu.mulib.transformations;
+package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
@@ -16,12 +16,21 @@ import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
 import java.util.IdentityHashMap;
 import java.util.Map;
 
+/**
+ * Copies a search space representation.
+ * Is used for {@link de.wwu.mulib.constraints.PartnerClassObjectRememberConstraint}s as well as for copying
+ * arguments to the search region.
+ */
 public class MulibValueCopier {
 
     private final boolean isConcolic;
     private final Map<Object, Object> alreadyCopiedObjects = new IdentityHashMap<>();
     private final SymbolicExecution se;
 
+    /**
+     * @param se The current instance of symbolic execution
+     * @param config The configuration
+     */
     public MulibValueCopier(
             SymbolicExecution se,
             MulibConfig config) {
@@ -29,17 +38,30 @@ public class MulibValueCopier {
         this.isConcolic = config.SEARCH_CONCOLIC;
     }
 
+    /**
+     * Registers a copy to break cycles.
+     * @param original The original search region representation
+     * @param copy The copy of the original search region representation
+     */
     public void registerCopy(Object original, Object copy) {
         alreadyCopiedObjects.put(original, copy);
     }
 
-    public boolean alreadyCopied(Object o) {
-        return alreadyCopiedObjects.containsKey(o);
+    /**
+     * @param original The original search region representation
+     * @return true, if 'original' was already copied.
+     */
+    public boolean alreadyCopied(Object original) {
+        return alreadyCopiedObjects.containsKey(original);
     }
 
+    /**
+     * @param original
+     * @return A copy. Throws an exception if no copy could be found
+     */
     public Object getCopy(Object original) {
         if (original == null) {
-            throw new MulibRuntimeException("For null, no copy can be retrieved.");
+            return null;
         }
         Object o = alreadyCopiedObjects.get(original);
         if (o == null) {
@@ -48,10 +70,18 @@ public class MulibValueCopier {
         return o;
     }
 
+    /**
+     * @param o Any object
+     * @return The copy
+     */
     public Object copy(Object o) {
         return o instanceof Sprimitive ? copySprimitive((Sprimitive) o) : copyNonSprimitive(o);
     }
 
+    /**
+     * @param o Any non-{@link Sprimitive} object
+     * @return The copy
+     */
     public Object copyNonSprimitive(Object o) {
         if (o == null) {
             return null;
@@ -69,6 +99,11 @@ public class MulibValueCopier {
         return o;
     }
 
+    /**
+     * Only needed if {@link MulibConfig#SEARCH_CONCOLIC} is set.
+     * @param o Any {@link Sprimitive}-object
+     * @return A copy.
+     */
     public Object copySprimitive(Sprimitive o) {
         if (!isConcolic) {
             return o;

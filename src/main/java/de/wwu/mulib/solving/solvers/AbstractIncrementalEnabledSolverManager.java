@@ -889,10 +889,10 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private Class<?> transformNonArrayPartnerClassTypeToJavaType(Class<?> c) {
-        assert !Sarray.class.isAssignableFrom(c) && (PartnerClass.class.isAssignableFrom(c) || !c.getName().contains(StringConstants._TRANSFORMATION_PREFIX));
+        assert !Sarray.class.isAssignableFrom(c) && (PartnerClass.class.isAssignableFrom(c) || !c.getName().contains(StringConstants._TRANSFORMATION_INDICATOR));
         String className = c.getName();
         try {
-            return Class.forName(className.replace(StringConstants._TRANSFORMATION_PREFIX, ""));
+            return Class.forName(className.replace(StringConstants._TRANSFORMATION_INDICATOR, ""));
         } catch (Exception e) {
             throw new LabelingNotPossibleException("Original class for Mulib class of type " + className + " not found.");
         }

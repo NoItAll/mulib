@@ -6,7 +6,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -106,7 +106,8 @@ public class PartnerClassObject implements PartnerClass {
     }
 
     /**
-     * Blocks the cache of all reference-typed classes in all fields
+     * Blocks the cache of all reference-typed classes in all fields, i.e., calls {@link #__mulib__blockCache()}
+     * is called.
      */
     protected void __mulib__blockCacheInPartnerClassFields() {
     }

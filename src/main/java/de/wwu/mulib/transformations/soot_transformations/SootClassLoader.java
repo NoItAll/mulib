@@ -6,6 +6,9 @@ import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;
 import soot.SootClass;
 
+/**
+ * Reference implementation of {@link MulibClassLoader}.
+ */
 public final class SootClassLoader extends MulibClassLoader<SootClass> {
 
     SootClassLoader(AbstractMulibTransformer<SootClass> transformer) {

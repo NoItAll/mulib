@@ -254,9 +254,11 @@ public class MulibConfig {
     public final boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
     /**
      * A map of (original method, replacement method)-pairs. In the search region, all occurrences of calls to
-     * 'original method' will be replaced by calls to 'replacement method'
+     * 'original method' will be replaced by calls to 'replacement method'.
+     * Should be done for native methods if not the whole class is substituted via
+     * {@link #TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH}.
      */
-    public final Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
+    public final Map<Method, Method> TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD;
     /**
      * Classes from the specified packages will not be transformed
      * Should be used with care so that class hierachies are not broken
@@ -373,7 +375,7 @@ public class MulibConfig {
         private boolean TRANSF_USE_DEFAULT_MODEL_CLASSES;
         private Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS;
         private boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;
-        private Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
+        private Map<Method, Method> TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD;
         private SearchStrategy SEARCH_MAIN_STRATEGY;
         private boolean SEARCH_CONCOLIC;
         private boolean SEARCH_ALLOW_EXCEPTIONS;
@@ -466,7 +468,7 @@ public class MulibConfig {
             this.TRANSF_USE_DEFAULT_MODEL_CLASSES = true;
             this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = new HashMap<>();
             this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = false;
-            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = new HashMap<>();
+            this.TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD = new HashMap<>();
             this.TRANSF_WRITE_TO_FILE = true;
             this.TRANSF_GENERATED_CLASSES_PATH = "build/classes/java/";
             this.TRANSF_INCLUDE_PACKAGE_NAME = false;
@@ -988,18 +990,18 @@ public class MulibConfig {
         }
 
         /**
-         * @see MulibConfig#TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH
+         * @see MulibConfig#TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD
          */
-        public MulibConfigBuilder setTRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH) {
-            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH;
+        public MulibConfigBuilder setTRANSF_REPLACE_METHOD_WITH_OTHER_METHOD(Map<Method, Method> TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD) {
+            this.TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD = TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD;
             return this;
         }
 
         /**
-         * @see MulibConfig#TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH
+         * @see MulibConfig#TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD
          */
         public MulibConfigBuilder addREPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH(Method toSubstitute, Method substituteBy) {
-            this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH.put(toSubstitute, substituteBy);
+            this.TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD.put(toSubstitute, substituteBy);
             return this;
         }
 
@@ -1202,7 +1204,7 @@ public class MulibConfig {
                     FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                     LOG_TIME_FOR_EACH_PATH_SOLUTION,
                     LOG_TIME_FOR_FIRST_PATH_SOLUTION,
-                    TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
+                    TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD,
                     TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                     TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                     TRANSF_USE_DEFAULT_MODEL_CLASSES,
@@ -1273,7 +1275,7 @@ public class MulibConfig {
                         boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS,
                         boolean LOG_TIME_FOR_EACH_PATH_SOLUTION,
                         boolean LOG_TIME_FOR_FIRST_PATH_SOLUTION,
-                        Map<Method, Method> TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH,
+                        Map<Method, Method> TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD,
                         boolean TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH,
                         Map<Class<?>, Class<?>> TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS,
                         boolean TRANSF_USE_DEFAULT_MODEL_CLASSES,
@@ -1313,7 +1315,7 @@ public class MulibConfig {
         this.TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER = TRANSF_LOAD_WITH_SYSTEM_CLASSLOADER;
         this.TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER = TRANSF_OVERWRITE_FILE_FOR_SYSTEM_CLASSLOADER;
         this.TRANSF_TRANSFORMATION_REQUIRED = TRANSF_TRANSFORMATION_REQUIRED;
-        this.TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH = Map.copyOf(TRANSF_REPLACE_METHOD_CALL_OF_NON_SUBSTITUTED_CLASS_WITH);
+        this.TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD = Map.copyOf(TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD);
         this.TRANSF_USE_DEFAULT_MODEL_CLASSES = TRANSF_USE_DEFAULT_MODEL_CLASSES;
         this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = Map.copyOf(TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS);
         this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH;

@@ -4,7 +4,7 @@ import de.wwu.mulib.exceptions.MulibRuntimeException;
 import org.objectweb.asm.ClassWriter;
 import soot.util.backend.SootASMClassWriter;
 
-import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_PREFIX;
+import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_INDICATOR;
 
 /**
  * Adaptation of ClassWriter to fit the transformation prefix.
@@ -23,10 +23,10 @@ public class MulibSootClassWriter extends SootASMClassWriter {
 
     @Override
     protected String getCommonSuperClass(final String type1, final String type2) {
-        if (type1.contains(_TRANSFORMATION_PREFIX) || type2.contains(_TRANSFORMATION_PREFIX)) {
-            if (type1.contains(_TRANSFORMATION_PREFIX) && type2.contains(_TRANSFORMATION_PREFIX)) {
-                String t1 = type1.replace(_TRANSFORMATION_PREFIX, "");
-                String t2 = type2.replace(_TRANSFORMATION_PREFIX, "");
+        if (type1.contains(_TRANSFORMATION_INDICATOR) || type2.contains(_TRANSFORMATION_INDICATOR)) {
+            if (type1.contains(_TRANSFORMATION_INDICATOR) && type2.contains(_TRANSFORMATION_INDICATOR)) {
+                String t1 = type1.replace(_TRANSFORMATION_INDICATOR, "");
+                String t2 = type2.replace(_TRANSFORMATION_INDICATOR, "");
                 try {
                     Class<?> c1 = Class.forName(t1.replace("/", "."));
                     Class<?> c2 = Class.forName(t2.replace("/", "."));

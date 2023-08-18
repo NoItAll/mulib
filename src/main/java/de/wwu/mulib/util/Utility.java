@@ -1,14 +1,13 @@
 package de.wwu.mulib.util;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.exceptions.MulibRuntimeException;
 import de.wwu.mulib.substitutions.PartnerClassObject;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 /**
  * Contains Utility methods for Mulib
@@ -32,6 +31,29 @@ public final class Utility {
         }
 
         return fields;
+    }
+
+    /**
+     * @param c The class
+     * @return The static accessible fields of this class
+     */
+    public static Collection<Field> getAccessibleStaticFields(Class<?> c) {
+        Set<Field> result = new HashSet<>();
+        Field[] fs = c.getDeclaredFields();
+        for (Field f : fs) {
+            if (Modifier.isFinal(f.getModifiers())) {
+                continue;
+            }
+            if (Modifier.isStatic(f.getModifiers())) {
+                if (!f.trySetAccessible()) {
+                    Mulib.log.warning("Setting static field " + f.getName() + " in "
+                            + f.getDeclaringClass().getName() + " failed. It will not be regarded while backtracking!");
+                    continue;
+                }
+                result.add(f);
+            }
+        }
+        return result;
     }
 
     /**

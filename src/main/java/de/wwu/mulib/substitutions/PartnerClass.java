@@ -4,7 +4,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.transformations.MulibValueCopier;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 
 import java.util.Map;
 

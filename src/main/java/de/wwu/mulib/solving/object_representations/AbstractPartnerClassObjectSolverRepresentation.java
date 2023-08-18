@@ -141,7 +141,7 @@ public abstract class AbstractPartnerClassObjectSolverRepresentation implements 
         this.fieldToType = new HashMap<>();
         Field[] fields = clazz.getDeclaredFields();
         for (Field f : fields) {
-            if (!f.getName().contains(StringConstants._TRANSFORMATION_PREFIX) && !Modifier.isStatic(f.getModifiers())) {
+            if (!f.getName().contains(StringConstants._TRANSFORMATION_INDICATOR) && !Modifier.isStatic(f.getModifiers())) {
                 fieldToType.put(f.getDeclaringClass().getName() + "." + f.getName(), f.getType());
             }
         }

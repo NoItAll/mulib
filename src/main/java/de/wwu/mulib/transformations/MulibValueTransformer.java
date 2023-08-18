@@ -30,11 +30,22 @@ public final class MulibValueTransformer {
     // Partner-classes. This is useful for testing and for manually writing such classes.
     private final boolean transformationRequired;
     private int nextPartnerClassObjectNr = 0;
+
+    /**
+     * @param config The configuration
+     * @param mulibTransformer The search region transformer
+     */
     public MulibValueTransformer(MulibConfig config, MulibTransformer mulibTransformer) {
         this.mulibTransformer = mulibTransformer;
         this.transformationRequired = config.TRANSF_TRANSFORMATION_REQUIRED;
     }
 
+    /**
+     * If there are partner classes in the passed arguments, this will retrieve the highest concrete identifier in them.
+     * This identifier is then used in {@link de.wwu.mulib.search.executors.SymbolicExecution} for the trail of
+     * identifiers.
+     * @param findHighestSarrayIdIn The objects in which to look for the highest identifer
+     */
     public void setPartnerClassObjectNr(Object[] findHighestSarrayIdIn) {
         int currentHighestId = -1;
         for (Object o : findHighestSarrayIdIn) {
@@ -47,27 +58,44 @@ public final class MulibValueTransformer {
         this.nextPartnerClassObjectNr = currentHighestId + 1;
     }
 
+    /**
+     * @return The next partner class object identifier to be usable
+     * @see {@link #setPartnerClassObjectNr(Object[])}
+     */
     public int getNextPartnerClassObjectNr() {
         return nextPartnerClassObjectNr;
     }
 
+    /**
+     * Registers a transformed object and the original. Used to break cycles
+     * @param original The original object
+     * @param transformed The search region representation of the original object
+     */
     public void registerTransformedObject(Object original, Object transformed) {
         alreadyTransformedObjects.put(original, transformed);
     }
 
+    /**
+     * @param o The original object for which it is checked whether it is transformed
+     * @return true, if it already was transformed
+     */
     @SuppressWarnings("BooleanMethodIsAlwaysInverted")
     public boolean alreadyTransformed(Object o) {
         return alreadyTransformedObjects.containsKey(o);
     }
 
+    /**
+     * Returns the transformed object for the original object
+     * @param original The original object
+     * @return The transformed object
+     */
     public Object getTransformedObject(Object original) {
         return alreadyTransformedObjects.get(original);
     }
 
     /**
      * Transforms the given object into an instance of a library class or the respective available partner class.
-     * If no partner class is available (because currentValue.getClass() is ignored) the original value is copied
-     * according to some predefined BiFunction. If there is no such BiFunction, the original
+     * If no partner class is available (because currentValue.getClass() is ignored) the original
      * value is returned.
      * @param currentValue The value which should be transformed into a library or a partner class.
      * @return The replacement value.
