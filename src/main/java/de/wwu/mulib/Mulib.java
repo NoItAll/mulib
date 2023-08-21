@@ -131,7 +131,7 @@ public final class Mulib {
      * @param args The arguments passed to the search region
      * @return A path solution, if any can be extracted
      */
-    public static Optional<PathSolution> getPathSingleSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
+    public static Optional<PathSolution> getSinglePathSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
         return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolution(args);
     }
 
@@ -144,8 +144,8 @@ public final class Mulib {
      * @param args The arguments passed to the search region
      * @return A path solution, if any can be extracted
      */
-    public static Optional<PathSolution> getPathSingleSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
-        return getPathSingleSolution(methodName, methodOwnerClass, mb, null, args);
+    public static Optional<PathSolution> getSinglePathSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
+        return getSinglePathSolution(methodName, methodOwnerClass, mb, null, args);
     }
 
     /**
