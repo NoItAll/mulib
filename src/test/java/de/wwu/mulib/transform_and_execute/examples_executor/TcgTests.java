@@ -31,8 +31,8 @@ public class TcgTests {
                 .setBUDGET_GLOBAL_TIME_IN_SECONDS(2)
                 .setBUDGET_FIXED_ACTUAL_CP(200);
         String result = Mulib.generateTestCases(
-                "execForTcg",
                 SatHanoi01Transf.class,
+                "execForTcg",
                 mb,
                 Utility.getMethodFromClass(SatHanoi01Transf.class.getName(), "execForTcg", new Class[] { int.class }),
                 TcgConfig.builder()
@@ -59,8 +59,8 @@ public class TcgTests {
                             //  deactivate this.
                             .setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
                     String result = Mulib.generateTestCases(
-                            "driver",
                             TSP.class,
+                            "driver",
                             mb,
                             Utility.getMethodFromClass(TSP.class, "solve"),
                             TcgConfig.builder()
@@ -86,8 +86,8 @@ public class TcgTests {
                             .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                             .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH);
                     String result = Mulib.generateTestCases(
-                            "sort",
                             Sort.class,
+                            "sort",
                             mb,
                             Utility.getMethodFromClass(Sort.class, "sort", int[].class),
                             TcgConfig.builder()
@@ -113,8 +113,8 @@ public class TcgTests {
                             .setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false)
                             .setTRANSF_GENERATED_CLASSES_PATH(TestUtility.TEST_BUILD_PATH);
                     String result = Mulib.generateTestCases(
-                            "sort",
                             Sort.class,
+                            "sort",
                             mb,
                             Utility.getMethodFromClass(Sort.class, "sort", int[].class),
                             TcgConfig.builder()

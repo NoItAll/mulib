@@ -40,7 +40,7 @@ public class WBSTransfExec {
     }
 
     private List<PathSolution> _testUpdate0(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = Mulib.getPathSolutions("update0", WBSTransf.class, mb, new Class[] { WBSTransf.class }, new WBSTransf());
+        List<PathSolution> result = Mulib.getPathSolutions(WBSTransf.class, "update0", mb, new Class[] { WBSTransf.class }, new WBSTransf());
         assertEquals(24, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
@@ -52,16 +52,16 @@ public class WBSTransfExec {
     }
 
     private List<PathSolution> _testUpdate1(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), 1, true, false);
+        List<PathSolution> result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), 1, true, false);
         assertEquals(1, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
         assertEquals(1, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
         assertEquals(6, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new Class[] { WBSTransf.class, int.class, boolean.class, boolean.class }, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
         assertEquals(2, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;
@@ -73,16 +73,16 @@ public class WBSTransfExec {
     }
 
     private List<PathSolution> _testUpdate1FindMethodWithoutArgTypes(MulibConfig.MulibConfigBuilder mb) {
-        List<PathSolution> result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new WBSTransf(), 1, true, false);
+        List<PathSolution> result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new WBSTransf(), 1, true, false);
         assertEquals(1, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new WBSTransf(), Sint.concSint(12), Sbool.concSbool(false), Sbool.concSbool(true));
         assertEquals(1, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new WBSTransf(), Sint.newInputSymbolicSint(), Sbool.concSbool(true), false);
         assertEquals(6, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-        result = Mulib.getPathSolutions("update1", WBSTransf.class, mb, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
+        result = Mulib.getPathSolutions(WBSTransf.class, "update1", mb, new WBSTransf(), Sint.concSint(12), Sbool.newInputSymbolicSbool(), Sbool.concSbool(true));
         assertEquals(2, result.size());
         assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
         return result;

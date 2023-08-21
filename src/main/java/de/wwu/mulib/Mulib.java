@@ -54,11 +54,11 @@ public final class Mulib {
      * @return The list of path solutions
      */
     public static List<PathSolution> getPathSolutions(
-            String methodName,
             Class<?> methodOwnerClass,
+            String methodName,
             MulibConfig.MulibConfigBuilder mb,
             Object... args) {
-        return getPathSolutions(methodName, methodOwnerClass, mb, null, args);
+        return getPathSolutions(methodOwnerClass, methodName, mb, null, args);
     }
 
     /**
@@ -72,12 +72,12 @@ public final class Mulib {
      * @return The list of path solutions
      */
     public static List<PathSolution> getPathSolutions(
-            String methodName,
             Class<?> methodOwnerClass,
+            String methodName,
             MulibConfig.MulibConfigBuilder mb,
             Class<?>[] argTypes,
             Object... args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolutions(args);
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, args, mb.build()).getPathSolutions(args);
     }
 
     /**
@@ -92,18 +92,18 @@ public final class Mulib {
      * @return A String representing a test class with tests for the method under test
      */
     public static String generateTestCases(
-            String methodName,
             Class<?> methodOwnerClass,
+            String methodName,
             MulibConfig.MulibConfigBuilder mb,
             Class<?>[] argTypes,
             Object[] args,
             Method methodUnderTest,
             TcgConfig.TcgConfigBuilder tcgConfigBuilder) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).generateTestCases(methodUnderTest, tcgConfigBuilder, args);
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, args, mb.build()).generateTestCases(methodUnderTest, tcgConfigBuilder, args);
     }
 
     /**
-     * A simplification of {@link Mulib#generateTestCases(String, Class, MulibConfig.MulibConfigBuilder, Class[], Object[], Method, TcgConfig.TcgConfigBuilder)}
+     * A simplification of {@link Mulib#generateTestCases(Class, String, MulibConfig.MulibConfigBuilder, Class[], Object[], Method, TcgConfig.TcgConfigBuilder)}
      * where we assume a driver method without any parameters
      * @param methodName The method of the driver method for calling the method under test
      * @param methodOwnerClass The class declaring the driver
@@ -113,16 +113,16 @@ public final class Mulib {
      * @return A String representing a test class with tests for the method under test
      */
     public static String generateTestCases(
-            String methodName,
             Class<?> methodOwnerClass,
+            String methodName,
             MulibConfig.MulibConfigBuilder mb,
             Method methodUnderTest,
             TcgConfig.TcgConfigBuilder tcgConfigBuilder) {
-        return generateTestCases(methodName, methodOwnerClass, mb, new Class[0], new Object[0], methodUnderTest, tcgConfigBuilder);
+        return generateTestCases(methodOwnerClass, methodName, mb, new Class[0], new Object[0], methodUnderTest, tcgConfigBuilder);
     }
 
     /**
-     * Extracts a single path solution from the search region. See {@link Mulib#getPathSolutions(String, Class, MulibConfig.MulibConfigBuilder, Class[], Object...)}
+     * Extracts a single path solution from the search region. See {@link Mulib#getPathSolutions(Class, String, MulibConfig.MulibConfigBuilder, Class[], Object...)}
      * for more details
      * @param methodName The method of the driver method for calling the method under test
      * @param methodOwnerClass The class declaring the driver
@@ -131,12 +131,12 @@ public final class Mulib {
      * @param args The arguments passed to the search region
      * @return A path solution, if any can be extracted
      */
-    public static Optional<PathSolution> getSinglePathSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getPathSolution(args);
+    public static Optional<PathSolution> getSinglePathSolution(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object... args) {
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, args, mb.build()).getPathSolution(args);
     }
 
     /**
-     * Extracts a single path solution from the search region. See {@link Mulib#getPathSolutions(String, Class, MulibConfig.MulibConfigBuilder, Object...)}
+     * Extracts a single path solution from the search region. See {@link Mulib#getPathSolutions(Class, String, MulibConfig.MulibConfigBuilder, Object...)}
      * for more details
      * @param methodName The method of the driver method for calling the method under test
      * @param methodOwnerClass The class declaring the driver
@@ -144,8 +144,8 @@ public final class Mulib {
      * @param args The arguments passed to the search region
      * @return A path solution, if any can be extracted
      */
-    public static Optional<PathSolution> getSinglePathSolution(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... args) {
-        return getSinglePathSolution(methodName, methodOwnerClass, mb, null, args);
+    public static Optional<PathSolution> getSinglePathSolution(Class<?> methodOwnerClass, String methodName,  MulibConfig.MulibConfigBuilder mb, Object... args) {
+        return getSinglePathSolution(methodOwnerClass, methodName, mb, null, args);
     }
 
     /**
@@ -174,7 +174,7 @@ public final class Mulib {
      * @return The solutions
      */
     public static List<Solution> getUpToNSolutions(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, int N, Class<?>[] argTypes, Object[] args) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, args, mb.build()).getUpToNSolutions(N, args);
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, args, mb.build()).getUpToNSolutions(N, args);
     }
 
     /**
@@ -187,7 +187,7 @@ public final class Mulib {
      * @return The MulibContext for potentially repeated extraction of (path) solutions
      */
     public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>... argTypes) {
-        return generateMulibContext(methodName, methodOwnerClass, argTypes, null, mb.build());
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, null, mb.build());
     }
 
     /**
@@ -200,13 +200,13 @@ public final class Mulib {
      *                         from these prototypical arguments
      * @return The MulibContext for potentially repeated extraction of (path) solutions
      */
-    public static MulibContext getMulibContext(String methodName, Class<?> methodOwnerClass, MulibConfig.MulibConfigBuilder mb, Object... prototypicalArgs) {
-        return generateMulibContext(methodName, methodOwnerClass, null, prototypicalArgs, mb.build());
+    public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Object... prototypicalArgs) {
+        return generateMulibContext(methodOwnerClass, methodName, null, prototypicalArgs, mb.build());
     }
 
     private static MulibContext generateMulibContext(
-            String methodName,
             Class<?> methodOwnerClass,
+            String methodName,
             Class<?>[] argTypes,
             Object[] args,
             MulibConfig config) {

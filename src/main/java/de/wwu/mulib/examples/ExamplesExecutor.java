@@ -165,14 +165,14 @@ public final class ExamplesExecutor {
 
     private static List<PathSolution> runNQueens(MulibConfig.MulibConfigBuilder builder) {
         return Mulib.getPathSolutions(
-                "solve",
                 NQueens.class,
+                "solve",
                 builder
         );
     }
 
     private static List<PathSolution> runSendMoreMoney(MulibConfig.MulibConfigBuilder builder) {
-        List<PathSolution> ps = Mulib.getPathSolutions("search", SendMoreMoney.class, builder);
+        List<PathSolution> ps = Mulib.getPathSolutions(SendMoreMoney.class, "search", builder);
         Solution sol = ps.get(0).getSolution();
         String s = "'s' should be 9: " + sol.labels.getLabelForId("s");
         String e = "\r\n'e' should be 5: " + sol.labels.getLabelForId("e");
@@ -187,7 +187,7 @@ public final class ExamplesExecutor {
 
     public static List<PathSolution> runKnapsack(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
-        List<PathSolution> result = Mulib.getPathSolutions("findKnapsack", Knapsack.class, builder);
+        List<PathSolution> result = Mulib.getPathSolutions(Knapsack.class, "findKnapsack", builder);
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Knapsack.Item> items = (ArrayList<Knapsack.Item>) ps.getSolution().returnValue;
@@ -203,7 +203,7 @@ public final class ExamplesExecutor {
 
     public static List<PathSolution> runScheduling(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
-        List<PathSolution> result = Mulib.getPathSolutions("schedule", Courses.class, builder);
+        List<PathSolution> result = Mulib.getPathSolutions(Courses.class, "schedule", builder);
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Courses.Assignment> assignments = (ArrayList<Courses.Assignment>) ps.getSolution().returnValue;
@@ -221,8 +221,8 @@ public final class ExamplesExecutor {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
         List<PathSolution> result =
                 Mulib.getPathSolutions(
-                        "getRoute",
                         PostmanProblemWithDirectedEdges.class,
+                        "getRoute",
                         builder,
                         new Object[] { new PostmanProblemWithDirectedEdges.DirectedEdge[] {
                                 new PostmanProblemWithDirectedEdges.DirectedEdge(2,1),
@@ -254,9 +254,9 @@ public final class ExamplesExecutor {
     public static List<PathSolution> runPostmanProblem_impossible(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
         Optional<PathSolution> result =
-                Mulib.getPathSingleSolution(
-                        "getRoute",
+                Mulib.getSinglePathSolution(
                         PostmanProblemWithDirectedEdges.class,
+                        "getRoute",
                         builder,
                         new Object[] { new PostmanProblemWithDirectedEdges.DirectedEdge[] {
                                 new PostmanProblemWithDirectedEdges.DirectedEdge(1,3),
@@ -274,24 +274,24 @@ public final class ExamplesExecutor {
 
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.getPathSolutions("exec", Partition3.class, builder);
+        return Mulib.getPathSolutions(Partition3.class, "exec", builder);
     }
 
     private static List<PathSolution> runWBS(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.getPathSolutions("launch", WBS.class, builder);
+        return Mulib.getPathSolutions(WBS.class, "launch", builder);
     }
 
     private static List<PathSolution> runHanoi(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.getPathSolutions("exec", SatHanoi01.class, builder);
+        return Mulib.getPathSolutions(SatHanoi01.class, "exec", builder);
     }
 
     private static List<PathSolution> runTsp(MulibConfig.MulibConfigBuilder builder) {
         builder.setTRANSF_TRANSFORMATION_REQUIRED(false);
-        return Mulib.getPathSolutions("exec", TspSolver.class, builder);
+        return Mulib.getPathSolutions(TspSolver.class, "exec", builder);
     }
 
     private static List<PathSolution> runGraphColoring(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.getPathSolutions("exec", GraphColoring.class, builder);
+        return Mulib.getPathSolutions(GraphColoring.class, "exec", builder);
     }
 
     private static List<PathSolution> runPrimitiveEncodingCapacityAssignment(
@@ -303,8 +303,8 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         MulibContext mc = Mulib.getMulibContext(
-                "assign",
                 CapacityAssignmentProblem.class,
+                "assign",
                 builder,
                 machines,
                 workloads
@@ -362,8 +362,8 @@ public final class ExamplesExecutor {
         };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3 };
         MulibContext mc = Mulib.getMulibContext(
-                "assign",
                 MachineCAP.class,
+                "assign",
                 builder,
                 machines,
                 workloads
@@ -416,8 +416,8 @@ public final class ExamplesExecutor {
         };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 4, 3 };
         MulibContext mc = Mulib.getMulibContext(
-                "assign",
                 MachineCAP.class,
+                "assign",
                 builder,
                 machines,
                 workloads
@@ -473,8 +473,8 @@ public final class ExamplesExecutor {
         };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3 };
         MulibContext mc = Mulib.getMulibContext(
-                "assignMutateFieldValue",
                 MachineCAP.class,
+                "assignMutateFieldValue",
                 builder,
                 machines,
                 workloads
@@ -522,8 +522,8 @@ public final class ExamplesExecutor {
         int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[][] twoPeriodsWorkloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
         MulibContext mc = Mulib.getMulibContext(
-                "assignWithPreproduction",
                 CapacityAssignmentProblem.class,
+                "assignWithPreproduction",
                 builder,
                 machines,
                 twoPeriodsWorkloads
@@ -596,8 +596,8 @@ public final class ExamplesExecutor {
         };
         int[][] workloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
         MulibContext mc = Mulib.getMulibContext(
-                "assignWithPreproduction",
                 MachineCAP.class,
+                "assignWithPreproduction",
                 builder,
                 machines,
                 workloads
@@ -671,8 +671,8 @@ public final class ExamplesExecutor {
         };
         int[][] workloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 6, 7, 8 }, { 1, 5, 2, 3, 1, 5, 2, 3, 6, 7, 8 } };
         MulibContext mc = Mulib.getMulibContext(
-                "assignWithPreproduction",
                 MachineCAP.class,
+                "assignWithPreproduction",
                 builder,
                 machines,
                 workloads
@@ -746,8 +746,8 @@ public final class ExamplesExecutor {
         };
         int[][] workloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
         MulibContext mc = Mulib.getMulibContext(
-                "assignWithPreproductionMutateFieldValue",
                 MachineCAP.class,
+                "assignWithPreproductionMutateFieldValue",
                 builder,
                 machines,
                 workloads
@@ -836,8 +836,8 @@ public final class ExamplesExecutor {
                         new DlspVariant.Product(4,5), new DlspVariant.Product(3,2), new DlspVariant.Product(4,3), new DlspVariant.Product(4,10) }
         };
         MulibContext mc = Mulib.getMulibContext(
-                "assign",
                 DlspVariant.class,
+                "assign",
                 builder,
                 machines,
                 products

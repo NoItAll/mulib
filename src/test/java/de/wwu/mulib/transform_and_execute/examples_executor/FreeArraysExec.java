@@ -338,8 +338,8 @@ public class FreeArraysExec {
                     };
                     int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     List<PathSolution> ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -363,8 +363,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -377,8 +377,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -391,8 +391,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     List<Solution> sols = Mulib.getMulibContext(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -405,8 +405,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
                     sols = Mulib.getMulibContext(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -421,8 +421,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -447,8 +447,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -461,8 +461,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -475,8 +475,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     sols = Mulib.getMulibContext(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -489,8 +489,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
                     sols = Mulib.getMulibContext(
-                            "assign",
                             MachineCAP.class,
+                            "assign",
                             mb,
                             machines,
                             workloads
@@ -512,8 +512,8 @@ public class FreeArraysExec {
                     };
                     int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     List<PathSolution> ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -537,8 +537,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
                     ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -551,8 +551,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -565,8 +565,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     List<Solution> sols = Mulib.getMulibContext(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -579,8 +579,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
                     sols = Mulib.getMulibContext(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -595,8 +595,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -621,8 +621,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
                     ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -635,8 +635,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     ps = Mulib.getPathSolutions(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -649,8 +649,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
                     sols = Mulib.getMulibContext(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -663,8 +663,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[] { 1, 2, 4, 3, 5, 7, 8 };
                     sols = Mulib.getMulibContext(
-                            "assignMutateFieldValue",
                             MachineCAP.class,
+                            "assignMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -685,8 +685,8 @@ public class FreeArraysExec {
                     };
                     int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     List<PathSolution> ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -719,8 +719,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -732,8 +732,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -744,7 +744,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    MulibContext mc = Mulib.getMulibContext("assignWithPreproduction", MachineCAP.class, mb, machines, workloads);
+                    MulibContext mc = Mulib.getMulibContext(MachineCAP.class, "assignWithPreproduction",mb, machines, workloads);
 
                     List<Solution> sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(3, sols.size());
@@ -781,8 +781,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -815,8 +815,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -828,8 +828,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproduction",
                             MachineCAP.class,
+                            "assignWithPreproduction",
                             mb,
                             machines,
                             workloads
@@ -840,7 +840,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    mc = Mulib.getMulibContext("assignWithPreproduction", MachineCAP.class, mb, machines, workloads);
+                    mc = Mulib.getMulibContext(MachineCAP.class, "assignWithPreproduction", mb, machines, workloads);
 
                     sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(3, sols.size());
@@ -884,8 +884,8 @@ public class FreeArraysExec {
                     };
                     int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     List<PathSolution> ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -918,8 +918,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -931,8 +931,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -943,7 +943,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    MulibContext mc = Mulib.getMulibContext("assignWithPreproductionMutateFieldValue", MachineCAP.class, mb, machines, workloads);
+                    MulibContext mc = Mulib.getMulibContext(MachineCAP.class, "assignWithPreproductionMutateFieldValue", mb, machines, workloads);
 
                     List<Solution> sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(3, sols.size());
@@ -980,8 +980,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -1014,8 +1014,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -1027,8 +1027,8 @@ public class FreeArraysExec {
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
                     ps = Mulib.getPathSolutions(
-                            "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
+                            "assignWithPreproductionMutateFieldValue",
                             mb,
                             machines,
                             workloads
@@ -1039,7 +1039,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    mc = Mulib.getMulibContext("assignWithPreproductionMutateFieldValue", MachineCAP.class, mb, machines, workloads);
+                    mc = Mulib.getMulibContext(MachineCAP.class, "assignWithPreproductionMutateFieldValue", mb, machines, workloads);
 
                     sols = mc.getUpToNSolutions(10, machines, workloads);
                     assertEquals(3, sols.size());
@@ -1096,8 +1096,8 @@ public class FreeArraysExec {
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
                     List<PathSolution> ps = Mulib.getPathSolutions(
-                            "assign",
                             DlspVariant.class,
+                            "assign",
                             mb,
                             machines,
                             products
@@ -1138,15 +1138,15 @@ public class FreeArraysExec {
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             DlspVariant.class,
+                            "assign",
                             mb,
                             machines,
                             products
                     );
                     assertEquals(0, ps.size());
 
-                    MulibContext mc = Mulib.getMulibContext("assign", DlspVariant.class, mb, machines, products);
+                    MulibContext mc = Mulib.getMulibContext(DlspVariant.class, "assign", mb, machines, products);
 
                     List<Solution> sols = mc.getUpToNSolutions(10, machines, products);
                     assertEquals(0, sols.size());
@@ -1185,8 +1185,8 @@ public class FreeArraysExec {
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             DlspVariant.class,
+                            "assign",
                             mb,
                             machines,
                             products
@@ -1227,15 +1227,15 @@ public class FreeArraysExec {
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
                     ps = Mulib.getPathSolutions(
-                            "assign",
                             DlspVariant.class,
+                            "assign",
                             mb,
                             machines,
                             products
                     );
                     assertEquals(0, ps.size());
 
-                    mc = Mulib.getMulibContext("assign", DlspVariant.class, mb, machines, products);
+                    mc = Mulib.getMulibContext(DlspVariant.class, "assign", mb, machines, products);
 
                     sols = mc.getUpToNSolutions(10, machines, products);
                     assertEquals(0, sols.size());
