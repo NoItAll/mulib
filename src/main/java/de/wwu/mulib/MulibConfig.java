@@ -22,7 +22,20 @@ import java.util.function.Function;
 
 /**
  * Comprises configuration options for executing Mulib.
- * Is created using the builder pattern
+ * Is created using the builder pattern.
+ * The prefix 'SOLVER_' is used for configurations involving the solver.
+ * The prefix 'SEARCH_' is used for configurations involving the behavior within the search, such as search strategies,
+ * whether to use concolic execution, etc.
+ * The prefix 'BUDGETS_' is used to specify budgets.
+ * The prefix 'ARRAYS_' is used to specify the procedures for how arrays are treated, e.g., whether to check if
+ * valid accesses should be checked, etc.
+ * The prefix 'TRANSF_' is used to define how the program transformation should behave.
+ * The prefix 'CFG_' is used to define the behavior of the control-flow graph, if any is specified via
+ * {@link MulibConfig#TRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID}.
+ * The prefix 'VALS_' is used to globally restrict the valid domains of values.
+ * The prefix 'LOG_' is for logging.
+ * The prefix 'TREE_' is for debug configs for displaying the tree.
+ *
  * @see MulibConfigBuilder
  */
 @SuppressWarnings({"OptionalUsedAsFieldOrParameterType", "unused"})
@@ -108,59 +121,59 @@ public class MulibConfig {
     public final TriConsumer<MulibExecutor, ExceededBudget, SolverManager> CALLBACK_EXCEEDED_BUDGET;
     /* Values */
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sint> VALS_SYMSINT_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sint> VALS_SYMSINT_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Slong> VALS_SYMSLONG_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Slong> VALS_SYMSLONG_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sdouble> VALS_SYMSDOUBLE_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sdouble> VALS_SYMSDOUBLE_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sfloat> VALS_SYMSFLOAT_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sfloat> VALS_SYMSFLOAT_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sshort> VALS_SYMSSHORT_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sshort> VALS_SYMSSHORT_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sbyte> VALS_SYMSBYTE_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Sbyte> VALS_SYMSBYTE_UB;
     /**
-     * Lower bound
+     * Lower bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Schar> VALS_SYMSCHAR_LB;
     /**
-     * Upper bound
+     * Upper bound. Can be overridden by providing an explicit lower and upper bound for a value.
      */
     public final Optional<Schar> VALS_SYMSCHAR_UB;
     /**
