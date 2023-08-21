@@ -17,7 +17,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit0() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -25,7 +25,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -41,7 +41,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit1() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasNoClinit.class,
                             mb,
@@ -49,7 +49,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasNoClinit.class,
                             mb,
@@ -65,7 +65,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit2() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasNoClinit.class,
                             mb,
@@ -73,7 +73,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasNoClinit.class,
                             mb,
@@ -89,7 +89,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit3() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -97,7 +97,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -114,7 +114,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit4() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -122,7 +122,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasNoClinit.class,
                             mb,
@@ -139,7 +139,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit5() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasNoClinit.class,
                             mb,
@@ -147,7 +147,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasNoClinit.class,
                             mb,
@@ -164,7 +164,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasNoClinit6() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasNoClinit.class,
                             mb,
@@ -172,7 +172,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasNoClinit.class,
                             mb,
@@ -189,7 +189,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized0() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -197,7 +197,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -214,7 +214,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized1() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -222,7 +222,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -239,7 +239,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized2() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -247,7 +247,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -264,7 +264,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized3() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -272,7 +272,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -289,7 +289,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized4() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -297,7 +297,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -314,7 +314,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized5() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -322,7 +322,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -339,7 +339,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitInitialized6() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -347,7 +347,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasClinitInitialized.class,
                             mb,
@@ -364,7 +364,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized0() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -372,7 +372,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkINT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -389,7 +389,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized1() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -397,7 +397,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkLONG_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -414,7 +414,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized2() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -422,7 +422,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkDOUBLE_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -439,7 +439,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized3() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -447,7 +447,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkFLOAT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -464,7 +464,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized4() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -472,7 +472,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkSHORT_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -489,7 +489,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized5() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -497,7 +497,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBYTE_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -514,7 +514,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testHasClinitUninitialized6() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -522,7 +522,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "checkBOOL_CONST",
                             HasClinitUninitialized.class,
                             mb,
@@ -539,7 +539,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testCyclicInputClasses() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc",
                             CyclicInputClasses.class,
                             mb,
@@ -563,7 +563,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testIndirectCyclicInputClassesCalc0() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc0",
                             IndirectCyclicInputClasses0.class,
                             mb,
@@ -581,7 +581,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testIndirectCyclicInputClassesCalc1() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc1",
                             IndirectCyclicInputClasses0.class,
                             mb
@@ -598,7 +598,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testNeedsToPreinitializeFieldsCalc0() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc0",
                             NeedsToPreinitializeFields.class,
                             mb
@@ -614,7 +614,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testNeedsToPreinitializeFieldsCalc1() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc1",
                             NeedsToPreinitializeFields.class,
                             mb,
@@ -622,7 +622,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "calc1",
                             NeedsToPreinitializeFields.class,
                             mb,
@@ -630,7 +630,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "calc1",
                             NeedsToPreinitializeFields.class,
                             mb,
@@ -638,7 +638,7 @@ public class GeneratedMethodsCheckExec {
                     );
                     assertEquals(1, result.size());
                     assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
-                    result = Mulib.executeMulib(
+                    result = Mulib.getPathSolutions(
                             "calc1",
                             NeedsToPreinitializeFields.class,
                             mb,
@@ -655,7 +655,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testNeedsToPreinitializeFieldsCalc2() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc2",
                             NeedsToPreinitializeFields.class,
                             mb
@@ -671,7 +671,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testNeedsToPreinitializeFieldsCalc3() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc3",
                             NeedsToPreinitializeFields.class,
                             mb
@@ -687,7 +687,7 @@ public class GeneratedMethodsCheckExec {
     @Test
     public void testNeedsToPreinitializeFieldsCalc4() {
         TestUtility.getAllSolutions(mb -> {
-                    List<PathSolution> result = Mulib.executeMulib(
+                    List<PathSolution> result = Mulib.getPathSolutions(
                             "calc4",
                             NeedsToPreinitializeFields.class,
                             mb

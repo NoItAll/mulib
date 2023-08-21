@@ -5,7 +5,7 @@ import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectFieldConstraint;
 import de.wwu.mulib.constraints.PartnerClassObjectInitializationConstraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.IncrementalSolverState;
 import de.wwu.mulib.substitutions.PartnerClass;

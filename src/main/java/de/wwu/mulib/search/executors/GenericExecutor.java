@@ -1,7 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
@@ -9,7 +9,6 @@ import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
 import java.util.LinkedHashMap;
-import java.util.List;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.function.Supplier;

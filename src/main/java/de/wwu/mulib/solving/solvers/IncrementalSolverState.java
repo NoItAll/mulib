@@ -2,7 +2,7 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
 import java.util.*;

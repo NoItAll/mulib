@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if an error is encountered during labeling. For instance, if the constraint stack is not satisfiable and

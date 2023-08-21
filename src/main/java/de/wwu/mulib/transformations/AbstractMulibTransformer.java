@@ -1,8 +1,8 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;

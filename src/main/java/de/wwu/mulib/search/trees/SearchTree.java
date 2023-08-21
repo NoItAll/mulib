@@ -3,7 +3,7 @@ package de.wwu.mulib.search.trees;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
 import java.util.ArrayDeque;

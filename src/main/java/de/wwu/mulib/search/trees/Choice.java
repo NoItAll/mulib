@@ -2,9 +2,9 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.exceptions.IllegalTreeAccessException;
-import de.wwu.mulib.exceptions.IllegalTreeModificationException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.IllegalTreeAccessException;
+import de.wwu.mulib.throwables.IllegalTreeModificationException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.budget.Budget;
 import de.wwu.mulib.solving.Solution;
 

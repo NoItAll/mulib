@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if an illegal configuration has been detected. For instance, if an incremental search strategy has been

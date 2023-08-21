@@ -3,7 +3,7 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.BoolExpr;
 import com.microsoft.z3.Status;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.UnknownSolutionException;
+import de.wwu.mulib.throwables.UnknownSolutionException;
 
 /**
  * Incremental version of the Z3 constraint solver. Uses Z3's scopes for backtracking and is more space-efficient and,

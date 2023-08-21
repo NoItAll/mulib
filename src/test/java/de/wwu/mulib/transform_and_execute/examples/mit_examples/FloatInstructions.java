@@ -15,7 +15,7 @@ package de.wwu.mulib.transform_and_execute.examples.mit_examples;
 
 
 import de.wwu.mulib.Mulib;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 
 // HW: Adapted to fit Mulib, taken from https://github.com/sosy-lab/sv-benchmarks/blob/99d37c5b4072891803b9e5c154127c912477f705/java/jdart-regression/float/Main.java
 public class FloatInstructions {

@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Exception indicating that some functionality has not yet been implemented in Mulib.

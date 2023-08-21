@@ -1,7 +1,7 @@
 package de.wwu.mulib.model;
 
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sdouble;
 import de.wwu.mulib.substitutions.primitives.Slong;
 import de.wwu.mulib.transformations.MulibTransformer;

@@ -1,7 +1,7 @@
 package de.wwu.mulib.transform_and_execute.examples;
 
 import de.wwu.mulib.Mulib;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 
 public class IincCheck {
 

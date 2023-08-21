@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 import de.wwu.mulib.search.budget.Budget;
 

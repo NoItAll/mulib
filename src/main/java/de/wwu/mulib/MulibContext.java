@@ -1,7 +1,7 @@
 package de.wwu.mulib;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.executors.*;
@@ -155,16 +155,16 @@ public final class MulibContext {
     /**
      * @param args The arguments to the search region, if any
      * @return The path solutions
-     * @see Mulib#executeMulib 
+     * @see Mulib#getPathSolutions
      */
-    public List<PathSolution> getAllPathSolutions(Object... args) {
-        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
+    public List<PathSolution> getPathSolutions(Object... args) {
+        return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getPathSolutions());
     }
 
     /**
      * @param args The arguments to the search region, if any
      * @return A path solution, if any could be extracted
-     * @see Mulib#executeMulib
+     * @see Mulib#getPathSolutions
      */
     public Optional<PathSolution> getPathSolution(Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getPathSolution());
@@ -175,7 +175,7 @@ public final class MulibContext {
      * @param args The arguments to the search region, if any could be found given the budgets
      * @return The solutions
      */
-    public List<Solution> getAllSolutions(Object... args) {
+    public List<Solution> getSolutions(Object... args) {
         return _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getUpToNSolutions(Integer.MAX_VALUE));
     }
 
@@ -212,7 +212,7 @@ public final class MulibContext {
     public String generateTestCases(Method methodUnderTest, TcgConfig.TcgConfigBuilder tcgConfigBuilder, Object... args) {
         // First get all path solutions
         List<PathSolution> pathSolutions =
-                _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getAllPathSolutions());
+                _checkExecuteAndLog(args, (arguments) -> generateNewMulibExecutorManagerForPreInitializedContext(arguments).getPathSolutions());
         List<TestCase> testCaseList = new ArrayList<>();
         TcgConfig tcgConfig = tcgConfigBuilder.build();
         boolean checkedForCorrectLables = false;

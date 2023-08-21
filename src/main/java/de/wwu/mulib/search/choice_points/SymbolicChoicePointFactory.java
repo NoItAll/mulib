@@ -2,7 +2,7 @@ package de.wwu.mulib.search.choice_points;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.Choice;

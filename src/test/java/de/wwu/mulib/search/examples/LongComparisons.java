@@ -1,7 +1,7 @@
 package de.wwu.mulib.search.examples;
 
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;

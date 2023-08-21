@@ -1,6 +1,6 @@
 package de.wwu.mulib.transformations;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 
 import java.lang.reflect.Field;
 

@@ -1,6 +1,6 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.transformations.AbstractMulibTransformer;
 import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;

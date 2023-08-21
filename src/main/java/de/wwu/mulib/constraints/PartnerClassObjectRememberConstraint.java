@@ -1,6 +1,6 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sint;
 

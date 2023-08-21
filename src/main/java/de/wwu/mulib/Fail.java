@@ -1,6 +1,6 @@
 package de.wwu.mulib;
 
-import de.wwu.mulib.exceptions.MulibControlFlowException;
+import de.wwu.mulib.throwables.MulibControlFlowException;
 
 /**
  * Special exception that can be thrown to indicate that the current branch in the search tree should

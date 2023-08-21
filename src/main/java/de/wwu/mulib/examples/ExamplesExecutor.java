@@ -13,7 +13,7 @@ import de.wwu.mulib.examples.sac22_mulib_benchmark.Partition3;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.TspSolver;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
 import de.wwu.mulib.search.trees.ExceptionPathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
@@ -51,25 +51,25 @@ public final class ExamplesExecutor {
             //b.setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS).setINCR_ACTUAL_CP_BUDGET(32);
             switch (chosenConfig) {
                 case "DFSN":
-                    b.setGLOBAL_SEARCH_STRATEGY(DFS)
-                            .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS, DFS)
-                            .setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING); // Improved implementation compared to the SAC benchmark!
+                    b.setSEARCH_MAIN_STRATEGY(DFS)
+                            .setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(DFS, DFS, DFS)
+                            .setSOLVER_GLOBAL_TYPE(Solvers.Z3_GLOBAL_LEARNING); // Improved implementation compared to the SAC benchmark!
                     break;
                 case "DFS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
-                            .setGLOBAL_SEARCH_STRATEGY(DFS);
+                    b.setSOLVER_GLOBAL_TYPE(Solvers.Z3_INCREMENTAL)
+                            .setSEARCH_MAIN_STRATEGY(DFS);
                     break;
                 case "PDFS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
-                            .setGLOBAL_SEARCH_STRATEGY(DFS)
-                            .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DFS, DFS, DFS);
+                    b.setSOLVER_GLOBAL_TYPE(Solvers.Z3_INCREMENTAL)
+                            .setSEARCH_MAIN_STRATEGY(DFS)
+                            .setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(DFS, DFS, DFS);
                     break;
                 case "PDSAS":
-                    b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_INCREMENTAL)
-                            .setGLOBAL_SEARCH_STRATEGY(DSAS)
-                            .setADDITIONAL_PARALLEL_SEARCH_STRATEGIES(DSAS, DSAS, DSAS)
+                    b.setSOLVER_GLOBAL_TYPE(Solvers.Z3_INCREMENTAL)
+                            .setSEARCH_MAIN_STRATEGY(DSAS)
+                            .setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(DSAS, DSAS, DSAS)
                             // Direct access makes sense for request of DSAS
-                            .setCHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS);
+                            .setSEARCH_CHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -97,47 +97,47 @@ public final class ExamplesExecutor {
                     break;
                 case "PCAP":
                     pathSolutions = runPrimitiveEncodingCapacityAssignment(
-                            args[3].equals("HL") ? b.setHIGH_LEVEL_FREE_ARRAY_THEORY(true) : b.setHIGH_LEVEL_FREE_ARRAY_THEORY(false),
+                            args[3].equals("HL") ? b.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true) : b.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(false),
                             computeSolutions);
                     break;
                 case "MCAP":
                     pathSolutions = runMachineContainerEncodingCapacityAssignment(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MCAP_REDUCED":
                     pathSolutions = runMachineContainerEncodingCapacityAssignmentReduced(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MPCAP":
                     pathSolutions = runMultiPeriodCapacityAssignment(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MPMCAP":
                     pathSolutions = runMultiPeriodMachineContainerCapacityAssignment(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MPMCAP_SPA":
                     pathSolutions = runMultiPeriodMachineContainerCapacityAssignmentSparser(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "DLSPV":
                     pathSolutions = runDlspVariant(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MCAPMF":
                     pathSolutions = runMachineContainerEncodingCapacityAssignmentMutateFieldValues(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "MPMCAPMF":
                     pathSolutions = runMultiPeriodMachineContainerCapacityAssignmenMutateFieldValues(
-                            args[3].equals("E") ? b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setUSE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
+                            args[3].equals("E") ? b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(true) : b.setARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS(false),
                             computeSolutions);
                     break;
                 case "SMM": // send more money
@@ -164,7 +164,7 @@ public final class ExamplesExecutor {
     }
 
     private static List<PathSolution> runNQueens(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulib(
+        return Mulib.getPathSolutions(
                 "solve",
                 NQueens.class,
                 builder
@@ -172,7 +172,7 @@ public final class ExamplesExecutor {
     }
 
     private static List<PathSolution> runSendMoreMoney(MulibConfig.MulibConfigBuilder builder) {
-        List<PathSolution> ps = Mulib.executeMulib("search", SendMoreMoney.class, builder);
+        List<PathSolution> ps = Mulib.getPathSolutions("search", SendMoreMoney.class, builder);
         Solution sol = ps.get(0).getSolution();
         String s = "'s' should be 9: " + sol.labels.getLabelForId("s");
         String e = "\r\n'e' should be 5: " + sol.labels.getLabelForId("e");
@@ -187,7 +187,7 @@ public final class ExamplesExecutor {
 
     public static List<PathSolution> runKnapsack(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
-        List<PathSolution> result = Mulib.executeMulib("findKnapsack", Knapsack.class, builder);
+        List<PathSolution> result = Mulib.getPathSolutions("findKnapsack", Knapsack.class, builder);
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Knapsack.Item> items = (ArrayList<Knapsack.Item>) ps.getSolution().returnValue;
@@ -203,7 +203,7 @@ public final class ExamplesExecutor {
 
     public static List<PathSolution> runScheduling(MulibConfig.MulibConfigBuilder builder) {
         builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true);
-        List<PathSolution> result = Mulib.executeMulib("schedule", Courses.class, builder);
+        List<PathSolution> result = Mulib.getPathSolutions("schedule", Courses.class, builder);
         StringBuilder sb = new StringBuilder();
         for (PathSolution ps : result) {
             ArrayList<Courses.Assignment> assignments = (ArrayList<Courses.Assignment>) ps.getSolution().returnValue;
@@ -218,9 +218,9 @@ public final class ExamplesExecutor {
     }
 
     public static List<PathSolution> runPostmanProblem_possible(MulibConfig.MulibConfigBuilder builder) {
-        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
         List<PathSolution> result =
-                Mulib.executeMulib(
+                Mulib.getPathSolutions(
                         "getRoute",
                         PostmanProblemWithDirectedEdges.class,
                         builder,
@@ -252,9 +252,9 @@ public final class ExamplesExecutor {
     }
 
     public static List<PathSolution> runPostmanProblem_impossible(MulibConfig.MulibConfigBuilder builder) {
-        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setHIGH_LEVEL_FREE_ARRAY_THEORY(true);
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
         Optional<PathSolution> result =
-                Mulib.executeMulibForOne(
+                Mulib.getPathSingleSolution(
                         "getRoute",
                         PostmanProblemWithDirectedEdges.class,
                         builder,
@@ -274,30 +274,30 @@ public final class ExamplesExecutor {
 
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulib("exec", Partition3.class, builder);
+        return Mulib.getPathSolutions("exec", Partition3.class, builder);
     }
 
     private static List<PathSolution> runWBS(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulib("launch", WBS.class, builder);
+        return Mulib.getPathSolutions("launch", WBS.class, builder);
     }
 
     private static List<PathSolution> runHanoi(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulib("exec", SatHanoi01.class, builder);
+        return Mulib.getPathSolutions("exec", SatHanoi01.class, builder);
     }
 
     private static List<PathSolution> runTsp(MulibConfig.MulibConfigBuilder builder) {
         builder.setTRANSF_TRANSFORMATION_REQUIRED(false);
-        return Mulib.executeMulib("exec", TspSolver.class, builder);
+        return Mulib.getPathSolutions("exec", TspSolver.class, builder);
     }
 
     private static List<PathSolution> runGraphColoring(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.executeMulib("exec", GraphColoring.class, builder);
+        return Mulib.getPathSolutions("exec", GraphColoring.class, builder);
     }
 
     private static List<PathSolution> runPrimitiveEncodingCapacityAssignment(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3, 1, 2, 4, 3 };
         List<PathSolution> ps = null;
@@ -310,7 +310,7 @@ public final class ExamplesExecutor {
                 workloads
         );
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -351,7 +351,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMachineContainerEncodingCapacityAssignment(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -371,7 +371,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -408,7 +408,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMachineContainerEncodingCapacityAssignmentReduced(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -425,7 +425,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -462,7 +462,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMachineContainerEncodingCapacityAssignmentMutateFieldValues(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -482,7 +482,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -518,7 +518,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMultiPeriodCapacityAssignment(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         int[] machines = new int[] { 5, 3, 2, 5, 3, 2, 5, 3, 2 };
         int[][] twoPeriodsWorkloads = new int[][] { { 1, 4, 3, 1, 1, 4, 3, 1, 1, 4, 3, 1  }, { 1, 5, 2, 3, 1, 5, 2, 3, 1, 5, 2, 3 } };
         MulibContext mc = Mulib.getMulibContext(
@@ -531,7 +531,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, twoPeriodsWorkloads);
+            ps = mc.getPathSolutions(machines, twoPeriodsWorkloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, twoPeriodsWorkloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -588,7 +588,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignment(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -605,7 +605,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -663,7 +663,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignmentSparser(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(6), new Machine(7), new Machine(8),
@@ -680,7 +680,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -738,7 +738,7 @@ public final class ExamplesExecutor {
     private static List<PathSolution> runMultiPeriodMachineContainerCapacityAssignmenMutateFieldValues(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         Machine[] machines = new Machine[] {
                 new Machine(5), new Machine(3), new Machine(2),
                 new Machine(5), new Machine(3), new Machine(2),
@@ -755,7 +755,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, workloads);
+            ps = mc.getPathSolutions(machines, workloads);
         } else {
             sols = mc.getUpToNSolutions(10, machines, workloads);
             Mulib.log.info("#Sols " + sols.size());
@@ -813,7 +813,7 @@ public final class ExamplesExecutor {
     public static List<PathSolution> runDlspVariant(
             MulibConfig.MulibConfigBuilder builder,
             boolean computeSolutions) {
-        builder.setHIGH_LEVEL_FREE_ARRAY_THEORY(true).setENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSECONDS_PER_INVOCATION(30);
+        builder.setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true).setTREE_ENLIST_LEAVES(true).setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setBUDGET_GLOBAL_TIME_IN_SECONDS(30);
         DlspVariant.Machine[] machines = new DlspVariant.Machine[] {
                 new DlspVariant.Machine(1, 4, new int[] { 1, 2, 3 }),
                 new DlspVariant.Machine(2, 5, new int[] { 1, 4 }),
@@ -845,7 +845,7 @@ public final class ExamplesExecutor {
         List<PathSolution> ps = null;
         List<Solution> sols = null;
         if (!computeSolutions) {
-            ps = mc.getAllPathSolutions(machines, products);
+            ps = mc.getPathSolutions(machines, products);
         } else {
             sols = mc.getUpToNSolutions(10, machines, products);
             Mulib.log.info("#Sols " + sols.size());

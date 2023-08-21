@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Exceptions thrown in Mulib for the purpose of control flow are subclasses of {@link MulibControlFlowException}.

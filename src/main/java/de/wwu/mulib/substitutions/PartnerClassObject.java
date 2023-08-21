@@ -1,7 +1,7 @@
 package de.wwu.mulib.substitutions;
 
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sbool;

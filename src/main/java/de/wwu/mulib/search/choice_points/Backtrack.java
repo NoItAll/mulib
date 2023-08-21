@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.choice_points;
 
-import de.wwu.mulib.exceptions.MulibControlFlowException;
+import de.wwu.mulib.throwables.MulibControlFlowException;
 
 /**
  * Is thrown if we Backtrack due to a search strategy. For instance, after evaluating a choice option,

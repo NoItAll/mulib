@@ -1,6 +1,6 @@
 package de.wwu.mulib.tcg;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.tcg.testsetreducer.NullTestSetReducer;
 import de.wwu.mulib.tcg.testsetreducer.TestSetReducer;
 import de.wwu.mulib.tcg.testsetsorter.NullTestSetSorter;

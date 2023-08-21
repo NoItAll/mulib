@@ -1,9 +1,9 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.SubstitutedVar;
@@ -14,7 +14,6 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.util.IdentityHashMap;
 import java.util.Map;
-import java.util.function.BiFunction;
 
 /**
  * Transforms values from outside the search region into the search region-representation of it.

@@ -2,7 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
@@ -207,7 +207,7 @@ public abstract class MulibExecutorManager {
      * Shuts down this manager thereafter.
      * @return As many path solutions as can be found
      */
-    public synchronized List<PathSolution> getAllPathSolutions() {
+    public synchronized List<PathSolution> getPathSolutions() {
         globalExecutionManagerBudgetManager.resetTimeBudget();
         // We constantly poll with the mainExecutor.
         while (!checkForTerminationAndTerminate()) {

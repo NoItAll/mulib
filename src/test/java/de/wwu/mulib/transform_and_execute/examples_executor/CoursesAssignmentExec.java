@@ -23,7 +23,7 @@ public class CoursesAssignmentExec {
     }
 
     private List<PathSolution> runScheduling(MulibConfig.MulibConfigBuilder builder) {
-        List<PathSolution> result = Mulib.executeMulib("schedule", Courses.class, builder);
+        List<PathSolution> result = Mulib.getPathSolutions("schedule", Courses.class, builder);
         assertTrue(!result.isEmpty());
         for (PathSolution ps : result) {
             ArrayList<Courses.Assignment> assignments = (ArrayList<Courses.Assignment>) ps.getSolution().returnValue;

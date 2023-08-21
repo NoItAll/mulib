@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if an illegal state has been identified the exact reason of which has not yet been identified.

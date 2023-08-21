@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.choice_points;
 
-import de.wwu.mulib.exceptions.ExceededBudget;
+import de.wwu.mulib.throwables.ExceededBudget;
 import de.wwu.mulib.search.budget.Budget;
 
 /**

@@ -1,6 +1,6 @@
 package de.wwu.mulib.search.executors;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 
 import java.util.concurrent.ThreadFactory;
 

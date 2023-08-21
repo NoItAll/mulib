@@ -1,6 +1,6 @@
 package de.wwu.mulib.tcg.testmethodgenerator;
 
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.tcg.TcgUtility;
 import de.wwu.mulib.tcg.TestCase;

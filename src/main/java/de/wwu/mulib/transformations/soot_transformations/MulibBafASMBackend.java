@@ -1,6 +1,6 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import org.objectweb.asm.ClassWriter;
 import soot.SootClass;
 import soot.baf.BafASMBackend;

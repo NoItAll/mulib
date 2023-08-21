@@ -2,7 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.Choice;

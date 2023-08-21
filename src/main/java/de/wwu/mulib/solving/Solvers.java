@@ -1,7 +1,7 @@
 package de.wwu.mulib.solving;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.solving.solvers.JavaSMTSolverManager;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;

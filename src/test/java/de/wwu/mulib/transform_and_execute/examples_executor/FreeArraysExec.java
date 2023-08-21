@@ -337,7 +337,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    List<PathSolution> ps = Mulib.executeMulib(
+                    List<PathSolution> ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -362,7 +362,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -376,7 +376,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -420,7 +420,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -446,7 +446,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -460,7 +460,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             MachineCAP.class,
                             mb,
@@ -511,7 +511,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     int[] workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    List<PathSolution> ps = Mulib.executeMulib(
+                    List<PathSolution> ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -536,7 +536,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -550,7 +550,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -594,7 +594,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -620,7 +620,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3, 1 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -634,7 +634,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[] { 1, 2, 4, 3, 1, 2, 4, 3 };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -684,7 +684,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    List<PathSolution> ps = Mulib.executeMulib(
+                    List<PathSolution> ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -718,7 +718,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -731,7 +731,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -780,7 +780,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -814,7 +814,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -827,7 +827,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproduction",
                             MachineCAP.class,
                             mb,
@@ -883,7 +883,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     int[][] workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    List<PathSolution> ps = Mulib.executeMulib(
+                    List<PathSolution> ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -917,7 +917,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -930,7 +930,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -979,7 +979,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -1013,7 +1013,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(2)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3, 1 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -1026,7 +1026,7 @@ public class FreeArraysExec {
                             new MachineCAP.Machine(5), new MachineCAP.Machine(3), new MachineCAP.Machine(1)
                     };
                     workloads = new int[][] { { 1, 4, 3, 1 }, { 1, 5, 2, 3 } };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assignWithPreproductionMutateFieldValue",
                             MachineCAP.class,
                             mb,
@@ -1095,7 +1095,7 @@ public class FreeArraysExec {
                             {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
-                    List<PathSolution> ps = Mulib.executeMulib(
+                    List<PathSolution> ps = Mulib.getPathSolutions(
                             "assign",
                             DlspVariant.class,
                             mb,
@@ -1137,7 +1137,7 @@ public class FreeArraysExec {
                             {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             DlspVariant.class,
                             mb,
@@ -1184,7 +1184,7 @@ public class FreeArraysExec {
                             {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             DlspVariant.class,
                             mb,
@@ -1226,7 +1226,7 @@ public class FreeArraysExec {
                             {new DlspVariant.Product(4, 4), new DlspVariant.Product(4, 1), new DlspVariant.Product(2, 6), new DlspVariant.Product(5, 2), new DlspVariant.Product(2, 4),
                                     new DlspVariant.Product(4, 5), new DlspVariant.Product(3, 2), new DlspVariant.Product(4, 3), new DlspVariant.Product(4, 10)},
                     };
-                    ps = Mulib.executeMulib(
+                    ps = Mulib.getPathSolutions(
                             "assign",
                             DlspVariant.class,
                             mb,

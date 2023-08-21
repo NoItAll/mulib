@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if the {@link de.wwu.mulib.search.trees.SearchTree} is modified in an illegal manner. For instance,

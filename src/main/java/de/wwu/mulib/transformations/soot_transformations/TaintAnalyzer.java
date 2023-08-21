@@ -2,7 +2,7 @@ package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import soot.*;
 import soot.jimple.*;
 

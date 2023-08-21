@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if the solver cannot decide if some formula is satisfiable or unsatisfiable

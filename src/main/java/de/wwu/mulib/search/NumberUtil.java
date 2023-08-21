@@ -1,6 +1,6 @@
 package de.wwu.mulib.search;
 
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.*;
 
 /**

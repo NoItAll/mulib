@@ -1,9 +1,9 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.MulibIllegalStateException;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.AbstractMulibTransformer;

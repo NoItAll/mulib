@@ -1,4 +1,4 @@
-package de.wwu.mulib.exceptions;
+package de.wwu.mulib.throwables;
 
 /**
  * Is thrown if attributes of the {@link de.wwu.mulib.search.trees.SearchTree} are accessed that are not yet properly

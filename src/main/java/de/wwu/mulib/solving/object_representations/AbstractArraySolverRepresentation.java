@@ -4,7 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.ArrayInitializationConstraint;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;

@@ -1,6 +1,6 @@
 package de.wwu.mulib;
 
-import de.wwu.mulib.exceptions.MisconfigurationException;
+import de.wwu.mulib.throwables.MisconfigurationException;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
 import de.wwu.mulib.search.choice_points.Backtrack;

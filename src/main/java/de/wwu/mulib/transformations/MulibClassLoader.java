@@ -1,6 +1,6 @@
 package de.wwu.mulib.transformations;
 
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 
 import static de.wwu.mulib.transformations.StringConstants._TRANSFORMATION_INDICATOR;
 

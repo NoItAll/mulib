@@ -1,7 +1,7 @@
 package de.wwu.mulib.util;
 
 import de.wwu.mulib.Mulib;
-import de.wwu.mulib.exceptions.MulibRuntimeException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.substitutions.PartnerClassObject;
 
 import java.lang.reflect.Field;

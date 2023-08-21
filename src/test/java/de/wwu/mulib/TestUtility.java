@@ -325,7 +325,7 @@ public final class TestUtility {
             Object[] args) {
         mb.setTRANSF_TRANSFORMATION_REQUIRED(transformationRequired);
         MulibContext mc = Mulib.getMulibContext(containingClass, methodName, mb, argTypes);
-        List<PathSolution> result = mc.getAllPathSolutions(args);
+        List<PathSolution> result = mc.getPathSolutions(args);
         return result;
     }
 

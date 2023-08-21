@@ -1,7 +1,7 @@
 package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.exceptions.NotYetImplementedException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 /**
  * Specifies the type of deque supported by Mulib
