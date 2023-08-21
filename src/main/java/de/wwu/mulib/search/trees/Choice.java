@@ -244,7 +244,7 @@ public final class Choice extends TreeNode {
 
         /**
          * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}.
-         * The returned path solution is an {@link ExceptionPathSolution}, i.e., an exception was thrown.
+         * The returned path solution is an {@link ThrowablePathSolution}, i.e., an exception was thrown.
          * All constraints on the path are added to the path solution
          * Throws an exception if this choice option was already evaluated.
          * @param s The solution to wrap in the path solution
@@ -252,14 +252,14 @@ public final class Choice extends TreeNode {
          * @param partnerClassObjectConstraints The list of partner class constraints
          * @return The path solution node associated with reaching a leaf node
          */
-        public ExceptionPathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
+        public ThrowablePathSolution setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints) {
             _checkChildIsUnset();
-            return new ExceptionPathSolution(this, s, constraints, partnerClassObjectConstraints);
+            return new ThrowablePathSolution(this, s, constraints, partnerClassObjectConstraints);
         }
 
         /**
          * Sets the choice option to yield a leaf node of the search tree, a {@link PathSolution}.
-         * The returned path solution is an {@link ExceptionPathSolution}, i.e., an exception was thrown.
+         * The returned path solution is an {@link ThrowablePathSolution}, i.e., an exception was thrown.
          * All constraints on the path are added to the path solution
          * Throws an exception if this choice option was already evaluated.
          * @param s The solution to wrap in the path solution
@@ -268,9 +268,9 @@ public final class Choice extends TreeNode {
          * @param cover The cover that could be calculated for this path solution. Is, e.g., calculated using {@link de.wwu.mulib.search.choice_points.CoverageCfg}.
          * @return The path solution node associated with reaching a leaf node. The path solution also contains a coverage bit set
          */
-        public ExceptionPathSolutionWithCover setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
+        public ThrowablePathSolutionWithCover setExceptionSolution(Solution s, Constraint[] constraints, PartnerClassObjectConstraint[] partnerClassObjectConstraints, BitSet cover) {
             _checkChildIsUnset();
-            return new ExceptionPathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
+            return new ThrowablePathSolutionWithCover(this, s, constraints, partnerClassObjectConstraints, cover);
         }
 
         /**

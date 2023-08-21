@@ -3,7 +3,7 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
@@ -300,7 +300,7 @@ public class WBS {
                 false
         );
         assertEquals(13824, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 }

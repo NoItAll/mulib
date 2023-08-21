@@ -15,7 +15,7 @@ import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.Solvers;
@@ -322,7 +322,7 @@ public final class ExamplesExecutor {
                 if (ps.size() != 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -383,7 +383,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -437,7 +437,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -494,7 +494,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -542,7 +542,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -617,7 +617,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -692,7 +692,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -767,7 +767,7 @@ public final class ExamplesExecutor {
                 if (ps.size() < 1) {
                     throw new MulibIllegalStateException();
                 }
-                if (ps.stream().anyMatch(p -> p instanceof ExceptionPathSolution)) {
+                if (ps.stream().anyMatch(p -> p instanceof ThrowablePathSolution)) {
                     throw new MulibIllegalStateException();
                 }
                 _sols = ps.stream().map(PathSolution::getSolution).collect(Collectors.toList());
@@ -854,7 +854,7 @@ public final class ExamplesExecutor {
         if (runChecks) {
             DlspVariant.Product[][] result;
             if (!computeSolutions) {
-                if (ps.size() != 1 || ps.get(0) instanceof ExceptionPathSolution) {
+                if (ps.size() != 1 || ps.get(0) instanceof ThrowablePathSolution) {
                     throw new MulibIllegalStateException();
                 }
                 result = (DlspVariant.Product[][]) ps.get(0).getSolution().returnValue;

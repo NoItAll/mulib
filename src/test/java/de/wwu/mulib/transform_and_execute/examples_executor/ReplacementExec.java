@@ -3,7 +3,7 @@ package de.wwu.mulib.transform_and_execute.examples_executor;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.IntegerScenario;
@@ -29,7 +29,7 @@ public class ReplacementExec {
                             true
                     );
                     assertEquals(4, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     int numbersLessThan = 0;
                     int numbersMoreThan = 0;
                     for (PathSolution ps : result) {

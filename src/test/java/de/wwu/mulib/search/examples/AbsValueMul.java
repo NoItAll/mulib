@@ -8,7 +8,7 @@ import de.wwu.mulib.expressions.Mul;
 import de.wwu.mulib.expressions.Neg;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import org.junit.jupiter.api.Test;
@@ -33,7 +33,7 @@ public class AbsValueMul {
                 false
         );
         assertEquals(4, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         boolean first = false; boolean second = false; boolean third = false; boolean fourth = false;
         for (PathSolution s : result) {
             Sint.SymSint solContent = (Sint.SymSint) s.getSolution().returnValue;

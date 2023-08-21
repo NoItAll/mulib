@@ -3,7 +3,7 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Slong;
@@ -22,7 +22,7 @@ public class LongComparisons {
                 mb -> {
                     List<PathSolution> result = TestUtility.executeMulib("abs0", LongComparisons.class, mb, false);
                     assertEquals(3, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     
                 },
                 "testAbs0"
@@ -35,7 +35,7 @@ public class LongComparisons {
                 mb -> {
                     List<PathSolution> result = TestUtility.executeMulib("abs1", LongComparisons.class, mb, false);
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     
                 },
                 "testAbs1"

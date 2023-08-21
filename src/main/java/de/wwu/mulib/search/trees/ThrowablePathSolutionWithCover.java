@@ -7,13 +7,13 @@ import de.wwu.mulib.solving.Solution;
 import java.util.BitSet;
 
 /**
- * Adds to {@link ExceptionPathSolution} by also storing a cover
+ * Adds to {@link ThrowablePathSolution} by also storing a cover
  */
-public class ExceptionPathSolutionWithCover extends ExceptionPathSolution implements IPathSolutionWithBitSetCover {
+public class ThrowablePathSolutionWithCover extends ThrowablePathSolution implements IPathSolutionWithBitSetCover {
 
     private final BitSet cover;
 
-    ExceptionPathSolutionWithCover(
+    ThrowablePathSolutionWithCover(
             Choice.ChoiceOption choiceOption,
             Solution s,
             Constraint[] constraints,

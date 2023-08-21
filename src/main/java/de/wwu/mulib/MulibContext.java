@@ -219,7 +219,7 @@ public final class MulibContext {
         for (PathSolution ps : pathSolutions) {
             // Create a test case for each path solution
             TestCase testCase = new TestCase(
-                    ps instanceof ExceptionPathSolution,
+                    ps instanceof ThrowablePathSolution,
                     ps.getSolution().labels.getIdToLabel(),
                     ps.getSolution().returnValue,
                     ps instanceof IPathSolutionWithBitSetCover ? ((IPathSolutionWithBitSetCover) ps).getCover() : new BitSet(),

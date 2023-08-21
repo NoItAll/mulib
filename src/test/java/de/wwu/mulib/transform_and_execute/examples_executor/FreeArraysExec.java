@@ -4,7 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.MulibContext;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.CapacityAssignmentProblem;
@@ -31,7 +31,7 @@ public class FreeArraysExec {
                             new Object[] { new int[] { -81, 42, 9, 78, 0, 1, 8 } }
                     );
                     assertTrue(result.isPresent());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     PathSolution pathSolution = result.get();
                     Solution s = pathSolution.getSolution();
                     int[] values = (int[]) s.returnValue;
@@ -59,7 +59,7 @@ public class FreeArraysExec {
                             new Object[] { new int[] { 1, 1, 5, 17, 39, 42, 56 } }
                     );
                     assertTrue(result.isPresent(), mb.build().toString());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution), mb.build().toString());
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution), mb.build().toString());
                     PathSolution pathSolution = result.get();
                     Solution s = pathSolution.getSolution();
                     int[] values = (int[]) s.returnValue;
@@ -347,7 +347,7 @@ public class FreeArraysExec {
 
                     assertEquals(1, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[] result = (int[]) p.getSolution().returnValue;
                         for (int i = 0; i < result.length; i++) {
                             machines[result[i]].i = machines[result[i]].i - workloads[i];
@@ -431,7 +431,7 @@ public class FreeArraysExec {
                     assertTrue(ps.size() >= 10);
                     for (PathSolution p : ps) {
                         MachineCAP.Machine[] _machines = MachineCAP.copy(machines);
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[] result = (int[]) p.getSolution().returnValue;
                         for (int i = 0; i < result.length; i++) {
                             _machines[result[i]].i = _machines[result[i]].i - workloads[i];
@@ -521,7 +521,7 @@ public class FreeArraysExec {
 
                     assertEquals(1, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[] result = (int[]) p.getSolution().returnValue;
                         for (int i = 0; i < result.length; i++) {
                             machines[result[i]].i = machines[result[i]].i - workloads[i];
@@ -605,7 +605,7 @@ public class FreeArraysExec {
                     assertTrue(ps.size() >= 10);
                     for (PathSolution p : ps) {
                         MachineCAP.Machine[] _machines = MachineCAP.copy(machines);
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[] result = (int[]) p.getSolution().returnValue;
                         for (int i = 0; i < result.length; i++) {
                             _machines[result[i]].i = _machines[result[i]].i - workloads[i];
@@ -694,7 +694,7 @@ public class FreeArraysExec {
 
                     assertEquals(1, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[][][] result = (int[][][]) p.getSolution().returnValue;
                         // Generate array of machines for both periods;
                         MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
@@ -790,7 +790,7 @@ public class FreeArraysExec {
 
                     assertEquals(3, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[][][] result = (int[][][]) p.getSolution().returnValue;
                         // Generate array of machines for both periods;
                         MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
@@ -893,7 +893,7 @@ public class FreeArraysExec {
 
                     assertEquals(1, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[][][] result = (int[][][]) p.getSolution().returnValue;
                         // Generate array of machines for both periods;
                         MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];
@@ -989,7 +989,7 @@ public class FreeArraysExec {
 
                     assertEquals(3, ps.size());
                     for (PathSolution p : ps) {
-                        assertFalse(p instanceof ExceptionPathSolution);
+                        assertFalse(p instanceof ThrowablePathSolution);
                         int[][][] result = (int[][][]) p.getSolution().returnValue;
                         // Generate array of machines for both periods;
                         MachineCAP.Machine[][] machinesForTwoPeriods = new MachineCAP.Machine[workloads.length][];

@@ -2,7 +2,7 @@ package de.wwu.mulib.transform_and_execute.examples_executor;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.trees.ExceptionPathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.*;
@@ -33,7 +33,7 @@ public class ExExec {
                 true
         );
         assertEquals(2, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 
@@ -53,7 +53,7 @@ public class ExExec {
                 true
         );
         assertEquals(3, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 
@@ -73,7 +73,7 @@ public class ExExec {
                 true
         );
         assertEquals(4, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 
@@ -95,7 +95,7 @@ public class ExExec {
                     true
             );
             assertEquals(2, result.size());
-            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
             return result;
         }
     }
@@ -117,7 +117,7 @@ public class ExExec {
                     true
             );
             assertEquals(2, result.size());
-            assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+            assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
             return result;
         }
     }
@@ -138,7 +138,7 @@ public class ExExec {
                 true
         );
         assertEquals(2, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 
@@ -158,7 +158,7 @@ public class ExExec {
                 true
         );
         assertEquals(2, result.size());
-        assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+        assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
         return result;
     }
 
@@ -175,8 +175,8 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertEquals(1, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
-                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
+                    assertEquals(1, result.stream().filter(ps -> ps instanceof ThrowablePathSolution).count());
+                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ThrowablePathSolution)).count());
                 },
                 "testExSymExeLongBytecodes_falseExec"
         );
@@ -195,8 +195,8 @@ public class ExExec {
                     );
 
                     assertEquals(4, result.size());
-                    assertEquals(2, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
-                    assertEquals(2, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
+                    assertEquals(2, result.stream().filter(ps -> ps instanceof ThrowablePathSolution).count());
+                    assertEquals(2, result.stream().filter(ps -> !(ps instanceof ThrowablePathSolution)).count());
                 },
                 "testExSymExeResearch_falseExec"
         );
@@ -214,8 +214,8 @@ public class ExExec {
                             true
                     );
                     assertEquals(2, result.size());
-                    assertEquals(1, result.stream().filter(ps -> ps instanceof ExceptionPathSolution).count());
-                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
+                    assertEquals(1, result.stream().filter(ps -> ps instanceof ThrowablePathSolution).count());
+                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ThrowablePathSolution)).count());
                 },
                 "testExSymExeF2L_falseExec"
         );
@@ -234,7 +234,7 @@ public class ExExec {
                     );
 
                     assertEquals(1, result.size());
-                    assertEquals(1, result.stream().filter(ps -> (ps instanceof ExceptionPathSolution)).count());
+                    assertEquals(1, result.stream().filter(ps -> (ps instanceof ThrowablePathSolution)).count());
                 },
                 "testExSymExeLCMP_falseExec0"
         );
@@ -253,8 +253,8 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size()); 
-                    assertEquals(1, result.stream().filter(ps -> (ps instanceof ExceptionPathSolution)).count());
-                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ExceptionPathSolution)).count());
+                    assertEquals(1, result.stream().filter(ps -> (ps instanceof ThrowablePathSolution)).count());
+                    assertEquals(1, result.stream().filter(ps -> !(ps instanceof ThrowablePathSolution)).count());
                 },
                 "testExSymExeLCMP_falseExec1"
         );
@@ -272,7 +272,7 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec0"
         );
@@ -290,7 +290,7 @@ public class ExExec {
                             true
                     );
                     assertEquals(1, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec1"
         );
@@ -308,7 +308,7 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec2"
         );
@@ -325,7 +325,7 @@ public class ExExec {
                             true
                     );
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec3"
         );
@@ -343,7 +343,7 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec4"
         );
@@ -361,7 +361,7 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testBooleanIntChecksExec5"
         );
@@ -380,8 +380,8 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
-                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ThrowablePathSolution)));
                 },
                 "testBooleanIntChecksExec6"
         );
@@ -400,8 +400,8 @@ public class ExExec {
                     );
 
                     assertEquals(2, result.size());
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
-                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ThrowablePathSolution)));
                 },
                 "testBooleanIntChecksExec7"
         );
@@ -418,8 +418,8 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ThrowablePathSolution)));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testWBSProp1Exec"
         );
@@ -435,7 +435,7 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testWBSProp2Exec"
         );
@@ -452,8 +452,8 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ThrowablePathSolution)));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testWBSProp3Exec"
         );
@@ -470,8 +470,8 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ExceptionPathSolution)));
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> !(ps instanceof ThrowablePathSolution)));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testWBSProp4Exec"
         );
@@ -488,7 +488,7 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testInfiniteLoopExec0"
         );
@@ -506,7 +506,7 @@ public class ExExec {
                             true
                     );
                     assertFalse(result.isEmpty());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     Sort sort = new Sort();
                     for (PathSolution ps : result) {
                         Solution s = ps.getSolution();
@@ -535,7 +535,7 @@ public class ExExec {
                             true
                     );
                     assertFalse(result.isEmpty());
-                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().noneMatch(ps -> ps instanceof ThrowablePathSolution));
                     for (PathSolution ps : result) {
                         Solution s = ps.getSolution();
                         TSP input = (TSP) s.labels.getLabelForId("arg0");
@@ -565,7 +565,7 @@ public class ExExec {
                             mb,
                             true
                     );
-                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ExceptionPathSolution));
+                    assertTrue(result.stream().anyMatch(ps -> ps instanceof ThrowablePathSolution));
                 },
                 "testInfiniteLoopExec1"
         );
