@@ -6,7 +6,7 @@ import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.lang.reflect.Array;
@@ -103,7 +103,7 @@ public final class MulibValueTransformer {
         if (!transformationRequired || currentValue == null) {
             return currentValue;
         }
-        if (currentValue instanceof SubstitutedVar) {
+        if (currentValue instanceof Substituted) {
             return currentValue;
         }
         Object result;
@@ -174,7 +174,7 @@ public final class MulibValueTransformer {
         while (innermostTransformedComponentType.isArray()) {
             innermostTransformedComponentType = innermostTransformedComponentType.getComponentType();
         }
-        if (componentType == transformedComponentType || !SubstitutedVar.class.isAssignableFrom(innermostTransformedComponentType)) {
+        if (componentType == transformedComponentType || !Substituted.class.isAssignableFrom(innermostTransformedComponentType)) {
             throw new MulibIllegalStateException("To use Sarrays, the component type must be substituted. Given: " + transformed);
         }
 

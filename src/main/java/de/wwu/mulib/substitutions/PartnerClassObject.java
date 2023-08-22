@@ -155,7 +155,7 @@ public class PartnerClassObject implements PartnerClass {
     }
 
     @Override
-    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
         return new HashMap<>();
     }
 

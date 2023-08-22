@@ -8,7 +8,7 @@ import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
@@ -598,7 +598,7 @@ public class SootMulibClassesAndMethods {
         SC_SOLVER_MANAGER = Scene.v().forceResolve(SolverManager.class.getName(), SootClass.SIGNATURES);
         SC_SPRIMITIVE = Scene.v().forceResolve(Sprimitive.class.getName(), SootClass.SIGNATURES);
         SC_SYM_SPRIMITIVE = Scene.v().forceResolve(SymSprimitive.class.getName(), SootClass.SIGNATURES);
-        SC_SUBSTITUTED_VAR = Scene.v().forceResolve(SubstitutedVar.class.getName(), SootClass.SIGNATURES);
+        SC_SUBSTITUTED_VAR = Scene.v().forceResolve(Substituted.class.getName(), SootClass.SIGNATURES);
         Scene.v().loadNecessaryClasses();
         TYPE_MULIB_RUNTIME_EXCEPTION = SC_MULIB_RUNTIME_EXCEPTION.getType();
         TYPE_SINT = Scene.v().getRefType(Sint.class.getName());

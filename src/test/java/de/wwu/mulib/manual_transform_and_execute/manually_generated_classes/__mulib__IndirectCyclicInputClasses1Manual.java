@@ -3,7 +3,7 @@ package de.wwu.mulib.manual_transform_and_execute.manually_generated_classes;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.PartnerClassObject;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
@@ -50,7 +50,7 @@ public class __mulib__IndirectCyclicInputClasses1Manual extends PartnerClassObje
     }
 
     @Override
-    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
         return null;
     }
 

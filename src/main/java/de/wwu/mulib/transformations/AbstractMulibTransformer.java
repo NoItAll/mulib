@@ -8,7 +8,7 @@ import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.util.Utility;
 
@@ -211,7 +211,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             if (toTransform == null) {
                 throw new MulibRuntimeException("Type to transform must not be null.");
             }
-            if (SubstitutedVar.class.isAssignableFrom(toTransform)) {
+            if (Substituted.class.isAssignableFrom(toTransform)) {
                 return toTransform;
             }
             if (toTransform == int.class) {
@@ -288,7 +288,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         if (toTransform == null) {
             throw new MulibRuntimeException("Type to transform must not be null.");
         }
-        if (!SubstitutedVar.class.isAssignableFrom(toTransform)) {
+        if (!Substituted.class.isAssignableFrom(toTransform)) {
             return toTransform;
         }
         if (toTransform == Sint.class) {
@@ -556,7 +556,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
      * Furthermore, if {@link PartnerClass#__mulib__isToBeLazilyInitialized()} is true
      * {@link PartnerClass#__mulib__initializeLazyFields(SymbolicExecution)} should be called.
      * If {@link PartnerClass#__mulib__cacheIsBlocked()} is true, {@link SymbolicExecution#getField(PartnerClass, String, Class)}
-     * or {@link SymbolicExecution#putField(PartnerClass, String, SubstitutedVar)} should be called, instead of returning/setting the field.
+     * or {@link SymbolicExecution#putField(PartnerClass, String, Substituted)} should be called, instead of returning/setting the field.
      * The generated methods must contain the {@link StringConstants#_TRANSFORMATION_INDICATOR} in their name.
      * @param old The representation of the original class
      * @param result The representation of the partner class

@@ -14,7 +14,7 @@ import java.util.Map;
  * Generated partner classes (not interfaces!) should instead (implicitly) extend {@link PartnerClassObject} that also
  * documents the methods that still need to be overridden.
  */
-public interface PartnerClass extends SubstitutedVar {
+public interface PartnerClass extends Substituted {
 
     /**
      * State if object is not represented for/in the solver
@@ -97,7 +97,7 @@ public interface PartnerClass extends SubstitutedVar {
      * the resulting map.
      * @return A map of (packageName.className.fieldName, value)-pairs
      */
-    Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar();
+    Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar();
 
     /**
      * @return The identifier, if any of this partner class object

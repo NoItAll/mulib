@@ -1,6 +1,6 @@
 package de.wwu.mulib.solving;
 
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 
 import java.util.Collection;
 import java.util.Map;
@@ -23,12 +23,12 @@ public interface Labels {
      * @param id The name used for remembering
      * @return The object with a search region representation
      */
-    SubstitutedVar getNamedVar(String id);
+    Substituted getNamedVar(String id);
 
     /**
      * @return A map representation of the (remembering name, search region representation)-pairs
      */
-    Map<String, SubstitutedVar> getIdToNamedVar();
+    Map<String, Substituted> getIdToNamedVar();
 
     /**
      * @return A map representation of the (remembering name, label)-pairs

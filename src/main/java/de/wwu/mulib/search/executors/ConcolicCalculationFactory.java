@@ -5,7 +5,7 @@ import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -931,7 +931,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     }
 
     @Override
-    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
+    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(Substituted value) {
         if (value instanceof Sbool.SymSbool) {
             return tryGetSymFromConcolic((Sbool.SymSbool) value);
         } else if (value instanceof SymNumericExpressionSprimitive) {

@@ -15,7 +15,7 @@ import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.object_representations.AbstractPartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -238,7 +238,7 @@ public final class SymbolicExecution {
         return currentChoiceOption;
     }
 
-    private void addNamedVariable(String key, SubstitutedVar value) {
+    private void addNamedVariable(String key, Substituted value) {
         calculationFactory.remember(this, key, value);
         if (value instanceof Sprimitive) {
             mulibExecutor.rememberSprimitive(key, (Sprimitive) value);
@@ -408,11 +408,11 @@ public final class SymbolicExecution {
         return calculationFactory.store(this, sarray, index, value);
     }
 
-    public SubstitutedVar getField(PartnerClass partnerClassObject, String field, Class<?> typeOfField) {
+    public Substituted getField(PartnerClass partnerClassObject, String field, Class<?> typeOfField) {
         return calculationFactory.getField(this, partnerClassObject, field, typeOfField);
     }
 
-    public void putField(PartnerClass partnerClassObject, String field, SubstitutedVar value) {
+    public void putField(PartnerClass partnerClassObject, String field, Substituted value) {
         calculationFactory.putField(this, partnerClassObject, field, value);
     }
 
@@ -564,7 +564,7 @@ public final class SymbolicExecution {
     }
 
     public Sarray.SarraySarray namedSarraySarray(
-            String identifier, Sint len, Class<? extends SubstitutedVar> clazz, boolean defaultIsSymbolic) {
+            String identifier, Sint len, Class<? extends Substituted> clazz, boolean defaultIsSymbolic) {
         Sarray.SarraySarray result = valueFactory.sarraySarray(this, len, clazz, defaultIsSymbolic);
         addNamedVariable(identifier, result);
         return result;
@@ -886,7 +886,7 @@ public final class SymbolicExecution {
         return valueFactory.sarrarySarray(this, lengths, innerElementClass);
     }
 
-    public void nameSubstitutedVar(SubstitutedVar sv, String name) {
+    public void nameSubstitutedVar(Substituted sv, String name) {
         addNamedVariable(name, sv);
     }
 

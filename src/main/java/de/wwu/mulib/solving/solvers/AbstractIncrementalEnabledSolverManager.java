@@ -15,7 +15,7 @@ import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepre
 import de.wwu.mulib.substitutions.Conc;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.StringConstants;
 import de.wwu.mulib.util.Utility;
@@ -365,7 +365,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         List<Solution> solutions = new ArrayList<>();
         solutions.add(initialSolution);
         Map<String, Sprimitive> rememberedSprimitives = new HashMap<>();
-        SubstitutedVar unlabeledReturn = initialSolution.labels.getNamedVar("return");
+        Substituted unlabeledReturn = initialSolution.labels.getNamedVar("return");
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
                 incrementalSolverState.getAllPartnerClassObjectConstraints();
         PartnerClassObjectRememberConstraint[] rememberConstraints =
@@ -373,7 +373,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         .filter(pcoc -> pcoc instanceof PartnerClassObjectRememberConstraint)
                         .toArray(PartnerClassObjectRememberConstraint[]::new);
 
-        for (Map.Entry<String, SubstitutedVar> e : initialSolution.labels.getIdToNamedVar().entrySet()) {
+        for (Map.Entry<String, Substituted> e : initialSolution.labels.getIdToNamedVar().entrySet()) {
             if (e.getValue() instanceof Sprimitive) {
                 rememberedSprimitives.put(e.getKey(), (Sprimitive) e.getValue());
             }
@@ -412,8 +412,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         Set<PartnerClass> partnerClassObjectsAlreadyTreated = Collections.newSetFromMap(new IdentityHashMap<>());
         List<Constraint> disjunctionConstraints = new ArrayList<>();
 
-        for (Map.Entry<String, SubstitutedVar> entry : givenLabels.getIdToNamedVar().entrySet()) {
-            SubstitutedVar sv = entry.getValue();
+        for (Map.Entry<String, Substituted> entry : givenLabels.getIdToNamedVar().entrySet()) {
+            Substituted sv = entry.getValue();
             if (sv instanceof Conc) {
                 // It does not help to negate concrete values
                 continue;
@@ -456,7 +456,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     public Solution labelSolution(Object returnValue, Map<String, Sprimitive> rememberedSprimitives) {
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
                 incrementalSolverState.getAllPartnerClassObjectConstraints();
-        Map<String, SubstitutedVar> identifierToSubstitutedVars  = new HashMap<>();
+        Map<String, Substituted> identifierToSubstitutedVars  = new HashMap<>();
         Map<String, Object> identifiersToOriginalRepresentation = new HashMap<>();
         // Label remembered Sprimitives
         for (Map.Entry<String, Sprimitive> entry : rememberedSprimitives.entrySet()) {
@@ -491,8 +491,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 :
                 returnValue;
 
-        if (returnValue instanceof SubstitutedVar) { // TODO
-            identifierToSubstitutedVars.put("return", (SubstitutedVar) returnValue);
+        if (returnValue instanceof Substituted) { // TODO
+            identifierToSubstitutedVars.put("return", (Substituted) returnValue);
         }
         identifiersToOriginalRepresentation.put("return", labeledReturnValue);
 
@@ -627,7 +627,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             // In this case the constraints did not need to be manifested and we can use the cache
             for (Sint index : sarray.getCachedIndices()) {
                 int labeledIndex = _labelSintToInt(index);
-                SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
+                Substituted cachedValue = sarray.getFromCacheForIndex(index);
                 Object labeledValue = _getLabel(cachedValue, rememberUntil, allRelevantPartnerClassObjectConstraints);
                 Array.set(array, labeledIndex, labeledValue);
             }
@@ -776,13 +776,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
         List<Field> fields = Utility.getInstanceFieldsIncludingInheritedFieldsExcludingPartnerClassFields(originalType);
         Utility.setAllAccessible(fields);
-        Map<String, SubstitutedVar> latestValues = _getLastValues(constraints);
+        Map<String, Substituted> latestValues = _getLastValues(constraints);
         if (latestValues.size() > fields.size()) {
             throw new LabelingNotPossibleException("Extracted number for fields is higher than number of fields to be set");
         }
-        for (Map.Entry<String, SubstitutedVar> entry : latestValues.entrySet()) {
+        for (Map.Entry<String, Substituted> entry : latestValues.entrySet()) {
             String classAndFieldName = entry.getKey();
-            SubstitutedVar value = entry.getValue();
+            Substituted value = entry.getValue();
             Field f = null;
             for (Field fo : fields) {
                 // TODO Think about better way of identifying fields in constraints
@@ -829,9 +829,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return pcosr.getClazz();
     }
 
-    private static Map<String, SubstitutedVar> _getLastValues(
+    private static Map<String, Substituted> _getLastValues(
             PartnerClassObjectConstraint[] pcocs) {
-        Map<String, SubstitutedVar> result = new HashMap<>();
+        Map<String, Substituted> result = new HashMap<>();
         boolean seenInit = false;
         for (PartnerClassObjectConstraint pcoc : pcocs) {
             if (pcoc instanceof PartnerClassObjectInitializationConstraint) {
@@ -1141,7 +1141,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     private Constraint getNeq(
-            SubstitutedVar sv,
+            Substituted sv,
             Object value,
             Set<PartnerClass> alreadyTreatedPartnerClasses,
             PartnerClassObjectRememberConstraint rememberConstraint,
@@ -1161,7 +1161,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             if (!sarray.__mulib__shouldBeRepresentedInSolver()) {
                 Set<Sint> indices = sarray.getCachedIndices();
                 for (Sint index : indices) {
-                    SubstitutedVar cachedValue = sarray.getFromCacheForIndex(index);
+                    Substituted cachedValue = sarray.getFromCacheForIndex(index);
                     Object label = _getLabel(cachedValue, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     disjunctionConstraint = getNeq(cachedValue, label, alreadyTreatedPartnerClasses, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, disjunctionConstraint);
@@ -1209,8 +1209,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                     // Value is not interesting as it is not evaluated anywhere
                     return Sbool.ConcSbool.FALSE;
                 }
-                Map<String, SubstitutedVar> lastValues = _getLastValues(constraints);
-                for (Map.Entry<String, SubstitutedVar> entry : lastValues.entrySet()) {
+                Map<String, Substituted> lastValues = _getLastValues(constraints);
+                for (Map.Entry<String, Substituted> entry : lastValues.entrySet()) {
                     Constraint neq = getNeq(entry.getValue(), _getLabel(entry.getValue(), rememberConstraint, allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neq);
                 }
@@ -1223,8 +1223,8 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 }
                 return Or.newInstance(result, Not.newInstance(Eq.newInstance(id, labeledId)));
             } else {
-                Map<String, SubstitutedVar> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
-                for (Map.Entry<String, SubstitutedVar> entry : fieldNamesToSubstitutedVars.entrySet()) {
+                Map<String, Substituted> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
+                for (Map.Entry<String, Substituted> entry : fieldNamesToSubstitutedVars.entrySet()) {
                     Constraint neqForFieldValue = getNeq(entry.getValue(), _getLabel(entry.getValue(), rememberConstraint, allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neqForFieldValue);
                 }
@@ -1272,7 +1272,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             PartnerClassObjectRememberConstraint rememberConstraint,
             List<PartnerClassObjectConstraint> allRelevantPartnerClassObjectConstraints) {
         Constraint disjunctionConstraint;
-        SubstitutedVar val = aac.getValue();
+        Substituted val = aac.getValue();
         Object label = _getLabel(val, rememberConstraint, allRelevantPartnerClassObjectConstraints);
         Sint index = aac.getIndex();
         Object indexLabel = _getLabel(index, rememberConstraint, allRelevantPartnerClassObjectConstraints);
@@ -1334,9 +1334,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
      * @param arrayRepresentation The solver-specific array representation
      * @param index The index
      * @param value The value
-     * @see AbstractIncrementalEnabledSolverManager#newArraySelectConstraint(Object, Sint, SubstitutedVar)
+     * @see AbstractIncrementalEnabledSolverManager#newArraySelectConstraint(Object, Sint, Substituted)
      */
-    protected void addArraySelectConstraint(AR arrayRepresentation, Sint index, SubstitutedVar value) {
+    protected void addArraySelectConstraint(AR arrayRepresentation, Sint index, Substituted value) {
         B constraint = newArraySelectConstraint(arrayRepresentation, index, value);
         addSolverConstraintRepresentation(constraint);
     }
@@ -1373,7 +1373,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
      * @param arrayValue The value selected from the array
      * @return A solver-specific constraint
      */
-    protected abstract B newArraySelectConstraint(AR arrayRepresentation, Sint indexInArray, SubstitutedVar arrayValue);
+    protected abstract B newArraySelectConstraint(AR arrayRepresentation, Sint indexInArray, Substituted arrayValue);
 
     /**
      * Transforms the given constraint into a solver-specific constraint

@@ -7,7 +7,7 @@ import de.wwu.mulib.throwables.MisconfigurationException;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.math.BigInteger;
@@ -125,7 +125,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
     }
 
     @Override
-    protected BoolExpr newArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, SubstitutedVar value) {
+    protected BoolExpr newArraySelectConstraint(ArrayExpr arrayRepresentation, Sint index, Substituted value) {
         return adapter.transformSelectConstraint(arrayRepresentation, index, value);
     }
 
@@ -250,7 +250,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             return result;
         }
 
-        private Expr transformSubstitutedVar(SubstitutedVar sv) {
+        private Expr transformSubstitutedVar(Substituted sv) {
             if (sv instanceof Sbool) {
                 return transformSbool((Sbool) sv);
             } else if (sv instanceof Snumber) {
@@ -518,7 +518,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
          * @param value The value to store
          * @return The new representation also expressing the store
          */
-        public ArrayExpr newArrayExprFromStore(ArrayExpr oldRepresentation, Sint index, SubstitutedVar value) {
+        public ArrayExpr newArrayExprFromStore(ArrayExpr oldRepresentation, Sint index, Substituted value) {
             Expr val = transformSubstitutedVar(value);
             Expr i = transformSintegerNumber(index);
             return ctx.mkStore(oldRepresentation, i, val);
@@ -531,7 +531,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
          * @param value The value
          * @return Z3's representation of the constraint
          */
-        public BoolExpr transformSelectConstraint(ArrayExpr arrayExpr, Sint index, SubstitutedVar value) {
+        public BoolExpr transformSelectConstraint(ArrayExpr arrayExpr, Sint index, Substituted value) {
             Expr selectExpr = ctx.mkSelect(arrayExpr, transformSintegerNumber(index));
             return ctx.mkEq(selectExpr, transformSubstitutedVar(value));
         }

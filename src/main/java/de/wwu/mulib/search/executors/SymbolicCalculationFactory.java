@@ -4,7 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -629,7 +629,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
     }
 
     @Override
-    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(SubstitutedVar value) {
+    protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(Substituted value) {
         if (value instanceof PartnerClass) {
             assert ((PartnerClass) value).__mulib__isRepresentedInSolver();
             return ((PartnerClass) value).__mulib__getId();

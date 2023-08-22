@@ -1,6 +1,6 @@
 package de.wwu.mulib.solving;
 
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -11,7 +11,7 @@ import java.util.Map;
  */
 public class StdLabels implements Labels {
 
-    private final Map<String, SubstitutedVar> identifiersToSVars;
+    private final Map<String, Substituted> identifiersToSVars;
     private final Map<String, Object> identifiersToValues;
 
     /**
@@ -19,7 +19,7 @@ public class StdLabels implements Labels {
      * @param identifiersToOriginalRepresentation The remembering name to the label
      */
     public StdLabels(
-            Map<String, SubstitutedVar> identifiersToSubstitutedVars,
+            Map<String, Substituted> identifiersToSubstitutedVars,
             Map<String, Object> identifiersToOriginalRepresentation) {
         this.identifiersToSVars = Collections.unmodifiableMap(identifiersToSubstitutedVars);
         this.identifiersToValues = Collections.unmodifiableMap(identifiersToOriginalRepresentation);
@@ -31,12 +31,12 @@ public class StdLabels implements Labels {
     }
 
     @Override
-    public SubstitutedVar getNamedVar(String id) {
+    public Substituted getNamedVar(String id) {
         return identifiersToSVars.get(id);
     }
 
     @Override
-    public Map<String, SubstitutedVar> getIdToNamedVar() {
+    public Map<String, Substituted> getIdToNamedVar() {
         return identifiersToSVars;
     }
 

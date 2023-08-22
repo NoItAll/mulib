@@ -7,7 +7,7 @@ import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -675,11 +675,11 @@ public interface CalculationFactory {
      * @param pco The object containing the field
      * @param field The field name. It should be given in the format packageName.className.fieldName
      * @param fieldClass The type of the field
-     * @return A {@link SubstitutedVar} representing the content of the object at a specified field with a specified type.
+     * @return A {@link Substituted} representing the content of the object at a specified field with a specified type.
      * If the returned value is an instance of {@link PartnerClass}, {@link PartnerClass#__mulib__getId()} probably
      * returns a symbolic value that indicates that this object is a symbolic alias of a set of objects.
      */
-    SubstitutedVar getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);
+    Substituted getField(SymbolicExecution se, PartnerClass pco, String field, Class<?> fieldClass);
 
     /**
      * This method should only be called if the object for which a field is accessed is represented for or in the constraint
@@ -691,9 +691,9 @@ public interface CalculationFactory {
      * @param se The instance of {@link SymbolicExecution} used for this execution run
      * @param pco The object containing the field
      * @param field The field name. It should be given in the format packageName.className.fieldName
-     * @param value A {@link SubstitutedVar} representing the content that is stored into a specified field.
+     * @param value A {@link Substituted} representing the content that is stored into a specified field.
      */
-    void putField(SymbolicExecution se, PartnerClass pco, String field, SubstitutedVar value);
+    void putField(SymbolicExecution se, PartnerClass pco, String field, Substituted value);
 
     /**
      * This method is called to retrieve the content of a Sarray.
@@ -759,7 +759,7 @@ public interface CalculationFactory {
      * @param value The value that we store into the Sarray
      * @return A {@link Sarray} representing the content of the object at the specified index with a specified type.
      */
-    Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, SubstitutedVar value);
+    Sarray<?> store(SymbolicExecution se, Sarray.SarraySarray sarraySarray, Sint index, Substituted value);
 
     /**
      * This method is called to retrieve the content of a Sarray.
@@ -794,7 +794,7 @@ public interface CalculationFactory {
      * @param value The value that we store into the Sarray
      * @return A {@link Sarray} representing the content of the object at the specified index with a specified type.
      */
-    PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, SubstitutedVar value);
+    PartnerClass store(SymbolicExecution se, Sarray.PartnerClassSarray<?> partnerClassSarray, Sint index, Substituted value);
 
     /**
      * Represents the partner class object, i.e., either a {@link Sarray} or a other {@link PartnerClass} for/in the constraint solver.
@@ -858,6 +858,6 @@ public interface CalculationFactory {
      * @param name The name to remember the value by
      * @param toRemember The value
      */
-    void remember(SymbolicExecution se, String name, SubstitutedVar toRemember);
+    void remember(SymbolicExecution se, String name, Substituted toRemember);
 
 }

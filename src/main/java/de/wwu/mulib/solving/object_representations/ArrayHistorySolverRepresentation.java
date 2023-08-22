@@ -3,7 +3,7 @@ package de.wwu.mulib.solving.object_representations;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 
 import java.util.ArrayList;
@@ -24,12 +24,12 @@ public class ArrayHistorySolverRepresentation {
     // The nested array before storing in this array
     private final ArrayHistorySolverRepresentation beforeStore;
     // The default value
-    private final SubstitutedVar defaultValue;
+    private final Substituted defaultValue;
 
     public ArrayHistorySolverRepresentation(
             ArrayAccessConstraint[] initialSelects,
             Class<?> valueType) {
-        SubstitutedVar defaultValue;
+        Substituted defaultValue;
         if (Sbool.class.isAssignableFrom(valueType)) {
             defaultValue = Sbool.ConcSbool.FALSE;
         } else if (Sbyte.class.isAssignableFrom(valueType)) {
@@ -287,7 +287,7 @@ public class ArrayHistorySolverRepresentation {
         return result;
     }
 
-    private static Constraint elementsEqualConstraint(SubstitutedVar s0, SubstitutedVar s1) {
+    private static Constraint elementsEqualConstraint(Substituted s0, Substituted s1) {
         if (s0 instanceof Sbool && s1 instanceof Sbool) {
             return Equivalence.newInstance((Sbool) s0, (Sbool) s1);
         } else if (s0 instanceof Snumber) {

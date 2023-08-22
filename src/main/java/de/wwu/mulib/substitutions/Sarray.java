@@ -20,7 +20,7 @@ import java.util.Set;
  * @param <T> The component type
  */
 @SuppressWarnings({"unchecked", "rawtypes"})
-public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObject {
+public abstract class Sarray<T extends Substituted> extends PartnerClassObject {
     private final Sint len;
     // The type of element stored in the array, e.g., Sarray, Sint, ...
     private final Class<T> clazz;
@@ -252,7 +252,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObjec
      * @param value The value
      */
     @SuppressWarnings("rawtypes")
-    public static void checkIfValueIsStorableForSarray(Sarray sarray, SubstitutedVar value) {
+    public static void checkIfValueIsStorableForSarray(Sarray sarray, Substituted value) {
         if (!(sarray instanceof Sarray.SarraySarray)) {
             if (value == null && Sprimitive.class.isAssignableFrom(sarray.getClazz())
                     || (value != null && !sarray.getClazz().isInstance(value))) {
@@ -312,7 +312,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObjec
     }
 
     @Override
-    public Map<String, SubstitutedVar> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
         throw new MulibIllegalStateException("Should not be called for Sarrays");
     }
 
@@ -1181,7 +1181,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObjec
                         i,
                         generateNonSymbolicSarrayDependingOnStateForMultiANewArray(
                                 nextLengths,
-                                (Class<? extends SubstitutedVar>) elementType.getComponentType(),
+                                (Class<? extends Substituted>) elementType.getComponentType(),
                                 se
                         )
                 );
@@ -1238,7 +1238,7 @@ public abstract class Sarray<T extends SubstitutedVar> extends PartnerClassObjec
 
         private Sarray generateNonSymbolicSarrayDependingOnStateForMultiANewArray(
                 Sint[] lengths,
-                Class<? extends SubstitutedVar> nextInnerElementsType, SymbolicExecution se) {
+                Class<? extends Substituted> nextInnerElementsType, SymbolicExecution se) {
             if (elementsAreSarraySarrays()) {
                 assert nextInnerElementsType.isArray();
                 assert lengths.length > 2;

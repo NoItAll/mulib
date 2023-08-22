@@ -8,7 +8,7 @@ import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.solving.Solvers;
-import de.wwu.mulib.substitutions.SubstitutedVar;
+import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
 import org.sosy_lab.common.ShutdownManager;
 import org.sosy_lab.common.configuration.Configuration;
@@ -122,7 +122,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         );
     }
 
-    protected BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, SubstitutedVar value) {
+    protected BooleanFormula newArraySelectConstraint(ArrayFormula arrayFormula, Sint index, Substituted value) {
         return adapter.transformSelectConstraint(arrayFormula, index, value);
     }
 
@@ -287,7 +287,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             return booleanFormulaStore.get(c);
         }
 
-        private Formula transformSubstitutedVar(SubstitutedVar sv) {
+        private Formula transformSubstitutedVar(Substituted sv) {
             if (sv instanceof Sbool) {
                 return transformSbool((Sbool) sv);
             } else if (sv instanceof Snumber) {
@@ -634,7 +634,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
          * @return The new representation also expressing the store
          */
         @SuppressWarnings({"rawtypes", "unchecked"})
-        public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, SubstitutedVar value) {
+        public ArrayFormula newArrayExprFromStore(ArrayFormula oldRepresentation, Sint index, Substituted value) {
             Formula f = transformSubstitutedVar(value);
             Formula i = transformSintegerNumber(index);
             return arrayFormulaManager.store(oldRepresentation, i, f);
@@ -647,7 +647,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
          * @param var The value
          * @return JavaSMT's representation of the constraint
          */
-        public BooleanFormula transformSelectConstraint(ArrayFormula array, Sint index, SubstitutedVar var) {
+        public BooleanFormula transformSelectConstraint(ArrayFormula array, Sint index, Substituted var) {
             @SuppressWarnings("unchecked")
             Formula selectExpr = arrayFormulaManager.select(array, transformSintegerNumber(index));
             Formula value = transformSubstitutedVar(var);
