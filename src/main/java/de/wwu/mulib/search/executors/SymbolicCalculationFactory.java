@@ -417,7 +417,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) i).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override
@@ -425,7 +425,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Sfloat.concSfloat(((ConcSnumber) i).floatVal());
         }
-        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override
@@ -433,7 +433,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Sdouble.concSdouble(((ConcSnumber) i).doubleVal());
         }
-        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override
@@ -441,7 +441,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Schar.concSchar(((ConcSnumber) i).charVal());
         }
-        return valueFactory.wrappingSymSchar(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSchar(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override
@@ -449,7 +449,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) l).intVal());
         }
-        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymSnumber) l).getRepresentedExpression());
     }
 
     @Override
@@ -457,7 +457,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l instanceof ConcSnumber) {
             return Sfloat.concSfloat(((ConcSnumber) l).floatVal());
         }
-        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymSnumber) l).getRepresentedExpression());
     }
 
     @Override
@@ -465,7 +465,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l instanceof ConcSnumber) {
             return Sdouble.concSdouble(((ConcSnumber) l).doubleVal());
         }
-        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) l).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymSnumber) l).getRepresentedExpression());
     }
 
     @Override
@@ -473,7 +473,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (f instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) f).intVal());
         }
-        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymSnumber) f).getRepresentedExpression());
     }
 
     @Override
@@ -481,7 +481,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (f instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) f).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymSnumber) f).getRepresentedExpression());
     }
 
     @Override
@@ -489,7 +489,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (f instanceof ConcSnumber) {
             return Sdouble.concSdouble(((ConcSnumber) f).doubleVal());
         }
-        return valueFactory.wrappingSymSdouble(se, ((SymNumericExpressionSprimitive) f).getRepresentedExpression());
+        return valueFactory.wrappingSymSdouble(se, ((SymSnumber) f).getRepresentedExpression());
     }
 
     @Override
@@ -497,7 +497,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (d instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) d).intVal());
         }
-        return valueFactory.wrappingSymSint(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSint(se, ((SymSnumber) d).getRepresentedExpression());
     }
 
     @Override
@@ -505,7 +505,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (d instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) d).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSlong(se, ((SymSnumber) d).getRepresentedExpression());
     }
 
     @Override
@@ -513,7 +513,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (d instanceof ConcSnumber) {
             return Sfloat.concSfloat(((ConcSnumber) d).floatVal());
         }
-        return valueFactory.wrappingSymSfloat(se, ((SymNumericExpressionSprimitive) d).getRepresentedExpression());
+        return valueFactory.wrappingSymSfloat(se, ((SymSnumber) d).getRepresentedExpression());
     }
 
     @Override
@@ -521,7 +521,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Sbyte.concSbyte(((ConcSnumber) i).byteVal());
         }
-        return valueFactory.wrappingSymSbyte(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSbyte(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override
@@ -529,7 +529,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i instanceof ConcSnumber) {
             return Sshort.concSshort(((ConcSnumber) i).shortVal());
         }
-        return valueFactory.wrappingSymSshort(se, ((SymNumericExpressionSprimitive) i).getRepresentedExpression());
+        return valueFactory.wrappingSymSshort(se, ((SymSnumber) i).getRepresentedExpression());
     }
 
     @Override

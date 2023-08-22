@@ -102,7 +102,7 @@ public abstract class Sbyte extends Sint {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSbyte extends Sbyte implements SymNumericExpressionSprimitive {
+    public static class SymSbyte extends Sbyte implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSbyte() {
@@ -123,7 +123,7 @@ public abstract class Sbyte extends Sint {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

@@ -559,7 +559,7 @@ public abstract class Sint extends AbstractSnumber {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSint extends Sint implements SymNumericExpressionSprimitive {
+    public static class SymSint extends Sint implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSint() {
@@ -580,7 +580,7 @@ public abstract class Sint extends AbstractSnumber {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

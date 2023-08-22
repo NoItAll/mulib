@@ -2,7 +2,7 @@ package de.wwu.mulib.expressions;
 
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 /**
  * Abstract supertype for all those numeric expressions that consist of two numeric expressions and an operator
@@ -15,11 +15,11 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
     protected AbstractOperatorNumericExpression(NumericExpression expr0, NumericExpression expr1) {
         assert !(expr0 instanceof ConcSnumber) || !(expr1 instanceof ConcSnumber);
         assert !(expr0 instanceof ConcolicNumericContainer) && !(expr1 instanceof ConcolicNumericContainer);
-        if (expr0 instanceof SymNumericExpressionSprimitive) {
-            expr0 = ((SymNumericExpressionSprimitive) expr0).getRepresentedExpression();
+        if (expr0 instanceof SymSnumber) {
+            expr0 = ((SymSnumber) expr0).getRepresentedExpression();
         }
-        if (expr1 instanceof SymNumericExpressionSprimitive) {
-            expr1 = ((SymNumericExpressionSprimitive) expr1).getRepresentedExpression();
+        if (expr1 instanceof SymSnumber) {
+            expr1 = ((SymSnumber) expr1).getRepresentedExpression();
         }
         this.expr0 = expr0;
         this.expr1 = expr1;

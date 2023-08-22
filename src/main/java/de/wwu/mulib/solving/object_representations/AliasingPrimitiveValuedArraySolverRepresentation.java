@@ -55,7 +55,7 @@ public class AliasingPrimitiveValuedArraySolverRepresentation extends AbstractAr
         super(config, aic, level);
         this.cannotBeNewInstance = cannotBeNewInstance;
         this.reservedId = aic.getReservedId();
-        assert arrayId instanceof SymNumericExpressionSprimitive;
+        assert arrayId instanceof SymSnumber;
         assert reservedId instanceof ConcSnumber;
 //        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedArrays = new HashSet<>(); // Is filled in getMetadataConstraintForPotentialIds

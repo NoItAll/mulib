@@ -98,7 +98,7 @@ public abstract class Schar extends Sint {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSchar extends Schar implements SymNumericExpressionSprimitive {
+    public static class SymSchar extends Schar implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSchar() {
@@ -119,7 +119,7 @@ public abstract class Schar extends Sint {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

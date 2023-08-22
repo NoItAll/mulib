@@ -291,7 +291,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         if (value instanceof PartnerClass) {
             PartnerClass pcval = (PartnerClass) value;
             if (pcval.__mulib__getId() == null) {
-                if (pco.__mulib__getId() instanceof SymNumericExpressionSprimitive) {
+                if (pco.__mulib__getId() instanceof SymSnumber) {
                     pcval.__mulib__prepareForAliasingAndBlockCache(se);
                 } else {
                     pcval.__mulib__prepareToRepresentSymbolically(se);

@@ -53,7 +53,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
             boolean cannotBeNewInstance) {
         super(config, sps, asr, pic, level);
         this.reservedId = pic.getReservedId();
-        assert getId() instanceof SymNumericExpressionSprimitive;
+        assert getId() instanceof SymSnumber;
         assert reservedId instanceof ConcSnumber;
 //        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedObjects = new ArrayList<>(); // Is filled in getMetadataConstraintForPotentialIds
@@ -87,7 +87,7 @@ public class AliasingPartnerClassObjectSolverRepresentation extends AbstractPart
             boolean cannotBeNewInstance) {
         super(config, id, isNull, clazz, true, sps, asr, level);
         this.reservedId = reservedId;
-        assert getId() instanceof SymNumericExpressionSprimitive;
+        assert getId() instanceof SymSnumber;
 //        assert potentialIds != null && potentialIds.size() > 0 : "There always must be at least one potential aliasing candidate";
         this.aliasedObjects = new ArrayList<>(); // Is filled in getMetadataConstraintForPotentialIds
         this.cannotBeNewInstance = cannotBeNewInstance;

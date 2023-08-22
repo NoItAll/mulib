@@ -241,7 +241,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     /**
      * Class for wrapping constraints
      */
-    public static class SymSbool extends Sbool implements SymSprimitive, SymNumericExpressionSprimitive {
+    public static class SymSbool extends Sbool implements SymSprimitive, SymSnumber {
         private final Constraint representedConstraint;
 
         private SymSbool() {

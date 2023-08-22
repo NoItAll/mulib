@@ -43,7 +43,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         se.addNewConstraint(actualConstraint);
     }
 
-    private <SA extends SymNumericExpressionSprimitive, S, N> S numericConcolicWrapperCreator(
+    private <SA extends SymSnumber, S, N> S numericConcolicWrapperCreator(
             SymbolicExecution se,
             Function<SymbolicExecution, SA> symCreator,
             Function<Object, ConcSnumber> concSnumberCreator,
@@ -225,56 +225,56 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     @Override
     public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSint(se, numericExpression);
     }
 
     @Override
     public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSdouble(se, numericExpression);
     }
 
     @Override
     public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSfloat(se, numericExpression);
     }
 
     @Override
     public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSlong(se, numericExpression);
     }
 
     @Override
     public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSshort(se, numericExpression);
     }
 
     @Override
     public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                    && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSbyte(se, numericExpression);
     }
 
     @Override
     public Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression) {
         assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymNumericExpressionSprimitive)
-                && ((SymNumericExpressionSprimitive) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
+                && !((numericExpression instanceof SymSnumber)
+                && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
         return svf.wrappingSymSchar(se, numericExpression);
     }
 

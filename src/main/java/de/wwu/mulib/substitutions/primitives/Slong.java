@@ -402,7 +402,7 @@ public abstract class Slong extends AbstractSnumber {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSlong extends Slong implements SymNumericExpressionSprimitive {
+    public static class SymSlong extends Slong implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSlong() {
@@ -423,7 +423,7 @@ public abstract class Slong extends AbstractSnumber {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

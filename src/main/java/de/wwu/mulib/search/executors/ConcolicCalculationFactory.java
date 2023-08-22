@@ -59,7 +59,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Sint.concSint(Math.addExact(lhsExpr.intVal(), rhsExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -76,7 +76,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Sint.concSint(Math.subtractExact(lhsExpr.intVal(), rhsExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -93,7 +93,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Sint.concSint(Math.multiplyExact(lhsExpr.intVal(), rhsExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -110,7 +110,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Sint.concSint(Math.floorDiv(lhsExpr.intVal(), rhsExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -127,7 +127,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Sint.concSint(Math.floorMod(lhsExpr.intVal(), rhsExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -143,7 +143,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         try {
             ConcSnumber iExpr = getConcNumericFromConcolic(i);
             ConcSnumber concResult = Sint.concSint(Math.negateExact(iExpr.intVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Sint.newExpressionSymbolicSint(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -159,7 +159,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sdouble.concSdouble(lhsExpr.doubleVal() + rhsExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -172,7 +172,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sdouble.concSdouble(lhsExpr.doubleVal() - rhsExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -185,7 +185,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sdouble.concSdouble(lhsExpr.doubleVal() * rhsExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -198,7 +198,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sdouble.concSdouble(lhsExpr.doubleVal() / rhsExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -211,7 +211,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sdouble.concSdouble(lhsExpr.doubleVal() % rhsExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -223,7 +223,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         }
         ConcSnumber dExpr = getConcNumericFromConcolic(d);
         ConcSnumber concResult = Sdouble.concSdouble(- dExpr.doubleVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -237,7 +237,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.addExact(lhsExpr.longVal(), rhsExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -254,7 +254,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.subtractExact(lhsExpr.longVal(), rhsExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -271,7 +271,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.multiplyExact(lhsExpr.longVal(), rhsExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -288,7 +288,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.floorDiv(lhsExpr.longVal(), rhsExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -305,7 +305,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.floorMod(lhsExpr.longVal(), rhsExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -321,7 +321,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lExpr = getConcNumericFromConcolic(l);
         try {
             ConcSnumber concResult = Slong.concSlong(Math.negateExact(lExpr.longVal()));
-            ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+            ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
             return Slong.newExpressionSymbolicSlong(container);
         } catch (ArithmeticException e) {
             throw new MulibRuntimeException(e);
@@ -337,7 +337,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sfloat.concSfloat(lhsExpr.floatVal() + rhsExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -350,7 +350,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sfloat.concSfloat(lhsExpr.floatVal() - rhsExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -363,7 +363,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sfloat.concSfloat(lhsExpr.floatVal() * rhsExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -376,7 +376,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sfloat.concSfloat(lhsExpr.floatVal() / rhsExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -389,7 +389,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(lhs);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         ConcSnumber concResult = Sfloat.concSfloat(lhsExpr.floatVal() % rhsExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -401,7 +401,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         }
         ConcSnumber fExpr = getConcNumericFromConcolic(f);
         ConcSnumber concResult = Sfloat.concSfloat(- fExpr.floatVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -622,7 +622,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         int concComparison = Long.compare(lhsExpr.longVal(), rhsExpr.longVal());
         ConcSnumber conc = Sint.concSint(concComparison);
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -636,7 +636,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         int concComparison = Double.compare(lhsExpr.doubleVal(), rhsExpr.doubleVal());
         ConcSnumber conc = Sint.concSint(concComparison);
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -650,7 +650,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber rhsExpr = getConcNumericFromConcolic(rhs);
         int concComparison = Float.compare(lhsExpr.floatVal(), rhsExpr.floatVal());
         ConcSnumber conc = Sint.concSint(concComparison);
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -735,7 +735,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(i);
         Sbyte.ConcSbyte conc = Sbyte.concSbyte(iconc.byteVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sbyte.newExpressionSymbolicSbyte(container);
     }
 
@@ -748,7 +748,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(i);
         Sshort.ConcSshort conc = Sshort.concSshort(iconc.shortVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sshort.newExpressionSymbolicSshort(container);
     }
 
@@ -761,7 +761,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() << rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -774,7 +774,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() >> rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -787,7 +787,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() ^ rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -800,7 +800,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() | rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -813,7 +813,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() >>> rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -826,7 +826,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(i0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(i1);
         ConcSnumber concResult = Sint.concSint(lhsExpr.intVal() & rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Sint.newExpressionSymbolicSint(container);
     }
 
@@ -839,7 +839,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() << rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -852,7 +852,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() >> rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -865,7 +865,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() ^ rhsExpr.longVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -878,7 +878,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() | rhsExpr.longVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -891,7 +891,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() >>> rhsExpr.intVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -904,7 +904,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber lhsExpr = getConcNumericFromConcolic(l0);
         ConcSnumber rhsExpr = getConcNumericFromConcolic(l1);
         ConcSnumber concResult = Slong.concSlong(lhsExpr.longVal() & rhsExpr.longVal());
-        ConcolicNumericContainer container = new ConcolicNumericContainer((SymNumericExpressionSprimitive) potentiallySymbolic, concResult);
+        ConcolicNumericContainer container = new ConcolicNumericContainer((SymSnumber) potentiallySymbolic, concResult);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -917,7 +917,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(i);
         Schar.ConcSchar conc = Schar.concSchar(iconc.charVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Schar.newExpressionSymbolicSchar(container);
     }
 
@@ -934,8 +934,8 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
     protected Sprimitive getValueToBeUsedForPartnerClassObjectConstraint(Substituted value) {
         if (value instanceof Sbool.SymSbool) {
             return tryGetSymFromConcolic((Sbool.SymSbool) value);
-        } else if (value instanceof SymNumericExpressionSprimitive) {
-            return tryGetSymFromConcolic((SymNumericExpressionSprimitive) value);
+        } else if (value instanceof SymSnumber) {
+            return tryGetSymFromConcolic((SymSnumber) value);
         } else if (value instanceof PartnerClass) {
             assert ((PartnerClass) value).__mulib__isRepresentedInSolver();
             return tryGetSymFromConcolic(((PartnerClass) value).__mulib__getId());
@@ -950,7 +950,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(original);
         Slong.ConcSlong conc = Slong.concSlong(iconc.longVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Slong.newExpressionSymbolicSlong(container);
     }
 
@@ -961,7 +961,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(original);
         Sdouble.ConcSdouble conc = Sdouble.concSdouble(iconc.doubleVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sdouble.newExpressionSymbolicSdouble(container);
     }
 
@@ -972,7 +972,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(original);
         Sfloat.ConcSfloat conc = Sfloat.concSfloat(iconc.floatVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sfloat.newExpressionSymbolicSfloat(container);
     }
 
@@ -983,7 +983,7 @@ public final class ConcolicCalculationFactory extends AbstractCalculationFactory
         ConcSnumber iconc = getConcNumericFromConcolic(original);
         Sint.ConcSint conc = Sint.concSint(iconc.intVal());
         ConcolicNumericContainer container =
-                new ConcolicNumericContainer((SymNumericExpressionSprimitive) sym, conc);
+                new ConcolicNumericContainer((SymSnumber) sym, conc);
         return Sint.newExpressionSymbolicSint(container);
     }
 }

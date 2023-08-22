@@ -10,7 +10,7 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 import java.util.IdentityHashMap;
 import java.util.Map;
@@ -125,8 +125,8 @@ public class MulibValueCopier {
         if (currentValue instanceof Sbool.SymSbool) {
             Sbool.SymSbool s = (Sbool.SymSbool) ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) currentValue);
             return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
-        } else if (currentValue instanceof SymNumericExpressionSprimitive) {
-            SymNumericExpressionSprimitive s = (SymNumericExpressionSprimitive) ConcolicNumericContainer.tryGetSymFromConcolic((SymNumericExpressionSprimitive) currentValue);
+        } else if (currentValue instanceof SymSnumber) {
+            SymSnumber s = (SymSnumber) ConcolicNumericContainer.tryGetSymFromConcolic((SymSnumber) currentValue);
             return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
         } else {
             throw new NotYetImplementedException(currentValue.getClass().toString());

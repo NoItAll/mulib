@@ -340,7 +340,7 @@ public abstract class Sfloat extends Sfpnumber {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSfloat extends Sfloat implements SymNumericExpressionSprimitive {
+    public static class SymSfloat extends Sfloat implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSfloat() {
@@ -361,7 +361,7 @@ public abstract class Sfloat extends Sfpnumber {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

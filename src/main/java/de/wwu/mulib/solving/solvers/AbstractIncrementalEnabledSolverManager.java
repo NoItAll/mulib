@@ -562,7 +562,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 sprimitive = ((ConcolicConstraintContainer) c).getSym();
             }
         } else {
-            NumericExpression ne = ((SymNumericExpressionSprimitive) sprimitive).getRepresentedExpression();
+            NumericExpression ne = ((SymSnumber) sprimitive).getRepresentedExpression();
             if (ne instanceof ConcolicNumericContainer) {
                 sprimitive = ((ConcolicNumericContainer) ne).getSym();
             }

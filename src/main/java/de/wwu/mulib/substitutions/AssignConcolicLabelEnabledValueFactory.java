@@ -80,7 +80,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
      * @return A symbolic value that wraps a {@link de.wwu.mulib.expressions.ConcolicNumericContainer} with a label
      * and sym
      */
-    default Snumber assignLabel(SymbolicExecution se, SymNumericExpressionSprimitive n) {
+    default Snumber assignLabel(SymbolicExecution se, SymSnumber n) {
         if (n instanceof Sshort.SymSshort) {
             return assignLabel(se, (Sshort.SymSshort) n);
         } else if (n instanceof Sbyte.SymSbyte) {

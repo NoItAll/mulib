@@ -4,7 +4,7 @@ import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 import java.util.Arrays;
 import java.util.Set;
@@ -81,14 +81,14 @@ public final class ArrayInitializationConstraint implements ArrayConstraint {
         assert Arrays.stream(initialSelectConstraints).noneMatch(isc -> isc.getIndex() instanceof Sym);
         this.initialSelectConstraints = initialSelectConstraints;
         if (fieldName != null) {
-            assert arrayId instanceof SymNumericExpressionSprimitive;
+            assert arrayId instanceof SymSnumber;
             this.type = Type.SARRAY_IN_PARTNER_CLASS_OBJECT;
         } else if (index != null) {
             this.type = Type.SARRAY_IN_SARRAY;
         } else if (potentialIds == null && containingPartnerClassObjectId == null) {
             this.type = Type.SIMPLE_SARRAY;
         } else {
-            assert arrayId instanceof SymNumericExpressionSprimitive;
+            assert arrayId instanceof SymSnumber;
             assert potentialIds != null && !potentialIds.isEmpty();
             this.type = Type.ALIASED_SARRAY;
         }

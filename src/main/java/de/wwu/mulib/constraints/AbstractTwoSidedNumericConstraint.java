@@ -3,7 +3,7 @@ package de.wwu.mulib.constraints;
 import de.wwu.mulib.expressions.ConcolicNumericContainer;
 import de.wwu.mulib.expressions.NumericExpression;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 /**
  * Abstract supertype for those constraints that compare two numeric expressions
@@ -16,11 +16,11 @@ public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpre
     protected AbstractTwoSidedNumericConstraint(NumericExpression lhsExpr, NumericExpression rhsExpr) {
         assert !(lhsExpr instanceof ConcSnumber) || !(rhsExpr instanceof ConcSnumber);
         assert !(lhsExpr instanceof ConcolicNumericContainer) && !(rhsExpr instanceof ConcolicNumericContainer);
-        if (lhsExpr instanceof SymNumericExpressionSprimitive) {
-            lhsExpr = ((SymNumericExpressionSprimitive) lhsExpr).getRepresentedExpression();
+        if (lhsExpr instanceof SymSnumber) {
+            lhsExpr = ((SymSnumber) lhsExpr).getRepresentedExpression();
         }
-        if (rhsExpr instanceof SymNumericExpressionSprimitive) {
-            rhsExpr = ((SymNumericExpressionSprimitive) rhsExpr).getRepresentedExpression();
+        if (rhsExpr instanceof SymSnumber) {
+            rhsExpr = ((SymSnumber) rhsExpr).getRepresentedExpression();
         }
         assert !(lhsExpr instanceof ConcolicNumericContainer) && !(rhsExpr instanceof ConcolicNumericContainer);
         this.lhsExpr = lhsExpr;

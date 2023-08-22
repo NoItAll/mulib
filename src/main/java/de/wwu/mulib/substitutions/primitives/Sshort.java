@@ -99,7 +99,7 @@ public abstract class Sshort extends Sint {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSshort extends Sshort implements SymNumericExpressionSprimitive {
+    public static class SymSshort extends Sshort implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSshort() {
@@ -120,7 +120,7 @@ public abstract class Sshort extends Sint {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override

@@ -508,7 +508,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             if (isConc.get()) {
                 return makeConc.get();
             } else if (isSym.get()) {
-                SymNumericExpressionSprimitive _i = (SymNumericExpressionSprimitive) n;
+                SymSnumber _i = (SymSnumber) n;
                 if (_i instanceof SymSprimitiveLeaf) {
                     return makeSym.get();
                 } else {

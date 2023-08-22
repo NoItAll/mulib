@@ -2,7 +2,7 @@ package de.wwu.mulib.expressions;
 
 import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
-import de.wwu.mulib.substitutions.primitives.SymNumericExpressionSprimitive;
+import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 public class Neg implements NumericExpression, Sym {
 
@@ -11,8 +11,8 @@ public class Neg implements NumericExpression, Sym {
     private Neg(NumericExpression toWrap) {
         assert !(toWrap instanceof ConcSnumber);
         assert !(toWrap instanceof ConcolicNumericContainer);
-        if (toWrap instanceof SymNumericExpressionSprimitive) {
-            toWrap = ((SymNumericExpressionSprimitive) toWrap).getRepresentedExpression();
+        if (toWrap instanceof SymSnumber) {
+            toWrap = ((SymSnumber) toWrap).getRepresentedExpression();
         }
         this.wrapped = toWrap;
     }

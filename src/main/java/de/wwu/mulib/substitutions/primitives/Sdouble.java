@@ -340,7 +340,7 @@ public abstract class Sdouble extends Sfpnumber {
     /**
      * Class for wrapping numeric expressions
      */
-    public static class SymSdouble extends Sdouble implements SymNumericExpressionSprimitive {
+    public static class SymSdouble extends Sdouble implements SymSnumber {
         private final NumericExpression representedExpression;
 
         private SymSdouble() {
@@ -361,7 +361,7 @@ public abstract class Sdouble extends Sfpnumber {
             if (o.getClass() != getClass()) {
                 return false;
             }
-            return representedExpression.equals(((SymNumericExpressionSprimitive) o).getRepresentedExpression());
+            return representedExpression.equals(((SymSnumber) o).getRepresentedExpression());
         }
 
         @Override
