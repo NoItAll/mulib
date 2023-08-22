@@ -172,12 +172,12 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
         Formula f = var instanceof Sbool ?
                 adapter.getBooleanFormulaForConstraint((Constraint) var)
                 :
-                adapter.getFormulaForNumericExpression((NumericExpression) var);
+                adapter.getFormulaForNumericExpression((NumericalExpression) var);
         if (f == null) {
             if (var instanceof Constraint) {
                 f = adapter.transformConstraint((Constraint) var);
             } else {
-                f = adapter.transformNumeral((NumericExpression) var);
+                f = adapter.transformNumeral((NumericalExpression) var);
             }
         }
         assert f != null;
@@ -225,7 +225,7 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
      * An adapter transforming Mulib's types to JavaSMT's types
      */
     protected static final class JavaSMTMulibAdapter {
-        private final Map<NumericExpression, NumeralFormula> numericExpressionStore = new HashMap<>();
+        private final Map<NumericalExpression, NumeralFormula> numericExpressionStore = new HashMap<>();
         private final Map<Object, BooleanFormula> booleanFormulaStore = new HashMap<>();
         private final BooleanFormulaManager booleanFormulaManager;
         private final IntegerFormulaManager integerFormulaManager;
@@ -279,8 +279,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             this.treatSboolsAsInts = config.VALS_TREAT_BOOLEANS_AS_INTS;
         }
 
-        NumeralFormula getFormulaForNumericExpression(NumericExpression numericExpression) {
-            return numericExpressionStore.get(numericExpression);
+        NumeralFormula getFormulaForNumericExpression(NumericalExpression numericalExpression) {
+            return numericExpressionStore.get(numericalExpression);
         }
 
         BooleanFormula getBooleanFormulaForConstraint(Constraint c) {
@@ -409,13 +409,13 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
          * @param n The numeric expression
          * @return The NumeralFormula
          */
-        public NumeralFormula transformNumeral(NumericExpression n) {
+        public NumeralFormula transformNumeral(NumericalExpression n) {
             NumeralFormula result;
 
-            if (n instanceof AbstractOperatorNumericExpression) {
-                AbstractOperatorNumericExpression o = (AbstractOperatorNumericExpression) n;
-                NumericExpression lhs = o.getExpr0();
-                NumericExpression rhs = o.getExpr1();
+            if (n instanceof AbstractOperatorNumericalExpression) {
+                AbstractOperatorNumericalExpression o = (AbstractOperatorNumericalExpression) n;
+                NumericalExpression lhs = o.getExpr0();
+                NumericalExpression rhs = o.getExpr1();
                 NumeralFormula elhs = transformNumeral(lhs);
                 NumeralFormula erhs = transformNumeral(rhs);
                 if (n instanceof NumericBitwiseOperation) {
@@ -433,11 +433,11 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                     assert lhsIsLong == rhsIsLong;
                     BitvectorFormula bvlhs = bitvectorFormulaManager.makeBitvector(lhsIsLong ? 64 : 32, ilhs);
                     BitvectorFormula bvrhs = bitvectorFormulaManager.makeBitvector(rhsIsLong ? 64 : 32, irhs);
-                    if (n instanceof NumericAnd) {
+                    if (n instanceof NumericalAnd) {
                         bvresult = bitvectorFormulaManager.and(bvlhs, bvrhs);
-                    } else if (n instanceof NumericOr) {
+                    } else if (n instanceof NumericalOr) {
                         bvresult = bitvectorFormulaManager.or(bvlhs, bvrhs);
-                    } else if (n instanceof NumericXor) {
+                    } else if (n instanceof NumericalXor) {
                         bvresult = bitvectorFormulaManager.xor(bvlhs, bvrhs);
                     } else if (n instanceof ShiftLeft) {
                         bvresult = bitvectorFormulaManager.shiftLeft(bvlhs, bvrhs);
@@ -486,8 +486,8 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
                 } else {
                     result = integerFormulaManager.negate((NumeralFormula.IntegerFormula) transformNumeral(((Neg) n).getWrapped()));
                 }
-            } else if (n instanceof NumericIte) {
-                NumericIte ite = (NumericIte) n;
+            } else if (n instanceof NumericalIte) {
+                NumericalIte ite = (NumericalIte) n;
                 BooleanFormula condition = transformConstraint(ite.getCondition());
                 NumeralFormula ifCase = transformNumeral(ite.getIfCase());
                 NumeralFormula elseCase = transformNumeral(ite.getElseCase());

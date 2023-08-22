@@ -1,7 +1,7 @@
 package de.wwu.mulib.substitutions.primitives;
 
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.ValueFactory;
 
@@ -260,7 +260,7 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         }
 
         @Override
-        public NumericExpression getRepresentedExpression() {
+        public NumericalExpression getRepresentedExpression() {
             return this;
         }
 

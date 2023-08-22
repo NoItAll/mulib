@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -34,7 +34,7 @@ public abstract class Sshort extends Sint {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Sshort.SymSshort newExpressionSymbolicSshort(NumericExpression representedExpression) {
+    public static Sshort.SymSshort newExpressionSymbolicSshort(NumericalExpression representedExpression) {
         return new Sshort.SymSshort(representedExpression);
     }
 
@@ -100,18 +100,18 @@ public abstract class Sshort extends Sint {
      * Class for wrapping numeric expressions
      */
     public static class SymSshort extends Sshort implements SymSnumber {
-        private final NumericExpression representedExpression;
+        private final NumericalExpression representedExpression;
 
         private SymSshort() {
             this.representedExpression = this;
         }
 
-        private SymSshort(NumericExpression representedExpression) {
+        private SymSshort(NumericalExpression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public NumericExpression getRepresentedExpression() {
+        public NumericalExpression getRepresentedExpression() {
             return representedExpression;
         }
 

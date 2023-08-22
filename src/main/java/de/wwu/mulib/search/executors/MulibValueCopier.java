@@ -4,7 +4,7 @@ import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
 import de.wwu.mulib.substitutions.AssignConcolicLabelEnabledValueFactory;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sym;
@@ -126,7 +126,7 @@ public class MulibValueCopier {
             Sbool.SymSbool s = (Sbool.SymSbool) ConcolicConstraintContainer.tryGetSymFromConcolic((Sbool.SymSbool) currentValue);
             return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
         } else if (currentValue instanceof SymSnumber) {
-            SymSnumber s = (SymSnumber) ConcolicNumericContainer.tryGetSymFromConcolic((SymSnumber) currentValue);
+            SymSnumber s = (SymSnumber) ConcolicNumericalContainer.tryGetSymFromConcolic((SymSnumber) currentValue);
             return ((AssignConcolicLabelEnabledValueFactory) se.getValueFactory()).assignLabel(se, s);
         } else {
             throw new NotYetImplementedException(currentValue.getClass().toString());

@@ -3,8 +3,8 @@ package de.wwu.mulib.expressions;
 /**
  * Represents the bit-wise XOR operation of two numbers
  */
-public class NumericXor extends AbstractOperatorNumericExpression implements NumericBitwiseOperation {
-    protected NumericXor(NumericExpression expr0, NumericExpression expr1) {
+public class NumericalXor extends AbstractOperatorNumericalExpression implements NumericBitwiseOperation {
+    protected NumericalXor(NumericalExpression expr0, NumericalExpression expr1) {
         super(expr0, expr1);
     }
 
@@ -14,7 +14,7 @@ public class NumericXor extends AbstractOperatorNumericExpression implements Num
      * @param expr1 The second number
      * @return A numeric expression representing the bit-wise XOR operation  expr0 ^ expr1
      */
-    public static NumericExpression newInstance(NumericExpression expr0, NumericExpression expr1) {
-        return new NumericXor(expr0, expr1);
+    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
+        return new NumericalXor(expr0, expr1);
     }
 }

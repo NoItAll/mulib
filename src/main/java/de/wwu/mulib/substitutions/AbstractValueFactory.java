@@ -5,7 +5,7 @@ import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
 import de.wwu.mulib.search.executors.AliasingInformation;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
@@ -30,7 +30,7 @@ import java.util.function.Function;
  */
 public abstract class AbstractValueFactory implements ValueFactory {
     /**
-     * Can be used to extract the symbolic value from {@link ConcolicNumericContainer}s
+     * Can be used to extract the symbolic value from {@link ConcolicNumericalContainer}s
      */
     protected final Function<Snumber, Snumber> tryGetSymFromSnumber;
     /**
@@ -123,7 +123,7 @@ public abstract class AbstractValueFactory implements ValueFactory {
         }
         this.config = config;
         if (config.SEARCH_CONCOLIC) {
-            tryGetSymFromSnumber = ConcolicNumericContainer::tryGetSymFromConcolic;
+            tryGetSymFromSnumber = ConcolicNumericalContainer::tryGetSymFromConcolic;
             tryGetSymFromSbool = ConcolicConstraintContainer::tryGetSymFromConcolic;
         } else {
             tryGetSymFromSnumber = s -> s;

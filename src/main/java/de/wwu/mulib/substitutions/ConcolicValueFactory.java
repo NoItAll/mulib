@@ -4,8 +4,8 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -18,7 +18,7 @@ import java.util.function.Function;
  * For the generation of leafs, these symbolic values are labeled using the constraint solver and a
  * wrapping {@link Sprimitive} is returned.
  * The construction of wrappers is completely delegated to the {@link SymbolicValueFactory}; - the wrapping into the
- * {@link ConcolicNumericContainer} or {@link ConcolicConstraintContainer} occurs in the {@link de.wwu.mulib.search.executors.ConcolicCalculationFactory}.
+ * {@link ConcolicNumericalContainer} or {@link ConcolicConstraintContainer} occurs in the {@link de.wwu.mulib.search.executors.ConcolicCalculationFactory}.
  */
 public class ConcolicValueFactory extends AbstractValueFactory implements AssignConcolicLabelEnabledValueFactory {
 
@@ -47,7 +47,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
             SymbolicExecution se,
             Function<SymbolicExecution, SA> symCreator,
             Function<Object, ConcSnumber> concSnumberCreator,
-            Function<ConcolicNumericContainer, S> resultWrapper) {
+            Function<ConcolicNumericalContainer, S> resultWrapper) {
         // Symbolic value
         SA sym = symCreator.apply(se);
         if (!se.isSatisfiable()) {
@@ -59,7 +59,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
         // TODO Performance optimization: If nextIsOnKnownPath() is false, we can return the neutral element (e.g. 0 and
         //  false) or 1 to directly account for Sarray-based index-constraints.
         // Container for both
-        ConcolicNumericContainer container = new ConcolicNumericContainer(sym, conc);
+        ConcolicNumericalContainer container = new ConcolicNumericalContainer(sym, conc);
         return resultWrapper.apply(container);
     }
 
@@ -154,7 +154,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sint symSint(SymbolicExecution se, Sint lb, Sint ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSint(s, (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSint(s, (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Sint.concSint((Integer) o),
                 // Wrapped in new SymSint; we do not reuse these outer wrappers, thus, we do not call
                 // svf.wrappingXYZ(...).
@@ -166,7 +166,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sdouble symSdouble(SymbolicExecution se, Sdouble lb, Sdouble ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSdouble(s, (Sdouble) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Sdouble) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSdouble(s, (Sdouble) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Sdouble) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Sdouble.concSdouble((Double) o),
                 Sdouble::newExpressionSymbolicSdouble
         );
@@ -176,7 +176,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sfloat symSfloat(SymbolicExecution se, Sfloat lb, Sfloat ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSfloat(s, (Sfloat) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Sfloat) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSfloat(s, (Sfloat) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Sfloat) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Sfloat.concSfloat((Float) o),
                 Sfloat::newExpressionSymbolicSfloat
         );
@@ -186,7 +186,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Slong symSlong(SymbolicExecution se, Slong lb, Slong ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSlong(s, (Slong) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Slong) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSlong(s, (Slong) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Slong) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Slong.concSlong((Long) o),
                 Slong::newExpressionSymbolicSlong
         );
@@ -196,7 +196,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sshort symSshort(SymbolicExecution se, Sshort lb, Sshort ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSshort(s, (Sshort) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Sshort) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSshort(s, (Sshort) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Sshort) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Sshort.concSshort((Short) o),
                 Sshort::newExpressionSymbolicSshort
         );
@@ -206,7 +206,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Sbyte symSbyte(SymbolicExecution se, Sbyte lb, Sbyte ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSbyte(s, (Sbyte) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Sbyte) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSbyte(s, (Sbyte) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Sbyte) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Sbyte.concSbyte((Byte) o),
                 Sbyte::newExpressionSymbolicSbyte
         );
@@ -216,66 +216,66 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     public Schar symSchar(SymbolicExecution se, Schar lb, Schar ub) {
         return numericConcolicWrapperCreator(
                 se,
-                s -> svf.symSchar(s, (Schar) ConcolicNumericContainer.tryGetSymFromConcolic(lb), (Schar) ConcolicNumericContainer.tryGetSymFromConcolic(ub)),
+                s -> svf.symSchar(s, (Schar) ConcolicNumericalContainer.tryGetSymFromConcolic(lb), (Schar) ConcolicNumericalContainer.tryGetSymFromConcolic(ub)),
                 o -> Schar.concSchar((Character) o),
                 Schar::newExpressionSymbolicSchar
         );
     }
 
     @Override
-    public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSint(se, numericExpression);
+    public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSint(se, numericalExpression);
     }
 
     @Override
-    public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSdouble(se, numericExpression);
+    public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSdouble(se, numericalExpression);
     }
 
     @Override
-    public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSfloat(se, numericExpression);
+    public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSfloat(se, numericalExpression);
     }
 
     @Override
-    public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSlong(se, numericExpression);
+    public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSlong(se, numericalExpression);
     }
 
     @Override
-    public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSshort(se, numericExpression);
+    public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSshort(se, numericalExpression);
     }
 
     @Override
-    public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                    && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSbyte(se, numericExpression);
+    public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                    && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSbyte(se, numericalExpression);
     }
 
     @Override
-    public Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression) {
-        assert !(numericExpression instanceof ConcolicNumericContainer)
-                && !((numericExpression instanceof SymSnumber)
-                && ((SymSnumber) numericExpression).getRepresentedExpression() instanceof ConcolicNumericContainer);
-        return svf.wrappingSymSchar(se, numericExpression);
+    public Schar wrappingSymSchar(SymbolicExecution se, NumericalExpression numericalExpression) {
+        assert !(numericalExpression instanceof ConcolicNumericalContainer)
+                && !((numericalExpression instanceof SymSnumber)
+                && ((SymSnumber) numericalExpression).getRepresentedExpression() instanceof ConcolicNumericalContainer);
+        return svf.wrappingSymSchar(se, numericalExpression);
     }
 
     @Override
@@ -287,7 +287,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
     }
 
     @Override
-    public Sint.SymSint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1) {
+    public Sint.SymSint cmp(SymbolicExecution se, NumericalExpression n0, NumericalExpression n1) {
         return svf.cmp(se, n0, n1);
     }
 
@@ -303,7 +303,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Sshort.SymSshort assignLabel(SymbolicExecution se, Sshort.SymSshort potentiallyToUnwrap) {
-        Sshort.SymSshort sym = (Sshort.SymSshort) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sshort.SymSshort sym = (Sshort.SymSshort) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -314,7 +314,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Sbyte.SymSbyte assignLabel(SymbolicExecution se, Sbyte.SymSbyte potentiallyToUnwrap) {
-        Sbyte.SymSbyte sym = (Sbyte.SymSbyte) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sbyte.SymSbyte sym = (Sbyte.SymSbyte) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -325,7 +325,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Sint.SymSint assignLabel(SymbolicExecution se, Sint.SymSint potentiallyToUnwrap) {
-        Sint.SymSint sym = (Sint.SymSint) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sint.SymSint sym = (Sint.SymSint) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -336,7 +336,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Slong.SymSlong assignLabel(SymbolicExecution se, Slong.SymSlong potentiallyToUnwrap) {
-        Slong.SymSlong sym = (Slong.SymSlong) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Slong.SymSlong sym = (Slong.SymSlong) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -347,7 +347,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Sdouble.SymSdouble assignLabel(SymbolicExecution se, Sdouble.SymSdouble potentiallyToUnwrap) {
-        Sdouble.SymSdouble sym = (Sdouble.SymSdouble) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sdouble.SymSdouble sym = (Sdouble.SymSdouble) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -358,7 +358,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Sfloat.SymSfloat assignLabel(SymbolicExecution se, Sfloat.SymSfloat potentiallyToUnwrap) {
-        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,
@@ -369,7 +369,7 @@ public class ConcolicValueFactory extends AbstractValueFactory implements Assign
 
     @Override
     public Schar.SymSchar assignLabel(SymbolicExecution se, Schar.SymSchar potentiallyToUnwrap) {
-        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
+        Sfloat.SymSfloat sym = (Sfloat.SymSfloat) ConcolicNumericalContainer.tryGetSymFromConcolic(potentiallyToUnwrap);
         return numericConcolicWrapperCreator(
                 se,
                 (s) -> sym,

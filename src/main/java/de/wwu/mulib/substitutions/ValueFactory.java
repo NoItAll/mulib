@@ -2,7 +2,7 @@ package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -363,52 +363,52 @@ public interface ValueFactory {
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Sint representing a composed numeric expression
      */
-    Sint wrappingSymSint(SymbolicExecution se, NumericExpression numericExpression);
+    Sint wrappingSymSint(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Sdouble representing a composed numeric expression
      */
-    Sdouble wrappingSymSdouble(SymbolicExecution se, NumericExpression numericExpression);
+    Sdouble wrappingSymSdouble(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Sfloat representing a composed numeric expression
      */
-    Sfloat wrappingSymSfloat(SymbolicExecution se, NumericExpression numericExpression);
+    Sfloat wrappingSymSfloat(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Slong representing a composed numeric expression
      */
-    Slong wrappingSymSlong(SymbolicExecution se, NumericExpression numericExpression);
+    Slong wrappingSymSlong(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Sshort representing a composed numeric expression
      */
-    Sshort wrappingSymSshort(SymbolicExecution se, NumericExpression numericExpression);
+    Sshort wrappingSymSshort(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Sbyte representing a composed numeric expression
      */
-    Sbyte wrappingSymSbyte(SymbolicExecution se, NumericExpression numericExpression);
+    Sbyte wrappingSymSbyte(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
-     * @param numericExpression The wrapped expression
+     * @param numericalExpression The wrapped expression
      * @return A Schar representing a composed numeric expression
      */
-    Schar wrappingSymSchar(SymbolicExecution se, NumericExpression numericExpression);
+    Schar wrappingSymSchar(SymbolicExecution se, NumericalExpression numericalExpression);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
@@ -424,5 +424,5 @@ public interface ValueFactory {
      * @param n1 The second numeric expression
      * @return A Sint that can either be -1, 0, or 1
      */
-    Sint cmp(SymbolicExecution se, NumericExpression n0, NumericExpression n1);
+    Sint cmp(SymbolicExecution se, NumericalExpression n0, NumericalExpression n1);
 }

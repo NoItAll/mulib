@@ -4,20 +4,20 @@ import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
-public class Neg implements NumericExpression, Sym {
+public class Neg implements NumericalExpression, Sym {
 
-    private final NumericExpression wrapped;
+    private final NumericalExpression wrapped;
 
-    private Neg(NumericExpression toWrap) {
+    private Neg(NumericalExpression toWrap) {
         assert !(toWrap instanceof ConcSnumber);
-        assert !(toWrap instanceof ConcolicNumericContainer);
+        assert !(toWrap instanceof ConcolicNumericalContainer);
         if (toWrap instanceof SymSnumber) {
             toWrap = ((SymSnumber) toWrap).getRepresentedExpression();
         }
         this.wrapped = toWrap;
     }
 
-    public static NumericExpression neg(NumericExpression wrapped) {
+    public static NumericalExpression neg(NumericalExpression wrapped) {
         return wrapped instanceof Neg ?
                 ((Neg) wrapped).getWrapped()
                 :
@@ -34,7 +34,7 @@ public class Neg implements NumericExpression, Sym {
         return wrapped.isFp();
     }
 
-    public final NumericExpression getWrapped() {
+    public final NumericalExpression getWrapped() {
         return wrapped;
     }
 

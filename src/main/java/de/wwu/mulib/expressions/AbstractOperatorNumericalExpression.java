@@ -7,14 +7,14 @@ import de.wwu.mulib.substitutions.primitives.SymSnumber;
 /**
  * Abstract supertype for all those numeric expressions that consist of two numeric expressions and an operator
  */
-public abstract class AbstractOperatorNumericExpression implements NumericExpression, Sym {
+public abstract class AbstractOperatorNumericalExpression implements NumericalExpression, Sym {
 
-    protected final NumericExpression expr0;
-    protected final NumericExpression expr1;
+    protected final NumericalExpression expr0;
+    protected final NumericalExpression expr1;
 
-    protected AbstractOperatorNumericExpression(NumericExpression expr0, NumericExpression expr1) {
+    protected AbstractOperatorNumericalExpression(NumericalExpression expr0, NumericalExpression expr1) {
         assert !(expr0 instanceof ConcSnumber) || !(expr1 instanceof ConcSnumber);
-        assert !(expr0 instanceof ConcolicNumericContainer) && !(expr1 instanceof ConcolicNumericContainer);
+        assert !(expr0 instanceof ConcolicNumericalContainer) && !(expr1 instanceof ConcolicNumericalContainer);
         if (expr0 instanceof SymSnumber) {
             expr0 = ((SymSnumber) expr0).getRepresentedExpression();
         }
@@ -28,14 +28,14 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
     /**
      * @return The first expression
      */
-    public final NumericExpression getExpr0() {
+    public final NumericalExpression getExpr0() {
         return expr0;
     }
 
     /**
      * @return The second expression
      */
-    public final NumericExpression getExpr1() {
+    public final NumericalExpression getExpr1() {
         return expr1;
     }
 
@@ -65,7 +65,7 @@ public abstract class AbstractOperatorNumericExpression implements NumericExpres
         if (!this.getClass().equals(o.getClass())) {
             return false;
         }
-        AbstractOperatorNumericExpression oc = (AbstractOperatorNumericExpression) o;
+        AbstractOperatorNumericalExpression oc = (AbstractOperatorNumericalExpression) o;
         return this.getExpr0().equals(oc.getExpr0()) && this.getExpr1().equals(oc.getExpr1());
     }
 

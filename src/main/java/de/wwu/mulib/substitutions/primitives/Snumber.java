@@ -1,10 +1,10 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 
 /**
  * Marker interface for all classes representing numbers
  */
-public interface Snumber extends Sprimitive, NumericExpression {
+public interface Snumber extends Sprimitive, NumericalExpression {
 
 }

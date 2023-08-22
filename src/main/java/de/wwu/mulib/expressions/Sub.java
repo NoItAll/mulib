@@ -3,9 +3,9 @@ package de.wwu.mulib.expressions;
 /**
  * Represents the subtraction of one number from another
  */
-public class Sub extends AbstractOperatorNumericExpression {
+public class Sub extends AbstractOperatorNumericalExpression {
 
-    private Sub(NumericExpression expr0, NumericExpression expr1) {
+    private Sub(NumericalExpression expr0, NumericalExpression expr1) {
         super(expr0, expr1);
     }
 
@@ -15,7 +15,7 @@ public class Sub extends AbstractOperatorNumericExpression {
      * @param expr1 The second number
      * @return A numeric expression representing the subtraction expr0-expr1
      */
-    public static NumericExpression newInstance(NumericExpression expr0, NumericExpression expr1) {
+    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
         return new Sub(expr0, expr1);
     }
 

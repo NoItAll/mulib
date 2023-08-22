@@ -3,8 +3,8 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.throwables.*;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.Labels;
@@ -562,9 +562,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 sprimitive = ((ConcolicConstraintContainer) c).getSym();
             }
         } else {
-            NumericExpression ne = ((SymSnumber) sprimitive).getRepresentedExpression();
-            if (ne instanceof ConcolicNumericContainer) {
-                sprimitive = ((ConcolicNumericContainer) ne).getSym();
+            NumericalExpression ne = ((SymSnumber) sprimitive).getRepresentedExpression();
+            if (ne instanceof ConcolicNumericalContainer) {
+                sprimitive = ((ConcolicNumericalContainer) ne).getSym();
             }
         }
         return labelSymSprimitive((SymSprimitive) sprimitive);
@@ -1171,7 +1171,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                         result,
                         Not.newInstance(
                                 Eq.newInstance(
-                                        ConcolicNumericContainer.tryGetSymFromConcolic(sarray.__mulib__getId()),
+                                        ConcolicNumericalContainer.tryGetSymFromConcolic(sarray.__mulib__getId()),
                                         Sint.concSint((Integer) _getLabel(sarray.__mulib__getId(), rememberConstraint, allRelevantPartnerClassObjectConstraints))
                                 )
                         )
@@ -1214,7 +1214,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                     Constraint neq = getNeq(entry.getValue(), _getLabel(entry.getValue(), rememberConstraint, allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neq);
                 }
-                Sint id = (Sint) ConcolicNumericContainer.tryGetSymFromConcolic(((PartnerClass) sv).__mulib__getId());
+                Sint id = (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(((PartnerClass) sv).__mulib__getId());
                 Sint labeledId;
                 if (value == null) {
                     labeledId = Sint.ConcSint.MINUS_ONE;
@@ -1243,7 +1243,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         }
 
         assert sv instanceof Snumber;
-        sv = ConcolicNumericContainer.tryGetSymFromConcolic((Snumber) sv);
+        sv = ConcolicNumericalContainer.tryGetSymFromConcolic((Snumber) sv);
         Snumber wrappedPreviousValue;
         if (value instanceof Integer) {
             wrappedPreviousValue = Sint.concSint((Integer) value);

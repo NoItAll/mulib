@@ -1,7 +1,7 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.throwables.MulibIllegalStateException;
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
 import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.primitives.Sint;
 
@@ -39,7 +39,7 @@ public final class AliasingInformation {
      * aliasing targets' identifiers, i.e., those instances that have been initialized symbolically beforehand.
      * @param c The class for which to retrieve aliasing information for the current run of {@link SymbolicExecution}
      * @param isConcolic Whether or not we currently run concolic execution. In this case, we would need to unwrap
-     *                   the identifier from its {@link ConcolicNumericContainer}.
+     *                   the identifier from its {@link ConcolicNumericalContainer}.
      * @return The aliasing targets' identifiers
      */
     public static Set<Sint> getAliasingTargetIdsForClass(Class<?> c, boolean isConcolic) {
@@ -47,7 +47,7 @@ public final class AliasingInformation {
                 .map(pc -> pc == null ?
                         Sint.ConcSint.MINUS_ONE
                         :
-                        (Sint) (isConcolic ? ConcolicNumericContainer.tryGetSymFromConcolic(pc.__mulib__getId()) : pc.__mulib__getId()))
+                        (Sint) (isConcolic ? ConcolicNumericalContainer.tryGetSymFromConcolic(pc.__mulib__getId()) : pc.__mulib__getId()))
                 .collect(Collectors.toCollection(HashSet::new));
     }
 

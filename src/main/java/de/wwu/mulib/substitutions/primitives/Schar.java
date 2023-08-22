@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -33,7 +33,7 @@ public abstract class Schar extends Sint {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Schar.SymSchar newExpressionSymbolicSchar(NumericExpression representedExpression) {
+    public static Schar.SymSchar newExpressionSymbolicSchar(NumericalExpression representedExpression) {
         return new Schar.SymSchar(representedExpression);
     }
 
@@ -99,18 +99,18 @@ public abstract class Schar extends Sint {
      * Class for wrapping numeric expressions
      */
     public static class SymSchar extends Schar implements SymSnumber {
-        private final NumericExpression representedExpression;
+        private final NumericalExpression representedExpression;
 
         private SymSchar() {
             this.representedExpression = this;
         }
 
-        private SymSchar(NumericExpression representedExpression) {
+        private SymSchar(NumericalExpression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public NumericExpression getRepresentedExpression() {
+        public NumericalExpression getRepresentedExpression() {
             return representedExpression;
         }
 

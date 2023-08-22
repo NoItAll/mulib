@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.ValueFactory;
 
@@ -35,7 +35,7 @@ public abstract class Slong extends AbstractSnumber {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Slong.SymSlong newExpressionSymbolicSlong(NumericExpression representedExpression) {
+    public static Slong.SymSlong newExpressionSymbolicSlong(NumericalExpression representedExpression) {
         return new SymSlong(representedExpression);
     }
 
@@ -403,18 +403,18 @@ public abstract class Slong extends AbstractSnumber {
      * Class for wrapping numeric expressions
      */
     public static class SymSlong extends Slong implements SymSnumber {
-        private final NumericExpression representedExpression;
+        private final NumericalExpression representedExpression;
 
         private SymSlong() {
             this.representedExpression = this;
         }
 
-        private SymSlong(NumericExpression representedExpression) {
+        private SymSlong(NumericalExpression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public NumericExpression getRepresentedExpression() {
+        public NumericalExpression getRepresentedExpression() {
             return representedExpression;
         }
 

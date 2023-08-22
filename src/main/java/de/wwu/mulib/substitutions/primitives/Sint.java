@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.ValueFactory;
 
@@ -50,7 +50,7 @@ public abstract class Sint extends AbstractSnumber {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Sint.SymSint newExpressionSymbolicSint(NumericExpression representedExpression) {
+    public static Sint.SymSint newExpressionSymbolicSint(NumericalExpression representedExpression) {
         return new SymSint(representedExpression);
     }
 
@@ -560,18 +560,18 @@ public abstract class Sint extends AbstractSnumber {
      * Class for wrapping numeric expressions
      */
     public static class SymSint extends Sint implements SymSnumber {
-        private final NumericExpression representedExpression;
+        private final NumericalExpression representedExpression;
 
         private SymSint() {
             this.representedExpression = this;
         }
 
-        private SymSint(NumericExpression representedExpression) {
+        private SymSint(NumericalExpression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public NumericExpression getRepresentedExpression() {
+        public NumericalExpression getRepresentedExpression() {
             return representedExpression;
         }
 

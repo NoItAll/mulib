@@ -3,6 +3,8 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.ArrayAccessConstraint;
 import de.wwu.mulib.constraints.PartnerClassObjectFieldConstraint;
+import de.wwu.mulib.expressions.AbstractOperatorNumericalExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.PartnerClass;
@@ -18,10 +20,10 @@ import de.wwu.mulib.substitutions.primitives.*;
  * an object for the constraint solver are dealt with here. Furthermore, if needed, the fields of a lazily initialized objects
  * are initialized here.
  * For these calculations, either a concrete value, a symbolic value wrapping a {@link de.wwu.mulib.constraints.Constraint}
- * or {@link de.wwu.mulib.expressions.NumericExpression}, a {@link PartnerClass}, or a {@link Sarray} with
+ * or {@link NumericalExpression}, a {@link PartnerClass}, or a {@link Sarray} with
  * {@link PartnerClass#__mulib__defaultIsSymbolic()} == true is returned.
  * @see de.wwu.mulib.expressions.Neg
- * @see de.wwu.mulib.expressions.AbstractOperatorNumericExpression
+ * @see AbstractOperatorNumericalExpression
  * @see de.wwu.mulib.constraints.AbstractTwoSidedConstraint
  * @see de.wwu.mulib.constraints.AbstractTwoSidedNumericConstraint
  * @see de.wwu.mulib.constraints.ArrayInitializationConstraint

@@ -1,6 +1,6 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.NumberUtil;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -10,7 +10,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
  */
 public class Lt extends AbstractTwoSidedNumericConstraint {
 
-    private Lt(NumericExpression lhs, NumericExpression rhs) {
+    private Lt(NumericalExpression lhs, NumericalExpression rhs) {
         super(lhs, rhs);
     }
 
@@ -21,7 +21,7 @@ public class Lt extends AbstractTwoSidedNumericConstraint {
      * @return If both lhs and rhs are concrete Sbool.ConcSbool.TRUE or Sbool.ConcSbool.FALSE are returned.
      * Otherwise lhs <= rhs is returned.
      */
-    public static Constraint newInstance(NumericExpression lhs, NumericExpression rhs) {
+    public static Constraint newInstance(NumericalExpression lhs, NumericalExpression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
             return Sbool.concSbool(NumberUtil.lt((ConcSnumber) lhs, (ConcSnumber) rhs));
         } else {

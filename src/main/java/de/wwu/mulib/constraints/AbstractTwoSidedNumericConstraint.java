@@ -1,7 +1,7 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.expressions.ConcolicNumericContainer;
-import de.wwu.mulib.expressions.NumericExpression;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
@@ -10,34 +10,34 @@ import de.wwu.mulib.substitutions.primitives.SymSnumber;
  */
 public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpressionConstraint {
 
-    protected final NumericExpression lhsExpr;
-    protected final NumericExpression rhsExpr;
+    protected final NumericalExpression lhsExpr;
+    protected final NumericalExpression rhsExpr;
 
-    protected AbstractTwoSidedNumericConstraint(NumericExpression lhsExpr, NumericExpression rhsExpr) {
+    protected AbstractTwoSidedNumericConstraint(NumericalExpression lhsExpr, NumericalExpression rhsExpr) {
         assert !(lhsExpr instanceof ConcSnumber) || !(rhsExpr instanceof ConcSnumber);
-        assert !(lhsExpr instanceof ConcolicNumericContainer) && !(rhsExpr instanceof ConcolicNumericContainer);
+        assert !(lhsExpr instanceof ConcolicNumericalContainer) && !(rhsExpr instanceof ConcolicNumericalContainer);
         if (lhsExpr instanceof SymSnumber) {
             lhsExpr = ((SymSnumber) lhsExpr).getRepresentedExpression();
         }
         if (rhsExpr instanceof SymSnumber) {
             rhsExpr = ((SymSnumber) rhsExpr).getRepresentedExpression();
         }
-        assert !(lhsExpr instanceof ConcolicNumericContainer) && !(rhsExpr instanceof ConcolicNumericContainer);
+        assert !(lhsExpr instanceof ConcolicNumericalContainer) && !(rhsExpr instanceof ConcolicNumericalContainer);
         this.lhsExpr = lhsExpr;
         this.rhsExpr = rhsExpr;
     }
 
-    protected static boolean bothExprAreConcrete(NumericExpression lhs, NumericExpression rhs) {
+    protected static boolean bothExprAreConcrete(NumericalExpression lhs, NumericalExpression rhs) {
         return lhs instanceof ConcSnumber && rhs instanceof ConcSnumber;
     }
 
     @Override
-    public final NumericExpression getLhs() {
+    public final NumericalExpression getLhs() {
         return lhsExpr;
     }
 
     @Override
-    public final NumericExpression getRhs() {
+    public final NumericalExpression getRhs() {
         return rhsExpr;
     }
 

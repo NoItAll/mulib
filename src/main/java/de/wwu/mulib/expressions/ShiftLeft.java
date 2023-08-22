@@ -3,8 +3,8 @@ package de.wwu.mulib.expressions;
 /**
  * Represents an arithmetic bit-shift to the left
  */
-public class ShiftLeft extends AbstractOperatorNumericExpression implements NumericBitwiseOperation {
-    protected ShiftLeft(NumericExpression expr0, NumericExpression expr1) {
+public class ShiftLeft extends AbstractOperatorNumericalExpression implements NumericBitwiseOperation {
+    protected ShiftLeft(NumericalExpression expr0, NumericalExpression expr1) {
         super(expr0, expr1);
     }
 
@@ -14,7 +14,7 @@ public class ShiftLeft extends AbstractOperatorNumericExpression implements Nume
      * @param expr1 The second number
      * @return A numeric expression representing the division expr0 << expr1
      */
-    public static NumericExpression newInstance(NumericExpression expr0, NumericExpression expr1) {
+    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
         return new ShiftLeft(expr0, expr1);
     }
 }
