@@ -474,7 +474,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
         } else if (!(toPotentiallyRepresent instanceof Sarray)) {
             // Check the fields of 'real' PartnerClass objects
             // We must not initialize the fields, if they have not already been initialized
-            Map<String, Substituted> fieldValues = toPotentiallyRepresent.__mulib__getFieldNameToSubstitutedVar();
+            Map<String, Substituted> fieldValues = toPotentiallyRepresent.__mulib__getFieldNameToSubstituted();
             for (Map.Entry<String, Substituted> entry : fieldValues.entrySet()) {
                 Substituted val = entry.getValue();
                 if (!(val instanceof PartnerClass)) {
@@ -596,7 +596,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     private PartnerClassObjectFieldConstraint[] collectInitialPartnerClassObjectFieldConstraints(PartnerClass pc, SymbolicExecution se) {
         assert !se.nextIsOnKnownPath() && pc.__mulib__shouldBeRepresentedInSolver() && pc.__mulib__isRepresentedInSolver();
-        Map<String, Substituted> fieldsToValues = pc.__mulib__getFieldNameToSubstitutedVar();
+        Map<String, Substituted> fieldsToValues = pc.__mulib__getFieldNameToSubstituted();
         List<PartnerClassObjectFieldConstraint> result = new ArrayList<>();
         for (Map.Entry<String, Substituted> e : fieldsToValues.entrySet()) {
             Sprimitive value = getValueToBeUsedForPartnerClassObjectConstraint(e.getValue());
@@ -648,7 +648,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
                 continue;
             }
             alreadyEvaluated.add(current);
-            Collection<Substituted> vals = current instanceof Sarray ? (Collection<Substituted>) ((Sarray<?>) current).getCachedElements() : current.__mulib__getFieldNameToSubstitutedVar().values();
+            Collection<Substituted> vals = current instanceof Sarray ? (Collection<Substituted>) ((Sarray<?>) current).getCachedElements() : current.__mulib__getFieldNameToSubstituted().values();
             for (Substituted entry : vals) {
                 if (!(entry instanceof PartnerClass)) {
                     continue;

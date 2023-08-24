@@ -20,8 +20,8 @@ import java.util.Map;
  * {@link PartnerClassObject#__mulib__blockCacheInPartnerClassFields()} : should include a call to super.__mulib__blockCacheInPartnerClassFields()
  * {@link PartnerClassObject#__mulib__initializeLazyFields(SymbolicExecution)} : should include a call to super.__mulib__initializeLazyFields(...)
  * {@link PartnerClassObject#copy(MulibValueCopier)} : should include a call to the super-copy constructor
- * {@link PartnerClassObject#__mulib__getFieldNameToSubstitutedVar()} : should include a call to
- * super.__mulib__getFieldNameToSubstitutedVar() for also retrieving those fields
+ * {@link PartnerClassObject#__mulib__getFieldNameToSubstituted()} : should include a call to
+ * super.__mulib__getFieldNameToSubstituted() for also retrieving those fields
  * {@link PartnerClassObject#__mulib__getOriginalClass()}
  * {@link PartnerClassObject#PartnerClassObject(PartnerClassObject, MulibValueCopier)} : An own constructor should be created calling super
  */
@@ -155,7 +155,7 @@ public class PartnerClassObject implements PartnerClass {
     }
 
     @Override
-    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstituted() {
         return new HashMap<>();
     }
 

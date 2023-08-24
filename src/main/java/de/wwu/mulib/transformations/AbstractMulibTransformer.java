@@ -84,19 +84,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         this.addTransformedClass(Object.class.getName(), PartnerClassObject.class);
     }
 
-    /**
-     * Transforms the specified classes. Even if the passed classes are ignored according to the configuration,
-     * they will be transformed as they have been explicitly stated to be transformed.
-     * These classes that are dependencies for the specified classes are transformed according to the {@link MulibConfig}.
-     * The classes are first transformed, alongside with all their referenced classes (if not set to be ignored).
-     * Then, we replace direct accesses to fields with synthesized method calls. In these method calls
-     * techniques like symbolic aliasing, checks for whether this object can in fact be null, etc. are performed.
-     * Then, special method treatment according to {@link MulibConfig#TRANSF_TREAT_SPECIAL_METHOD_CALLS} is performed.
-     * Thereafter, it is checked whether we should try to load classes using the system class loader and/or write them
-     * to disk.
-     * Finally, we validate the classes, if configured to do so.
-     * @param toTransform Those classes that are transformed, even if they have been set to be ignored.
-     */
+
+    @Override
     public void transformAndLoadClasses(Class<?>... toTransform) {
         synchronized (syncObject) {
             List<Class<?>> definitelyTransform = Arrays.asList(toTransform);
@@ -112,7 +101,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             // each class
             for (Map.Entry<String, T> entry : transformedClassNodes.entrySet()) {
                 T classNode = getClassNodeForName(entry.getKey());
-                // Replace accesses to fields with methods conducting mor checks
+                // Replace accesses to fields with methods conducting more checks
                 replaceGetFieldsAndPutFieldsWithGeneratedMethods(classNode, entry.getValue());
                 replaceStaticFieldInsnsWithGeneratedMethods(classNode, entry.getValue());
                 // Insert method calls checking whether 'this' is null into each method. This is done to account for
@@ -492,7 +481,6 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         Class<?> replacement = config.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS.get(toTransform);
         if (replacement != null) {
             toTransformName = replacement.getName();
-
         }
         T result;
         if ((result = this.transformedClassNodes.get(toTransformName)) != null) {
@@ -521,7 +509,8 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
             generateAndAddLabelTypeMethod(originalCn, result);
             // Method for returning original type's class
             generateAndAddOriginalClassMethod(originalCn, result);
-            // Method for setting primitive static fields
+            // Method for replacing the clinit method, solely ensuring that static fields
+            // of Sprimitives are set
             generateOrReplaceClinit(originalCn, result);
             // Method for generating the id-, representationState-, and isNull-field
             generateBlockCacheInPartnerClassFieldsAndInitializeLazyFieldsAndGetFieldNameToSubstitutedVar(originalCn, result);
@@ -543,7 +532,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     /**
      * Generates the methods {@link de.wwu.mulib.substitutions.PartnerClass#__mulib__initializeLazyFields(SymbolicExecution)}
-     * and {@link de.wwu.mulib.substitutions.PartnerClass#__mulib__getFieldNameToSubstitutedVar()}
+     * and {@link de.wwu.mulib.substitutions.PartnerClass#__mulib__getFieldNameToSubstituted()}
      * @param old The representation of the original class
      * @param result The representation of the partner class
      * @see PartnerClassObject#__mulib__blockCacheInPartnerClassFields()

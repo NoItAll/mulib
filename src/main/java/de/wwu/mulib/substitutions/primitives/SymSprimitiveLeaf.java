@@ -1,7 +1,7 @@
 package de.wwu.mulib.substitutions.primitives;
 
 /**
- * Marker interface for all symbolic values that do not represent a numeric expression but rather a leaf
+ * Marker interface for all symbolic values that do not represent a complex numerical expression but rather a leaf
  */
 public interface SymSprimitiveLeaf extends SymSprimitive {
 

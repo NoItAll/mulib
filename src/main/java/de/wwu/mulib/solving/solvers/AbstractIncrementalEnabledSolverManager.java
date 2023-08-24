@@ -1223,7 +1223,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 }
                 return Or.newInstance(result, Not.newInstance(Eq.newInstance(id, labeledId)));
             } else {
-                Map<String, Substituted> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstitutedVar();
+                Map<String, Substituted> fieldNamesToSubstitutedVars = pc.__mulib__getFieldNameToSubstituted();
                 for (Map.Entry<String, Substituted> entry : fieldNamesToSubstitutedVars.entrySet()) {
                     Constraint neqForFieldValue = getNeq(entry.getValue(), _getLabel(entry.getValue(), rememberConstraint, allRelevantPartnerClassObjectConstraints), alreadyTreatedPartnerClasses, rememberConstraint, allRelevantPartnerClassObjectConstraints);
                     result = Or.newInstance(result, neqForFieldValue);

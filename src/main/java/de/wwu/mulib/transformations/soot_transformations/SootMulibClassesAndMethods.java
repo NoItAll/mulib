@@ -1,16 +1,16 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.Mulib;
-import de.wwu.mulib.throwables.MulibRuntimeException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.PartnerClass;
+import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.search.executors.MulibValueCopier;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import de.wwu.mulib.transformations.StringConstants;
 import soot.*;
@@ -1052,7 +1052,7 @@ public class SootMulibClassesAndMethods {
         SM_PARTNER_CLASS_SET_AS_REPRESENTED_IN_SOLVER         = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "setAsRepresentedInSolver", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_BLOCK_CACHE                          = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "blockCache", List.of(), TYPE_VOID);
         SM_PARTNER_CLASS_CACHE_IS_BLOCKED                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "cacheIsBlocked", List.of(), TYPE_BOOL);
-        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getFieldNameToSubstitutedVar", List.of(), SC_MAP.getType());
+        SM_PARTNER_CLASS_GET_FIELD_NAME_TO_SUBSTITUTED_VAR                      = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getFieldNameToSubstituted", List.of(), SC_MAP.getType());
         SM_PARTNER_CLASS_INITIALIZE_LAZY_FIELDS                                 = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "initializeLazyFields", List.of(TYPE_SE), TYPE_VOID);
         SM_PARTNER_CLASS_IS_TO_BE_LAZILY_INITIALIZED                            = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "isToBeLazilyInitialized", List.of(), TYPE_BOOL);
         SM_PARTNER_CLASS_GET_ORIGINAL_CLASS                                     = SC_PARTNER_CLASS.getMethod(StringConstants._TRANSFORMATION_INDICATOR + "getOriginalClass", List.of(), TYPE_CLASS);

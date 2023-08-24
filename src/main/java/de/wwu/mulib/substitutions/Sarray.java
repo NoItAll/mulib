@@ -312,7 +312,7 @@ public abstract class Sarray<T extends Substituted> extends PartnerClassObject {
     }
 
     @Override
-    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstituted() {
         throw new MulibIllegalStateException("Should not be called for Sarrays");
     }
 

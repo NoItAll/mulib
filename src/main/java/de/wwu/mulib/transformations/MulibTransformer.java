@@ -24,7 +24,17 @@ public interface MulibTransformer {
     /**
      * Transforms the specified classes so that {@link MulibTransformer#getTransformedClass(Class)} can return the
      * partner class.
-     * @param toTransform The original classes to-be-transformed
+     * Even if the passed classes are ignored according to the configuration,
+     * they will be transformed as they have been explicitly stated to be transformed.
+     * These classes that are dependencies for the specified classes are transformed according to the {@link MulibConfig}.
+     * The classes are first transformed, alongside with all their referenced classes (if not set to be ignored).
+     * Then, we replace direct accesses to fields with synthesized method calls. In these method calls
+     * techniques like symbolic aliasing, checks for whether this object can in fact be null, etc. are performed.
+     * Then, special method treatment according to {@link MulibConfig#TRANSF_TREAT_SPECIAL_METHOD_CALLS} is performed.
+     * Thereafter, it is checked whether we should try to load classes using the system class loader and/or write them
+     * to disk.
+     * Finally, we validate the classes, if configured to do so.
+     * @param toTransform Those classes that are transformed, even if they have been set to be ignored.
      */
     void transformAndLoadClasses(Class<?>... toTransform);
 

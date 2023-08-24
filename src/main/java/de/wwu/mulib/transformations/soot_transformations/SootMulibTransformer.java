@@ -1751,7 +1751,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         }
         {
             // Generate getFieldNameToSubstitutedVar
-            String methodName = _TRANSFORMATION_INDICATOR + "getFieldNameToSubstitutedVar";
+            String methodName = _TRANSFORMATION_INDICATOR + "getFieldNameToSubstituted";
             List<Type> paramTypes = List.of();
             Type returnType = v.SC_MAP.getType();
 

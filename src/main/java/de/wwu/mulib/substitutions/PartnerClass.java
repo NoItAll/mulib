@@ -93,11 +93,11 @@ public interface PartnerClass extends Substituted {
     void __mulib__initializeLazyFields(SymbolicExecution se);
 
     /**
-     * Implementing classes should also add the result of super.__mulib__getFieldNameToSubstitutedVar() to
+     * Implementing classes should also add the result of super.__mulib__getFieldNameToSubstituted() to
      * the resulting map.
      * @return A map of (packageName.className.fieldName, value)-pairs
      */
-    Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar();
+    Map<String, Substituted> __mulib__getFieldNameToSubstituted();
 
     /**
      * @return The identifier, if any of this partner class object

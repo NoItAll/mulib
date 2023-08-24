@@ -53,7 +53,7 @@ public class __mulib__IndirectCyclicInputClasses0Manual extends PartnerClassObje
     }
 
     @Override
-    public Map<String, Substituted> __mulib__getFieldNameToSubstitutedVar() {
+    public Map<String, Substituted> __mulib__getFieldNameToSubstituted() {
         return null;
     }
 
