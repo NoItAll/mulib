@@ -204,7 +204,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                 SymbolicExecution symbolicExecution = possibleSymbolicExecution.get();
                 if (config.SEARCH_CONCOLIC && !solverManager.isSatisfiable()) {
                     // Be skeptical with concolic execution; - choice options might be unsatisfiable here if a labeling
-                    // has become stale
+                    // has become stale due to "silently" added constraints for which no choice option was created
                     currentChoiceOption.setUnsatisfiable();
                     continue;
                 }
@@ -223,7 +223,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     try {
                         solution = getPathSolution(solutionValue, false);
                     } catch (Throwable t) {
-                        t.printStackTrace();
                         throw new MulibRuntimeException(t);
                     }
                     this.mulibExecutorManager.addToPathSolutions(solution, this);
@@ -264,7 +263,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                         return Optional.of(solution);
                     } else {
                         Mulib.log.warning(config.toString());
-                        e.printStackTrace();
                         throw new MulibRuntimeException("Exception was thrown but not allowed, config: " + config, e);
                     }
                 }
@@ -302,6 +300,15 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         return arguments;
     }
 
+    // Assumes that the state of this MulibExecutor has been adapted so that a choice option has been set as
+    // this.currentChoiceOption. Furthermore, this.currentSymbolicExecution must be set with this currentChoiceOption
+    // as the target.
+    // This method will reset all execution-specific state before copying and invoking the method handle representing
+    // the search region.
+    // Thereafter, it will also check whether the CoverageCfg can manifest a path.
+    // Returns the return value, if the search region was left using a return-statement.
+    // Returns null for void methods.
+    // If the search region was left using a thrown exception, this exception, too, will be thrown
     private Object invokeSearchRegion() throws Throwable {
         MulibValueCopier mulibValueCopier = new MulibValueCopier(currentSymbolicExecution, config);
         staticVariables.setMulibValueCopier(mulibValueCopier);
@@ -377,7 +384,6 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
                     config
             ));
         } catch (Throwable t) {
-            t.printStackTrace();
             throw new MulibRuntimeException(t);
         }
     }
@@ -410,7 +416,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private PathSolution getPathSolution(
-            Object solutionValue, // TODO Not SubstitutedVar since, for now, it can be of type Throwable
+            Object solutionValue, // TODO Not Substituted-type since, for now, it can be of type Throwable
             boolean isThrownException) {
         Solution s = solverManager.labelSolution(solutionValue, rememberedSprimitives);
         SearchTree.AccumulatedChoiceOptionConstraints constraintContainer = SearchTree.getAllConstraintsForChoiceOption(currentChoiceOption);
