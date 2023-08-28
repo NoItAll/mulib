@@ -4,11 +4,9 @@ import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.ValueFactory;
 
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicLong;
 
+import static de.wwu.mulib.substitutions.primitives.Sint.ConcSint.lowCache;
 import static de.wwu.mulib.substitutions.primitives.Sint.ConcSint.smallConcSints;
 
 /**
@@ -23,15 +21,10 @@ public abstract class Sint extends AbstractSnumber {
      * @return The representation of a concrete int
      */
     public static Sint.ConcSint concSint(int i) {
-        if (i >= 0 && i < smallConcSints.length) {
-            return smallConcSints[i];
+        if (i >= ConcSint.lowCache && i <= ConcSint.highCache) {
+            return smallConcSints[i + (-lowCache)];
         }
-        Integer I = i;
-        ConcSint result = ConcSint.cache.get(I);
-        if (result == null) {
-            result = new ConcSint(i);
-            ConcSint.cache.put(I, result);
-        }
+        ConcSint result = new ConcSint(i);
         return result;
     }
 
@@ -476,19 +469,24 @@ public abstract class Sint extends AbstractSnumber {
      * Class representing a concrete Sint
      */
     public static final class ConcSint extends Sint implements ConcSnumber {
-        static final Map<Integer, ConcSint> cache = Collections.synchronizedMap(new HashMap<>());
-        static final ConcSint[] smallConcSints = new ConcSint[100];
-
+        static final int lowCache = -128;
+        static final int highCache = 127;
+        static final ConcSint[] smallConcSints = new ConcSint[-lowCache + highCache + 1];
         static {
-            MINUS_ONE = new ConcSint(-1);
+            ConcSint minus_one = new ConcSint(-1);
             ConcSint zero = new ConcSint(0);
             ConcSint one = new ConcSint(1);
+            MINUS_ONE = minus_one;
             ZERO = zero;
             ONE = one;
-            smallConcSints[0] = zero;
-            smallConcSints[1] = one;
-            for (int i = 2; i < 100; i++) {
-                smallConcSints[i] = new ConcSint(i);
+            smallConcSints[-lowCache - 1] = minus_one;
+            smallConcSints[-lowCache] = zero;
+            smallConcSints[-lowCache + 1] = one;
+            for (int i = 0; i < smallConcSints.length; i++) {
+                if (smallConcSints[i] != null) {
+                    continue;
+                }
+                smallConcSints[i] = new ConcSint(i + lowCache);
             }
         }
 
