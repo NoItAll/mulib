@@ -32,6 +32,16 @@ public abstract class Slong extends AbstractSnumber {
     }
 
     /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param id The identifier of the leaf
+     * @return A new leaf
+     */
+    public static SymSlong newInputSymbolicSlong(long id) {
+        return new SymSlongLeaf(id);
+    }
+
+    /**
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
@@ -444,8 +454,12 @@ public abstract class Slong extends AbstractSnumber {
         private static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
-        private SymSlongLeaf() {
+        SymSlongLeaf() {
             id = "Slong" + nextId.incrementAndGet();
+        }
+
+        SymSlongLeaf(long nextId) {
+            id = "Slong" + nextId;
         }
 
         @Override

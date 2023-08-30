@@ -1,11 +1,11 @@
 package de.wwu.mulib.transformations.soot_transformations;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.substitutions.Sarray;
+import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.transformations.AbstractMulibTransformer;
 import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;
@@ -2480,9 +2480,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         resolvedClasses.put(result.getName(), result);
         // Set super class and interfaces
         SootClass sootSuperClass = transformEnrichAndValidateIfNotSpecialCase(toTransform.getSuperclass().getName());
-        if (sootSuperClass.equals(v.SC_OBJECT) && !toTransform.isInterface()) {
-            // We rectify calls to the Object constructor for interfaces when dealing with constructors dedicatedly
-            sootSuperClass = v.SC_PARTNER_CLASS_OBJECT;
+        if (!toTransform.isInterface()) {
+            if (sootSuperClass.equals(v.SC_OBJECT)) {
+                // We rectify calls to the Object constructor for interfaces when dealing with constructors dedicatedly
+                sootSuperClass = v.SC_PARTNER_CLASS_OBJECT;
+            } else if (sootSuperClass.equals(v.SC_THROWABLE)) {
+                sootSuperClass = v.SC_PARTNER_CLASS_THROWABLE;
+            }
         }
         result.setSuperclass(sootSuperClass);
         if (toTransform.isInterface()) {

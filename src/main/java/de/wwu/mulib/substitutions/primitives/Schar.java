@@ -30,6 +30,16 @@ public abstract class Schar extends Sint {
     }
 
     /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param id The identifier of the leaf
+     * @return A new leaf
+     */
+    public static SymSchar newInputSymbolicSchar(long id) {
+        return new SymScharLeaf(id);
+    }
+
+    /**
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
@@ -140,8 +150,12 @@ public abstract class Schar extends Sint {
         protected static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
-        private SymScharLeaf() {
+        SymScharLeaf() {
             id = "Schar" + nextId.incrementAndGet();
+        }
+
+        SymScharLeaf(long nextId) {
+            id = "Schar" + nextId;
         }
 
         @Override

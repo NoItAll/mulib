@@ -8,17 +8,17 @@ public abstract class TreeNode {
     /**
      * The parent of the tree node
      */
-    public final Choice.ChoiceOption parent;
+    public final Choice.ChoiceOption parentEdge;
     /**
      * The depth of the tree node
      */
     public final int depth;
 
-    TreeNode(Choice.ChoiceOption parent) {
-        this.parent = parent;
-        if (parent != null) {
-            parent.setChild(this);
-            this.depth = parent.getDepth() + 1;
+    TreeNode(Choice.ChoiceOption parentEdge) {
+        this.parentEdge = parentEdge;
+        if (parentEdge != null) {
+            parentEdge.setChild(this);
+            this.depth = parentEdge.getDepth() + 1;
         } else {
             this.depth = 1;
         }

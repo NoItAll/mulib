@@ -1,10 +1,10 @@
 package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.ChoiceOptionDeque;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
@@ -140,7 +140,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                 }
             }
             // Backtrack
-            choiceOfPotentialDeepestSharedRoot = choiceOfPotentialDeepestSharedRoot.parent.getChoice();
+            choiceOfPotentialDeepestSharedRoot = choiceOfPotentialDeepestSharedRoot.parentEdge.getChoice();
         }
         dsasMissed++;
         return choiceOptionDeque.pollFirst();
@@ -169,7 +169,7 @@ public final class GenericExecutor extends AbstractMulibExecutor {
                 }
             }
             // Backtrack
-            choiceOfPotentialDeepestSharedRoot = choiceOfPotentialDeepestSharedRoot.parent.getChoice();
+            choiceOfPotentialDeepestSharedRoot = choiceOfPotentialDeepestSharedRoot.parentEdge.getChoice();
         }
         return Optional.empty();
     }

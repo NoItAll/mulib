@@ -2,11 +2,11 @@ package de.wwu.mulib.search.trees;
 
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
+import de.wwu.mulib.search.budget.Budget;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.throwables.IllegalTreeAccessException;
 import de.wwu.mulib.throwables.IllegalTreeModificationException;
 import de.wwu.mulib.throwables.MulibRuntimeException;
-import de.wwu.mulib.search.budget.Budget;
-import de.wwu.mulib.solving.Solution;
 
 import java.util.*;
 
@@ -113,8 +113,8 @@ public final class Choice extends TreeNode {
         /**
          * @return The parent of this choice option
          */
-        public ChoiceOption getParent() {
-            return Choice.this.parent;
+        public ChoiceOption getParentEdge() {
+            return Choice.this.parentEdge;
         }
 
         /**

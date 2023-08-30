@@ -34,6 +34,16 @@ public abstract class Sfloat extends Sfpnumber {
     /**
      * Should never be used in the search region directly. Should either be called by the
      * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param id The identifier of the leaf
+     * @return A new leaf
+     */
+    public static SymSfloat newInputSymbolicSfloat(long id) {
+        return new SymSfloatLeaf(id);
+    }
+
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
@@ -382,8 +392,12 @@ public abstract class Sfloat extends Sfpnumber {
         protected static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
-        private SymSfloatLeaf() {
+        SymSfloatLeaf() {
             id = "Sfloat" + nextId.incrementAndGet();
+        }
+
+        SymSfloatLeaf(long nextId) {
+            id = "Sfloat" + nextId;
         }
 
         @Override

@@ -1,13 +1,13 @@
 package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.constraints.ConcolicConstraintContainer;
-import de.wwu.mulib.throwables.MulibIllegalStateException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
+import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
-import de.wwu.mulib.search.executors.MulibValueCopier;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.Collection;

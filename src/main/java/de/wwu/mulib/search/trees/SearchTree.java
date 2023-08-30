@@ -3,8 +3,8 @@ package de.wwu.mulib.search.trees;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 import java.util.ArrayDeque;
 import java.util.ArrayList;
@@ -84,7 +84,7 @@ public final class SearchTree {
         Choice.ChoiceOption currentChoiceOption = getTo;
         while (currentChoiceOption != null) {
             result.push(currentChoiceOption);
-            currentChoiceOption = currentChoiceOption.getParent();
+            currentChoiceOption = currentChoiceOption.getParentEdge();
         }
         return result;
     }
@@ -100,16 +100,17 @@ public final class SearchTree {
     public static Choice.ChoiceOption getDeepestSharedAncestor(
             Choice.ChoiceOption co0,
             Choice.ChoiceOption co1) {
-        if (co0.getParent() == null) {
+        // Check if one of both choice options is the root choice option:
+        if (co0.getParentEdge() == null) {
             return co0;
-        } else if (co1.getParent() == null) {
+        } else if (co1.getParentEdge() == null) {
             return co1;
         }
         while (co0 != co1) {
             if (co0.getDepth() < co1.getDepth()) {
-                co1 = co1.getParent();
+                co1 = co1.getParentEdge();
             } else {
-                co0 = co0.getParent();
+                co0 = co0.getParentEdge();
             }
         }
         return co0;
@@ -131,11 +132,11 @@ public final class SearchTree {
         }
         assert getTo.getDepth() > getFrom.getDepth();
         Choice.ChoiceOption start = getTo;
-        start = start.getParent();
+        start = start.getParentEdge();
         // Construct path by following parent-path from start to end
         while (start != getFrom) {
             result.addFirst(start);
-            start = start.getParent();
+            start = start.getParentEdge();
         }
 
         return result;

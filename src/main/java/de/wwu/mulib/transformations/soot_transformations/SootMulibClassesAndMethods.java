@@ -4,10 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.search.executors.MulibValueCopier;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.PartnerClassObject;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.Substituted;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
@@ -62,6 +59,8 @@ public class SootMulibClassesAndMethods {
     public final SootClass SC_CONCSCHAR;
     public final SootClass SC_PARTNER_CLASS;
     public final SootClass SC_PARTNER_CLASS_OBJECT;
+    public final SootClass SC_PARTNER_CLASS_THROWABLE;
+    public final SootClass SC_THROWABLE;
     public final SootClass SC_SINTSARRAY;
     public final SootClass SC_SDOUBLESARRAY;
     public final SootClass SC_SFLOATSARRAY;
@@ -552,6 +551,7 @@ public class SootMulibClassesAndMethods {
         SC_HASH_MAP                = Scene.v().forceResolve(HashMap.class.getName(), SootClass.SIGNATURES);
         SC_CLASS = Scene.v().forceResolve(Class.class.getName(), SootClass.SIGNATURES);
         SC_OBJECT = Scene.v().forceResolve(Object.class.getName(), SootClass.SIGNATURES);
+        SC_THROWABLE = Scene.v().forceResolve(Throwable.class.getName(), SootClass.SIGNATURES);
         SC_INTEGER = Scene.v().forceResolve(Integer.class.getName(), SootClass.SIGNATURES);
         SC_LONG = Scene.v().forceResolve(Long.class.getName(), SootClass.SIGNATURES);
         SC_DOUBLE = Scene.v().forceResolve(Double.class.getName(), SootClass.SIGNATURES);
@@ -581,6 +581,7 @@ public class SootMulibClassesAndMethods {
         SC_CONCSCHAR    = Scene.v().forceResolve(Schar.ConcSchar.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASS = Scene.v().forceResolve(PartnerClass.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASS_OBJECT = Scene.v().forceResolve(PartnerClassObject.class.getName(), SootClass.SIGNATURES);
+        SC_PARTNER_CLASS_THROWABLE = Scene.v().forceResolve(PartnerClassThrowable.class.getName(), SootClass.SIGNATURES);
         SC_PARTNER_CLASSSARRAY   = Scene.v().forceResolve(Sarray.PartnerClassSarray.class.getName(), SootClass.SIGNATURES);
         SC_SINTSARRAY           = Scene.v().forceResolve(Sarray.SintSarray.class.getName(), SootClass.SIGNATURES);
         SC_SDOUBLESARRAY        = Scene.v().forceResolve(Sarray.SdoubleSarray.class.getName(), SootClass.SIGNATURES);

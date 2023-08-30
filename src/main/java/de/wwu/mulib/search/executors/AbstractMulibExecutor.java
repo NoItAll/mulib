@@ -7,21 +7,27 @@ import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.throwables.MulibException;
-import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.expressions.ConcolicNumericalContainer;
-import de.wwu.mulib.throwables.ExceededBudget;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
-import de.wwu.mulib.search.trees.*;
+import de.wwu.mulib.search.trees.Choice;
+import de.wwu.mulib.search.trees.ChoiceOptionDeque;
+import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.SearchTree;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.ValueFactory;
-import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.substitutions.primitives.Snumber;
+import de.wwu.mulib.substitutions.primitives.Sprimitive;
+import de.wwu.mulib.throwables.ExceededBudget;
+import de.wwu.mulib.throwables.MulibException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 import de.wwu.mulib.util.TriConsumer;
 
@@ -406,7 +412,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
         // thus, in general, we must adjust the current choice option
-        adjustSolverManagerToNewChoiceOption(searchIn.parent);
+        adjustSolverManagerToNewChoiceOption(searchIn.parentEdge);
         return solverManager.getUpToNSolutions(searchIn.getSolution(), N);
     }
 
@@ -470,7 +476,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         if (currentChoiceOption.getDepth() > 1) {
             solverManager.backtrackOnce();
             solverBacktrack++;
-            currentChoiceOption = currentChoiceOption.getParent();
+            currentChoiceOption = currentChoiceOption.getParentEdge();
         }
     }
 
@@ -504,7 +510,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
             solverManager.addPartnerClassObjectConstraints(co.getPartnerClassObjectConstraints());
             addedAfterBacktrackingPoint++;
         }
-        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParent();
+        currentChoiceOption = optionToBeEvaluated.isEvaluated() ? optionToBeEvaluated : optionToBeEvaluated.getParentEdge();
     }
 
     private Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
@@ -535,8 +541,8 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         if (!config.SEARCH_CONCOLIC // Exclude concolic execution; - the solver manager might be unsatisfiable here
                 && choiceOption.getChoice().getChoiceOptions().size() == 2
                 && other.isUnsatisfiable()
-                && choiceOption.getParent().isEvaluated()
-                && !choiceOption.getParent().constraintWasModifiedAfterInitialSatCheck()
+                && choiceOption.getParentEdge().isEvaluated()
+                && !choiceOption.getParentEdge().constraintWasModifiedAfterInitialSatCheck()
                 // We want to avoid that
                 && other.getPartnerClassObjectConstraints().isEmpty()) {
             assert solverManager.isSatisfiable();
@@ -580,7 +586,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     @Override
-    public Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options) {
+    public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> options) {
         Choice.ChoiceOption result = null;
         ExecutionBudgetManager ebm = currentSymbolicExecution.getExecutionBudgetManager();
         boolean isActualIncrementalBudgetExceeded =

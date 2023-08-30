@@ -4,9 +4,9 @@ import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
 import de.wwu.mulib.search.trees.Choice;
 import de.wwu.mulib.search.trees.PathSolution;
-import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
+import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
@@ -85,11 +85,13 @@ public interface MulibExecutor {
      * {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} is chosen to be executed next.
      * Choosing no {@link de.wwu.mulib.search.trees.Choice.ChoiceOption} means that we backtrack and will start a new
      * execution choosing an unevaluated {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}.
+     * The chosen constraint, as given by {@link Choice.ChoiceOption#getOptionConstraint()}, will be pushed to the
+     * {@link SolverManager} after a new backtracking point.
      * @param options The options from which to choose
      * @return A {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}, if the current execution using {@link SymbolicExecution}
      * should continue according to the search strategy. Otherwise {@link Optional#empty()}
      */
-    Optional<Choice.ChoiceOption> chooseNextChoiceOption(List<Choice.ChoiceOption> options);
+    Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> options);
 
     /**
      * Labels the value, i.e., contacts the constraint solver to assign a value to it
@@ -101,7 +103,7 @@ public interface MulibExecutor {
     /**
      * Labels the value and restricts the domain of the value to this label
      * @param substitutedVar The value
-     * @return A valid label and the only label that will be valid for the value hereonafter
+     * @return A valid label and the only label that will be valid for the value hereinafter
      */
     Object concretize(Object substitutedVar);
 
@@ -122,7 +124,11 @@ public interface MulibExecutor {
 
     /**
      * Adds a new constraint to the constraint solver. Furthermore, attaches this constraint to the current
-     * {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}
+     * {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}.
+     * When adding a constraint in the search region, calls to this method via
+     * {@link SymbolicExecution#addNewConstraint(Constraint)} should always be guarded via
+     * !{@link SymbolicExecution#nextIsOnKnownPath()}. Otherwise, constraints are added redundantly to already
+     * evaluated {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}s.
      * @param c The constraint
      */
     void addNewConstraint(Constraint c);
@@ -130,6 +136,10 @@ public interface MulibExecutor {
     /**
      * Adds a new partner class constraint to the constraint solver. Furthermore, attaches this constraint to the
      * current {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}.
+     * When adding a constraint in the search region, calls to this method via
+     * {@link SymbolicExecution#addNewConstraint(Constraint)} should always be guarded via
+     * !{@link SymbolicExecution#nextIsOnKnownPath()}. Otherwise, constraints are added redundantly to already
+     * evaluated {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}s.
      * @param ic The partner class object constraint
      */
     void addNewPartnerClassObjectConstraint(PartnerClassObjectConstraint ic);
@@ -138,6 +148,8 @@ public interface MulibExecutor {
      * Adds a constraint to the constraint solver and signals that this constraint should be included in a new 'scope'.
      * A call to {@link SolverManager#backtrackOnce()} should remove this new constraint and, without further constraints
      * added to this scope, this constraint alone.
+     * During the execution, {@link MulibExecutor#decideOnNextChoiceOptionDuringExecution(List)} should be called instead
+     * to add a constraint after a new backtracking point.
      * @param c The constraint
      */
     void addConstraintAfterBacktrackingPoint(Constraint c);

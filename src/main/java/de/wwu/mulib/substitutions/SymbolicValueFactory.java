@@ -62,7 +62,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
                 Sint::newInputSymbolicSint,
-                se.getNextNumberInitializedAtomicSymSints(),
+                se.getNextNumberSymSintLeaf(),
                 atomicSymSintLock,
                 optionalSintRestriction(se, config)
         );
@@ -73,7 +73,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSdoubles,
                 Sdouble::newInputSymbolicSdouble,
-                se.getNextNumberInitializedAtomicSymSdoubles(),
+                se.getNextNumberSymSdoubleLeaf(),
                 atomicSymSdoubleLock,
                 optionalSdoubleRestriction(se, config)
         );
@@ -84,7 +84,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSfloats,
                 Sfloat::newInputSymbolicSfloat,
-                se.getNextNumberInitializedAtomicSymSfloats(),
+                se.getNextNumberSymSfloatLeaf(),
                 atomicSymSfloatLock,
                 optionalSfloatRestriction(se, config)
         );
@@ -95,7 +95,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSbools,
                 Sbool::newInputSymbolicSbool,
-                se.getNextNumberInitializedAtomicSymSbools(),
+                se.getNextNumberSymSboolLeaf(),
                 atomicSymSboolLock,
                 (b) -> symSboolDomain(se, b)
         );
@@ -106,7 +106,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSlongs,
                 Slong::newInputSymbolicSlong,
-                se.getNextNumberInitializedAtomicSymSlongs(),
+                se.getNextNumberSymSlongLeaf(),
                 atomicSymSlongLock,
                 optionalSlongRestriction(se, config)
         );
@@ -117,7 +117,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSshorts,
                 Sshort::newInputSymbolicSshort,
-                se.getNextNumberInitializedAtomicSymSshorts(),
+                se.getNextNumberSymSshortLeaf(),
                 atomicSymSshortLock,
                 optionalSshortRestriction(se, config)
         );
@@ -128,7 +128,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSbytes,
                 Sbyte::newInputSymbolicSbyte,
-                se.getNextNumberInitializedAtomicSymSbytes(),
+                se.getNextNumberSymSbyteLeaf(),
                 atomicSymSbyteLock,
                 optionalSbyteRestriction(se, config)
         );
@@ -139,7 +139,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSchars,
                 Schar::newInputSymbolicSchar,
-                se.getNextNumberInitializedAtomicSymSchars(),
+                se.getNextNumberSymScharLeaf(),
                 atomicSymScharLock,
                 optionalScharRestriction(se, config)
         );
@@ -150,7 +150,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
                 Sint::newInputSymbolicSint,
-                se.getNextNumberInitializedAtomicSymSints(),
+                se.getNextNumberSymSintLeaf(),
                 atomicSymSintLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -161,7 +161,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSdoubles,
                 Sdouble::newInputSymbolicSdouble,
-                se.getNextNumberInitializedAtomicSymSdoubles(),
+                se.getNextNumberSymSdoubleLeaf(),
                 atomicSymSdoubleLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -172,7 +172,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSfloats,
                 Sfloat::newInputSymbolicSfloat,
-                se.getNextNumberInitializedAtomicSymSfloats(),
+                se.getNextNumberSymSfloatLeaf(),
                 atomicSymSfloatLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -183,7 +183,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSlongs,
                 Slong::newInputSymbolicSlong,
-                se.getNextNumberInitializedAtomicSymSlongs(),
+                se.getNextNumberSymSlongLeaf(),
                 atomicSymSlongLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -194,7 +194,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSshorts,
                 Sshort::newInputSymbolicSshort,
-                se.getNextNumberInitializedAtomicSymSshorts(),
+                se.getNextNumberSymSshortLeaf(),
                 atomicSymSshortLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -205,7 +205,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSbytes,
                 Sbyte::newInputSymbolicSbyte,
-                se.getNextNumberInitializedAtomicSymSbytes(),
+                se.getNextNumberSymSbyteLeaf(),
                 atomicSymSbyteLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -216,7 +216,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSchars,
                 Schar::newInputSymbolicSchar,
-                se.getNextNumberInitializedAtomicSymSchars(),
+                se.getNextNumberSymScharLeaf(),
                 atomicSymScharLock,
                 i -> symNumericExpressionSprimitiveDomain(se, i, lb, ub)
         );
@@ -299,7 +299,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
                 Sint::newInputSymbolicSint,
-                se.getNextNumberInitializedAtomicSymSints(),
+                se.getNextNumberSymSintLeaf(),
                 atomicSymSintLock,
                 (newSymSint) -> cmpDomain(se, n0, n1, newSymSint)
         );

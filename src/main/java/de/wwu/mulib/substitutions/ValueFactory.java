@@ -17,14 +17,14 @@ import java.util.Map;
  * For this, symbolic values must be provided that can be mapped to the symbolic values that are present in the
  * constraint solver. This is possible by regarding {@link SymbolicExecution}s counters.
  * @see SymbolicExecution#getNextNumberInitializedSymObject()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSints()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSlongs()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSshorts()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSbytes()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSchars()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSbools()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSdoubles()
- * @see SymbolicExecution#getNextNumberInitializedAtomicSymSfloats()
+ * @see SymbolicExecution#getNextNumberSymSintLeaf()
+ * @see SymbolicExecution#getNextNumberSymSlongLeaf()
+ * @see SymbolicExecution#getNextNumberSymSshortLeaf()
+ * @see SymbolicExecution#getNextNumberSymSbyteLeaf()
+ * @see SymbolicExecution#getNextNumberSymScharLeaf()
+ * @see SymbolicExecution#getNextNumberSymSboolLeaf()
+ * @see SymbolicExecution#getNextNumberSymSdoubleLeaf()
+ * @see SymbolicExecution#getNextNumberSymSfloatLeaf()
  */
 public interface ValueFactory {
 
@@ -238,56 +238,56 @@ public interface ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic int that, for each run, is equal to other symbolic ints generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSints()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSintLeaf()}
      */
     Sint symSint(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic double that, for each run, is equal to other symbolic double generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSdoubles()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSdoubleLeaf()}
      */
     Sdouble symSdouble(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic float that, for each run, is equal to other symbolic float generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSfloats()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSfloatLeaf()}
      */
     Sfloat symSfloat(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic boolean that, for each run, is equal to other symbolic booleans generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSbools()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSboolLeaf()}
      */
     Sbool symSbool(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic long that, for each run, is equal to other symbolic longs generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSlongs()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSlongLeaf()}
      */
     Slong symSlong(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic short that, for each run, is equal to other symbolic shorts generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSshorts()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSshortLeaf()}
      */
     Sshort symSshort(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic short that, for each run, is equal to other symbolic shorts generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSshorts()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSshortLeaf()}
      */
     Sbyte symSbyte(SymbolicExecution se);
 
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return A symbolic char that, for each run, is equal to other symbolic chars generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSchars()}
+     * retrieved from {@link SymbolicExecution#getNextNumberSymScharLeaf()}
      */
     Schar symSchar(SymbolicExecution se);
 
@@ -296,7 +296,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic int that, for each run, is equal to other symbolic ints generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSints()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSintLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Sint symSint(SymbolicExecution se, Sint lb, Sint ub);
@@ -306,7 +306,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic double that, for each run, is equal to other symbolic doubles generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSdoubles()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSdoubleLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Sdouble symSdouble(SymbolicExecution se, Sdouble lb, Sdouble ub);
@@ -316,7 +316,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic float that, for each run, is equal to other symbolic floats generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSfloats()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSfloatLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Sfloat symSfloat(SymbolicExecution se, Sfloat lb, Sfloat ub);
@@ -326,7 +326,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic long that, for each run, is equal to other symbolic longs generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSlongs()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSlongLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Slong symSlong(SymbolicExecution se, Slong lb, Slong ub);
@@ -336,7 +336,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic short that, for each run, is equal to other symbolic shorts generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSshorts()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSshortLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Sshort symSshort(SymbolicExecution se, Sshort lb, Sshort ub);
@@ -346,7 +346,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic byte that, for each run, is equal to other symbolic bytes generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSbytes()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymSbyteLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Sbyte symSbyte(SymbolicExecution se, Sbyte lb, Sbyte ub);
@@ -356,7 +356,7 @@ public interface ValueFactory {
      * @param lb The lower bound
      * @param ub The upper bound
      * @return A symbolic char that, for each run, is equal to other symbolic chars generated for the same value
-     * retrieved from {@link SymbolicExecution#getNextNumberInitializedAtomicSymSchars()}. The lower and upper bounds
+     * retrieved from {@link SymbolicExecution#getNextNumberSymScharLeaf()}. The lower and upper bounds
      * are constrained to be in [lb, ub]
      */
     Schar symSchar(SymbolicExecution se, Schar lb, Schar ub);

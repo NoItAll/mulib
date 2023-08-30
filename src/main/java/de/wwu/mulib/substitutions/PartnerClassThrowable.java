@@ -12,20 +12,12 @@ import java.util.HashMap;
 import java.util.Map;
 
 /**
- * Supertype of all generated partner classes aside from {@link Throwable}s.
- * Basically is to partner classes of Mulib's Muli implementation what Java's {@link Object} is to all objects, with
- * the exception that interfaces cannot extend this. Thus, interfaces must implement {@link PartnerClass}.
- * Contains the metadata relevant for the Mulib backend.
- * Classes implementing this method must implement the following methods:
- * {@link PartnerClassObject#__mulib__blockCacheInPartnerClassFields()} : should include a call to super.__mulib__blockCacheInPartnerClassFields()
- * {@link PartnerClassObject#__mulib__initializeLazyFields(SymbolicExecution)} : should include a call to super.__mulib__initializeLazyFields(...)
- * {@link PartnerClassObject#copy(MulibValueCopier)} : should include a call to the super-copy constructor
- * {@link PartnerClassObject#__mulib__getFieldNameToSubstituted()} : should include a call to
- * super.__mulib__getFieldNameToSubstituted() for also retrieving those fields
- * {@link PartnerClassObject#__mulib__getOriginalClass()}
- * {@link PartnerClassObject#PartnerClassObject(PartnerClassObject, MulibValueCopier)} : An own constructor should be created calling super
+ * Supertype for all generated partner classes that are subclasses of {@link Throwable}.
+ * Is implemented exactly like {@link PartnerClassObject}, yet, cannot extend it since
+ * {@link Throwable} also is a class and Java does not support multi-inheritance.
+ * All relevant information is given in {@link PartnerClassObject}.
  */
-public class PartnerClassObject implements PartnerClass {
+public class PartnerClassThrowable extends Throwable implements PartnerClass {
     /**
      * The identifier.
      * If this partner class object is not represented in the solver, this is null.
@@ -38,16 +30,16 @@ public class PartnerClassObject implements PartnerClass {
     /**
      * Whether the partner class object can be null.
      * This is mutable since we change it after knowing the result of calling
-     * {@link PartnerClassObject#__mulib__nullCheck()}.
+     * {@link PartnerClassThrowable#__mulib__nullCheck()}.
      */
     protected Sbool isNull;
 
     /**
      * Constructor for creating a new instance.
-     * {@link PartnerClassObject#isNull} is set to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE}.
-     * {@link PartnerClassObject#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
+     * {@link PartnerClassThrowable#isNull} is set to {@link de.wwu.mulib.substitutions.primitives.Sbool.ConcSbool#FALSE}.
+     * {@link PartnerClassThrowable#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
      */
-    protected PartnerClassObject() {
+    protected PartnerClassThrowable() {
         this.isNull = Sbool.ConcSbool.FALSE;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
     }
@@ -59,7 +51,7 @@ public class PartnerClassObject implements PartnerClass {
      * @param toCopy To-copy
      * @param mvc The copier used for this copy procedure
      */
-    protected PartnerClassObject(PartnerClassObject toCopy, MulibValueCopier mvc) {
+    protected PartnerClassThrowable(PartnerClassThrowable toCopy, MulibValueCopier mvc) {
         mvc.registerCopy(toCopy, this);
         this.representationState = toCopy.representationState;
         this.id = toCopy.id;
@@ -123,7 +115,7 @@ public class PartnerClassObject implements PartnerClass {
 
     @Override
     public Object copy(MulibValueCopier mulibValueCopier) {
-        return new PartnerClassObject(this, mulibValueCopier);
+        return new PartnerClassThrowable(this, mulibValueCopier);
     }
 
     @Override
@@ -193,7 +185,6 @@ public class PartnerClassObject implements PartnerClass {
 
     @Override
     public final void __mulib__setAsLazilyInitialized() {
-        assert !(this instanceof Sarray);
         representationState |= IS_LAZILY_INITIALIZED;
     }
 

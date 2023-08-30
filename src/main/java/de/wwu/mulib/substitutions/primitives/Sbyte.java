@@ -32,6 +32,16 @@ public abstract class Sbyte extends Sint {
     /**
      * Should never be used in the search region directly. Should either be called by the
      * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param id The identifier of the leaf
+     * @return A new leaf
+     */
+    public static SymSbyte newInputSymbolicSbyte(long id) {
+        return new SymSbyteLeaf(id);
+    }
+
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
@@ -144,8 +154,12 @@ public abstract class Sbyte extends Sint {
         private static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
-        private SymSbyteLeaf() {
+        SymSbyteLeaf() {
             id = "Sbyte" + nextId.incrementAndGet();
+        }
+
+        SymSbyteLeaf(long nextId) {
+            id = "Sbyte" + nextId;
         }
 
         @Override

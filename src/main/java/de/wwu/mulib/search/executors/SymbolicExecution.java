@@ -4,8 +4,6 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.throwables.MulibIllegalStateException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -18,6 +16,8 @@ import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -31,7 +31,7 @@ import java.util.function.Supplier;
  * It furthermore contains identifier-counter for ensuring that symbolic values that are already involved in constraints stored
  * in the constraint solver, are recreated so that the constraint stack is valid with regards to the current state of the execution.
  * In other words: If on the constraint solver there is a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf) with
- * the id {@link Sint.SymSintLeaf#getId()} "Sint1", {@link SymbolicExecution} will contact the {@link ValueFactory } to
+ * the id {@link Sint.SymSintLeaf#getId()} "Sint1", {@link SymbolicExecution} will contact the {@link ValueFactory} to
  * create such a {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf} at the correct location during the execution.
  * Similarly, for all other {@link Sprimitive}s, numbers are maintained and so are concrete identifiers of objects that
  * will be represented for the constraint solver.
@@ -51,10 +51,10 @@ public final class SymbolicExecution {
     // The current choice option. This will also be set to choice options on the known path.
     private Choice.ChoiceOption currentChoiceOption;
     private final ExecutionBudgetManager executionBudgetManager;
-    private int nextNumberInitializedAtomicSymSints = 0, nextNumberInitializedAtomicSymSdoubles = 0,
-            nextNumberInitializedAtomicSymSfloats = 0, nextNumberInitializedAtomicSymSbools = 0,
-            nextNumberInitializedAtomicSymSlongs = 0, nextNumberInitializedAtomicSymSshorts = 0,
-            nextNumberInitializedAtomicSymSbytes = 0, nextNumberInitializedAtomicSymSchars = 0,
+    private int nextNumberSymSintLeaf = 0, nextNumberSymSdoubleLeaf = 0,
+            nextNumberSymSfloatLeaf = 0, nextNumberSymSboolLeaf = 0,
+            nextNumberSymSlongLeaf = 0, nextNumberSymSshortLeaf = 0,
+            nextNumberSymSbyteLeaf = 0, nextNumberSymScharLeaf = 0,
             nextIdentitiyHavingObjectNr;
 
     /**
@@ -102,64 +102,64 @@ public final class SymbolicExecution {
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sint.SymSintLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSints() {
-        return nextNumberInitializedAtomicSymSints++;
+    public int getNextNumberSymSintLeaf() {
+        return nextNumberSymSintLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sdouble.SymSdoubleLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSdoubles() {
-        return nextNumberInitializedAtomicSymSdoubles++;
+    public int getNextNumberSymSdoubleLeaf() {
+        return nextNumberSymSdoubleLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sfloat.SymSfloatLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSfloats() {
-        return nextNumberInitializedAtomicSymSfloats++;
+    public int getNextNumberSymSfloatLeaf() {
+        return nextNumberSymSfloatLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sbool.SymSboolLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSbools() {
-        return nextNumberInitializedAtomicSymSbools++;
+    public int getNextNumberSymSboolLeaf() {
+        return nextNumberSymSboolLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Slong.SymSlongLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSlongs() {
-        return nextNumberInitializedAtomicSymSlongs++;
+    public int getNextNumberSymSlongLeaf() {
+        return nextNumberSymSlongLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sbyte.SymSbyteLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSbytes() {
-        return nextNumberInitializedAtomicSymSbytes++;
+    public int getNextNumberSymSbyteLeaf() {
+        return nextNumberSymSbyteLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Sshort.SymSshortLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSshorts() {
-        return nextNumberInitializedAtomicSymSshorts++;
+    public int getNextNumberSymSshortLeaf() {
+        return nextNumberSymSshortLeaf++;
     }
 
     /**
      * @return A number identifying which {@link de.wwu.mulib.substitutions.primitives.Schar.SymScharLeaf}
      * (or an equivalent object) should be spawned next
      */
-    public int getNextNumberInitializedAtomicSymSchars() {
-        return nextNumberInitializedAtomicSymSchars++;
+    public int getNextNumberSymScharLeaf() {
+        return nextNumberSymScharLeaf++;
     }
 
     /**
@@ -247,14 +247,14 @@ public final class SymbolicExecution {
 
     /**
      * Delegates the decision on determining which of the options to evaluate next to
-     * {@link MulibExecutor#chooseNextChoiceOption(List)}.
+     * {@link MulibExecutor#decideOnNextChoiceOptionDuringExecution(List)}.
      * @param chooseFrom The choice options to choose from
      * @return The {@link de.wwu.mulib.search.trees.Choice.ChoiceOption}, if the execution should be returned.
      * {@link Optional#empty()} if the execution should be aborted
      */
     public Optional<Choice.ChoiceOption> decideOnNextChoiceOptionDuringExecution(List<Choice.ChoiceOption> chooseFrom) {
         assert predeterminedPath.isEmpty() : "Should not occur";
-        Optional<Choice.ChoiceOption> result = mulibExecutor.chooseNextChoiceOption(chooseFrom);
+        Optional<Choice.ChoiceOption> result = mulibExecutor.decideOnNextChoiceOptionDuringExecution(chooseFrom);
         result.ifPresent(choiceOption -> this.currentChoiceOption = choiceOption);
         return result;
     }

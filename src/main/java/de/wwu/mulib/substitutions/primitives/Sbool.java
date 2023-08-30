@@ -34,6 +34,16 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
     /**
      * Should never be used in the search region directly. Should either be called by the
      * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
+     * @param id The identifier of the leaf
+     * @return A new leaf
+     */
+    public static SymSbool newInputSymbolicSbool(long id) {
+        return new SymSboolLeaf(id);
+    }
+
+    /**
+     * Should never be used in the search region directly. Should either be called by the
+     * {@link de.wwu.mulib.solving.solvers.SolverManager}-backend, or a {@link ValueFactory}
      * @param c The constraint to wrap
      * @return A symbolic value wrapping a constraint
      */
@@ -290,8 +300,12 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         private static final AtomicLong nextId = new AtomicLong(0);
         private final String id;
 
-        private SymSboolLeaf() {
+        SymSboolLeaf() {
             id = "Sbool" + nextId.incrementAndGet();
+        }
+
+        SymSboolLeaf(long nextId) {
+            id = "Sbool" + nextId;
         }
 
         @Override
