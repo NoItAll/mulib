@@ -1232,6 +1232,7 @@ public final class SymbolicExecution {
                         Eq.newInstance(representingSymSint, Sint.concSint(0))
                 ));
             }
+            return representingSymSint;
         }
         return castTo.cast(sarrayOrPartnerClassObject);
     }
