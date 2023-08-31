@@ -150,8 +150,9 @@ public class TaintAnalyzer {
                         && !declaringClassName.equals(StringConcatFactory.class.getName())
                         && s.getInvokeExpr().getMethodRef().getParameterTypes().size() > 0) { // TODO Free Strings
                     Mulib.log.info("Behavior for treating untransformed method in Stmt " + s + " is not " +
-                            "defined. The inputs for this method will be concretized as a default");
-                    concretizeInputs.add(s);
+                            "defined. The inputs for this method will have to be treated by other means, if any " +
+                            "tainted inputs are involved");
+//                    concretizeInputs.add(s);
                 }
             }
         }
