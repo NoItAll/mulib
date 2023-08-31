@@ -815,6 +815,8 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             nameOfBaseType = "byte";
         } else if (bt instanceof BooleanType) {
             nameOfBaseType = "boolean";
+        } else if (bt instanceof CharType) {
+            nameOfBaseType = "char";
         } else if (bt instanceof RefType) {
             nameOfBaseType = ((RefType) bt).getClassName();
         } else {
