@@ -79,6 +79,30 @@ public abstract class Sbool extends Sint implements Sprimitive, Constraint {
         return se.or(this, rhs);
     }
 
+    @Override
+    public Sint ixor(Sint i, SymbolicExecution se) {
+        if (i instanceof Sbool) {
+            return se.xor(this, (Sbool) i);
+        }
+        return se.ixor(this, i);
+    }
+
+    @Override
+    public Sint ior(Sint i, SymbolicExecution se) {
+        if (i instanceof Sbool) {
+            return se.or(this, (Sbool) i);
+        }
+        return se.ior(this, i);
+    }
+
+    @Override
+    public Sint iand(Sint i, SymbolicExecution se) {
+        if (i instanceof Sbool) {
+            return se.and(this, (Sbool) i);
+        }
+        return se.iand(this, i);
+    }
+
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return The wrapped result of !this

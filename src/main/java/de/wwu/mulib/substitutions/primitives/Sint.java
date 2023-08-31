@@ -441,7 +441,7 @@ public abstract class Sint extends AbstractSnumber {
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return 'this' ^ i
      */
-    public final Sint ixor(Sint i, SymbolicExecution se) {
+    public Sint ixor(Sint i, SymbolicExecution se) {
         return se.ixor(this, i);
     }
 
@@ -450,7 +450,7 @@ public abstract class Sint extends AbstractSnumber {
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return 'this' | i
      */
-    public final Sint ior(Sint i, SymbolicExecution se) {
+    public Sint ior(Sint i, SymbolicExecution se) {
         return se.ior(this, i);
     }
     /**
@@ -458,7 +458,7 @@ public abstract class Sint extends AbstractSnumber {
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @return 'this' & i
      */
-    public final Sint iand(Sint i, SymbolicExecution se) {
+    public Sint iand(Sint i, SymbolicExecution se) {
         return se.iand(this, i);
     }
     /**

@@ -3,6 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
+import de.wwu.mulib.expressions.ConcolicNumericalContainer;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -1214,9 +1215,12 @@ public final class SymbolicExecution {
         if (sarrayOrPartnerClassObject == null) {
             return null;
         }
+        if (sarrayOrPartnerClassObject.getClass() == castTo) {
+            return sarrayOrPartnerClassObject;
+        }
         if (sarrayOrPartnerClassObject instanceof Sbool) {
             if (castTo != Sint.class) {
-                throw new MulibIllegalStateException();
+                throw new MulibIllegalStateException(castTo.getName());
             }
             // TODO Own method for this in Sbool?
             Sbool b = (Sbool) sarrayOrPartnerClassObject;
@@ -1233,6 +1237,33 @@ public final class SymbolicExecution {
                 ));
             }
             return representingSymSint;
+        } else if (sarrayOrPartnerClassObject instanceof Sint) {
+            if (castTo != Sbool.class) {
+                if (castTo.isAssignableFrom(sarrayOrPartnerClassObject.getClass())) {
+                    return sarrayOrPartnerClassObject;
+                }
+                throw new MulibIllegalStateException(castTo.getName());
+            }
+            Sint i = (Sint) sarrayOrPartnerClassObject;
+            if (i instanceof ConcSnumber) {
+                if ((((ConcSnumber) i).intVal())%2 == 0) {
+                    return Sbool.ConcSbool.FALSE;
+                } else {
+                    return Sbool.ConcSbool.TRUE;
+                }
+            }
+            i = (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(i);
+            Sbool representingSymSbool = symSbool();
+            if (!nextIsOnKnownPath()) {
+                // TODO Usually, we should also employ modulo...however, this would be rather expensive, so for now
+                // we stick with the case that actually occurs
+                addNewConstraint(BoolIte.newInstance(
+                        Eq.newInstance(i, Sint.ConcSint.ZERO),
+                        Not.newInstance(representingSymSbool),
+                        representingSymSbool
+                ));
+            }
+            return representingSymSbool;
         }
         return castTo.cast(sarrayOrPartnerClassObject);
     }

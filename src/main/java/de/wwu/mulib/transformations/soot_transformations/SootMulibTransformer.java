@@ -2744,7 +2744,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
     }
 
     private static boolean isIntOrSintSubtype(Type t) {
-        return isIntOrSint(t) || isShortOrSshort(t) || isByteOrSbyte(t) || isCharOrSchar(t);
+        return isIntOrSint(t) || isShortOrSshort(t) || isByteOrSbyte(t) || isCharOrSchar(t) || isBoolOrSbool(t);
     }
     private static boolean isIntOrSint(Type t) {
         return t instanceof IntType
@@ -3670,7 +3670,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         if (isIntOrSintSubtype(t)) {
                             used = v.SM_SINT_IXOR.makeRef();
                         } else {
-                            assert isLongOrSlong(t);
+                            assert isLongOrSlong(t) : t.toString();
                             used = v.SM_SLONG_LXOR.makeRef();
                         }
                     } else if (b instanceof SubExpr) {
@@ -3753,7 +3753,19 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     // Create virtual call
                     // Lhs must be Local, since BinopExpr uses ImmediateBox
                     VirtualInvokeExpr virtualInvokeExpr = Jimple.v().newVirtualInvokeExpr((Local) lhs, used, rhs, args.seLocal());
-                    assignNewValueRedirectAndAdd(virtualInvokeExpr, firstStatement, a, valueBox, args);
+                    Value assignLocalTo;
+                    // If we assign to a boolean, this should be casted
+                    if (isBoolOrSbool(lhs.getType())) {
+                        // Create intermediate cast
+                        Local toCastToSbool = args.spawnStackLocal(v.TYPE_SINT);
+                        AssignStmt toCast = Jimple.v().newAssignStmt(toCastToSbool, virtualInvokeExpr);
+                        args.addUnit(toCast);
+                        CastExpr casted = Jimple.v().newCastExpr(toCastToSbool, v.TYPE_SBOOL);
+                        assignLocalTo = casted;
+                    } else {
+                        assignLocalTo = virtualInvokeExpr;
+                    }
+                    assignNewValueRedirectAndAdd(assignLocalTo, firstStatement, a, valueBox, args);
                 } else if (value instanceof InvokeExpr) {
                     InvokeExpr invokeExpr = (InvokeExpr) value;
                     InvokeExpr possiblyTransformedIndicatorMethod = getInvokeExprIfIndicatorMethodExprElseNull(a, invokeExpr, args);
@@ -3789,6 +3801,23 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             AssignStmt newAssignStmt = Jimple.v().newAssignStmt(var, ((CastExpr) value).getOp());
                             a.redirectJumpsToThisTo(newAssignStmt);
                             args.addUnit(newAssignStmt);
+                            return;
+                        } else if (isBoolOrSbool(castTo)) {
+                            assert isIntOrSintSubtype(a.getRightOp().getType());
+                            // TODO Unify with below
+                            SootMethodRef castSintToSbool = v.SM_SE_CAST_TO.makeRef();
+                            Local intermediate = args.spawnStackLocal(v.SC_OBJECT.getType());
+                            AssignStmt invokeSeCast = Jimple.v().newAssignStmt(
+                                    intermediate,
+                                    Jimple.v().newVirtualInvokeExpr(args.seLocal(), castSintToSbool, ((CastExpr) a.getRightOp()).getOp(), ClassConstant.fromType(v.SC_SBOOL.getType()))
+                            );
+                            AssignStmt castSeCastResult = Jimple.v().newAssignStmt(
+                                    a.getLeftOp(),
+                                    Jimple.v().newCastExpr(intermediate, v.SC_SBOOL.getType())
+                            );
+                            a.redirectJumpsToThisTo(invokeSeCast);
+                            args.addUnit(invokeSeCast);
+                            args.addUnit(castSeCastResult);
                             return;
                         } else {
                             throw new NotYetImplementedException(castTo.toString());

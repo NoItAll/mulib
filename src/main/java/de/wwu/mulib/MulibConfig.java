@@ -1,6 +1,5 @@
 package de.wwu.mulib;
 
-import de.wwu.mulib.throwables.MisconfigurationException;
 import de.wwu.mulib.model.classes.java.lang.IntegerReplacement;
 import de.wwu.mulib.model.classes.java.lang.NumberReplacement;
 import de.wwu.mulib.search.choice_points.Backtrack;
@@ -12,6 +11,7 @@ import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.solving.solvers.SolverManager;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.MisconfigurationException;
 import de.wwu.mulib.util.TriConsumer;
 
 import java.io.PrintStream;
@@ -1159,6 +1159,7 @@ public class MulibConfig {
 
             if (TRANSF_USE_DEFAULT_MODEL_CLASSES) {
                 addDefaultModelClasses();
+                TRANSF_REGARD_SPECIAL_CASE.add(Boolean.class);
             }
 
             return new MulibConfig(
