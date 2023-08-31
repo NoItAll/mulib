@@ -37,7 +37,7 @@ public final class TestUtility {
                         .setSOLVER_GLOBAL_TYPE(Solvers.Z3_INCREMENTAL)
                         .setSEARCH_MAIN_STRATEGY(DSAS)
                         .setSEARCH_ADDITIONAL_PARALLEL_STRATEGIES(DSAS, DSAS, DSAS)
-//                        .setINCR_ACTUAL_CP_BUDGET(6)
+//                        .setBUDGET_INCR_ACTUAL_CP(8)
                         .setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true)
                         .setSEARCH_CHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS)
                         .setBUDGET_FIXED_ACTUAL_CP(TEST_FIXED_ACTUAL_CP_BUDGET)

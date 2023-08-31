@@ -6,7 +6,8 @@ import de.wwu.mulib.MulibConfig;
  * Manages budgets that are given for one single run of {@link de.wwu.mulib.search.executors.SymbolicExecution}.
  */
 public class ExecutionBudgetManager {
-
+    // If there are no budgets, we do not need to actually copy this
+    private final boolean shouldNotBeCopied;
     private final Budget fixedActualChoicePointBudget;
     private final Budget incrementalActualChoicePointBudget;
 
@@ -19,6 +20,7 @@ public class ExecutionBudgetManager {
                 CountingBudget.getIncrementalBudget(config.BUDGETS_INCR_ACTUAL_CP.get())
                 :
                 NullBudget.INSTANCE;
+        this.shouldNotBeCopied = config.BUDGETS_FIXED_ACTUAL_CP.isEmpty() && config.BUDGETS_INCR_ACTUAL_CP.isEmpty();
     }
 
     private ExecutionBudgetManager(
@@ -26,6 +28,7 @@ public class ExecutionBudgetManager {
             Budget incrementalActualChoicePointBudget) {
         this.fixedActualChoicePointBudget = fixedActualChoicePointBudget;
         this.incrementalActualChoicePointBudget = incrementalActualChoicePointBudget;
+        this.shouldNotBeCopied = false;
     }
 
     /**
@@ -66,9 +69,13 @@ public class ExecutionBudgetManager {
      * @return A copy where each budget is also copied from its prototype
      */
     public ExecutionBudgetManager copyFromPrototype() {
-        return new ExecutionBudgetManager(
-                fixedActualChoicePointBudget.copyFromPrototype(),
-                incrementalActualChoicePointBudget.copyFromPrototype()
-        );
+        if (shouldNotBeCopied) {
+            return this;
+        } else {
+            return new ExecutionBudgetManager(
+                    fixedActualChoicePointBudget.copyFromPrototype(),
+                    incrementalActualChoicePointBudget.copyFromPrototype()
+            );
+        }
     }
 }

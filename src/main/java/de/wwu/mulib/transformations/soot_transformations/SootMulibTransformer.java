@@ -3829,7 +3829,22 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         args.addUnit(a);
                         return;
                     } else if (isBoolOrSbool(typeToCast)) {
-                        throw new NotYetImplementedException();
+                        assert isIntOrSint(a.getLeftOp().getType());
+                        // TODO Unify with below
+                        SootMethodRef castSboolToSint = v.SM_SE_CAST_TO.makeRef();
+                        Local intermediate = args.spawnStackLocal(v.SC_OBJECT.getType());
+                        AssignStmt invokeSeCast = Jimple.v().newAssignStmt(
+                                intermediate,
+                                Jimple.v().newVirtualInvokeExpr(args.seLocal(), castSboolToSint, ((CastExpr) a.getRightOp()).getOp(), ClassConstant.fromType(v.SC_SINT.getType()))
+                        );
+                        AssignStmt castSeCastResult = Jimple.v().newAssignStmt(
+                                a.getLeftOp(),
+                                Jimple.v().newCastExpr(intermediate, v.SC_SINT.getType())
+                        );
+                        a.redirectJumpsToThisTo(invokeSeCast);
+                        args.addUnit(invokeSeCast);
+                        args.addUnit(castSeCastResult);
+                        return;
                     } else {
                         used = v.SM_SE_CAST_TO.makeRef();
                         isObjectCast = true;

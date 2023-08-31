@@ -2,8 +2,7 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.constraints.Constraint;
-import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
+import de.wwu.mulib.constraints.*;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -1215,15 +1214,30 @@ public final class SymbolicExecution {
         if (sarrayOrPartnerClassObject == null) {
             return null;
         }
+        if (sarrayOrPartnerClassObject instanceof Sbool) {
+            if (castTo != Sint.class) {
+                throw new MulibIllegalStateException();
+            }
+            // TODO Own method for this in Sbool?
+            Sbool b = (Sbool) sarrayOrPartnerClassObject;
+            if (b instanceof Sbool.ConcSbool) {
+                return ((Sbool.ConcSbool) b).isTrue() ? Sint.concSint(1) : Sint.concSint(0);
+            }
+            Sint representingSymSint = symSint();
+            b = ConcolicConstraintContainer.tryGetSymFromConcolic(b);
+            if (!nextIsOnKnownPath()) {
+                addNewConstraint(BoolIte.newInstance(
+                        b,
+                        Eq.newInstance(representingSymSint, Sint.concSint(1)),
+                        Eq.newInstance(representingSymSint, Sint.concSint(0))
+                ));
+            }
+        }
         return castTo.cast(sarrayOrPartnerClassObject);
     }
 
-    public boolean evalIsNull(Object sarrayOrPartnerClassObject) {
-        /// TODO To CalculationFactory
-        return sarrayOrPartnerClassObject == null;
-    }
-
     public Sbool evalReferencesEq(Object o0, Object o1) {
+        // TODO TO Calculation Factory
         if (o0 instanceof PartnerClass) {
             if (o1 instanceof PartnerClass) {
                 return ((PartnerClass) o0).__mulib__getId().eq(((PartnerClass) o1).__mulib__getId(), this);
