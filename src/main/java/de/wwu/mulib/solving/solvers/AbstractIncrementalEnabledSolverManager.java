@@ -383,13 +383,13 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         while (currentN > 0) {
             Labels l = latestSolution.labels;
 
-            List<Constraint> disjunctionConstraints = getNeqConstraints(l, rememberConstraints, allPartnerClassObjectConstraints);
-            if (disjunctionConstraints.isEmpty()) {
+            List<Constraint> neqConstraints = getNeqConstraints(l, rememberConstraints, allPartnerClassObjectConstraints);
+            if (neqConstraints.isEmpty()) {
                 // Nothing to negate
                 break;
             }
 
-            Constraint newConstraint = Or.newInstance(disjunctionConstraints);
+            Constraint newConstraint = Or.newInstance(neqConstraints);
             backtrackAfterwards++;
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
