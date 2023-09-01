@@ -2,14 +2,9 @@ package de.wwu.mulib.solving.solvers;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.throwables.*;
 import de.wwu.mulib.expressions.ConcolicNumericalContainer;
 import de.wwu.mulib.expressions.NumericalExpression;
-import de.wwu.mulib.solving.Solution;
-import de.wwu.mulib.solving.ArrayInformation;
-import de.wwu.mulib.solving.Labels;
-import de.wwu.mulib.solving.PartnerClassObjectInformation;
-import de.wwu.mulib.solving.StdLabels;
+import de.wwu.mulib.solving.*;
 import de.wwu.mulib.solving.object_representations.ArraySolverRepresentation;
 import de.wwu.mulib.solving.object_representations.PartnerClassObjectSolverRepresentation;
 import de.wwu.mulib.substitutions.Conc;
@@ -17,6 +12,7 @@ import de.wwu.mulib.substitutions.PartnerClass;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.*;
 import de.wwu.mulib.transformations.StringConstants;
 import de.wwu.mulib.util.Utility;
 import sun.misc.Unsafe;
@@ -84,6 +80,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     // For debugging use
     ArrayDeque<Constraint> _getConstraints() {
+        if (!config.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS) {
+            throw new MulibIllegalStateException("Must not occur");
+        }
         return incrementalSolverState.getConstraints();
     }
 
@@ -303,7 +302,9 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         if (c instanceof Sbool.ConcSbool && ((Sbool.ConcSbool) c).isTrue()) {
             return;
         }
-        incrementalSolverState.addConstraint(c);
+        if (config.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS) {
+            incrementalSolverState.addConstraint(c);
+        }
         _resetSatisfiabilityWasCalculatedAndModel();
         try {
             addSolverConstraintRepresentation(transformConstraint(c));

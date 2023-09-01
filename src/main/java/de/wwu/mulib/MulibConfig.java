@@ -211,6 +211,13 @@ public class MulibConfig {
      */
     public final boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
 
+    /**
+     * Whether the {@link de.wwu.mulib.solving.solvers.AbstractIncrementalEnabledSolverManager} should additionally
+     * keep track of constraints in Mulib's {@link de.wwu.mulib.constraints.Constraint} representation.
+     * This can be useful for debugging.
+     */
+    public final boolean SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS;
+
     /* Budget */
     /**
      * The maximal depth in the search tree
@@ -396,6 +403,7 @@ public class MulibConfig {
         private ChoiceOptionDeques SEARCH_CHOICE_OPTION_DEQUE_TYPE;
         private long SEARCH_ACTIVATE_PARALLEL_FOR;
         private Solvers SOLVER_GLOBAL_TYPE;
+        private boolean SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS;
         private long BUDGET_FIXED_ACTUAL_CP;
         private long BUDGET_INCR_ACTUAL_CP;
         private long BUDGET_GLOBAL_TIME_IN_SECONDS;
@@ -455,6 +463,7 @@ public class MulibConfig {
             this.TREE_INDENTATION = "    ";
             this.SEARCH_MAIN_STRATEGY = SearchStrategy.DFS;
             this.SOLVER_GLOBAL_TYPE = Solvers.Z3_INCREMENTAL;
+            this.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS = false;
             this.BUDGET_FIXED_ACTUAL_CP =   0;
             this.BUDGET_INCR_ACTUAL_CP =    0;
             this.BUDGET_GLOBAL_TIME_IN_SECONDS =   0;
@@ -1106,6 +1115,11 @@ public class MulibConfig {
             return this;
         }
 
+        public MulibConfigBuilder setSOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS(boolean SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS) {
+            this.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS = SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS;
+            return this;
+        }
+
         /**
          * @return true if the config builder is set to work with concolic execution
          */
@@ -1211,6 +1225,7 @@ public class MulibConfig {
                     ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
                     ARRAYS_THROW_EXCEPTION_ON_OOB,
                     SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH,
+                    SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS,
                     SEARCH_CONCOLIC,
                     SEARCH_ALLOW_EXCEPTIONS,
                     FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
@@ -1282,6 +1297,7 @@ public class MulibConfig {
                         boolean ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS,
                         boolean ARRAYS_THROW_EXCEPTION_ON_OOB,
                         boolean SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH,
+                        boolean SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS,
                         boolean SEARCH_CONCOLIC,
                         boolean SEARCH_ALLOW_EXCEPTIONS,
                         boolean FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL,
@@ -1356,6 +1372,7 @@ public class MulibConfig {
         this.ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS = ARRAYS_USE_EAGER_INDEXES_FOR_FREE_ARRAY_OBJECT_ELEMENTS;
         this.ARRAYS_THROW_EXCEPTION_ON_OOB = ARRAYS_THROW_EXCEPTION_ON_OOB;
         this.SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH = SOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH;
+        this.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS = SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS;
         this.SEARCH_CONCOLIC = SEARCH_CONCOLIC;
         this.SEARCH_ALLOW_EXCEPTIONS = SEARCH_ALLOW_EXCEPTIONS;
         this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL;

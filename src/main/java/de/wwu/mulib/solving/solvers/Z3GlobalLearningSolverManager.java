@@ -20,7 +20,7 @@ import java.util.Map;
  * {@link de.wwu.mulib.search.executors.SearchStrategy#BFS} and {@link de.wwu.mulib.search.executors.SearchStrategy#IDDFS}
  * but is costly in terms of memory.
  */
-public class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
+public final class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
     private final ArrayDeque<BoolExpr> expressions;
     private final ArrayDeque<BoolExpr> boolImpliers;
     private final Map<BoolExpr, BoolExpr> impliedBy;

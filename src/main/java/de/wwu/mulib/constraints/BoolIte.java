@@ -36,4 +36,9 @@ public class BoolIte extends IfThenElse<Constraint> implements Constraint {
         }
         return new BoolIte(condition, ifCase, elseCase);
     }
+
+    @Override
+    public String toString() {
+        return String.format("(IF (%s) THEN %s ELSE %s)", condition, ifCase, elseCase);
+    }
 }

@@ -3823,7 +3823,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(castTo.toString());
                         }
                     } else if (isLongOrSlong(typeToCast)) {
-                        if (isIntOrSintSubtype(castTo)) {
+                        if (isIntOrSint(castTo)) {
                             used = v.SM_SLONG_L2I.makeRef();
                         } else if (isDoubleOrSdouble(castTo)) {
                             used = v.SM_SLONG_L2D.makeRef();
@@ -3833,7 +3833,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(castTo.toString());
                         }
                     } else if (isDoubleOrSdouble(typeToCast)) {
-                        if (isIntOrSintSubtype(castTo)) {
+                        if (isIntOrSint(castTo)) {
                             used = v.SM_SDOUBLE_D2I.makeRef();
                         } else if (isLongOrSlong(castTo)) {
                             used = v.SM_SDOUBLE_D2L.makeRef();
@@ -3843,7 +3843,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             throw new NotYetImplementedException(castTo.toString());
                         }
                     } else if (isFloatOrSfloat(typeToCast)) {
-                        if (isIntOrSintSubtype(castTo)) {
+                        if (isIntOrSint(castTo)) {
                             used = v.SM_SFLOAT_F2I.makeRef();
                         } else if (isDoubleOrSdouble(castTo)) {
                             used = v.SM_SFLOAT_F2D.makeRef();
