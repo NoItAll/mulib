@@ -21,7 +21,6 @@ import java.util.Map;
  * but is costly in terms of memory.
  */
 public final class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager {
-    private final ArrayDeque<BoolExpr> expressions;
     private final ArrayDeque<BoolExpr> boolImpliers;
     private final Map<BoolExpr, BoolExpr> impliedBy;
     private long boolImplyId = 0;
@@ -31,30 +30,26 @@ public final class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager
      */
     public Z3GlobalLearningSolverManager(MulibConfig config) {
         super(config);
-        this.expressions = new ArrayDeque<>();
         this.boolImpliers = new ArrayDeque<>();
         this.impliedBy = new HashMap<>();
     }
 
     @Override
     protected void addSolverConstraintRepresentation(BoolExpr boolExpr) {
-        // We add the solver's constraint representation after incrementing the level. If the level is still
-        // equal to the number of expressions, a constraint has been added without pushing
-        if (expressions.size() == getLevel()) {
-            // Add the modified constraint instead: boolExpr will be conjoined by the constraint before
-            boolExpr = adapter.ctx.mkAnd(boolExpr, expressions.peek());
-            expressions.pop();
-            boolImpliers.pop();
-        }
-        expressions.push(boolExpr);
         BoolExpr implies = impliedBy.get(boolExpr);
         if (implies == null) {
+            // Instead of adding boolExpr, add implier -> boolExpr
             implies = adapter.ctx.mkBoolConst("implier_" + boolImplyId++);
-            solver.add(adapter.ctx.mkOr(adapter.ctx.mkNot(implies), boolExpr));
+            solver.add(adapter.ctx.mkImplies(implies, boolExpr));
             impliedBy.put(boolExpr, implies);
         }
+        if (boolImpliers.size() == getLevel()) {
+            // Conjoin the implier to the other impliers, if there
+            // already are impliers for this level
+            implies = adapter.ctx.mkAnd(boolImpliers.pop(), implies);
+        }
         boolImpliers.push(implies);
-        assert expressions.size() == getLevel();
+        assert boolImpliers.size() == getLevel();
     }
 
     @Override
@@ -74,14 +69,12 @@ public final class Z3GlobalLearningSolverManager extends AbstractZ3SolverManager
 
     @Override
     protected void solverSpecificBacktrackOnce() {
-        expressions.pop();
         boolImpliers.pop();
     }
 
     @Override
     protected void solverSpecificBacktrack(int toBacktrack) {
         for (int i = 0; i < toBacktrack; i++) {
-            expressions.pop();
             boolImpliers.pop();
         }
     }
