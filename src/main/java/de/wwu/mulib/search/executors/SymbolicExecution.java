@@ -1228,6 +1228,7 @@ public final class SymbolicExecution {
                 return ((Sbool.ConcSbool) b).isTrue() ? Sint.concSint(1) : Sint.concSint(0);
             }
             Sint representingSymSint = symSint();
+            representingSymSint = (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(representingSymSint);
             b = ConcolicConstraintContainer.tryGetSymFromConcolic(b);
             if (!nextIsOnKnownPath()) {
                 addNewConstraint(BoolIte.newInstance(
