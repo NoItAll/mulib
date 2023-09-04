@@ -2216,6 +2216,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                         Value value = invokeExpr.getArg(0);
                         if (value.getType() instanceof ArrayType) {
                             values = findValuesStoredInArray(stmts, i).toArray(Value[]::new);
+                            // If it is empty, Dacite did not have to wrap
                         } else {
                             values = new Value[]{value};
                         }
@@ -2264,7 +2265,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         Collection<Value> findValuesStoredInArray(Stmt[] stmts, int positionOfInterMethodStmt) {
             Collection<Value> result = new HashSet<>();
-            boolean foundSetParameter = false;
             // Find previous setParameter-method
             for (int i = positionOfInterMethodStmt - 1; i >= 0; i--) {
                 Stmt s = stmts[i];
@@ -2276,14 +2276,12 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 String declaringClassName = smr.getDeclaringClass().getName();
                 String methodName = smr.getName();
                 if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("setParameter")) {
-                    foundSetParameter = true;
                     break;
                 } else if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("push")) {
                     Value arg = invokeExpr.getArg(0);
                     result.add(arg);
                 }
             }
-            assert foundSetParameter : "setParameter-call indicating start of parameter collection not found";
             return result;
         }
 
