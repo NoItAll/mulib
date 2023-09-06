@@ -36,4 +36,9 @@ public class CompetingTestSetReducer extends AbstractTestSetReducer {
                         .get();
         return result;
     }
+
+    @Override
+    public String toString() {
+        return String.format("CompetingTestSetReducer%s", Arrays.toString(testSetReducers));
+    }
 }

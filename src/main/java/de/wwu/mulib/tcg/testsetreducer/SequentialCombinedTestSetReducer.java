@@ -31,6 +31,6 @@ public class SequentialCombinedTestSetReducer extends AbstractTestSetReducer {
 
     @Override
     public String toString() {
-        return String.format("CombinedTestSetReducer%s", Arrays.toString(inOrder));
+        return String.format("SequentialCombinedTestSetReducer%s", Arrays.toString(inOrder));
     }
 }
