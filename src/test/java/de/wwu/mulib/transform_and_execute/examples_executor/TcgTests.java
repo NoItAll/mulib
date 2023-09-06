@@ -4,7 +4,7 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.tcg.TcgConfig;
-import de.wwu.mulib.tcg.testsetreducer.CombinedTestSetReducer;
+import de.wwu.mulib.tcg.testsetreducer.SequentialCombinedTestSetReducer;
 import de.wwu.mulib.tcg.testsetreducer.SimpleBackwardsTestSetReducer;
 import de.wwu.mulib.tcg.testsetreducer.SimpleForwardsTestSetReducer;
 import de.wwu.mulib.tcg.testsetreducer.SimpleGreedyTestSetReducer;
@@ -39,7 +39,7 @@ public class TcgTests {
                         .setAssumePublicZeroArgsConstructor(true)
                         .setAssumeSetters(true)
                         .setAssumeEqualsMethods(true)
-                        .setTestSetReducer(new CombinedTestSetReducer(new SimpleForwardsTestSetReducer(), new SimpleBackwardsTestSetReducer()))
+                        .setTestSetReducer(new SequentialCombinedTestSetReducer(new SimpleForwardsTestSetReducer(), new SimpleBackwardsTestSetReducer()))
         );
         return;
     }

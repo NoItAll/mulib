@@ -1,8 +1,6 @@
 package de.wwu.mulib.transformations;
 
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.throwables.MulibRuntimeException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.PartnerClass;
@@ -10,6 +8,8 @@ import de.wwu.mulib.substitutions.PartnerClassObject;
 import de.wwu.mulib.substitutions.Sarray;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.util.Utility;
 
 import java.lang.reflect.*;
@@ -581,14 +581,14 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
 
     /**
      * Generates a constructor for transforming an object of the class old to an object of type result
-     * <init>(LobjectOfOriginalClass;LMulibValueTransformer;)
+     * <init>(LObject;LMulibValueTransformer;)
      * @param old The to-be-transformed class
      * @param result The class to an object of which the object of old should be transformed
      */
     protected abstract void generateAndAddTransformationConstructor(T old, T result);
 
     /**
-     * Generates a constructor with the parameter types <init>(LobjectOfPartnerClass;LMulibValueTransformer;)
+     * Generates a constructor with the parameter types <init>(LObject;LMulibValueCopier;)
      * @param old The old class
      * @param result The new class to which the new copy constructor should be added
      */
