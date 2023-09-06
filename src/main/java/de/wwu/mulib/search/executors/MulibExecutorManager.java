@@ -2,13 +2,13 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
-import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.budget.GlobalExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.choice_points.CoverageCfg;
 import de.wwu.mulib.search.trees.*;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.ValueFactory;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.lang.invoke.MethodHandle;
@@ -338,12 +338,12 @@ public abstract class MulibExecutorManager {
                 b.append(linebreak);
             }
         }
+        b.append(linebreak)
+                .append(indent)
+                .append(", numberPathSolutions: ")
+                .append(observedTree.getPathSolutionsList().size());
         if (config.TREE_ENLIST_LEAVES) {
-            b.append(linebreak)
-                    .append(indent)
-                    .append(", numberPathSolutions: ")
-                    .append(observedTree.getPathSolutionsList().size())
-                    .append(", numberFails: ")
+            b.append(", numberFails: ")
                     .append(observedTree.getFailsList().size())
                     .append(", numberExceededBudget: ")
                     .append(observedTree.getExceededBudgetList().size());
