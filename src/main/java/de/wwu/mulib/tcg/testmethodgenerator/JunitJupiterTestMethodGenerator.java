@@ -1,9 +1,9 @@
 package de.wwu.mulib.tcg.testmethodgenerator;
 
-import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.tcg.TcgUtility;
 import de.wwu.mulib.tcg.TestCase;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
@@ -562,12 +562,12 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
             inputObjectNames[i] = argumentNamesForObjects.get(this.testCase.getInputs()[i]);
         }
         StringBuilder sb = new StringBuilder();
-        String methodUnderTestCall = generateTestedMethodCallString(inputObjectNames);
-        if (!testedMethod.getReturnType().equals(Void.TYPE)) {
+        if (!testedMethod.getReturnType().equals(Void.class)) {
+            String methodUnderTestCall = generateTestedMethodCallString(inputObjectNames);
             sb.append(config.INDENT.repeat(2)).append("/* Assert correctness of the output value */").append(System.lineSeparator());
+            addAssertion(sb, this.testCase.getReturnValue(), methodUnderTestCall);
+            sb.append(System.lineSeparator());
         }
-        addAssertion(sb, this.testCase.getReturnValue(), methodUnderTestCall);
-        sb.append(System.lineSeparator());
 
         if (config.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED) {
             Object[] inputsAfterExec = testCase.getInputsAfterExecution();
