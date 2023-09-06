@@ -528,7 +528,7 @@ public final class Mulib {
      * given length and a component type equal to clazz
      * @param <T> The type of the class to spawn an array from
      */
-    public static <T> T[] freeObjectArray(int length, Class<T> clazz) {
+    public static <T> T[] freeArray(int length, Class<T> clazz) {
         throw _shouldHaveBeenReplaced();
     }
 

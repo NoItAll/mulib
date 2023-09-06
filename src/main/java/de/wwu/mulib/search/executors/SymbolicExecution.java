@@ -17,7 +17,6 @@ import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 
 import java.util.*;
 import java.util.function.Supplier;
@@ -574,95 +573,95 @@ public final class SymbolicExecution {
         return valueFactory.symObject(this, clazz);
     }
 
-    public Sint aliasingSymObjectOf(Sint... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sint aliasOf(Sint... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SintSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sdouble aliasingSymObjectOf(Sdouble... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sdouble aliasOf(Sdouble... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SdoubleSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sfloat aliasingSymObjectOf(Sfloat... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sfloat aliasOf(Sfloat... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SfloatSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Slong aliasingSymObjectOf(Slong... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Slong aliasOf(Slong... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SlongSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sshort aliasingSymObjectOf(Sshort... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sshort aliasOf(Sshort... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SshortSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sbyte aliasingSymObjectOf(Sbyte... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sbyte aliasOf(Sbyte... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SbyteSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sbool aliasingSymObjectOf(Sbool... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Sbool aliasOf(Sbool... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.SboolSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Schar aliasingSymObjectOf(Schar... aliasingTargets) {
-        return select(aliasingSymObjectOf(
+    public Schar aliasOf(Schar... aliasingTargets) {
+        return select(aliasOf(
                 aliasingTargets,
                 () -> new Sarray.ScharSarray(concSint(aliasingTargets.length), this, false, Sbool.ConcSbool.FALSE)
         ), symSint());
     }
 
-    public Sint aliasingSymObjectOf(Sarray.SintSarray aliasingTargets) {
+    public Sint aliasOf(Sarray.SintSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Sdouble aliasingSymObjectOf(Sarray.SdoubleSarray aliasingTargets) {
+    public Sdouble aliasOf(Sarray.SdoubleSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Sfloat aliasingSymObjectOf(Sarray.SfloatSarray aliasingTargets) {
+    public Sfloat aliasOf(Sarray.SfloatSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Slong aliasingSymObjectOf(Sarray.SlongSarray aliasingTargets) {
+    public Slong aliasOf(Sarray.SlongSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Sshort aliasingSymObjectOf(Sarray.SshortSarray aliasingTargets) {
+    public Sshort aliasOf(Sarray.SshortSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Sbyte aliasingSymObjectOf(Sarray.SbyteSarray aliasingTargets) {
+    public Sbyte aliasOf(Sarray.SbyteSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Sbool aliasingSymObjectOf(Sarray.SboolSarray aliasingTargets) {
+    public Sbool aliasOf(Sarray.SboolSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    public Schar aliasingSymObjectOf(Sarray.ScharSarray aliasingTargets) {
+    public Schar aliasOf(Sarray.ScharSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
-    private <T extends Sarray<U>, U extends Sprimitive> T aliasingSymObjectOf(U[] aliasingTargets, Supplier<T> init) {
+    private <T extends Sarray<U>, U extends Sprimitive> T aliasOf(U[] aliasingTargets, Supplier<T> init) {
         T res = init.get();
         for (int i = 0; i < aliasingTargets.length; i++) {
             res.store(concSint(i), aliasingTargets[i], this);
@@ -670,7 +669,7 @@ public final class SymbolicExecution {
         return res;
     }
 
-    public PartnerClass aliasingSymObjectOf(Object... aliasingTargets) {
+    public PartnerClass aliasOf(PartnerClass... aliasingTargets) {
         // TODO There certainly are more efficient implementations for this without having to create a partner class sarray
         //  Possibly, ValueFactory and CalculationFactory should reuse functionality for representing objects and arrays for the solver
         if (aliasingTargets == null || aliasingTargets.length == 0) {
@@ -680,13 +679,9 @@ public final class SymbolicExecution {
         PartnerClass[] pcs = new PartnerClass[aliasingTargets.length];
         Class mostGeneralClass = null;
         for (int i = 0; i < aliasingTargets.length; i++) {
-            if (aliasingTargets[i] == null || aliasingTargets[i] instanceof PartnerClass) {
-                pcs[i] = (PartnerClass) aliasingTargets[i];
-                if (aliasingTargets[i] != null && (mostGeneralClass == null || !aliasingTargets[i].getClass().isAssignableFrom(mostGeneralClass))) {
-                    mostGeneralClass = aliasingTargets[i].getClass();
-                }
-            } else {
-                throw new NotYetImplementedException();
+            pcs[i] = aliasingTargets[i];
+            if (aliasingTargets[i] != null && (mostGeneralClass == null || !aliasingTargets[i].getClass().isAssignableFrom(mostGeneralClass))) {
+                mostGeneralClass = aliasingTargets[i].getClass();
             }
         }
         mostGeneralClass = mostGeneralClass == null ? PartnerClass.class : mostGeneralClass;
@@ -697,10 +692,10 @@ public final class SymbolicExecution {
         for (int i = 0; i < pcs.length; i++) {
             store(temp, concSint(i), pcs[i]);
         }
-        return aliasingSymObjectOf(temp);
+        return aliasOf(temp);
     }
 
-    public PartnerClass aliasingSymObjectOf(Sarray.PartnerClassSarray aliasingTargets) {
+    public PartnerClass aliasOf(Sarray.PartnerClassSarray aliasingTargets) {
         return select(aliasingTargets, symSint());
     }
 
