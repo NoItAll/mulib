@@ -4,17 +4,29 @@ import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
 import de.wwu.mulib.tcg.TcgConfig;
-import de.wwu.mulib.tcg.testsetreducer.SequentialCombinedTestSetReducer;
-import de.wwu.mulib.tcg.testsetreducer.SimpleBackwardsTestSetReducer;
-import de.wwu.mulib.tcg.testsetreducer.SimpleForwardsTestSetReducer;
-import de.wwu.mulib.tcg.testsetreducer.SimpleGreedyTestSetReducer;
+import de.wwu.mulib.tcg.testsetreducer.*;
 import de.wwu.mulib.transform_and_execute.examples.Sort;
 import de.wwu.mulib.transform_and_execute.examples.TSP;
+import de.wwu.mulib.transform_and_execute.examples.apache2_examples.WBSTransf;
 import de.wwu.mulib.transform_and_execute.examples.mit_examples.SatHanoi01Transf;
 import de.wwu.mulib.util.Utility;
 import org.junit.jupiter.api.Test;
 
 public class TcgTests {
+
+    @Test
+    public void testWbsTransf() {
+        TestUtility.getAllSolutions(mb -> {
+            mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, false, false).setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false).setBUDGET_GLOBAL_TIME_IN_SECONDS(3).setBUDGET_FIXED_ACTUAL_CP(64);
+            String result = Mulib.generateTestCases(WBSTransf.class, "driver", mb, Utility.getMethodFromClass(WBSTransf.class, "update", new Class[] {int.class, boolean.class, boolean.class}),
+                    TcgConfig.builder()
+                            .setTestSetReducer(new CompetingTestSetReducer(
+                                    new SequentialCombinedTestSetReducer(new SimpleGreedyTestSetReducer(), new SimpleBackwardsTestSetReducer()),
+                                    new SequentialCombinedTestSetReducer(new SimpleForwardsTestSetReducer(), new SimpleBackwardsTestSetReducer())
+                            )));
+            return;
+        }, "wbs");
+    }
 
     @Test
     public void testSatHanoi01Transf() {
@@ -34,7 +46,7 @@ public class TcgTests {
                 SatHanoi01Transf.class,
                 "execForTcg",
                 mb,
-                Utility.getMethodFromClass(SatHanoi01Transf.class.getName(), "execForTcg", new Class[] { int.class }),
+                Utility.getMethodFromClass(SatHanoi01Transf.class, "execForTcg", new Class[] { int.class }),
                 TcgConfig.builder()
                         .setAssumePublicZeroArgsConstructor(true)
                         .setAssumeSetters(true)

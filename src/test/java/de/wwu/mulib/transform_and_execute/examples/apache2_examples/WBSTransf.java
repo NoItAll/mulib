@@ -2,6 +2,8 @@ package de.wwu.mulib.transform_and_execute.examples.apache2_examples;
 
 import de.wwu.mulib.Mulib;
 
+import static de.wwu.mulib.Mulib.*;
+
 /*
  * Copyright (C) 2014, United States Government, as represented by the
  * Administrator of the National Aeronautics and Space Administration.
@@ -238,13 +240,13 @@ public class WBSTransf { // HW: Renamed to avoid confusion with usual WBS class 
     }
 
     public static WBSTransf launch() {
-        int pedal1 = Mulib.rememberedFreeInt("pedal1");
+        int pedal1 = rememberedFreeInt("pedal1");
         boolean auto1 = Mulib.rememberedFreeBoolean("auto1");
         boolean skid1 = Mulib.rememberedFreeBoolean("skid1");
-        int pedal2 = Mulib.rememberedFreeInt("pedal2");
+        int pedal2 = rememberedFreeInt("pedal2");
         boolean auto2 = Mulib.rememberedFreeBoolean("auto2");
         boolean skid2 = Mulib.rememberedFreeBoolean("skid2");
-        int pedal3 = Mulib.rememberedFreeInt("pedal3");
+        int pedal3 = rememberedFreeInt("pedal3");
         boolean auto3 = Mulib.rememberedFreeBoolean("auto3");
         boolean skid3 = Mulib.rememberedFreeBoolean("skid3");
         WBSTransf wbs = new WBSTransf();
@@ -255,12 +257,19 @@ public class WBSTransf { // HW: Renamed to avoid confusion with usual WBS class 
     }
 
     public static WBSTransf update0(WBSTransf wbsTransf) {
-        wbsTransf.update(Mulib.freeInt(), Mulib.freeBoolean(), Mulib.freeBoolean());
+        wbsTransf.update(freeInt(), freeBoolean(), freeBoolean());
         return wbsTransf;
     }
 
     public static WBSTransf update1(WBSTransf wbsTransf, int i, boolean b0, boolean b1) {
         wbsTransf.update(i, b0, b1);
         return wbsTransf;
+    }
+
+    public static void driver() {
+        WBSTransf wbs = new WBSTransf();
+        Mulib.remember(wbs, "arg0");
+        wbs.update(rememberedFreeInt("arg1"), rememberedFreeBoolean("arg2"), rememberedFreeBoolean("arg3"));
+        Mulib.remember(wbs, "arg0AfterExec");
     }
 }
