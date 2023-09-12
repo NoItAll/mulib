@@ -562,11 +562,13 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
             inputObjectNames[i] = argumentNamesForObjects.get(this.testCase.getInputs()[i]);
         }
         StringBuilder sb = new StringBuilder();
+        String methodUnderTestCall = generateTestedMethodCallString(inputObjectNames);
         if (!testedMethod.getReturnType().equals(void.class)) {
-            String methodUnderTestCall = generateTestedMethodCallString(inputObjectNames);
             sb.append(config.INDENT.repeat(2)).append("/* Assert correctness of the output value */").append(System.lineSeparator());
             addAssertion(sb, this.testCase.getReturnValue(), methodUnderTestCall);
             sb.append(System.lineSeparator());
+        } else {
+            sb.append(methodUnderTestCall).append(";").append(System.lineSeparator());
         }
 
         if (config.GENERATE_POST_STATE_CHECKS_FOR_OBJECTS_IF_SPECIFIED) {
