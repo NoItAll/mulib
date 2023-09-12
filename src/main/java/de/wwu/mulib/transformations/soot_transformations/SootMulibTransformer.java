@@ -2218,16 +2218,16 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                             values = findValuesStoredInArray(stmts, i).toArray(Value[]::new);
                             // If it is empty, Dacite did not have to wrap
                         } else {
-                            values = new Value[]{value};
+                            values = new Value[] { value };
                         }
                     } else if (methodName.startsWith("visitField")) {
                         values = new Value[] { invokeExpr.getArg(1) };
                     } else if (methodName.startsWith("visitStaticField")) {
                         values = new Value[] { invokeExpr.getArg(0) };
                     } else if (methodName.equals("visitDef") || methodName.equals("visitUse")) {
-                        values = new Value[]{invokeExpr.getArg(0)};
+                        values = new Value[] { invokeExpr.getArg(0) };
                     } else if (methodName.equals("visitParameter")) {
-                        values = new Value[]{invokeExpr.getArg(0)};
+                        values = new Value[] { invokeExpr.getArg(0) };
                     } else {
                         throw new NotYetImplementedException(methodName);
                     }

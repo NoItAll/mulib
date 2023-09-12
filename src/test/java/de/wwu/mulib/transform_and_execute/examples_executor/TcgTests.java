@@ -17,7 +17,7 @@ public class TcgTests {
     @Test
     public void testWbsTransf() {
         TestUtility.getAllSolutions(mb -> {
-            mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(true, false, false).setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false).setBUDGET_GLOBAL_TIME_IN_SECONDS(3).setBUDGET_FIXED_ACTUAL_CP(64);
+            mb.setTRANSF_CFG_GENERATE_CHOICE_POINTS_WITH_ID(false, false, true).setTRANSF_LOAD_WITH_SYSTEM_CLASSLOADER(false).setBUDGET_GLOBAL_TIME_IN_SECONDS(3).setBUDGET_FIXED_ACTUAL_CP(64);
             String result = Mulib.generateTestCases(WBSTransf.class, "driver", mb, Utility.getMethodFromClass(WBSTransf.class, "update", new Class[] {int.class, boolean.class, boolean.class}),
                     TcgConfig.builder()
                             .setTestSetReducer(new CompetingTestSetReducer(

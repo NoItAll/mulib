@@ -1217,22 +1217,7 @@ public final class SymbolicExecution {
             if (castTo != Sint.class) {
                 throw new MulibIllegalStateException(castTo.getName());
             }
-            // TODO Own method for this in Sbool?
-            Sbool b = (Sbool) sarrayOrPartnerClassObject;
-            if (b instanceof Sbool.ConcSbool) {
-                return ((Sbool.ConcSbool) b).isTrue() ? Sint.concSint(1) : Sint.concSint(0);
-            }
-            Sint representingSymSint = symSint();
-            representingSymSint = (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(representingSymSint);
-            b = ConcolicConstraintContainer.tryGetSymFromConcolic(b);
-            if (!nextIsOnKnownPath()) {
-                addNewConstraint(BoolIte.newInstance(
-                        b,
-                        Eq.newInstance(representingSymSint, Sint.concSint(1)),
-                        Eq.newInstance(representingSymSint, Sint.concSint(0))
-                ));
-            }
-            return representingSymSint;
+            return sarrayOrPartnerClassObject;
         } else if (sarrayOrPartnerClassObject instanceof Sint) {
             if (castTo != Sbool.class) {
                 if (castTo.isAssignableFrom(sarrayOrPartnerClassObject.getClass())) {
