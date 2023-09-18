@@ -276,7 +276,7 @@ public class MulibConfig {
      * A map of (original method, replacement method)-pairs. In the search region, all occurrences of calls to
      * 'original method' will be replaced by calls to 'replacement method'.
      * Should be done for native methods if not the whole class is substituted via
-     * {@link #TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH}.
+     * {@link #TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS}.
      */
     public final Map<Method, Method> TRANSF_REPLACE_METHOD_WITH_OTHER_METHOD;
     /**
