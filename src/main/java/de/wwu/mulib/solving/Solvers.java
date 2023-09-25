@@ -1,11 +1,8 @@
 package de.wwu.mulib.solving;
 
 import de.wwu.mulib.MulibConfig;
+import de.wwu.mulib.solving.solvers.*;
 import de.wwu.mulib.throwables.NotYetImplementedException;
-import de.wwu.mulib.solving.solvers.JavaSMTSolverManager;
-import de.wwu.mulib.solving.solvers.SolverManager;
-import de.wwu.mulib.solving.solvers.Z3GlobalLearningSolverManager;
-import de.wwu.mulib.solving.solvers.Z3IncrementalSolverManager;
 
 /**
  * Enumeration of all constraint solvers supported by Mulib
@@ -61,7 +58,11 @@ public enum Solvers {
      * Boolector via JavaSMT
      * @see JavaSMTSolverManager
      */
-    JSMT_BOOLECTOR;
+    JSMT_BOOLECTOR,
+    /**
+     * CP-SAT
+     */
+    CP_SAT;
 
     /**
      * @param config The configuration
@@ -81,6 +82,8 @@ public enum Solvers {
             case JSMT_YICES2:
             case JSMT_BOOLECTOR:
                 return new JavaSMTSolverManager(config);
+            case CP_SAT:
+                return new CpSatSolverManager(config);
             default:
                 throw new NotYetImplementedException();
         }

@@ -71,6 +71,12 @@ public final class ExamplesExecutor {
                             // Direct access makes sense for request of DSAS
                             .setSEARCH_CHOICE_OPTION_DEQUE_TYPE(ChoiceOptionDeques.DIRECT_ACCESS);
                     break;
+                case "DFS-CP-SAT":
+                    b.setSOLVER_GLOBAL_TYPE(Solvers.Z3_INCREMENTAL)
+                            .setSEARCH_MAIN_STRATEGY(DFS)
+                            .setSOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS(true)
+                            .setSOLVER_GLOBAL_TYPE(Solvers.CP_SAT);
+                    break;
                 default:
                     throw new IllegalStateException();
             }
