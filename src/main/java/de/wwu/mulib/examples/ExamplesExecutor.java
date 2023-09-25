@@ -47,8 +47,8 @@ public final class ExamplesExecutor {
             MulibConfig.MulibConfigBuilder b = MulibConfig.builder()
                     // For the benchmark, we to not validate the classes nor do we write them as class files. Rather,
                     // they are only loaded and used.
-                    .setTRANSF_VALIDATE_TRANSFORMATION(false)
-                    .setTRANSF_WRITE_TO_FILE(false);
+                    .setTRANSF_VALIDATE_TRANSFORMATION(true)
+                    .setTRANSF_WRITE_TO_FILE(true);
             switch (chosenConfig) {
                 case "DFSN":
                     b.setSEARCH_MAIN_STRATEGY(DFS)
@@ -170,6 +170,9 @@ public final class ExamplesExecutor {
                     break;
                 case "PM_IP":
                     pathSolutions = runPostmanProblem_impossible(b);
+                    break;
+                case "Ham":
+                    pathSolutions = runHamiltonianCycleProblem(b);
                     break;
                 default:
                     throw new IllegalStateException();
@@ -928,5 +931,36 @@ public final class ExamplesExecutor {
             }
         }
         return ps;
+    }
+
+    public static List<PathSolution> runHamiltonianCycleProblem(MulibConfig.MulibConfigBuilder builder) {
+        builder.setLOG_TIME_FOR_FIRST_PATH_SOLUTION(true).setSOLVER_HIGH_LEVEL_SYMBOLIC_OBJECT_APPROACH(true);
+        HamiltonianCycleProblem.Edge[] es = getEdges0();
+        List<Solution> result = Mulib.getUpToNSolutions(HamiltonianCycleProblem.class, "solve", builder, 3,
+                new Class[] { int.class, HamiltonianCycleProblem.Edge[].class },
+                new Object[] {
+                        5, es
+                }
+        );
+        // 2 solutions are the result
+        return List.of();
+    }
+
+    private static HamiltonianCycleProblem.Edge[] getEdges0() {
+        HamiltonianCycleProblem.Node n0 = new HamiltonianCycleProblem.Node(0);
+        HamiltonianCycleProblem.Node n1 = new HamiltonianCycleProblem.Node(1);
+        HamiltonianCycleProblem.Node n2 = new HamiltonianCycleProblem.Node(2);
+        HamiltonianCycleProblem.Node n3 = new HamiltonianCycleProblem.Node(3);
+        HamiltonianCycleProblem.Node n4 = new HamiltonianCycleProblem.Node(4);
+        HamiltonianCycleProblem.Edge[] es = new HamiltonianCycleProblem.Edge[]{
+                new HamiltonianCycleProblem.Edge(n0, n1),
+                new HamiltonianCycleProblem.Edge(n1, n3),
+                new HamiltonianCycleProblem.Edge(n0, n2),
+                new HamiltonianCycleProblem.Edge(n2, n3),
+                new HamiltonianCycleProblem.Edge(n3, n4),
+                new HamiltonianCycleProblem.Edge(n4, n2),
+                new HamiltonianCycleProblem.Edge(n1, n4)
+        };
+        return es;
     }
 }

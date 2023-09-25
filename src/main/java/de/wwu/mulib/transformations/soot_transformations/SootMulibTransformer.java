@@ -4421,7 +4421,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
     private Type transformType(Type toTransform, boolean arrayToSarray) {
         Type result;
-        if ((result = toTransformedType.get(toTransform)) != null) {
+        if (!(toTransform instanceof ArrayType) && (result = toTransformedType.get(toTransform)) != null) {
             return result;
         }
         if (toTransform instanceof IntType) {
