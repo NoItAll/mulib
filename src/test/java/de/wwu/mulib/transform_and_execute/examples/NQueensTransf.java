@@ -42,15 +42,11 @@ public class NQueensTransf {
         }
         for (int i = 0; i < n; i++) {
             boolean valid = board.isOnBoard(qs[i]);
-            if (!valid) {
-                throw Mulib.fail();
-            }
+            Mulib.assume(valid);
 
             for (int j = i+1; j < n; j++) {
                 boolean t = board.threatens(qs[i], qs[j]);
-                if (t) {
-                    throw Mulib.fail();
-                }
+                Mulib.assume(!t);
             }
         }
         return qs;

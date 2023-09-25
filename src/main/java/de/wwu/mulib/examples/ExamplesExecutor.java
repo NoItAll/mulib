@@ -3,6 +3,7 @@ package de.wwu.mulib.examples;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.MulibContext;
+import de.wwu.mulib.examples.efficient_bytecode_folding.NQueensEfficient;
 import de.wwu.mulib.examples.free_arrays.CapacityAssignmentProblem;
 import de.wwu.mulib.examples.free_arrays.DlspVariant;
 import de.wwu.mulib.examples.free_arrays.MachineCAP;
@@ -13,12 +14,13 @@ import de.wwu.mulib.examples.sac22_mulib_benchmark.Partition3;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.TspSolver;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.hanoi.SatHanoi01;
 import de.wwu.mulib.examples.sac22_mulib_benchmark.wbs.WBS;
-import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.search.trees.ChoiceOptionDeques;
-import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.solving.Solvers;
+import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -47,8 +49,6 @@ public final class ExamplesExecutor {
                     // they are only loaded and used.
                     .setTRANSF_VALIDATE_TRANSFORMATION(false)
                     .setTRANSF_WRITE_TO_FILE(false);
-            //b.setGLOBAL_SOLVER_TYPE(Solvers.Z3_GLOBAL_LEARNING);
-            //b.setGLOBAL_SEARCH_STRATEGY(SearchStrategy.IDDFS).setINCR_ACTUAL_CP_BUDGET(32);
             switch (chosenConfig) {
                 case "DFSN":
                     b.setSEARCH_MAIN_STRATEGY(DFS)
@@ -79,6 +79,16 @@ public final class ExamplesExecutor {
             switch (chosenMethod) {
                 case "NQ":
                     pathSolutions = runNQueens(b);
+                    break;
+                case "NQ_EFFICIENT": {
+                    int numberQueens = Integer.parseInt(args[3]);
+                    pathSolutions = runNQueensEfficient(b, numberQueens);
+                    break;
+                }
+                case "NQ_EFFICIENT_COMPARED":
+                    int numberQueens = Integer.parseInt(args[3]);
+                    pathSolutions = runNQueensForOnePathSolution(b, numberQueens);
+                    System.out.println(pathSolutions.get(0).getSolution().labels);
                     break;
                 case "WBS":
                     pathSolutions = runWBS(b);
@@ -170,6 +180,28 @@ public final class ExamplesExecutor {
                 builder
         );
     }
+
+    private static List<PathSolution> runNQueensEfficient(MulibConfig.MulibConfigBuilder builder, int numberQueens) {
+        // Proof of concept with manually written framework classes
+        builder.setTRANSF_TRANSFORMATION_REQUIRED(false);
+        PathSolution ps = Mulib.getSinglePathSolution(
+                NQueensEfficient.class,
+                "solveEfficient",
+                builder,
+                new Object[] { Sint.concSint(numberQueens) }
+        ).get();
+        return List.of(ps);
+    }
+
+    private static List<PathSolution> runNQueensForOnePathSolution(MulibConfig.MulibConfigBuilder builder, int numberQueens) {
+        return List.of(Mulib.getSinglePathSolution(
+                NQueens.class,
+                "solveForComparisonWithEfficient",
+                builder,
+                new Object[] { numberQueens }
+        ).get());
+    }
+
 
     private static List<PathSolution> runSendMoreMoney(MulibConfig.MulibConfigBuilder builder) {
         List<PathSolution> ps = Mulib.getPathSolutions(SendMoreMoney.class, "search", builder);

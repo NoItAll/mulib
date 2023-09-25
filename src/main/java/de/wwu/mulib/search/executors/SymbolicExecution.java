@@ -301,7 +301,7 @@ public final class SymbolicExecution {
     }
 
     public Sbool.ConcSbool check(Sbool s) {
-        return Sbool.concSbool(mulibExecutor.checkWithNewConstraint(s));
+        return Sbool.concSbool(mulibExecutor.checkWithNewConstraint(ConcolicConstraintContainer.tryGetSymFromConcolic(s)));
     }
 
     public void assume(Sbool s) {
@@ -311,7 +311,7 @@ public final class SymbolicExecution {
                     throw Mulib.fail();
                 }
             } else {
-                addNewConstraint(s);
+                addNewConstraint(ConcolicConstraintContainer.tryGetSymFromConcolic(s));
             }
         }
     }

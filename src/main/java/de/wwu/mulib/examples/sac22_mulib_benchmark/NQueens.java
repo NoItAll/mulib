@@ -30,4 +30,25 @@ public class NQueens {
         }
         return qs;
     }
+
+    public static Queen[] solveForComparisonWithEfficient(int n) {
+        Board board = new Board(n);
+        Queen[] qs = new Queen[n];
+        for (int i = 0; i < n; i++) {
+            Queen q = new Queen();
+            q.x = i;
+            q.y = Mulib.rememberedFreeInt("q.y" + i);
+            qs[i] = q;
+        }
+        for (int i = 0; i < n; i++) {
+            boolean valid = board.isOnBoard(qs[i]);
+            Mulib.assume(valid);
+
+            for (int j = i + 1; j < n; j++) {
+                boolean t = board.threatens(qs[i], qs[j]);
+                Mulib.assume(!t);
+            }
+        }
+        return qs;
+    }
 }

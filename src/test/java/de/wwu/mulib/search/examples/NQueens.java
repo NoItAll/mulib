@@ -3,13 +3,13 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import de.wwu.mulib.throwables.MulibRuntimeException;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
@@ -19,7 +19,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 public class NQueens {
     private final static int dimension = 8;
-    private final static int higherDimension = 20;
+    private final static int higherDimension = 12;
 
     @Test
     public void checkExecute() {
@@ -41,6 +41,11 @@ public class NQueens {
     @Test
     public void checkExecuteAlt() {
         TestUtility.getAllSolutions(this::_checkExecuteAlt, "solveAlt");
+    }
+
+    @Test
+    public void checkExecuteEfficient() {
+        TestUtility.getAllSolutions(this::_checkExecuteEfficient, "solveEfficient");
     }
 
     private List<Solution> _checkExecuteAlt(MulibConfig.MulibConfigBuilder mb) {
@@ -201,17 +206,13 @@ public class NQueens {
         for (int i = 0; i < higherDimension; i++) {
             qs[i] = new Queen(se.concSint(i), se.namedSymSint("y" + i));
         }
-        Sbool valid = se.concSbool(true);
         for (int i = 0; i < higherDimension; i++) {
-            valid = valid.and(board.isOnBoardEfficient(qs[i]), se);
+            se.assume(board.isOnBoardEfficient(qs[i]));
 
             for (int j = i+1; j < higherDimension; j++) {
                 Sbool notThreatens = board.notThreatensEfficient(qs[i], qs[j]);
-                valid = valid.and(notThreatens, se);
+                se.assume(notThreatens);
             }
-        }
-        if (!valid.boolChoice(se)) {
-            throw Mulib.fail();
         }
         return qs;
     }
