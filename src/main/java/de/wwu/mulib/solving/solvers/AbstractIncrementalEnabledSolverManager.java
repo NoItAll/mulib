@@ -79,11 +79,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
     }
 
     // For debugging use
-    ArrayDeque<Constraint> _getConstraints() {
+    protected ArrayDeque<Constraint> _getConstraints() {
         if (!config.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS) {
             throw new MulibIllegalStateException("Must not occur");
         }
         return incrementalSolverState.getConstraints();
+    }
+
+    protected List<PartnerClassObjectConstraint> _getPartnerClassObjectConstraints() {
+        return incrementalSolverState.getAllPartnerClassObjectConstraints();
     }
 
     @Override

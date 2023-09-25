@@ -1,6 +1,9 @@
 package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.substitutions.primitives.Sbool;
+import de.wwu.mulib.throwables.NotYetImplementedException;
+
+import java.util.Arrays;
 
 /**
  * Constraint representing a logical NOT
@@ -38,6 +41,38 @@ public class Not implements Constraint {
         }
     }
 
+    /**
+     * @return An equivalent formulation of the represented constraint where the negation is
+     * "pushed down"; - for instance !(b0 && b1) is transformed to !b0 || !b1;
+     */
+    public final Constraint tryPushDown() {
+        if (constraint instanceof TwoSidedConstraint) {
+            TwoSidedConstraint c = (TwoSidedConstraint) constraint;
+            if (c instanceof And) {
+                return Or.newInstance(Not.newInstance(c.getLhs()), Not.newInstance(c.getRhs()));
+            } else if (c instanceof Or) {
+                return And.newInstance(Not.newInstance(c.getLhs()), Not.newInstance(c.getRhs()));
+            } else if (c instanceof Equivalence) {
+                return Xor.newInstance(c.getLhs(), c.getRhs());
+            } else if (c instanceof Implication) {
+                return And.newInstance(c.getLhs(), Not.newInstance(c.getRhs()));
+            } else {
+                throw new NotYetImplementedException(c.toString());
+            }
+        } else if (constraint instanceof BoolIte) {
+            BoolIte bi = (BoolIte) constraint;
+            return And.newInstance(
+                    Or.newInstance(Not.newInstance(bi.getCondition()), Not.newInstance(bi.getIfCase())),
+                    Or.newInstance(bi.getCondition(), Not.newInstance(bi.getElseCase()))
+            );
+        } else if (constraint instanceof In) {
+            In in = (In) constraint;
+            return Arrays.stream(in.getSet())
+                    .map(e -> Not.newInstance(Eq.newInstance(in.getElement(), e)))
+                    .reduce(Sbool.ConcSbool.TRUE, And::newInstance);
+        }
+        return this;
+    }
     /**
      * @return The negated constraint
      */

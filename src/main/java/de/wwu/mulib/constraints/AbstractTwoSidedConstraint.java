@@ -2,6 +2,10 @@ package de.wwu.mulib.constraints;
 
 import de.wwu.mulib.substitutions.primitives.Sbool;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract supertype for those constraints that are composed of two other constraints/booleans
  */
@@ -61,6 +65,30 @@ public abstract class AbstractTwoSidedConstraint implements TwoSidedConstraint {
         }
         AbstractTwoSidedConstraint oc = (AbstractTwoSidedConstraint) o;
         return this.getLhs().equals(oc.getLhs()) && this.getRhs().equals(oc.getRhs());
+    }
+
+
+    @Override
+    public final List<Constraint> unrollSameType() {
+        List<Constraint> result = new ArrayList<>();
+
+        ArrayDeque<AbstractTwoSidedConstraint> sameTypes = new ArrayDeque<>();
+        sameTypes.add(this);
+        Class<?> thisClass = getClass();
+        while (!sameTypes.isEmpty()) {
+            AbstractTwoSidedConstraint current = sameTypes.poll();
+            if (current.lhs.getClass() == thisClass) {
+                sameTypes.add((AbstractTwoSidedConstraint) current.lhs);
+            } else {
+                result.add(current.lhs);
+            }
+            if (current.rhs.getClass() == thisClass) {
+                sameTypes.add((AbstractTwoSidedConstraint) current.rhs);
+            } else {
+                result.add(current.rhs);
+            }
+        }
+        return result;
     }
 
 

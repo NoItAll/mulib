@@ -3,13 +3,13 @@ package de.wwu.mulib.solving.solvers;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.throwables.MulibIllegalStateException;
-import de.wwu.mulib.throwables.MulibRuntimeException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.solving.Solvers;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.MulibIllegalStateException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 import org.sosy_lab.common.ShutdownManager;
 import org.sosy_lab.common.configuration.Configuration;
 import org.sosy_lab.common.configuration.InvalidConfigurationException;
@@ -342,9 +342,9 @@ public final class JavaSMTSolverManager extends AbstractIncrementalEnabledSolver
             } else if (c instanceof In) {
                 In in = (In) c;
                 Constraint constraint = Sbool.ConcSbool.FALSE;
-                for (Sprimitive setElement : in.getSet()) {
-                    if (in.isNumber()) {
-                        constraint = Or.newInstance(constraint, Eq.newInstance((Snumber) setElement, (Snumber) in.getElement()));
+                for (Snumber setElement : in.getSet()) {
+                    if (!in.isBool()) {
+                        constraint = Or.newInstance(constraint, Eq.newInstance(setElement, in.getElement()));
                     } else {
                         assert in.isBool();
                         constraint = Or.newInstance(constraint, Equivalence.newInstance((Sbool) setElement, (Sbool) in.getElement()));

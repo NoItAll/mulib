@@ -4,6 +4,10 @@ import de.wwu.mulib.substitutions.Sym;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
+import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
  * Abstract supertype for all those numeric expressions that consist of two numeric expressions and an operator
  */
@@ -67,6 +71,36 @@ public abstract class AbstractOperatorNumericalExpression implements NumericalEx
         }
         AbstractOperatorNumericalExpression oc = (AbstractOperatorNumericalExpression) o;
         return this.getExpr0().equals(oc.getExpr0()) && this.getExpr1().equals(oc.getExpr1());
+    }
+
+    /**
+     * Checks for nested repetitions of the same type.
+     * For instance, if {@link Sum} is unrolled, and there is an expression such as
+     * ((n0 + n1) + (n2 * n3)), [n0, n1, (n2 * n3)] is returned.
+     * @return A list of expressions
+     */
+    public List<NumericalExpression> unrollSameType() {
+        List<NumericalExpression> result = new ArrayList<>();
+
+        ArrayDeque<AbstractOperatorNumericalExpression> sameType = new ArrayDeque<>();
+        sameType.add(this);
+        Class<?> thisClass = getClass();
+        while (!sameType.isEmpty()) {
+            AbstractOperatorNumericalExpression n = sameType.poll();
+            if (n.getExpr0().getClass() == thisClass) {
+                sameType.add((AbstractOperatorNumericalExpression) n.getExpr0());
+            } else {
+                result.add(n.getExpr0());
+            }
+            if (n.getExpr1().getClass() == thisClass) {
+                sameType.add((AbstractOperatorNumericalExpression) n.getExpr1());
+            } else {
+                result.add(n.getExpr1());
+            }
+
+        }
+
+        return result;
     }
 
     private int cachedHash = -1;
