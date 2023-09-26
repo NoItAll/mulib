@@ -7,6 +7,7 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
 import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.transformations.MulibValueTransformer;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -40,6 +41,7 @@ public class PartnerClassThrowable extends Throwable implements PartnerClass {
      * {@link PartnerClassThrowable#representationState} is set to {@link PartnerClass#NOT_YET_REPRESENTED_IN_SOLVER}.
      */
     protected PartnerClassThrowable() {
+        super("", null, false, false);
         this.isNull = Sbool.ConcSbool.FALSE;
         this.representationState = NOT_YET_REPRESENTED_IN_SOLVER;
     }
@@ -57,6 +59,54 @@ public class PartnerClassThrowable extends Throwable implements PartnerClass {
         this.id = toCopy.id;
         this.isNull = toCopy.isNull;
     }
+
+    /**
+     * Constructor for lazy init
+     * @param se The current instance of
+     */
+    public PartnerClassThrowable(SymbolicExecution se) {
+        this();
+    }
+
+    /**
+     * Constructor for transformation.
+     * @param o The original object
+     * @param mvt The value transformer
+     */
+    public PartnerClassThrowable(Object o, MulibValueTransformer mvt) {
+        this();
+    }
+
+    /**
+     * Constructor to fit {@link Throwable}s constructors
+     */
+    public PartnerClassThrowable(String message) {
+        this();
+    }
+
+    /**
+     * Constructor to fit {@link Throwable}s constructors
+     */
+    public PartnerClassThrowable(String message, PartnerClassThrowable cause) {
+        this();
+    }
+
+    /**
+     * Constructor to fit {@link Throwable}s constructors
+     */
+    public PartnerClassThrowable(PartnerClassThrowable cause) {
+        this();
+    }
+
+    /**
+     * Constructor to fit {@link Throwable}s constructors
+     */
+    protected PartnerClassThrowable(String message, PartnerClassThrowable cause,
+                        Sbool enableSuppression,
+                        Sbool writableStackTrace) {
+        this();
+    }
+
 
     @Override
     public final void __mulib__setIsRemembered() {

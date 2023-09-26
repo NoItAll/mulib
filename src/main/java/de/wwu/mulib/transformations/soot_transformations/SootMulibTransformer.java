@@ -11,7 +11,6 @@ import de.wwu.mulib.transformations.MulibClassFileWriter;
 import de.wwu.mulib.transformations.MulibClassLoader;
 import soot.*;
 import soot.jimple.*;
-import soot.jimple.internal.JInvokeStmt;
 import soot.options.Options;
 import soot.tagkit.InnerClassTag;
 import soot.tagkit.Tag;
@@ -406,6 +405,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     getSootMethodForMethod(e.getValue())
             );
         }
+        for (Map.Entry<String, Class<?>> e : this.transformedClasses.entrySet()) {
+            this.transformedClassNodes.put(e.getKey(), getClassNodeForName(e.getValue().getName()));
+        }
     }
 
     @Override
@@ -455,11 +457,13 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         SootClass c;
         // For some reason Scene.v().loadClass(String,int) cannot resolve properly,
         // this is a workaround.
-        if ((c = resolvedClasses.get(name)) != null) {
-            return c;
+        synchronized (syncObject) {
+            if ((c = resolvedClasses.get(name)) != null) {
+                return c;
+            }
+            c = Scene.v().forceResolve(name, SootClass.BODIES);
+            resolvedClasses.put(name, c);
         }
-        c = Scene.v().forceResolve(name, SootClass.BODIES);
-        resolvedClasses.put(name, c);
         return c;
     }
 
@@ -2630,7 +2634,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
         for (Unit u : toTransformChain) {
 
             if (!(u instanceof IdentityStmt) && firstNonIdentityStatement
-                    && !(u instanceof JInvokeStmt && ((JInvokeStmt) u).getInvokeExpr() instanceof SpecialInvokeExpr) ) {
+                ) {
                 // The SymbolicExecution instance is assigned only before the first non-identity statement is executed
                 firstNonIdentityStatement = false;
                 upc.add(seAssign);
@@ -3933,7 +3937,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                     }
                     assert arrayRefValue.getBase().getType() instanceof RefType : "The array has not been transformed to " +
                             "a Sarray class but should be used to perform select or store operations";
-                    SootMethodRef selectRef = getSelectOrStoreBasedOnArrayBase((RefType) arrayRefValue.getBase().getType(), true).makeRef();
+                    Type t = arrayRefValue.getBase().getType();
+                    if (t instanceof ArrayType) {
+                        t = ((ArrayType) t).baseType;
+                    }
+                    SootMethodRef selectRef = getSelectOrStoreBasedOnArrayBase((RefType) t, true).makeRef();
                     Expr expr = Jimple.v().newVirtualInvokeExpr(
                             (Local) arrayRefValue.getBase(),
                             selectRef,
@@ -4442,6 +4450,11 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
             result = v.TYPE_SCHAR;
         } else if (toTransform instanceof RefType) {
             RefType refType = (RefType) toTransform;
+            if (refType.getClassName().equals(Throwable.class.getName())) {
+                return v.SC_PARTNER_CLASS_THROWABLE.getType();
+            } else if (refType.getClassName().equals(Object.class.getName())) {
+                return v.SC_PARTNER_CLASS_OBJECT.getType();
+            }
             if (!refType.getClassName().contains(_TRANSFORMATION_INDICATOR) && !isAlreadyTransformedOrToBeTransformedPath(refType.getClassName())) {
                 addToClassesToTransform(refType.getClassName());
             }
@@ -4686,7 +4699,6 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 Class<?> toTransform = getClassForName(toTransformName, classLoader);
                 toTransform = this.config.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS.getOrDefault(toTransform, toTransform);
                 toTransformName = toTransform.getName();
-                assert transformedClassNodes.get(toTransformName) == null;
                 result = transformEnrichAndValidate(toTransformName);
                 assert result != null;
                 assert transformedClassNodes.get(toTransformName) != null : "Setting class in transformedClassNodes failed! Config: " + config;

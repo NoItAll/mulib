@@ -9,6 +9,9 @@ public class HamiltonianCycleProblem {
         private final Node n1;
 
         public Edge(Node n0, Node n1) {
+            if (n0.equals(n1)) {
+                throw new IllegalArgumentException("Edge must not be loop");
+            }
             this.n0 = n0;
             this.n1 = n1;
         }
@@ -52,6 +55,11 @@ public class HamiltonianCycleProblem {
 
         boolean equals(Node n) {
             return n == this;
+        }
+
+        @Override
+        public String toString() {
+            return String.format("Node[%s]", id);
         }
     }
 

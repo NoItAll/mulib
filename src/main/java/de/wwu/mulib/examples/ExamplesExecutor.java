@@ -942,6 +942,12 @@ public final class ExamplesExecutor {
                         5, es
                 }
         );
+        StringBuilder sb = new StringBuilder();
+        for (Solution s : result) {
+            HamiltonianCycleProblem.Node[] ret = (HamiltonianCycleProblem.Node[]) s.returnValue;
+            sb.append(Arrays.toString(ret)).append(System.lineSeparator());
+        }
+        Mulib.log.info(sb.toString());
         // 2 solutions are the result
         return List.of();
     }

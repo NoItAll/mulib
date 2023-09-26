@@ -33,7 +33,10 @@ Running the `de.wwu.mulib.examples` can be done with the following command
 ```
 
 ### Programs
-Available example programs are:
+**Please note that since the initial SAC-paper, the ASM-based program transformation has been exchanged for a Soot-based program transformation.
+Potentially, there are some performance differences.**
+
+Available example programs are, for instance,:
 * `WBS` for WBS
 * `P3` for 3-Partition
 * `TSP` for TspSolver

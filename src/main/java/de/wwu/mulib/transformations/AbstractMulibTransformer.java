@@ -3,10 +3,7 @@ package de.wwu.mulib.transformations;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.model.ModelMethods;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.substitutions.PartnerClass;
-import de.wwu.mulib.substitutions.PartnerClassObject;
-import de.wwu.mulib.substitutions.Sarray;
-import de.wwu.mulib.substitutions.Substituted;
+import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.throwables.NotYetImplementedException;
@@ -82,6 +79,7 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
         }
         this.replaceMethodCallWithOtherMethodCall = replacementMethods;
         this.addTransformedClass(Object.class.getName(), PartnerClassObject.class);
+        this.addTransformedClass(Throwable.class.getName(), PartnerClassThrowable.class);
     }
 
 
@@ -172,6 +170,9 @@ public abstract class AbstractMulibTransformer<T> implements MulibTransformer {
                 }
                 Class<?> originalClass = classLoader.loadClass(f.getDeclaringClass().getName().replace(_TRANSFORMATION_INDICATOR, ""));
                 Field of = originalClass.getDeclaredField(f.getName());
+                if (!of.trySetAccessible()) {
+                    continue;
+                }
                 result.put(f, of);
             }
         } catch (ClassNotFoundException | NoSuchFieldException e) {

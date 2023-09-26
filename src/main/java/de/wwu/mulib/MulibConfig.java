@@ -482,7 +482,7 @@ public class MulibConfig {
                     Mulib.class, Fail.class
             );
             this.TRANSF_IGNORE_FROM_PACKAGES = Set.of(
-                    "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.exceptions",
+                    "de.wwu.mulib.substitutions", "de.wwu.mulib.transformations", "de.wwu.mulib.throwables",
                     "de.wwu.mulib.expressions", "de.wwu.mulib.search", "de.wwu.mulib.solving",
                     "java"
             );
@@ -493,6 +493,10 @@ public class MulibConfig {
                     PrintStream.class
             );
             this.TRANSF_REGARD_SPECIAL_CASE = new HashSet<>();
+            this.TRANSF_REGARD_SPECIAL_CASE.add(Exception.class);
+            this.TRANSF_REGARD_SPECIAL_CASE.add(RuntimeException.class);
+            this.TRANSF_REGARD_SPECIAL_CASE.add(IllegalArgumentException.class);
+            this.TRANSF_REGARD_SPECIAL_CASE.add(Throwable.class);
             this.TRANSF_USE_DEFAULT_MODEL_CLASSES = true;
             this.TRANSF_REPLACE_TO_BE_TRANSFORMED_CLASS_WITH_SPECIFIED_CLASS = new HashMap<>();
             this.TRANSF_USE_DEFAULT_METHODS_TO_REPLACE_METHOD_CALLS_OF_NON_SUBSTITUTED_CLASS_WITH = false;
