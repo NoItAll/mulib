@@ -675,7 +675,6 @@ public final class SymbolicExecution {
         if (aliasingTargets == null || aliasingTargets.length == 0) {
             throw Mulib.fail();
         }
-        Collection<Object> it = Set.of(aliasingTargets);
         PartnerClass[] pcs = new PartnerClass[aliasingTargets.length];
         Class mostGeneralClass = null;
         for (int i = 0; i < aliasingTargets.length; i++) {
