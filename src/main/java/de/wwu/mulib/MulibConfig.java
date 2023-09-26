@@ -80,6 +80,10 @@ public class MulibConfig {
      * Useful for debugging: Should the result be labeled?
      */
     public final boolean SEARCH_LABEL_RESULT_VALUE;
+    /**
+     * If set to true, it is random which choice option of a choice is picked next.
+     */
+    public final boolean SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE;
     /* Shutdown */
     /**
      * Timeout for shutting down the executors
@@ -384,6 +388,7 @@ public class MulibConfig {
         private boolean FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL;
         private boolean FREE_INIT_ALIASING_FOR_FREE_OBJECTS;
         private String TREE_INDENTATION;
+        private boolean SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE;
         private boolean SEARCH_LABEL_RESULT_VALUE;
         private boolean TREE_ENLIST_LEAVES;
         private Set<String> TRANSF_IGNORE_FROM_PACKAGES;
@@ -456,6 +461,7 @@ public class MulibConfig {
             this.FREE_INIT_ENABLE_INITIALIZE_FREE_ARRAYS_WITH_NULL = false;
             this.FREE_INIT_ENABLE_INITIALIZE_FREE_OBJECTS_WITH_NULL = false;
             this.FREE_INIT_ALIASING_FOR_FREE_OBJECTS = false;
+            this.SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE = false;
             this.SEARCH_LABEL_RESULT_VALUE = true;
             this.TREE_ENLIST_LEAVES = false;
             this.SEARCH_CONCOLIC = false;
@@ -1115,6 +1121,9 @@ public class MulibConfig {
             return this;
         }
 
+        /**
+         * @see MulibConfig#SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS
+         */
         public MulibConfigBuilder setSOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS(boolean SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS) {
             this.SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS = SOLVER_KEEP_TRACK_OF_ORIGINAL_CONSTRAINTS;
             return this;
@@ -1125,6 +1134,11 @@ public class MulibConfig {
          */
         public boolean isConcolic() {
             return SEARCH_CONCOLIC;
+        }
+
+        public MulibConfigBuilder setSEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE(boolean SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE) {
+            this.SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE = SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE;
+            return this;
         }
 
         /**
@@ -1182,6 +1196,7 @@ public class MulibConfig {
                     TREE_INDENTATION,
                     SEARCH_MAIN_STRATEGY,
                     SEARCH_ADDITIONAL_PARALLEL_STRATEGIES,
+                    SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE,
                     SHUTDOWN_PARALLEL_TIMEOUT_IN_MS,
                     SOLVER_GLOBAL_TYPE,
                     SOLVER_ARGS,
@@ -1254,6 +1269,7 @@ public class MulibConfig {
                         String TREE_INDENTATION,
                         SearchStrategy SEARCH_MAIN_STRATEGY,
                         List<SearchStrategy> SEARCH_ADDITIONAL_PARALLEL_STRATEGIES,
+                        boolean SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE,
                         long SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS,
                         Solvers SOLVER_GLOBAL_TYPE,
                         LinkedHashMap<String, Object> SOLVER_ARGS,
@@ -1319,6 +1335,7 @@ public class MulibConfig {
                         boolean CFG_TERMINATE_EARLY_ON_FULL_COVERAGE,
                         boolean CFG_CREATE_NEXT_EXECUTION_BASED_ON_COVERAGE
     ) {
+        this.SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE = SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE;
         this.SEARCH_LABEL_RESULT_VALUE = SEARCH_LABEL_RESULT_VALUE;
         this.TREE_ENLIST_LEAVES = TREE_ENLIST_LEAVES;
         this.TREE_INDENTATION = TREE_INDENTATION;

@@ -514,6 +514,10 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     }
 
     private Choice.ChoiceOption takeChoiceOptionFromNextAlternatives(List<Choice.ChoiceOption> options) {
+        if (config.SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE) {
+            options = new ArrayList<>(options);
+            Collections.shuffle(options);
+        }
         for (Choice.ChoiceOption choiceOption : options) {
             if (checkIfSatisfiableAndSet(choiceOption)) {
                 return choiceOption;
