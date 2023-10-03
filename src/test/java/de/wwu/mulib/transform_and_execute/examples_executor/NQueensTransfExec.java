@@ -1,14 +1,17 @@
 package de.wwu.mulib.transform_and_execute.examples_executor;
 
+import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.transform_and_execute.examples.NQueensTransf;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.*;
 
@@ -19,6 +22,32 @@ public class NQueensTransfExec {
         TestUtility.getAllSolutions(this::_testNQueens, "solve");
         // Check sequence
         TestUtility.getAllSolutions(this::_testNQueensAlt, "solveAlt");
+    }
+
+    @Test
+    public void testNqueensTransfSolveWithStream() {
+        TestUtility.getAllSolutions( mb -> {
+            Stream<Solution> stream = Mulib.getSolutionStream(
+                    NQueensTransf.class,
+                    "solveAlt",
+                    mb,
+                    new Class[0],
+                    new Object[0]
+            );
+            List<Solution> result = stream.collect(Collectors.toList());
+            assertEquals(92, result.size(), mb.build().toString());
+            assertFalse(
+                    result.parallelStream().anyMatch(s -> {
+                        for (Solution sInner : result) {
+                            if (s == sInner) continue;
+                            if (s.labels.getIdToLabel().equals(sInner.labels.getIdToLabel())) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
+            );
+        }, "solveAltWithStream");
     }
 
     private List<PathSolution> _testNQueens(MulibConfig.MulibConfigBuilder mb) {

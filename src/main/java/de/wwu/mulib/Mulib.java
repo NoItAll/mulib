@@ -2,6 +2,7 @@ package de.wwu.mulib;
 
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
+import de.wwu.mulib.substitutions.PartnerClassThrowable;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.throwables.MulibRuntimeError;
 
@@ -12,6 +13,7 @@ import java.util.logging.ConsoleHandler;
 import java.util.logging.Handler;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import java.util.stream.Stream;
 
 /**
  * The access point of users of Mulib.
@@ -202,6 +204,10 @@ public final class Mulib {
      */
     public static MulibContext getMulibContext(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Object... prototypicalArgs) {
         return generateMulibContext(methodOwnerClass, methodName, null, prototypicalArgs, mb.build());
+    }
+
+    public static Stream<Solution> getSolutionStream(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object[] args) {
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, null, mb.build()).getSolutionStream(1, args);
     }
 
     private static MulibContext generateMulibContext(

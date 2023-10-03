@@ -359,16 +359,18 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return incrementalSolverState.getLevel();
     }
 
+    private boolean canBacktrackForMorePathSolutions = true;
+    private Solution latestSolution = null;
     @Override
-    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N) {
-        Solution latestSolution = initialSolution;
-        // Decrement to account for initialSolution
-        int currentN = N.decrementAndGet();
+    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N, boolean backtrackAfter) {
+        assert latestSolution == null || !canBacktrackForMorePathSolutions;
+        if (latestSolution == null) {
+            latestSolution = initialSolution;
+        }
         if (latestSolution.labels.getIdToLabel().isEmpty()) {
-            return Collections.singletonList(initialSolution); // No named variables --> nothing to negate.
+            return Collections.singletonList(initialSolution);
         }
         List<Solution> solutions = new ArrayList<>();
-        solutions.add(initialSolution);
         Map<String, Sprimitive> rememberedSprimitives = new HashMap<>();
         Substituted unlabeledReturn = initialSolution.labels.getNamedVar("return");
         List<PartnerClassObjectConstraint> allPartnerClassObjectConstraints =
@@ -383,6 +385,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 rememberedSprimitives.put(e.getKey(), (Sprimitive) e.getValue());
             }
         }
+        int currentN = N.get();
         int backtrackAfterwards = 0;
         while (currentN > 0) {
             Labels l = latestSolution.labels;
@@ -403,11 +406,23 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 solutions.add(newSolution);
                 latestSolution = newSolution;
             } else {
+                backtrackAfter = true;
                 break;
             }
         }
-        backtrack(backtrackAfterwards);
+        if (backtrackAfter) {
+            backtrack(backtrackAfterwards);
+            canBacktrackForMorePathSolutions = true;
+            latestSolution = null;
+        } else {
+            canBacktrackForMorePathSolutions = false;
+        }
         return solutions;
+    }
+
+    @Override
+    public boolean canBacktrackForMorePathSolutions() {
+        return canBacktrackForMorePathSolutions;
     }
 
     private List<Constraint> getNeqConstraints(

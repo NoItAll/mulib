@@ -477,7 +477,10 @@ public class CpSatSolverManager extends AbstractIncrementalEnabledSolverManager<
     }
 
     @Override
-    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N) {
+    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N, boolean backtrackAfter) {
+        if (!backtrackAfter) {
+            throw new NotYetImplementedException();
+        }
         if (N.get() == 1) {
             N.decrementAndGet();
             return List.of(initialSolution);

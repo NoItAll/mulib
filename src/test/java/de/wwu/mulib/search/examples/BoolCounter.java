@@ -3,6 +3,7 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
+import de.wwu.mulib.search.executors.MulibExecutor;
 import de.wwu.mulib.throwables.MulibRuntimeException;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.search.trees.ThrowablePathSolution;
@@ -11,16 +12,30 @@ import de.wwu.mulib.solving.Solution;
 import de.wwu.mulib.substitutions.primitives.Sbool;
 import de.wwu.mulib.substitutions.primitives.Sdouble;
 import de.wwu.mulib.substitutions.primitives.Sint;
+import org.junit.jupiter.api.RepeatedTest;
 import org.junit.jupiter.api.Test;
 
+import javax.sound.sampled.BooleanControl;
 import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Queue;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 public class BoolCounter {
+
+    @Test
+    public void testBooleanCounterSized4WithStream() {
+        TestUtility.getAllSolutions(mb -> {
+            mb.setTRANSF_TRANSFORMATION_REQUIRED(false);
+            Stream<Solution> stream = Mulib.getSolutionStream(BoolCounter.class, "_count4", mb, new Class<?>[0], new Object[0]);
+            List<Solution> solutions = stream.collect(Collectors.toList());
+            assertEquals(16, solutions.size());
+        }, "counterWithStream");
+    }
 
     @Test
     public void testBooleanCounterSized4() {

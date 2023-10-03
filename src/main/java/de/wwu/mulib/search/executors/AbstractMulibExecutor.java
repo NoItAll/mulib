@@ -63,7 +63,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     /**
      * Stores true if this instance has terminated and cannot be sensibly called anymore
      */
-    protected boolean terminated = false;
+    protected boolean paused = false;
     /**
      * Stores the solver manager exclusive to this mulib executor
      */
@@ -150,7 +150,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public final void terminate() {
-        terminated = true;
+        paused = true;
         solverManager.shutdown();
     }
 
@@ -203,7 +203,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public Optional<PathSolution> getPathSolution() {
-        while ((!getDeque().isEmpty() && !terminated && !mulibExecutorManager.globalBudgetExceeded())) {
+        while ((!getDeque().isEmpty() && !paused && !mulibExecutorManager.globalBudgetExceeded())) {
             Optional<SymbolicExecution> possibleSymbolicExecution =
                     createExecution();
             if (possibleSymbolicExecution.isPresent()) {
@@ -409,11 +409,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected abstract Optional<Choice.ChoiceOption> selectNextChoiceOption(ChoiceOptionDeque deque);
 
     @Override
-    public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
+    public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N, boolean backtrackAfter) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
         // thus, in general, we must adjust the current choice option
         adjustSolverManagerToNewChoiceOption(searchIn.parentEdge);
-        return solverManager.getUpToNSolutions(searchIn.getSolution(), N);
+        return solverManager.getUpToNSolutions(searchIn.getSolution(), N, backtrackAfter);
     }
 
     @Override
@@ -598,7 +598,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         if (shouldContinueExecution()) {
             result = takeChoiceOptionFromNextAlternatives(options);
         }
-        if (terminated || result == null || isActualIncrementalBudgetExceeded) {
+        if (paused || result == null || isActualIncrementalBudgetExceeded) {
             backtrackOnce();
             // Optional.empty() means backtracking. Is used in ChoicePointFactory.
             return Optional.empty();
@@ -623,5 +623,22 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     public void setStaticField(String fieldName, Object value) {
         assert config.TRANSF_TRANSFORMATION_REQUIRED : "Static variables are only supported if we transform the search region";
         staticVariables.setStaticField(fieldName, value);
+    }
+
+    @Override
+    public void pause() {
+        paused = true;
+    }
+
+    @Override
+    public List<Solution> reenableForMoreSolutions(AtomicInteger N) {
+        paused = false;
+        if (!solverManager.canBacktrackForMorePathSolutions() // There still potentially are solutions on this path
+                && !mulibExecutorManager.globalBudgetExceeded()) {
+            assert this.currentChoiceOption.getChild() instanceof PathSolution;
+            List<Solution> solutions = this.solverManager.getUpToNSolutions(((PathSolution) currentChoiceOption.getChild()).getSolution(), N, false);
+            return solutions;
+        }
+        return Collections.emptyList();
     }
 }

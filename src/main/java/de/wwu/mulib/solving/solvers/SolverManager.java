@@ -114,9 +114,14 @@ public interface SolverManager {
      * Given an initial solution, tries to construct N more solutions in the same constraint system
      * @param initialSolution The initial solution
      * @param N The number of solutions to be retrieved
+     * @param backtrackAfter If set to false, the system does not guarantee, that the constraint system is in a valid
+     *                       state for backtracking to new path solutions. Setting this variable to false is needed when
+     *                       using a stream to extract different solutions from the search region.
      * @return The retrieved solutions
      */
-    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
+    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N, boolean backtrackAfter);
+
+    boolean canBacktrackForMorePathSolutions();
 
     /**
      * Returns metadata information on a non-sarray partner class object and the content of its field

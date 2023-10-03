@@ -155,9 +155,12 @@ public class MultiExecutorsManager extends MulibExecutorManager {
     }
 
     @Override
-    protected boolean checkForTerminationAndTerminate() {
+    protected boolean checkForPauseAndTerminateIfNeeded() {
         checkForFailure();
         if (checkForPause() && idle.size() == mulibExecutors.size() - 1) {
+            if (!shouldStopSinceFullCoverageAchieved() && !nonSolutionBudgetExceeded()) {
+                return true;
+            }
             executorService.shutdown();
             try {
                 boolean terminated = executorService.awaitTermination(config.SHUTDOWN_PARALLEL_TIMEOUT_ON_SHUTDOWN_IN_MS, TimeUnit.MILLISECONDS);

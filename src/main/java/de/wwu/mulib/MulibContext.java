@@ -20,8 +20,11 @@ import java.lang.reflect.Field;
 import java.lang.reflect.Method;
 import java.lang.reflect.Modifier;
 import java.util.*;
+import java.util.function.Consumer;
 import java.util.function.Function;
 import java.util.regex.Matcher;
+import java.util.stream.Stream;
+import java.util.stream.StreamSupport;
 
 /**
  * While retrieving {@link PathSolution}s mostly is a one-off job, i.e., we generate test cases once, retrieving 
@@ -261,6 +264,86 @@ public final class MulibContext {
         TestCasesStringGenerator tcg = new TestCasesStringGenerator(testCases, tcgConfig);
         String result = tcg.generateTestClassStringRepresentation();
         return result;
+    }
+
+    public Stream<Solution> getSolutionStream(int batchSizeOfCachedSolutions, Object... args) {
+        return getSolutionStream(generateNewMulibExecutorManagerForPreInitializedContext(args), batchSizeOfCachedSolutions);
+    }
+
+    private static Stream<Solution> getSolutionStream(MulibExecutorManager mulibExecutorManager, int batchSizeOfCachedSolutions) {
+        return StreamSupport.stream(new SolutionSpliterator(mulibExecutorManager, batchSizeOfCachedSolutions), false);
+    }
+
+    static class SolutionSpliterator implements Spliterator<Solution> {
+        private final SolutionIterator solutionIterator;
+        SolutionSpliterator(MulibExecutorManager mulibExecutorManager, int batchSizeOfCachedSolutions) {
+            this.solutionIterator = new SolutionIterator(mulibExecutorManager, batchSizeOfCachedSolutions);
+        }
+
+        @Override
+        public boolean tryAdvance(Consumer<? super Solution> action) {
+            if (solutionIterator.hasNext()) {
+                Solution s = solutionIterator.next();
+                action.accept(s);
+                return true;
+            }
+            solutionIterator.terminate();
+            return false;
+        }
+
+        @Override
+        public Spliterator<Solution> trySplit() {
+            return null;
+        }
+
+        @Override
+        public long estimateSize() {
+            return 0;
+        }
+
+        @Override
+        public int characteristics() {
+            return 0;
+        }
+    }
+
+    static class SolutionIterator implements Iterator<Solution> {
+        private final MulibExecutorManager mulibExecutorManager;
+        private final int batchSizeOfCachedSolutions;
+        private final ArrayDeque<Solution> solutions = new ArrayDeque<>();
+
+        SolutionIterator(MulibExecutorManager mulibExecutorManager, int batchSizeOfCachedSolutions) {
+            this.mulibExecutorManager = mulibExecutorManager;
+            this.batchSizeOfCachedSolutions = batchSizeOfCachedSolutions;
+        }
+
+        @Override
+        public boolean hasNext() {
+            if (!solutions.isEmpty()) {
+                return true;
+            }
+            // We do not change the remaining system state. Only the state of the MulibExecutorManager is being changed.
+            // Therefore, we hold that the @Pure contract still is maintained, even if calculating new solutions
+            solutions.addAll(mulibExecutorManager.getUpToNSolutions(batchSizeOfCachedSolutions, false));
+            if (solutions.isEmpty()) {
+                mulibExecutorManager.terminate();
+                return false;
+            }
+            return true;
+        }
+
+        @Override
+        public Solution next() {
+            if (!hasNext()) {
+                throw new NoSuchElementException("No more elements");
+            }
+            assert !solutions.isEmpty();
+            return solutions.pop();
+        }
+
+        public void terminate() {
+            mulibExecutorManager.terminate();
+        }
     }
 
     private static Object[] transformArguments(
