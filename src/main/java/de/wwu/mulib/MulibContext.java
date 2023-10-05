@@ -208,7 +208,7 @@ public final class MulibContext {
     /**
      * @param methodUnderTest The method under test
      * @param tcgConfigBuilder The config builder
-     * @param args The arguments
+     * @param args The arguments to the search region, if any
      * @return A String representation of the tests
      * @see Mulib#generateTestCases  
      */
@@ -266,12 +266,30 @@ public final class MulibContext {
         return result;
     }
 
+    /**
+     * Creates a stream for recurrently calculating an undefined number of solutions from the search region.
+     * {@link SolutionIterator} backs this stream.
+     * @param batchSizeOfCachedSolutions The number of solutions that are added to the iterator backing this stream
+     *                                   in a batch-wise fashion. This can be increased to a number > 1 to increase efficiency
+     * @param args The arguments to the search region, if any
+     * @return A non-parallel stream of solutions
+     * @see #getSolutionIterator(int, Object...)
+     */
     public Stream<Solution> getSolutionStream(int batchSizeOfCachedSolutions, Object... args) {
-        return getSolutionStream(generateNewMulibExecutorManagerForPreInitializedContext(args), batchSizeOfCachedSolutions);
+        return StreamSupport.stream(new SolutionSpliterator(generateNewMulibExecutorManagerForPreInitializedContext(args), batchSizeOfCachedSolutions), false);
     }
 
-    private static Stream<Solution> getSolutionStream(MulibExecutorManager mulibExecutorManager, int batchSizeOfCachedSolutions) {
-        return StreamSupport.stream(new SolutionSpliterator(mulibExecutorManager, batchSizeOfCachedSolutions), false);
+    /**
+     * Creates an iterator that has the added option to shut down the used executor manager explicitly.
+     * The used mulib executor manager will terminate either if it can be proven that there are no more solutions
+     * in the search region, of if {@link MulibContext.SolutionIterator#terminate()} is called explicitly.
+     * @param batchSizeOfCachedSolutions The number of solutions that are added to the iterator in a batch-wise fashion.
+     *                                   This can be increased to a number > 1 to increase efficiency
+     * @param args The arguments to the search region, if any
+     * @return An iterator of solutions
+     */
+    public SolutionIterator getSolutionIterator(int batchSizeOfCachedSolutions, Object... args) {
+        return new SolutionIterator(generateNewMulibExecutorManagerForPreInitializedContext(args), batchSizeOfCachedSolutions);
     }
 
     static class SolutionSpliterator implements Spliterator<Solution> {
@@ -307,7 +325,11 @@ public final class MulibContext {
         }
     }
 
-    static class SolutionIterator implements Iterator<Solution> {
+    /**
+     * Implements an iterator using an executor manager to retrieve solutions with.
+     * This type is exposed to offer the {@link #terminate()} method for shutting down the executor manager explicitly.
+     */
+    public static class SolutionIterator implements Iterator<Solution> {
         private final MulibExecutorManager mulibExecutorManager;
         private final int batchSizeOfCachedSolutions;
         private final ArrayDeque<Solution> solutions = new ArrayDeque<>();
@@ -341,6 +363,9 @@ public final class MulibContext {
             return solutions.pop();
         }
 
+        /**
+         * Terminate the executor manager.
+         */
         public void terminate() {
             mulibExecutorManager.terminate();
         }

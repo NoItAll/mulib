@@ -361,11 +361,17 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
 
     private boolean canBacktrackForMorePathSolutions = true;
     private Solution latestSolution = null;
+    private int toBacktrack;
     @Override
-    public List<Solution> getUpToNSolutions(final Solution initialSolution, AtomicInteger N, boolean backtrackAfter) {
+    public List<Solution> getUpToNSolutions(
+            // In the current workflow, "initialSolution" will always be the solution of the path solution
+            // Hence, we cache the latest solution using "this.latestSolution" instead.
+            final Solution initialSolution,
+            AtomicInteger N, boolean backtrackAfter) {
         assert latestSolution == null || !canBacktrackForMorePathSolutions;
         if (latestSolution == null) {
             latestSolution = initialSolution;
+            toBacktrack = 0;
         }
         if (latestSolution.labels.getIdToLabel().isEmpty()) {
             return Collections.singletonList(initialSolution);
@@ -386,7 +392,6 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
         }
         int currentN = N.get();
-        int backtrackAfterwards = 0;
         while (currentN > 0) {
             Labels l = latestSolution.labels;
 
@@ -397,7 +402,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
 
             Constraint newConstraint = Or.newInstance(neqConstraints);
-            backtrackAfterwards++;
+            toBacktrack++;
             addConstraintAfterNewBacktrackingPoint(newConstraint);
             if (isSatisfiable()) {
                 resetLabels();
@@ -411,7 +416,7 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
             }
         }
         if (backtrackAfter) {
-            backtrack(backtrackAfterwards);
+            backtrack(toBacktrack);
             canBacktrackForMorePathSolutions = true;
             latestSolution = null;
         } else {

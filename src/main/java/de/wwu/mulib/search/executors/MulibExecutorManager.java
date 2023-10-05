@@ -232,19 +232,27 @@ public abstract class MulibExecutorManager {
      * Tries to find up to N solutions in the search region. Potentially, multiple solutions reside on the
      * same {@link PathSolution}.
      * Terminates this manager thereafter.
-     * @param N The aspired number of solutions to retrieve
+     * @param N The desired number of solutions to retrieve
      * @return The found solutions
      */
     public synchronized List<Solution> getUpToNSolutions(int N) {
         return getUpToNSolutions(N, true);
     }
 
+    /**
+     * Tries to find up to N solutions in the search region. Potentially, multiple solutions reside on the
+     * same {@link PathSolution}.
+     * @param N The desired number of solutions to retrieve
+     * @param terminateIfNHasBeenFound If true, terminates the manager after finding N solutions.
+     *                                 The manager also terminates if no further choice options can be found.
+     * @return The additional found solutions
+     */
     public synchronized List<Solution> getUpToNSolutions(int N, boolean terminateIfNHasBeenFound) {
         if (numberRequestedSolutions != null) {
             throw new MulibIllegalStateException("The previous request for solutions has not been completed");
         }
         numberRequestedSolutions = new AtomicInteger(N);
-        int currentNumberSolutions = solutions.size();
+        int currentNumberSolutions = numberAlreadyRequestedSolutions;
         this.terminateIfNHasBeenFound = terminateIfNHasBeenFound;
         if (!terminateIfNHasBeenFound) {
             for (MulibExecutor me : new ArrayList<>(mulibExecutors)) { // TODO Avoid copy

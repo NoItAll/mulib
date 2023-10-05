@@ -2,7 +2,6 @@ package de.wwu.mulib;
 
 import de.wwu.mulib.search.trees.PathSolution;
 import de.wwu.mulib.solving.Solution;
-import de.wwu.mulib.substitutions.PartnerClassThrowable;
 import de.wwu.mulib.tcg.TcgConfig;
 import de.wwu.mulib.throwables.MulibRuntimeError;
 
@@ -206,8 +205,34 @@ public final class Mulib {
         return generateMulibContext(methodOwnerClass, methodName, null, prototypicalArgs, mb.build());
     }
 
+    /**
+     * Returns a stream. Said stream can be used to on-demand extract (up to) all solutions of the search region.
+     * The used mulib executor manager will only terminate if it can be proven that there are no more solutions
+     * in the search region.
+     * @param methodName The name of the method that is the search region. The method should be static and accessible
+     * @param methodOwnerClass The class containing the search region named according to methodName
+     * @param mb The config builder from which an instance of MulibConfig is built
+     * @param argTypes The types of the arguments
+     * @param args The arguments
+     * @return A non-parallel stream from which solutions are lazily calculated
+     */
     public static Stream<Solution> getSolutionStream(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object[] args) {
         return generateMulibContext(methodOwnerClass, methodName, argTypes, null, mb.build()).getSolutionStream(1, args);
+    }
+
+    /**
+     * Returns an iterator. Said iterator can be used to on-demand extract (up to) all solutions of the search region.
+     * The used mulib executor manager will terminate either if it can be proven that there are no more solutions
+     * in the search region, of if {@link MulibContext.SolutionIterator#terminate()} is called explicitly.
+     * @param methodName The name of the method that is the search region. The method should be static and accessible
+     * @param methodOwnerClass The class containing the search region named according to methodName
+     * @param mb The config builder from which an instance of MulibConfig is built
+     * @param argTypes The types of the arguments
+     * @param args The arguments
+     * @return An iterator from which solutions are lazily calculated
+     */
+    public static MulibContext.SolutionIterator getSolutionIterator(Class<?> methodOwnerClass, String methodName, MulibConfig.MulibConfigBuilder mb, Class<?>[] argTypes, Object[] args) {
+        return generateMulibContext(methodOwnerClass, methodName, argTypes, null, mb.build()).getSolutionIterator(1, args);
     }
 
     private static MulibContext generateMulibContext(
