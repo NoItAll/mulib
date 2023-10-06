@@ -105,7 +105,6 @@ public abstract class MulibExecutorManager {
      */
     private AtomicInteger numberRequestedSolutions;
     private int numberAlreadyRequestedSolutions;
-    private boolean terminateIfNHasBeenFound;
 
     /**
      * Constructs a new instance
@@ -253,7 +252,6 @@ public abstract class MulibExecutorManager {
         }
         numberRequestedSolutions = new AtomicInteger(N);
         int currentNumberSolutions = numberAlreadyRequestedSolutions;
-        this.terminateIfNHasBeenFound = terminateIfNHasBeenFound;
         if (!terminateIfNHasBeenFound) {
             for (MulibExecutor me : new ArrayList<>(mulibExecutors)) { // TODO Avoid copy
                 this.solutions.addAll(me.reenableForMoreSolutions(numberRequestedSolutions));
