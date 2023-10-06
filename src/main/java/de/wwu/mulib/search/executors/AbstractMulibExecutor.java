@@ -409,11 +409,11 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     protected abstract Optional<Choice.ChoiceOption> selectNextChoiceOption(ChoiceOptionDeque deque);
 
     @Override
-    public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N, boolean backtrackAfter) {
+    public List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N) {
         // The current constraint-representation in the constraint solver will be set to the path-solutions parent,
         // thus, in general, we must adjust the current choice option
         adjustSolverManagerToNewChoiceOption(searchIn.parentEdge);
-        return solverManager.getUpToNSolutions(searchIn.getSolution(), N, backtrackAfter);
+        return solverManager.getUpToNSolutions(searchIn.getSolution(), N);
     }
 
     @Override
@@ -633,10 +633,10 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
     @Override
     public List<Solution> reenableForMoreSolutions(AtomicInteger N) {
         paused = false;
-        if (!solverManager.canBacktrackForMorePathSolutions() // There still potentially are solutions on this path
+        if (!solverManager.mustUseOtherPathSolutionForMoreSolutions() // There still potentially are solutions on this path
                 && !mulibExecutorManager.globalBudgetExceeded()) {
             assert this.currentChoiceOption.getChild() instanceof PathSolution;
-            List<Solution> solutions = this.solverManager.getUpToNSolutions(((PathSolution) currentChoiceOption.getChild()).getSolution(), N, false);
+            List<Solution> solutions = this.solverManager.getUpToNSolutions(((PathSolution) currentChoiceOption.getChild()).getSolution(), N);
             return solutions;
         }
         return Collections.emptyList();

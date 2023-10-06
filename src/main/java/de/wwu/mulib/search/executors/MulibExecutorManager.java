@@ -101,7 +101,7 @@ public abstract class MulibExecutorManager {
 
     /**
      * Can be null.
-     * If not null: {@link MulibExecutor#getUpToNSolutions(PathSolution, AtomicInteger, boolean)} will be called
+     * If not null: {@link MulibExecutor#getUpToNSolutions(PathSolution, AtomicInteger)} will be called
      */
     private AtomicInteger numberRequestedSolutions;
     private int numberAlreadyRequestedSolutions;
@@ -300,7 +300,7 @@ public abstract class MulibExecutorManager {
         if (numberRequestedSolutions != null) {
             this.numberRequestedSolutions.decrementAndGet();
             solutions.add(pathSolution.getSolution());
-            solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions, terminateIfNHasBeenFound));
+            solutions.addAll(responsibleExecutor.getUpToNSolutions(pathSolution, numberRequestedSolutions));
         }
     }
 

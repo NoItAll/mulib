@@ -359,22 +359,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         return incrementalSolverState.getLevel();
     }
 
-    private boolean canBacktrackForMorePathSolutions = true;
     private Solution latestSolution = null;
-    private int toBacktrack;
     @Override
     public List<Solution> getUpToNSolutions(
             // In the current workflow, "initialSolution" will always be the solution of the path solution
             // Hence, we cache the latest solution using "this.latestSolution" instead.
             final Solution initialSolution,
-            AtomicInteger N, boolean backtrackAfter) {
-        assert latestSolution == null || !canBacktrackForMorePathSolutions;
+            AtomicInteger N) {
         if (latestSolution == null) {
             latestSolution = initialSolution;
-            toBacktrack = 0;
-        }
-        if (latestSolution.labels.getIdToLabel().isEmpty()) {
-            return Collections.singletonList(initialSolution);
         }
         List<Solution> solutions = new ArrayList<>();
         Map<String, Sprimitive> rememberedSprimitives = new HashMap<>();
@@ -394,16 +387,15 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
         int currentN = N.get();
         while (currentN > 0) {
             Labels l = latestSolution.labels;
-
             List<Constraint> neqConstraints = getNeqConstraints(l, rememberConstraints, allPartnerClassObjectConstraints);
             if (neqConstraints.isEmpty()) {
                 // Nothing to negate
+                this.latestSolution = null;
                 break;
             }
 
             Constraint newConstraint = Or.newInstance(neqConstraints);
-            toBacktrack++;
-            addConstraintAfterNewBacktrackingPoint(newConstraint);
+            addConstraint(newConstraint);
             if (isSatisfiable()) {
                 resetLabels();
                 Solution newSolution = labelSolution(unlabeledReturn, rememberedSprimitives);
@@ -411,23 +403,16 @@ public abstract class AbstractIncrementalEnabledSolverManager<M, B, AR, PR> impl
                 solutions.add(newSolution);
                 latestSolution = newSolution;
             } else {
-                backtrackAfter = true;
+                this.latestSolution = null;
                 break;
             }
-        }
-        if (backtrackAfter) {
-            backtrack(toBacktrack);
-            canBacktrackForMorePathSolutions = true;
-            latestSolution = null;
-        } else {
-            canBacktrackForMorePathSolutions = false;
         }
         return solutions;
     }
 
     @Override
-    public boolean canBacktrackForMorePathSolutions() {
-        return canBacktrackForMorePathSolutions;
+    public boolean mustUseOtherPathSolutionForMoreSolutions() {
+        return latestSolution == null;
     }
 
     private List<Constraint> getNeqConstraints(

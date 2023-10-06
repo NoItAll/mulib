@@ -54,13 +54,9 @@ public interface MulibExecutor {
      * @param searchIn The path solution on which, aside from the initial solution, other solutions using a different
      *                 labeling might be found.
      * @param N The maximum number of path solutions to retrieve.
-     * @param backtrackAfter If set to true, the {@link SolverManager} will assure that the constraint system
-     *                       is in a state allowing for backtracking using the {@link MulibExecutor}.
-     *                       This is set to false if solutions are extracted recurrently, i.e., with multiple invocations
-     *                       to {@link MulibExecutorManager#getUpToNSolutions(int, boolean)}.
      * @return A list of solutions that could be found for this one path solution
      */
-    List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N, boolean backtrackAfter);
+    List<Solution> getUpToNSolutions(PathSolution searchIn, AtomicInteger N);
 
     /**
      * @return Informative statistics on the execution

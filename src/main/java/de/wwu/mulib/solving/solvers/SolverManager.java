@@ -8,7 +8,6 @@ import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import de.wwu.mulib.substitutions.primitives.Sprimitive;
 
-import java.util.ArrayDeque;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -114,14 +113,14 @@ public interface SolverManager {
      * Given an initial solution, tries to construct N more solutions in the same constraint system
      * @param initialSolution The initial solution
      * @param N The number of solutions to be retrieved
-     * @param backtrackAfter If set to false, the system does not guarantee, that the constraint system is in a valid
-     *                       state for backtracking to new path solutions. Setting this variable to false is needed when
-     *                       using a stream to extract different solutions from the search region.
      * @return The retrieved solutions
      */
-    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N, boolean backtrackAfter);
+    List<Solution> getUpToNSolutions(Solution initialSolution, AtomicInteger N);
 
-    boolean canBacktrackForMorePathSolutions();
+    /**
+     * @return True, if there potentially are more solutions, i.e., valid labelings on the current path solution, else false
+     */
+    boolean mustUseOtherPathSolutionForMoreSolutions();
 
     /**
      * Returns metadata information on a non-sarray partner class object and the content of its field
