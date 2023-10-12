@@ -641,4 +641,9 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
         }
         return Collections.emptyList();
     }
+
+    @Override
+    public StaticVariables getStaticVariables() {
+        return staticVariables;
+    }
 }

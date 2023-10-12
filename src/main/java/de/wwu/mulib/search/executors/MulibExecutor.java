@@ -210,4 +210,9 @@ public interface MulibExecutor {
      */
     void setStaticField(String fieldName, Object value);
 
+    /**
+     * @return The static variables used for this instance.
+     */
+    StaticVariables getStaticVariables();
+
 }
