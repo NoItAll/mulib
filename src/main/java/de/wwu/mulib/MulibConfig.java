@@ -1140,6 +1140,9 @@ public class MulibConfig {
             return SEARCH_CONCOLIC;
         }
 
+        /**
+         * @see MulibConfig#SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE
+         */
         public MulibConfigBuilder setSEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE(boolean SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE) {
             this.SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE = SEARCH_RANDOMIZE_SELECTION_FROM_NEW_CHOICE;
             return this;

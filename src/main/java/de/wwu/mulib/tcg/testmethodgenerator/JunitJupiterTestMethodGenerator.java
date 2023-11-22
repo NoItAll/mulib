@@ -586,7 +586,13 @@ public class JunitJupiterTestMethodGenerator implements TestMethodGenerator {
         return sb.toString();
     }
 
-    private void addAssertion(StringBuilder addTo, Object objectToAssert, String assertWith) {
+    /**
+     * Adds Strings to a StringBuilder describing (an) assertion(s) with the comparison of two values.
+     * @param addTo The StringBuilder to which is added.
+     * @param objectToAssert The object for which an assertion is generated.
+     * @param assertWith The argument name for the object that 'objectToAssert' is compared with.
+     */
+    protected void addAssertion(StringBuilder addTo, Object objectToAssert, String assertWith) {
         String objectName = argumentNamesForObjects.get(objectToAssert);
         assert objectName != null;
         addTo.append(config.INDENT.repeat(2));
