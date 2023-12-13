@@ -2164,7 +2164,7 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
 
         void treatSpecialMethodCallsInClassNodesMethods(SootClass sc) {
             // TODO Hardcoded for now
-            final String methodOwnerToTreatIn = "dacite.core.defuse.DefUseAnalyser";
+            final String methodOwnerToTreatIn = "dacite.core.analysis.DaciteAnalyzer";
             final List<String> methodNamesToAccountFor = List.of(
                     "visitDef", "visitUse", "visitStaticFieldUse", "visitStaticFieldDef",
                     "visitFieldDef", "visitFieldUse",
@@ -2279,9 +2279,9 @@ public class SootMulibTransformer extends AbstractMulibTransformer<SootClass> {
                 SootMethodRef smr = invokeExpr.getMethodRef();
                 String declaringClassName = smr.getDeclaringClass().getName();
                 String methodName = smr.getName();
-                if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("setParameter")) {
+                if (declaringClassName.equals("dacite.core.analysis.ParameterCollector") && methodName.equals("setParameter")) {
                     break;
-                } else if (declaringClassName.equals("dacite.core.defuse.ParameterCollector") && methodName.equals("push")) {
+                } else if (declaringClassName.equals("dacite.core.analysis.ParameterCollector") && methodName.equals("push")) {
                     Value arg = invokeExpr.getArg(0);
                     result.add(arg);
                 }
