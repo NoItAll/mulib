@@ -3,9 +3,9 @@ package de.wwu.mulib.expressions;
 /**
  * Represents the modulo operation of two numbers
  */
-public class Mod extends AbstractOperatorNumericalExpression {
+public class Mod extends AbstractOperatorMathematicalExpression {
 
-    private Mod(NumericalExpression expr0, NumericalExpression expr1) {
+    private Mod(Expression expr0, Expression expr1) {
         super(expr0, expr1);
     }
 
@@ -15,7 +15,7 @@ public class Mod extends AbstractOperatorNumericalExpression {
      * @param expr1 The second number
      * @return A numeric expression representing the modulo expr0%expr1
      */
-    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
+    public static Expression newInstance(Expression expr0, Expression expr1) {
         return new Mod(expr0, expr1);
     }
 

@@ -1,9 +1,9 @@
 package de.wwu.mulib.substitutions;
 
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
-import de.wwu.mulib.throwables.NotYetImplementedException;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 /**
  * Marker interface for those value factories that are concolic
@@ -21,7 +21,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Sshort.SymSshort assignLabel(SymbolicExecution se, Sshort.SymSshort sym);
@@ -29,7 +29,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Sbyte.SymSbyte assignLabel(SymbolicExecution se, Sbyte.SymSbyte sym);
@@ -37,7 +37,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Sint.SymSint assignLabel(SymbolicExecution se, Sint.SymSint sym);
@@ -45,7 +45,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Slong.SymSlong assignLabel(SymbolicExecution se, Slong.SymSlong sym);
@@ -53,7 +53,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Sdouble.SymSdouble assignLabel(SymbolicExecution se, Sdouble.SymSdouble sym);
@@ -61,7 +61,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Sfloat.SymSfloat assignLabel(SymbolicExecution se, Sfloat.SymSfloat sym);
@@ -69,7 +69,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
     /**
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param sym The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     Schar.SymSchar assignLabel(SymbolicExecution se, Schar.SymSchar sym);
@@ -78,7 +78,7 @@ public interface AssignConcolicLabelEnabledValueFactory extends ValueFactory {
      * Simplifies accessing the other methods by providing a case disctinction
      * @param se The current instance of {@link SymbolicExecution} for this run
      * @param n The symbolic value to label
-     * @return A symbolic value that wraps a {@link ConcolicNumericalContainer} with a label
+     * @return A symbolic value that wraps a {@link ConcolicMathematicalContainer} with a label
      * and sym
      */
     default Snumber assignLabel(SymbolicExecution se, SymSnumber n) {

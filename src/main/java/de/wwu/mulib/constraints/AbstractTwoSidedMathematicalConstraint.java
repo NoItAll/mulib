@@ -1,43 +1,43 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
-import de.wwu.mulib.expressions.NumericalExpression;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.SymSnumber;
 
 /**
- * Abstract supertype for those constraints that compare two numeric expressions
+ * Abstract supertype for those constraints that compare two mathematical expressions
  */
-public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpressionConstraint {
+public abstract class AbstractTwoSidedMathematicalConstraint implements TwoSidedExpressionConstraint {
 
-    protected final NumericalExpression lhsExpr;
-    protected final NumericalExpression rhsExpr;
+    protected final Expression lhsExpr;
+    protected final Expression rhsExpr;
 
-    protected AbstractTwoSidedNumericConstraint(NumericalExpression lhsExpr, NumericalExpression rhsExpr) {
+    protected AbstractTwoSidedMathematicalConstraint(Expression lhsExpr, Expression rhsExpr) {
         assert !(lhsExpr instanceof ConcSnumber) || !(rhsExpr instanceof ConcSnumber);
-        assert !(lhsExpr instanceof ConcolicNumericalContainer) && !(rhsExpr instanceof ConcolicNumericalContainer);
+        assert !(lhsExpr instanceof ConcolicMathematicalContainer) && !(rhsExpr instanceof ConcolicMathematicalContainer);
         if (lhsExpr instanceof SymSnumber) {
             lhsExpr = ((SymSnumber) lhsExpr).getRepresentedExpression();
         }
         if (rhsExpr instanceof SymSnumber) {
             rhsExpr = ((SymSnumber) rhsExpr).getRepresentedExpression();
         }
-        assert !(lhsExpr instanceof ConcolicNumericalContainer) && !(rhsExpr instanceof ConcolicNumericalContainer);
+        assert !(lhsExpr instanceof ConcolicMathematicalContainer) && !(rhsExpr instanceof ConcolicMathematicalContainer);
         this.lhsExpr = lhsExpr;
         this.rhsExpr = rhsExpr;
     }
 
-    protected static boolean bothExprAreConcrete(NumericalExpression lhs, NumericalExpression rhs) {
+    protected static boolean bothExprAreConcrete(Expression lhs, Expression rhs) {
         return lhs instanceof ConcSnumber && rhs instanceof ConcSnumber;
     }
 
     @Override
-    public final NumericalExpression getLhs() {
+    public final Expression getLhs() {
         return lhsExpr;
     }
 
     @Override
-    public final NumericalExpression getRhs() {
+    public final Expression getRhs() {
         return rhsExpr;
     }
 
@@ -57,7 +57,7 @@ public abstract class AbstractTwoSidedNumericConstraint implements TwoSidedExpre
         if (!this.getClass().equals(o.getClass())) {
             return false;
         }
-        AbstractTwoSidedNumericConstraint oc = (AbstractTwoSidedNumericConstraint) o;
+        AbstractTwoSidedMathematicalConstraint oc = (AbstractTwoSidedMathematicalConstraint) o;
         return this.getLhs().equals(oc.getLhs()) && this.getRhs().equals(oc.getRhs());
     }
 

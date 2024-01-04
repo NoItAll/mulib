@@ -3,13 +3,13 @@ package de.wwu.mulib.search.examples;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.TestUtility;
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.expressions.Mul;
 import de.wwu.mulib.expressions.Neg;
-import de.wwu.mulib.expressions.NumericalExpression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
-import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.search.trees.PathSolution;
+import de.wwu.mulib.search.trees.ThrowablePathSolution;
 import de.wwu.mulib.substitutions.primitives.Sint;
 import org.junit.jupiter.api.Test;
 
@@ -37,11 +37,11 @@ public class AbsValueMul {
         boolean first = false; boolean second = false; boolean third = false; boolean fourth = false;
         for (PathSolution s : result) {
             Sint.SymSint solContent = (Sint.SymSint) s.getSolution().returnValue;
-            solContent = (Sint.SymSint) ConcolicNumericalContainer.tryGetSymFromConcolic(solContent);
-            NumericalExpression representedExpression = solContent.getRepresentedExpression();
+            solContent = (Sint.SymSint) ConcolicMathematicalContainer.tryGetSymFromConcolic(solContent);
+            Expression representedExpression = solContent.getRepresentedExpression();
             assertTrue(representedExpression instanceof Mul);
-            NumericalExpression expr0 = ((Mul) representedExpression).getExpr0();
-            NumericalExpression expr1 = ((Mul) representedExpression).getExpr1();
+            Expression expr0 = ((Mul) representedExpression).getExpr0();
+            Expression expr1 = ((Mul) representedExpression).getExpr1();
             if (expr0 instanceof Neg && expr1 instanceof Neg) {
                 assertTrue(((Neg) expr0).getWrapped() instanceof Sint.SymSint);
                 assertTrue(((Neg) expr1).getWrapped() instanceof Sint.SymSint);

@@ -7,7 +7,7 @@ import de.wwu.mulib.substitutions.primitives.SymSnumber;
 /**
  * A container mapping a symbolic value to its concrete value for concolic execution.
  */
-public final class ConcolicNumericalContainer implements NumericalExpression {
+public final class ConcolicMathematicalContainer implements Expression {
 
     private final SymSnumber sym;
     private ConcSnumber conc;
@@ -17,7 +17,7 @@ public final class ConcolicNumericalContainer implements NumericalExpression {
      * @param sym The symbolic value
      * @param conc The concrete value that is a valid label of sym
      */
-    public ConcolicNumericalContainer(SymSnumber sym, ConcSnumber conc) {
+    public ConcolicMathematicalContainer(SymSnumber sym, ConcSnumber conc) {
         this.sym = sym;
         this.conc = conc;
     }
@@ -35,7 +35,7 @@ public final class ConcolicNumericalContainer implements NumericalExpression {
     }
 
     /**
-     * @return The label of {@link ConcolicNumericalContainer#getSym()}.
+     * @return The label of {@link ConcolicMathematicalContainer#getSym()}.
      */
     public ConcSnumber getConc() {
         return conc;
@@ -49,8 +49,8 @@ public final class ConcolicNumericalContainer implements NumericalExpression {
     public static Snumber tryGetSymFromConcolic(Snumber ne) {
         if (ne instanceof SymSnumber) {
             SymSnumber sym = (SymSnumber) ne;
-            if (sym.getRepresentedExpression() instanceof ConcolicNumericalContainer) {
-                return ((ConcolicNumericalContainer) sym.getRepresentedExpression()).getSym();
+            if (sym.getRepresentedExpression() instanceof ConcolicMathematicalContainer) {
+                return ((ConcolicMathematicalContainer) sym.getRepresentedExpression()).getSym();
             }
         }
         return ne;
@@ -61,9 +61,9 @@ public final class ConcolicNumericalContainer implements NumericalExpression {
      * @param ne The NumericExpression potentially carrying a concolic constraint container
      * @return A ConcSnumber
      */
-    public static ConcSnumber getConcNumericFromConcolic(NumericalExpression ne) {
+    public static ConcSnumber getConcNumericFromConcolic(Expression ne) {
         return ne instanceof SymSnumber ?
-                ((ConcolicNumericalContainer) ((SymSnumber) ne).getRepresentedExpression()).getConc()
+                ((ConcolicMathematicalContainer) ((SymSnumber) ne).getRepresentedExpression()).getConc()
                 :
                 (ConcSnumber) ne;
     }
@@ -80,6 +80,6 @@ public final class ConcolicNumericalContainer implements NumericalExpression {
 
     @Override
     public boolean equals(Object o) {
-        return o instanceof ConcolicNumericalContainer && ((ConcolicNumericalContainer) o).getSym() == sym;
+        return o instanceof ConcolicMathematicalContainer && ((ConcolicMathematicalContainer) o).getSym() == sym;
     }
 }

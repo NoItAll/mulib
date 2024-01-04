@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericalExpression;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.substitutions.ValueFactory;
 
 import java.util.concurrent.atomic.AtomicLong;
@@ -45,7 +45,7 @@ public abstract class Sbyte extends Sint {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Sbyte.SymSbyte newExpressionSymbolicSbyte(NumericalExpression representedExpression) {
+    public static Sbyte.SymSbyte newExpressionSymbolicSbyte(Expression representedExpression) {
         return new Sbyte.SymSbyte(representedExpression);
     }
 
@@ -113,18 +113,18 @@ public abstract class Sbyte extends Sint {
      * Class for wrapping numeric expressions
      */
     public static class SymSbyte extends Sbyte implements SymSnumber {
-        private final NumericalExpression representedExpression;
+        private final Expression representedExpression;
 
         private SymSbyte() {
             this.representedExpression = this;
         }
 
-        private SymSbyte(NumericalExpression representedExpression) {
+        private SymSbyte(Expression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public NumericalExpression getRepresentedExpression() {
+        public Expression getRepresentedExpression() {
             return representedExpression;
         }
 

@@ -2,12 +2,12 @@ package de.wwu.mulib.search.executors;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
-import de.wwu.mulib.throwables.NotYetImplementedException;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
 import de.wwu.mulib.solving.ArrayInformation;
 import de.wwu.mulib.solving.PartnerClassObjectInformation;
 import de.wwu.mulib.substitutions.*;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 import java.util.*;
 import java.util.function.Function;
@@ -213,7 +213,7 @@ public abstract class AbstractCalculationFactory implements CalculationFactory {
 
     /**
      * Used to get the value to represent for the constraint solver. If the value is a {@link PartnerClass},
-     * the identifier is returned. A pure value must be returned, i.e., wrapping such as {@link ConcolicNumericalContainer}
+     * the identifier is returned. A pure value must be returned, i.e., wrapping such as {@link ConcolicMathematicalContainer}
      * or {@link ConcolicConstraintContainer} must be unpacked.
      * @param value The value
      * @return The Sprimitive representing the value

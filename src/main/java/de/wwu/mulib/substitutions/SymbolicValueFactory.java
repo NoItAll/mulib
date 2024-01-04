@@ -2,7 +2,7 @@ package de.wwu.mulib.substitutions;
 
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.expressions.NumericalExpression;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.primitives.*;
 
@@ -223,64 +223,64 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    public Sint.SymSint wrappingSymSint(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Sint.SymSint wrappingSymSint(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Sint::newExpressionSymbolicSint,
-                numericalExpression,
+                expression,
                 optionalSintRestriction(se, config)
         );
     }
 
     @Override
-    public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Sdouble.SymSdouble wrappingSymSdouble(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Sdouble::newExpressionSymbolicSdouble,
-                numericalExpression,
+                expression,
                 optionalSdoubleRestriction(se, config)
         );
     }
 
     @Override
-    public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Sfloat.SymSfloat wrappingSymSfloat(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Sfloat::newExpressionSymbolicSfloat,
-                numericalExpression,
+                expression,
                 optionalSfloatRestriction(se, config)
         );
     }
 
     @Override
-    public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Slong.SymSlong wrappingSymSlong(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Slong::newExpressionSymbolicSlong,
-                numericalExpression,
+                expression,
                 optionalSlongRestriction(se, config)
         );
     }
 
     @Override
-    public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Sshort.SymSshort wrappingSymSshort(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Sshort::newExpressionSymbolicSshort,
-                numericalExpression,
+                expression,
                 optionalSshortRestriction(se, config)
         );
     }
 
     @Override
-    public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Sbyte.SymSbyte wrappingSymSbyte(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Sbyte::newExpressionSymbolicSbyte,
-                numericalExpression,
+                expression,
                 optionalSbyteRestriction(se, config)
         );
     }
 
     @Override
-    public Schar wrappingSymSchar(SymbolicExecution se, NumericalExpression numericalExpression) {
+    public Schar wrappingSymSchar(SymbolicExecution se, Expression expression) {
         return returnWrapperIfExistsElseCreate(
                 Schar::newExpressionSymbolicSchar,
-                numericalExpression,
+                expression,
                 optionalScharRestriction(se, config)
         );
     }
@@ -295,7 +295,7 @@ public class SymbolicValueFactory extends AbstractValueFactory {
     }
 
     @Override
-    public Sint.SymSint cmp(SymbolicExecution se, NumericalExpression n0, NumericalExpression n1) {
+    public Sint.SymSint cmp(SymbolicExecution se, Expression n0, Expression n1) {
         return returnIfExistsElseCreate(
                 createdAtomicSymSints,
                 Sint::newInputSymbolicSint,
@@ -307,8 +307,8 @@ public class SymbolicValueFactory extends AbstractValueFactory {
 
     private static Sint.SymSint cmpDomain(
             SymbolicExecution se,
-            final NumericalExpression n0,
-            final NumericalExpression n1,
+            final Expression n0,
+            final Expression n1,
             final Sint.SymSint toRestrict) {
         if (!se.nextIsOnKnownPath()) {
             assert !se.getCurrentChoiceOption().isEvaluated();

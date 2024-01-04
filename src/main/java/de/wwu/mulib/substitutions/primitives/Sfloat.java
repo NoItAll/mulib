@@ -1,6 +1,6 @@
 package de.wwu.mulib.substitutions.primitives;
 
-import de.wwu.mulib.expressions.NumericalExpression;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.search.executors.SymbolicExecution;
 import de.wwu.mulib.substitutions.ValueFactory;
 
@@ -47,7 +47,7 @@ public abstract class Sfloat extends Sfpnumber {
      * @param representedExpression The numeric expression to wrap
      * @return A symbolic value wrapping a numeric expression
      */
-    public static Sfloat.SymSfloat newExpressionSymbolicSfloat(NumericalExpression representedExpression) {
+    public static Sfloat.SymSfloat newExpressionSymbolicSfloat(Expression representedExpression) {
         return new SymSfloat(representedExpression);
     }
 
@@ -351,18 +351,18 @@ public abstract class Sfloat extends Sfpnumber {
      * Class for wrapping numeric expressions
      */
     public static class SymSfloat extends Sfloat implements SymSnumber {
-        private final NumericalExpression representedExpression;
+        private final Expression representedExpression;
 
         private SymSfloat() {
             this.representedExpression = this;
         }
 
-        private SymSfloat(NumericalExpression representedExpression) {
+        private SymSfloat(Expression representedExpression) {
             this.representedExpression = representedExpression;
         }
 
         @Override
-        public final NumericalExpression getRepresentedExpression() {
+        public final Expression getRepresentedExpression() {
             return representedExpression;
         }
 

@@ -350,7 +350,7 @@ public class CpSatSolverManager extends AbstractIncrementalEnabledSolverManager<
     }
 
     private long currentVarId = 0;
-    private LinearArgument transformNumericalExpression(NumericalExpression s) {
+    private LinearArgument transformNumericalExpression(Expression s) {
         if (s instanceof SymSnumber) {
             s = ((SymSnumber) s).getRepresentedExpression();
         }
@@ -388,8 +388,8 @@ public class CpSatSolverManager extends AbstractIncrementalEnabledSolverManager<
             IntVar i = getModelWithConstraints().newIntVar(lb, ub, "neg_"+currentVarId++);
             getModelWithConstraints().addMultiplicationEquality(i, getModelWithConstraints().newConstant(-1), la);
             return i;
-        } else if (s instanceof AbstractOperatorNumericalExpression) {
-            AbstractOperatorNumericalExpression a = (AbstractOperatorNumericalExpression) s;
+        } else if (s instanceof AbstractOperatorMathematicalExpression) {
+            AbstractOperatorMathematicalExpression a = (AbstractOperatorMathematicalExpression) s;
             Supplier<IntVar> intVarSupplier = () -> getModelWithConstraints().newIntVar(lb, ub, "i_"+currentVarId++);
             IntVar intVar;
             if (s instanceof Mod) {
@@ -405,7 +405,7 @@ public class CpSatSolverManager extends AbstractIncrementalEnabledSolverManager<
                 getModelWithConstraints().addDivisionEquality(intVar, lhs, rhs);
                 return intVar;
             }
-            List<NumericalExpression> unrolled = a.unrollSameType();
+            List<Expression> unrolled = a.unrollSameType();
             LinearArgument[] u = unrolled.stream().map(this::transformNumericalExpression).toArray(LinearArgument[]::new);
             LinearExprBuilder le = LinearExpr.newBuilder();
             if (s instanceof Sum) {
@@ -424,11 +424,11 @@ public class CpSatSolverManager extends AbstractIncrementalEnabledSolverManager<
                 throw new NotYetImplementedException(s.toString());
             }
             return intVar;
-        } else if (s instanceof NumericalIte) {
+        } else if (s instanceof ExpressionIte) {
             IntVar intVar = getModelWithConstraints().newIntVar(lb, ub, "i_"+currentVarId++);
-            LinearArgument ifc = transformNumericalExpression(((NumericalIte) s).getIfCase());
-            LinearArgument elsec = transformNumericalExpression(((NumericalIte) s).getElseCase());
-            Literal l = getLiteralRepresentingConstraintIfNeeded(((NumericalIte) s).getCondition());
+            LinearArgument ifc = transformNumericalExpression(((ExpressionIte) s).getIfCase());
+            LinearArgument elsec = transformNumericalExpression(((ExpressionIte) s).getElseCase());
+            Literal l = getLiteralRepresentingConstraintIfNeeded(((ExpressionIte) s).getCondition());
             com.google.ortools.sat.Constraint ifconEq = getModelWithConstraints().addEquality(intVar, ifc);
             com.google.ortools.sat.Constraint elseconEq = getModelWithConstraints().addEquality(intVar, elsec);
             Literal enforceIf = spawnRepresentationBoolVar();

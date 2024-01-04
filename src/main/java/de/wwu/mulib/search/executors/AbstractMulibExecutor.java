@@ -7,7 +7,7 @@ import de.wwu.mulib.constraints.And;
 import de.wwu.mulib.constraints.Constraint;
 import de.wwu.mulib.constraints.Not;
 import de.wwu.mulib.constraints.PartnerClassObjectConstraint;
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.Backtrack;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
@@ -279,7 +279,7 @@ public abstract class AbstractMulibExecutor implements MulibExecutor {
 
     @Override
     public void rememberSprimitive(String name, Sprimitive remembered) {
-        rememberedSprimitives.put(name, ConcolicNumericalContainer.tryGetSymFromConcolic((Snumber) remembered));
+        rememberedSprimitives.put(name, ConcolicMathematicalContainer.tryGetSymFromConcolic((Snumber) remembered));
     }
 
     private static Object[] copyArguments(

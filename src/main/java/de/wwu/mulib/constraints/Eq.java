@@ -1,6 +1,6 @@
 package de.wwu.mulib.constraints;
 
-import de.wwu.mulib.expressions.NumericalExpression;
+import de.wwu.mulib.expressions.Expression;
 import de.wwu.mulib.search.NumberUtil;
 import de.wwu.mulib.substitutions.primitives.ConcSnumber;
 import de.wwu.mulib.substitutions.primitives.Sbool;
@@ -8,9 +8,9 @@ import de.wwu.mulib.substitutions.primitives.Sbool;
 /**
  * Represents the equality between two numeric expressions, i.e., n0 == n1
  */
-public class Eq extends AbstractTwoSidedNumericConstraint {
+public class Eq extends AbstractTwoSidedMathematicalConstraint {
 
-    private Eq(NumericalExpression lhs, NumericalExpression rhs) {
+    private Eq(Expression lhs, Expression rhs) {
         super(lhs, rhs);
     }
 
@@ -20,7 +20,7 @@ public class Eq extends AbstractTwoSidedNumericConstraint {
      * @param rhs The right-hand side
      * @return A constraint that is either simplified or lhs == rhs
      */
-    public static Constraint newInstance(NumericalExpression lhs, NumericalExpression rhs) {
+    public static Constraint newInstance(Expression lhs, Expression rhs) {
         if (bothExprAreConcrete(lhs, rhs)) {
             return Sbool.concSbool(NumberUtil.eq((ConcSnumber) lhs, (ConcSnumber) rhs));
         } else if (lhs == rhs) {

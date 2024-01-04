@@ -102,6 +102,9 @@ public final class ExamplesExecutor {
                 case "P3":
                     pathSolutions = runPartition3(b);
                     break;
+                case "P3_FreeArrays":
+                    pathSolutions = runThreePartition(b);
+                    break;
                 case "H":
                     pathSolutions = runHanoi(b);
                     break;
@@ -315,7 +318,7 @@ public final class ExamplesExecutor {
 
 
     private static List<PathSolution> runPartition3(MulibConfig.MulibConfigBuilder builder) {
-        return Mulib.getPathSolutions(Partition3.class, "exec", builder);
+        return Mulib.getPathSolutions(Partition3.class, "exec", builder.setBUDGET_MAX_PATH_SOLUTIONS(1));
     }
 
     private static List<PathSolution> runWBS(MulibConfig.MulibConfigBuilder builder) {
@@ -333,6 +336,19 @@ public final class ExamplesExecutor {
 
     private static List<PathSolution> runGraphColoring(MulibConfig.MulibConfigBuilder builder) {
         return Mulib.getPathSolutions(GraphColoring.class, "exec", builder);
+    }
+
+    private static List<PathSolution> runThreePartition(MulibConfig.MulibConfigBuilder builder) {
+        List<Solution> solutions = Mulib.getUpToNSolutions(ThreePartition.class, "execute", builder, 10, new Class[] {int[].class}, new Object[] {new int[] {0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14}});
+
+        Mulib.log.info("#Sols " + solutions.size());
+        for (Solution s : solutions) {
+            int[][] result = (int[][]) s.returnValue;
+            for (int[] r : result) {
+                Mulib.log.info(Arrays.toString(r));
+            }
+        }
+        return List.of();
     }
 
     private static List<PathSolution> runPrimitiveEncodingCapacityAssignment(

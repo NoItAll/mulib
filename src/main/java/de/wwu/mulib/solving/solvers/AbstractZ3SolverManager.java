@@ -3,12 +3,12 @@ package de.wwu.mulib.solving.solvers;
 import com.microsoft.z3.*;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.throwables.MisconfigurationException;
-import de.wwu.mulib.throwables.MulibRuntimeException;
-import de.wwu.mulib.throwables.NotYetImplementedException;
 import de.wwu.mulib.expressions.*;
 import de.wwu.mulib.substitutions.Substituted;
 import de.wwu.mulib.substitutions.primitives.*;
+import de.wwu.mulib.throwables.MisconfigurationException;
+import de.wwu.mulib.throwables.MulibRuntimeException;
+import de.wwu.mulib.throwables.NotYetImplementedException;
 
 import java.math.BigInteger;
 import java.util.Arrays;
@@ -140,12 +140,12 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
         Expr expr = var instanceof Constraint ?
                 adapter.getBoolExprForConstraint((Constraint) var)
                 :
-                adapter.getExprForNumericExpression((NumericalExpression) var);
+                adapter.getExprForNumericExpression((Expression) var);
         if (expr == null) {
             if (var instanceof Constraint) {
                 expr = adapter.transformConstraint((Constraint) var);
             } else {
-                expr = adapter.transformNumericExpr((NumericalExpression) var);
+                expr = adapter.transformNumericExpr((Expression) var);
             }
         }
         assert expr != null;
@@ -197,7 +197,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
      */
     protected static final class Z3MulibAdapter {
         final Context ctx;
-        private final Map<NumericalExpression, Expr> numericExpressionsStore = new HashMap<>();
+        private final Map<Expression, Expr> numericExpressionsStore = new HashMap<>();
         // Constraint --> BoolExpr; if booleans are used in {0,1}-encoding (due to them appearing in arithmetic operations)
         // it can also be Expr --> BoolExpr, where Expr is the 0,1-encoding-integer.
         private final Map<Object, BoolExpr> boolExprStore = new HashMap<>();
@@ -208,7 +208,7 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             this.ctx = ctx;
         }
 
-        Expr getExprForNumericExpression(NumericalExpression ne) {
+        Expr getExprForNumericExpression(Expression ne) {
             return numericExpressionsStore.get(ne);
         }
 
@@ -225,8 +225,8 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                 result = transformSbool((Sbool) c);
             } else if (c instanceof Not) {
                 result = ctx.mkNot(transformConstraint(((Not) c).getConstraint()));
-            } else if (c instanceof AbstractTwoSidedNumericConstraint) {
-                result = transformAbstractNumericTwoSidedConstraint((AbstractTwoSidedNumericConstraint) c);
+            } else if (c instanceof AbstractTwoSidedMathematicalConstraint) {
+                result = transformAbstractNumericTwoSidedConstraint((AbstractTwoSidedMathematicalConstraint) c);
             } else if (c instanceof AbstractTwoSidedConstraint) {
                 result = transformAbstractTwoSidedConstraint((AbstractTwoSidedConstraint) c);
             } else if (c instanceof BoolIte) {
@@ -278,9 +278,9 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             }
         }
 
-        private BoolExpr transformAbstractNumericTwoSidedConstraint(AbstractTwoSidedNumericConstraint a) {
-            NumericalExpression lhs = a.getLhs();
-            NumericalExpression rhs = a.getRhs();
+        private BoolExpr transformAbstractNumericTwoSidedConstraint(AbstractTwoSidedMathematicalConstraint a) {
+            Expression lhs = a.getLhs();
+            Expression rhs = a.getRhs();
             Expr elhs = transformNumericExpr(lhs);
             Expr erhs = transformNumericExpr(rhs);
             BoolExpr result;
@@ -301,17 +301,17 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
          * @param n The numeric expression
          * @return The Z3 representation of n
          */
-        public Expr transformNumericExpr(NumericalExpression n) {
+        public Expr transformNumericExpr(Expression n) {
             Expr result;
-            if (n instanceof AbstractOperatorNumericalExpression) {
+            if (n instanceof AbstractOperatorMathematicalExpression) {
                 result = numericExpressionsStore.get(n);
                 if (result != null) {
                     return result;
                 }
 
-                AbstractOperatorNumericalExpression o = (AbstractOperatorNumericalExpression) n;
-                NumericalExpression lhs = o.getExpr0();
-                NumericalExpression rhs = o.getExpr1();
+                AbstractOperatorMathematicalExpression o = (AbstractOperatorMathematicalExpression) n;
+                Expression lhs = o.getExpr0();
+                Expression rhs = o.getExpr1();
                 Expr elhs = transformNumericExpr(lhs);
                 Expr erhs = transformNumericExpr(rhs);
                 if (n instanceof Sum) {
@@ -335,11 +335,11 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
                     assert lhsIsLong == rhsIsLong;
                     BitVecExpr bvlhs = ctx.mkInt2BV(lhsIsLong ? 64 : 32, ilhs);
                     BitVecExpr bvrhs = ctx.mkInt2BV(rhsIsLong ? 64 : 32, irhs);
-                    if (n instanceof NumericalAnd) {
+                    if (n instanceof BitwiseAnd) {
                         result = ctx.mkBVAND(bvlhs, bvrhs);
-                    } else if (n instanceof NumericalOr) {
+                    } else if (n instanceof BitwiseOr) {
                         result = ctx.mkBVOR(bvlhs, bvrhs);
-                    } else if (n instanceof NumericalXor) {
+                    } else if (n instanceof BitwiseXor) {
                         result = ctx.mkBVXOR(bvlhs, bvrhs);
                     } else if (n instanceof ShiftLeft) {
                         result = ctx.mkBVSHL(bvlhs, bvrhs);
@@ -356,12 +356,12 @@ public abstract class AbstractZ3SolverManager extends AbstractIncrementalEnabled
             } else if (n instanceof Neg) {
                 result = ctx.mkUnaryMinus((ArithExpr) transformNumericExpr(((Neg) n).getWrapped()));
                 numericExpressionsStore.put(n, result);
-            } else if (n instanceof NumericalIte) {
-                NumericalIte ite = (NumericalIte) n;
+            } else if (n instanceof ExpressionIte) {
+                ExpressionIte expressionIte = (ExpressionIte) n;
                 result = ctx.mkITE(
-                        transformConstraint(ite.getCondition()),
-                        transformNumericExpr(ite.getIfCase()),
-                        transformNumericExpr(ite.getElseCase())
+                        transformConstraint(expressionIte.getCondition()),
+                        transformNumericExpr(expressionIte.getIfCase()),
+                        transformNumericExpr(expressionIte.getElseCase())
                 );
                 numericExpressionsStore.put(n, result);
             } else if (n instanceof Snumber) {

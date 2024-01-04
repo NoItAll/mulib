@@ -9,16 +9,16 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Abstract supertype for all those numeric expressions that consist of two numeric expressions and an operator
+ * Abstract supertype for all those mathematical expressions that consist of two mathematical expressions and an operator
  */
-public abstract class AbstractOperatorNumericalExpression implements NumericalExpression, Sym {
+public abstract class AbstractOperatorMathematicalExpression implements Expression, Sym {
 
-    protected final NumericalExpression expr0;
-    protected final NumericalExpression expr1;
+    protected final Expression expr0;
+    protected final Expression expr1;
 
-    protected AbstractOperatorNumericalExpression(NumericalExpression expr0, NumericalExpression expr1) {
+    protected AbstractOperatorMathematicalExpression(Expression expr0, Expression expr1) {
         assert !(expr0 instanceof ConcSnumber) || !(expr1 instanceof ConcSnumber);
-        assert !(expr0 instanceof ConcolicNumericalContainer) && !(expr1 instanceof ConcolicNumericalContainer);
+        assert !(expr0 instanceof ConcolicMathematicalContainer) && !(expr1 instanceof ConcolicMathematicalContainer);
         if (expr0 instanceof SymSnumber) {
             expr0 = ((SymSnumber) expr0).getRepresentedExpression();
         }
@@ -32,14 +32,14 @@ public abstract class AbstractOperatorNumericalExpression implements NumericalEx
     /**
      * @return The first expression
      */
-    public final NumericalExpression getExpr0() {
+    public final Expression getExpr0() {
         return expr0;
     }
 
     /**
      * @return The second expression
      */
-    public final NumericalExpression getExpr1() {
+    public final Expression getExpr1() {
         return expr1;
     }
 
@@ -69,7 +69,7 @@ public abstract class AbstractOperatorNumericalExpression implements NumericalEx
         if (!this.getClass().equals(o.getClass())) {
             return false;
         }
-        AbstractOperatorNumericalExpression oc = (AbstractOperatorNumericalExpression) o;
+        AbstractOperatorMathematicalExpression oc = (AbstractOperatorMathematicalExpression) o;
         return this.getExpr0().equals(oc.getExpr0()) && this.getExpr1().equals(oc.getExpr1());
     }
 
@@ -79,21 +79,21 @@ public abstract class AbstractOperatorNumericalExpression implements NumericalEx
      * ((n0 + n1) + (n2 * n3)), [n0, n1, (n2 * n3)] is returned.
      * @return A list of expressions
      */
-    public List<NumericalExpression> unrollSameType() {
-        List<NumericalExpression> result = new ArrayList<>();
+    public List<Expression> unrollSameType() {
+        List<Expression> result = new ArrayList<>();
 
-        ArrayDeque<AbstractOperatorNumericalExpression> sameType = new ArrayDeque<>();
+        ArrayDeque<AbstractOperatorMathematicalExpression> sameType = new ArrayDeque<>();
         sameType.add(this);
         Class<?> thisClass = getClass();
         while (!sameType.isEmpty()) {
-            AbstractOperatorNumericalExpression n = sameType.poll();
+            AbstractOperatorMathematicalExpression n = sameType.poll();
             if (n.getExpr0().getClass() == thisClass) {
-                sameType.add((AbstractOperatorNumericalExpression) n.getExpr0());
+                sameType.add((AbstractOperatorMathematicalExpression) n.getExpr0());
             } else {
                 result.add(n.getExpr0());
             }
             if (n.getExpr1().getClass() == thisClass) {
-                sameType.add((AbstractOperatorNumericalExpression) n.getExpr1());
+                sameType.add((AbstractOperatorMathematicalExpression) n.getExpr1());
             } else {
                 result.add(n.getExpr1());
             }

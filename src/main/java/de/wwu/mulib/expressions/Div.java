@@ -3,9 +3,9 @@ package de.wwu.mulib.expressions;
 /**
  * Represents the divison of two numbers
  */
-public class Div extends AbstractOperatorNumericalExpression {
+public class Div extends AbstractOperatorMathematicalExpression {
 
-    private Div(NumericalExpression lhsExpr, NumericalExpression rhsExpr) {
+    private Div(Expression lhsExpr, Expression rhsExpr) {
         super(lhsExpr, rhsExpr);
     }
 
@@ -15,7 +15,7 @@ public class Div extends AbstractOperatorNumericalExpression {
      * @param expr1 The second number
      * @return A numeric expression representing the division expr0/expr1
      */
-    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
+    public static Expression newInstance(Expression expr0, Expression expr1) {
         return new Div(expr0, expr1);
     }
 

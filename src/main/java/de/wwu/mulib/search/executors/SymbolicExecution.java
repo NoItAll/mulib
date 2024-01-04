@@ -3,7 +3,7 @@ package de.wwu.mulib.search.executors;
 import de.wwu.mulib.Mulib;
 import de.wwu.mulib.MulibConfig;
 import de.wwu.mulib.constraints.*;
-import de.wwu.mulib.expressions.ConcolicNumericalContainer;
+import de.wwu.mulib.expressions.ConcolicMathematicalContainer;
 import de.wwu.mulib.search.budget.ExecutionBudgetManager;
 import de.wwu.mulib.search.choice_points.ChoicePointFactory;
 import de.wwu.mulib.search.trees.Choice;
@@ -18,7 +18,9 @@ import de.wwu.mulib.substitutions.ValueFactory;
 import de.wwu.mulib.substitutions.primitives.*;
 import de.wwu.mulib.throwables.MulibIllegalStateException;
 
-import java.util.*;
+import java.util.ArrayDeque;
+import java.util.List;
+import java.util.Optional;
 import java.util.function.Supplier;
 
 /**
@@ -1232,7 +1234,7 @@ public final class SymbolicExecution {
                     return Sbool.ConcSbool.TRUE;
                 }
             }
-            i = (Sint) ConcolicNumericalContainer.tryGetSymFromConcolic(i);
+            i = (Sint) ConcolicMathematicalContainer.tryGetSymFromConcolic(i);
             Sbool representingSymSbool = symSbool();
             if (!nextIsOnKnownPath()) {
                 // TODO Usually, we should also employ modulo...however, this would be rather expensive, so for now

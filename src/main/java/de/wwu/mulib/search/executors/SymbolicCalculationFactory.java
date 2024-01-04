@@ -553,7 +553,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) i0).intVal() ^ ((ConcSnumber) i1).intVal());
         }
-        return valueFactory.wrappingSymSint(se, NumericalXor.newInstance(i0, i1));
+        return valueFactory.wrappingSymSint(se, BitwiseXor.newInstance(i0, i1));
     }
 
     @Override
@@ -561,7 +561,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (i0 instanceof ConcSnumber && i1 instanceof ConcSnumber) {
             return Sint.concSint(((ConcSnumber) i0).intVal() | ((ConcSnumber) i1).intVal());
         }
-        return valueFactory.wrappingSymSint(se, NumericalOr.newInstance(i0, i1));
+        return valueFactory.wrappingSymSint(se, BitwiseOr.newInstance(i0, i1));
     }
 
     @Override
@@ -601,7 +601,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) l0).longVal() ^ ((ConcSnumber) l1).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, NumericalXor.newInstance(l0, l1));
+        return valueFactory.wrappingSymSlong(se, BitwiseXor.newInstance(l0, l1));
     }
 
     @Override
@@ -609,7 +609,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) l0).longVal() | ((ConcSnumber) l1).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, NumericalOr.newInstance(l0, l1));
+        return valueFactory.wrappingSymSlong(se, BitwiseOr.newInstance(l0, l1));
     }
 
     @Override
@@ -625,7 +625,7 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         if (l0 instanceof ConcSnumber && l1 instanceof ConcSnumber) {
             return Slong.concSlong(((ConcSnumber) l0).longVal() & ((ConcSnumber) l1).longVal());
         }
-        return valueFactory.wrappingSymSlong(se, NumericalAnd.newInstance(l0, l1));
+        return valueFactory.wrappingSymSlong(se, BitwiseAnd.newInstance(l0, l1));
     }
 
     @Override
@@ -642,27 +642,27 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         se.addNewConstraint(indexInBounds);
     }
 
-    private NumericalExpression sum(NumericalExpression lhs, NumericalExpression rhs) {
+    private Expression sum(Expression lhs, Expression rhs) {
         return Sum.newInstance(lhs, rhs);
     }
 
-    private NumericalExpression sub(NumericalExpression lhs, NumericalExpression rhs) {
+    private Expression sub(Expression lhs, Expression rhs) {
         return Sub.newInstance(lhs, rhs);
     }
 
-    private NumericalExpression mul(NumericalExpression lhs, NumericalExpression rhs) {
+    private Expression mul(Expression lhs, Expression rhs) {
         return Mul.newInstance(lhs, rhs);
     }
 
-    private NumericalExpression div(NumericalExpression lhs, NumericalExpression rhs) {
+    private Expression div(Expression lhs, Expression rhs) {
         return Div.newInstance(lhs, rhs);
     }
 
-    private NumericalExpression mod(NumericalExpression lhs, NumericalExpression rhs) {
+    private Expression mod(Expression lhs, Expression rhs) {
         return Mod.newInstance(lhs, rhs);
     }
 
-    private NumericalExpression neg(NumericalExpression n) {
+    private Expression neg(Expression n) {
         return Neg.neg(n);
     }
 
@@ -678,15 +678,15 @@ public class SymbolicCalculationFactory extends AbstractCalculationFactory {
         return Not.newInstance(b);
     }
 
-    private Constraint lt(NumericalExpression lhs, NumericalExpression rhs) {
+    private Constraint lt(Expression lhs, Expression rhs) {
         return Lt.newInstance(lhs, rhs);
     }
 
-    private Constraint lte(NumericalExpression lhs, NumericalExpression rhs) {
+    private Constraint lte(Expression lhs, Expression rhs) {
         return Lte.newInstance(lhs, rhs);
     }
 
-    private Constraint eq(NumericalExpression lhs, NumericalExpression rhs) {
+    private Constraint eq(Expression lhs, Expression rhs) {
         return Eq.newInstance(lhs, rhs);
     }
 }

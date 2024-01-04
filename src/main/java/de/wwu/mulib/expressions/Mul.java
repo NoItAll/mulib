@@ -3,9 +3,9 @@ package de.wwu.mulib.expressions;
 /**
  * Represents the multiplication of two numbers
  */
-public class Mul extends AbstractOperatorNumericalExpression {
+public class Mul extends AbstractOperatorMathematicalExpression {
 
-    private Mul(NumericalExpression expr0, NumericalExpression expr1) {
+    private Mul(Expression expr0, Expression expr1) {
         super(expr0, expr1);
     }
 
@@ -15,7 +15,7 @@ public class Mul extends AbstractOperatorNumericalExpression {
      * @param expr1 The second number
      * @return A numeric expression representing the multiplication expr0 * expr1
      */
-    public static NumericalExpression newInstance(NumericalExpression expr0, NumericalExpression expr1) {
+    public static Expression newInstance(Expression expr0, Expression expr1) {
         if (expr0 instanceof Neg && expr1 instanceof Neg) {
             expr0 = ((Neg) expr0).getWrapped();
             expr1 = ((Neg) expr1).getWrapped();
