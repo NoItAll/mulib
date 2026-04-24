@@ -50,3 +50,16 @@ Available search configurations for the de.wwu.mulib.examples are:
 * `PDFS` for multi-threaded (naive) depth-first search
 * `PDSAS` for multi-threaded deepest-shared-ancestor search
 * `DFSN` for multi-threaded non-incremental depth-first search
+## Python port: `mulib_python`
+
+A minimal Python rewrite is available under [`mulib_python/`](mulib_python/),
+backed by [Z3](https://github.com/Z3Prover/z3). It supports symbolic ints,
+bools, doubles, symbolic arrays, and a DFS search engine.
+
+```bash
+pip install z3-solver pytest
+python -m mulib_python.examples.send_more_money
+pytest mulib_python/tests/
+```
+
+See [`mulib_python/README.md`](mulib_python/README.md) for details.
