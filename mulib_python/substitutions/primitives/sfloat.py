@@ -297,14 +297,37 @@ class Sfloat(Sfpnumber, abc.ABC):
         return bool(self.__ge__(rhs))
 
 
+_UNSET_FLOAT: object = object()
+
+
 class ConcSfloat(Sfloat, ConcSnumber):
     """Concrete single-precision floating point."""
 
     __slots__ = ("_value", "_hash")
 
+    def __new__(cls, value):
+        if cls is ConcSfloat and isinstance(value, (int, float, bool)):
+            try:
+                v = float(value)
+            except (TypeError, ValueError):
+                return object.__new__(cls)
+            z = getattr(ConcSfloat, "ZERO", None)
+            if z is not None and v == 0.0:
+                return z
+            o = getattr(ConcSfloat, "ONE", None)
+            if o is not None and v == 1.0:
+                return o
+            mo = getattr(ConcSfloat, "MINUS_ONE", None)
+            if mo is not None and v == -1.0:
+                return mo
+        return object.__new__(cls)
+
     def __init__(self, value: float) -> None:
-        object.__setattr__(self, "_value", float(value))
-        object.__setattr__(self, "_hash", hash(float(value)))
+        v = float(value)
+        if getattr(self, "_value", _UNSET_FLOAT) == v:
+            return
+        object.__setattr__(self, "_value", v)
+        object.__setattr__(self, "_hash", hash(v))
         object.__setattr__(self, "_concolic", None)
 
     def __setattr__(self, name: str, value: object) -> None:

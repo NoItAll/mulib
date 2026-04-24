@@ -272,7 +272,9 @@ class BoolIte(Constraint):
         if_case: Constraint,
         else_case: Constraint,
     ) -> None:
-        for name, val in (("condition", condition), ("if_case", if_case), ("else_case", else_case)):
+        from mulib_python.substitutions.primitives.coercion import to_constraint
+        condition = to_constraint(condition)
+        for name, val in (("if_case", if_case), ("else_case", else_case)):
             if not isinstance(val, Constraint):
                 raise TypeError(f"{name} must be a Constraint, got {type(val)!r}")
         object.__setattr__(self, "condition", condition)
@@ -319,6 +321,9 @@ class AbstractTwoSidedMathematicalConstraint(Constraint):
     _OP: str = "?"
 
     def __init__(self, lhs: "Expression", rhs: "Expression") -> None:
+        from mulib_python.substitutions.primitives.coercion import to_expression
+        lhs = to_expression(lhs)
+        rhs = to_expression(rhs)
         object.__setattr__(self, "lhs", lhs)
         object.__setattr__(self, "rhs", rhs)
         object.__setattr__(self, "_hash", hash((type(self), lhs, rhs)))
@@ -381,9 +386,12 @@ class In(Constraint):
     __slots__ = ("element", "set", "_hash")
 
     def __init__(self, element: "Expression", set: Tuple["Expression", ...]) -> None:
+        from mulib_python.substitutions.primitives.coercion import to_expression
+        element = to_expression(element)
+        set = tuple(to_expression(s) for s in set)
         object.__setattr__(self, "element", element)
-        object.__setattr__(self, "set", tuple(set))
-        object.__setattr__(self, "_hash", hash((In, element, tuple(set))))
+        object.__setattr__(self, "set", set)
+        object.__setattr__(self, "_hash", hash((In, element, set)))
 
     def __setattr__(self, name: str, value: object) -> None:
         raise AttributeError("Constraint nodes are immutable")
@@ -424,6 +432,9 @@ class ArrayConstraint(Constraint):
         partner_class_object_id: "Expression",
         index: "Expression",
     ) -> None:
+        from mulib_python.substitutions.primitives.coercion import to_sint
+        partner_class_object_id = to_sint(partner_class_object_id)
+        index = to_sint(index)
         object.__setattr__(self, "partner_class_object_id", partner_class_object_id)
         object.__setattr__(self, "index", index)
         object.__setattr__(self, "_hash", hash((type(self), partner_class_object_id, index)))
@@ -503,10 +514,15 @@ class ArrayAccessConstraint(ArrayConstraint):
         type: "ArrayAccessConstraint.Type",
         value: object,
     ) -> None:
+        # Coerce ``value`` if a raw Python primitive was passed.  Bare
+        # Sint/Sbool/Sdouble all flow through unchanged via the
+        # ``isinstance(x, Expression)`` fast path in ``to_expression``.
+        from mulib_python.substitutions.primitives.coercion import to_expression
+        value = to_expression(value)
         super().__init__(partner_class_object_id, index)
         object.__setattr__(self, "type", type)
         object.__setattr__(self, "value", value)
-        object.__setattr__(self, "_hash", hash((ArrayAccessConstraint, partner_class_object_id, index, type, value)))
+        object.__setattr__(self, "_hash", hash((ArrayAccessConstraint, self.partner_class_object_id, self.index, type, value)))
 
     def __repr__(self) -> str:
         return (
@@ -567,6 +583,20 @@ class ArrayInitializationConstraint(ArrayConstraint):
         default_value: object = None,
         initial_values: object = None,
     ) -> None:
+        from mulib_python.substitutions.primitives.coercion import (
+            to_sint, _value_coercer_for,
+        )
+        # Element-type-aware coercion: for primitive value_types, raw ints/
+        # bools/floats in default_value and initial_values are wrapped to the
+        # corresponding ConcS-singleton; for partner-class types, only
+        # already-built Expressions are accepted.
+        coerce_value = _value_coercer_for(value_type)
+        length = to_sint(length)
+        if default_value is not None:
+            default_value = coerce_value(default_value)
+        # ``default_value=None`` is legitimate: it asks the array repr to
+        # supply its own default (e.g. ConcSint(0) or NULL_REFERENCE).
+
         super().__init__(partner_class_object_id, index)
         object.__setattr__(self, "value_type", value_type)
         object.__setattr__(self, "length", length)
@@ -574,16 +604,22 @@ class ArrayInitializationConstraint(ArrayConstraint):
         # Freeze a copy of any provided mapping so the constraint stays
         # immutable.  We hash via a tuple of items in *insertion order*
         # rather than sorted order, because keys (array indices) are not
-        # required to be orderable in general — a future caller may pass
-        # symbolic-int keys or other non-comparable values.  Two
-        # ``initial_values`` mappings that compare equal may therefore have
-        # different hashes if their insertion orders differ; this is a
-        # deliberate trade-off (correct equality, conservative hashing).
+        # required to be orderable in general.  Two ``initial_values``
+        # mappings that compare equal may therefore have different hashes
+        # if their insertion orders differ; this is a deliberate trade-off
+        # (correct equality, conservative hashing).
         if initial_values is None:
             frozen_initials = None
             hash_initials: object = None
         else:
-            frozen_initials = dict(initial_values)
+            frozen_initials = {}
+            for k, v in initial_values.items():
+                if not isinstance(k, int) or isinstance(k, bool):
+                    raise TypeError(
+                        f"initial_values keys must be int, got "
+                        f"{type(k).__name__}"
+                    )
+                frozen_initials[k] = coerce_value(v)
             hash_initials = tuple(frozen_initials.items())
         object.__setattr__(self, "initial_values", frozen_initials)
         object.__setattr__(
@@ -591,8 +627,8 @@ class ArrayInitializationConstraint(ArrayConstraint):
             "_hash",
             hash((
                 ArrayInitializationConstraint,
-                partner_class_object_id,
-                index,
+                self.partner_class_object_id,
+                self.index,
                 value_type,
                 length,
                 default_value,
@@ -637,6 +673,8 @@ class PartnerClassObjectConstraint(Constraint):
     __slots__ = ("partner_class_object_id", "_hash")
 
     def __init__(self, partner_class_object_id: "Expression") -> None:
+        from mulib_python.substitutions.primitives.coercion import to_sint
+        partner_class_object_id = to_sint(partner_class_object_id)
         object.__setattr__(self, "partner_class_object_id", partner_class_object_id)
         object.__setattr__(self, "_hash", hash((type(self), partner_class_object_id)))
 

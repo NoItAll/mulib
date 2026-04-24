@@ -12,57 +12,58 @@ Uses the ArrayHistorySolverRepresentation for history-based array encoding.
 
 from mulib_python.api import free_int, assume, get_solutions, remember
 from mulib_python.array_repr import ArrayHistorySolverRepresentation
-from mulib_python.substitutions.primitives.sint import ConcSint, SymSintLeaf
 
 
 def search_sum_to_target(n=4, target=10):
     """Find n integers that sum to target.
-    
+
     Uses array representation internally to demonstrate array operations,
     though for this simple case a list of symbolic ints would also work.
-    
+
     Parameters
     ----------
     n : int
         Number of array elements.
     target : int
         Target sum.
-    
+
     Returns
     -------
     dict
         Dictionary with element values.
     """
-    # Create symbolic array representation
+    # Create symbolic array representation.  Plain Python ints flow into
+    # ``length`` and ``default_value``; the array repr coerces them to the
+    # appropriate ConcS-singleton internally.
     arr = ArrayHistorySolverRepresentation(
         array_id="arr",
         element_type=int,
-        length=ConcSint(n),
-        default_value=ConcSint(0),
+        length=n,
+        default_value=0,
     )
-    
+
     # Create symbolic values and store them in array
     values = []
     for i in range(n):
         v = free_int(f"arr_{i}", 1, n * 2)  # Each value in [1, 2n]
         values.append(v)
-    
+
     # Compute sum constraint
     total = values[0]
     for v in values[1:]:
         total = total + v
-    
-    assume(total == ConcSint(target))
-    
+
+    assume(total == target)
+
     return {"n": n, "target": target, "values": [f"arr_{i}" for i in range(n)]}
 
 
 def search_store_select():
     """Demonstrate store-then-select behavior.
-    
+
     Creates an array, stores values, reads them back, and verifies
     the read values match expectations.
-    
+
     Returns
     -------
     dict
@@ -71,11 +72,11 @@ def search_store_select():
     # Create a symbolic integer for a value we'll store
     x = free_int("x", 0, 100)
     y = free_int("y", 0, 100)
-    
+
     # Constrain x and y
-    assume(x + y == ConcSint(50))
+    assume(x + y == 50)
     assume(x < y)
-    
+
     return {"x": "x", "y": "y"}
 
 

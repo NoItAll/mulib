@@ -31,20 +31,19 @@ def search(numbers=None):
         return None
     
     target = total // 2
-    
+
     # Use symbolic integers constrained to 0 or 1 as selectors
     # selector[i] = 1 means numbers[i] goes to subset1
-    from mulib_python.substitutions.primitives.sint import ConcSint
-    
     selectors = [free_int(f"sel_{i}", 0, 1) for i in range(len(numbers))]
-    
-    # Build the sum: sum of numbers[i] where selector[i] == 1
-    first_sum = ConcSint(0)
-    for i, num in enumerate(numbers):
-        first_sum = first_sum + selectors[i] * ConcSint(num)
-    
-    assume(first_sum == ConcSint(target))
-    
+
+    # Build the sum: sum of numbers[i] where selector[i] == 1.
+    # Plain Python ints are auto-coerced when arithmetic involves a Sint.
+    first_sum = selectors[0] * numbers[0]
+    for i in range(1, len(numbers)):
+        first_sum = first_sum + selectors[i] * numbers[i]
+
+    assume(first_sum == target)
+
     return {"numbers": numbers, "target": target}
 
 

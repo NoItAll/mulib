@@ -181,9 +181,8 @@ class SymbolicExecution:
     def int_choice(self, low: int, high: int) -> int:
         """Make an integer choice in [low, high]."""
         def constraint_fn(i: int) -> Constraint:
-            from mulib_python.substitutions.primitives.sint import ConcSint
-            return Eq(ConcSint(low), ConcSint(i))  # placeholder
-        
+            return Eq(low, i)  # placeholder; raw ints coerced inside Eq
+
         return self._choice_factory.int_choice(low, high, constraint_fn)
 
     def choice(self, options: List[Any]) -> Any:

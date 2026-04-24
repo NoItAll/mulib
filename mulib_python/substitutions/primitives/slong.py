@@ -17,6 +17,10 @@ from mulib_python.substitutions.primitives.snumber import (
     AbstractSnumber, ConcSnumber, SymSnumber
 )
 
+# Sentinel used by interning-guarded ``__init__`` to detect already-initialised
+# cached instances.
+_UNSET: object = object()
+
 if TYPE_CHECKING:
     from mulib_python.substitutions.primitives.sint import Sint, Sbool, ConcSbool
     from mulib_python.substitutions.primitives.sdouble import Sdouble
@@ -392,8 +396,24 @@ class ConcSlong(Slong, ConcSnumber):
 
     __slots__ = ("_value", "_hash")
 
+    _LOW_CACHE = -128
+    _HIGH_CACHE = 127
+    _CACHE: tuple["ConcSlong", ...] = ()
+
+    def __new__(cls, value=_UNSET):
+        if cls is ConcSlong and ConcSlong._CACHE and value is not _UNSET:
+            try:
+                v = _to_signed_long(value)
+            except TypeError:
+                return object.__new__(cls)
+            if ConcSlong._LOW_CACHE <= v <= ConcSlong._HIGH_CACHE:
+                return ConcSlong._CACHE[v - ConcSlong._LOW_CACHE]
+        return object.__new__(cls)
+
     def __init__(self, value: int) -> None:
         value = _to_signed_long(value)
+        if getattr(self, "_value", _UNSET) == value:
+            return
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", hash(value))
         object.__setattr__(self, "_concolic", None)
@@ -447,6 +467,18 @@ class ConcSlong(Slong, ConcSnumber):
             return Sbool.new_constraint_sbool(Eq(self, other))
         return NotImplemented
 
+
+# Build the small-int cache first so that the named-constant assignments
+# below pick up the cached singletons (otherwise they would be standalone
+# instances and ``ConcSlong(0) is ConcSlong.ZERO`` would be False).
+ConcSlong._CACHE = tuple(
+    ConcSlong.__new__(ConcSlong) for _ in range(ConcSlong._HIGH_CACHE - ConcSlong._LOW_CACHE + 1)
+)
+for _i, _obj in enumerate(ConcSlong._CACHE):
+    _val = _i + ConcSlong._LOW_CACHE
+    object.__setattr__(_obj, "_value", _val)
+    object.__setattr__(_obj, "_hash", hash(_val))
+    object.__setattr__(_obj, "_concolic", None)
 
 # Convenience constants
 ConcSlong.ZERO = ConcSlong(0)

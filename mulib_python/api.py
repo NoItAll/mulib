@@ -65,15 +65,13 @@ def free_int(
         name = f"_int_{next(_AUTO_NAMES)}"
     
     sym = se.sym_int(name)
-    
-    # Add bounds as constraints
+
+    # Add bounds as constraints (raw ints are coerced inside Lte).
     if lo is not None:
-        from mulib_python.substitutions.primitives.sint import ConcSint
-        se.add_constraint(Lte(ConcSint(lo), sym))
+        se.add_constraint(Lte(lo, sym))
     if hi is not None:
-        from mulib_python.substitutions.primitives.sint import ConcSint
-        se.add_constraint(Lte(sym, ConcSint(hi)))
-    
+        se.add_constraint(Lte(sym, hi))
+
     # Remember for labeling
     se.remember(name, sym)
     return sym
@@ -88,16 +86,16 @@ def free_long(
     se = _se_or_raise()
     if name is None:
         name = f"_long_{next(_AUTO_NAMES)}"
-    
+
     sym = se.sym_long(name)
-    
+
     if lo is not None:
-        from mulib_python.substitutions.primitives.slong import ConcSlong
-        se.add_constraint(Lte(ConcSlong(lo), sym))
+        from mulib_python.substitutions.primitives.coercion import to_slong
+        se.add_constraint(Lte(to_slong(lo), sym))
     if hi is not None:
-        from mulib_python.substitutions.primitives.slong import ConcSlong
-        se.add_constraint(Lte(sym, ConcSlong(hi)))
-    
+        from mulib_python.substitutions.primitives.coercion import to_slong
+        se.add_constraint(Lte(sym, to_slong(hi)))
+
     se.remember(name, sym)
     return sym
 
@@ -150,14 +148,14 @@ def free_double(
         name = f"_dbl_{next(_AUTO_NAMES)}"
     
     sym = se.sym_double(name)
-    
+
     if lo is not None:
-        from mulib_python.substitutions.primitives.sdouble import ConcSdouble
-        se.add_constraint(Lte(ConcSdouble(lo), sym))
+        from mulib_python.substitutions.primitives.coercion import to_sdouble
+        se.add_constraint(Lte(to_sdouble(lo), sym))
     if hi is not None:
-        from mulib_python.substitutions.primitives.sdouble import ConcSdouble
-        se.add_constraint(Lte(sym, ConcSdouble(hi)))
-    
+        from mulib_python.substitutions.primitives.coercion import to_sdouble
+        se.add_constraint(Lte(sym, to_sdouble(hi)))
+
     se.remember(name, sym)
     return sym
 
@@ -171,16 +169,16 @@ def free_float(
     se = _se_or_raise()
     if name is None:
         name = f"_flt_{next(_AUTO_NAMES)}"
-    
+
     sym = se.sym_float(name)
-    
+
     if lo is not None:
-        from mulib_python.substitutions.primitives.sfloat import ConcSfloat
-        se.add_constraint(Lte(ConcSfloat(lo), sym))
+        from mulib_python.substitutions.primitives.coercion import to_sfloat
+        se.add_constraint(Lte(to_sfloat(lo), sym))
     if hi is not None:
-        from mulib_python.substitutions.primitives.sfloat import ConcSfloat
-        se.add_constraint(Lte(sym, ConcSfloat(hi)))
-    
+        from mulib_python.substitutions.primitives.coercion import to_sfloat
+        se.add_constraint(Lte(sym, to_sfloat(hi)))
+
     se.remember(name, sym)
     return sym
 

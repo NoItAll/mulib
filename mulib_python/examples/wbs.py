@@ -14,50 +14,46 @@ from mulib_python.api import free_int, assume, get_solutions
 
 def compute_warning_level():
     """Compute warning level based on vehicle state.
-    
+
     Uses symbolic integers constrained to 0 or 1 to represent booleans.
     Warning levels:
     - 0 (NONE): Normal operation
     - 1 (LOW): Minor issue
     - 2 (MEDIUM): Attention needed
     - 3 (CRITICAL): Immediate action required
-    
+
     Returns
     -------
     dict
         Dictionary with input states.
     """
-    from mulib_python.substitutions.primitives.sint import ConcSint
-    
     # Use 0/1 integers as booleans
     engine_on = free_int("engine_on", 0, 1)
     brake_pressed = free_int("brake_pressed", 0, 1)
     speed_high = free_int("speed_high", 0, 1)
     parking_brake = free_int("parking_brake", 0, 1)
-    
+
     # Constrain to find the CRITICAL case:
     # Engine on, high speed, no braking, parking brake engaged
-    assume(engine_on == ConcSint(1))
-    assume(speed_high == ConcSint(1))
-    assume(brake_pressed == ConcSint(0))
-    assume(parking_brake == ConcSint(1))
-    
+    assume(engine_on == 1)
+    assume(speed_high == 1)
+    assume(brake_pressed == 0)
+    assume(parking_brake == 1)
+
     return {"warning": 3}  # CRITICAL
 
 
 def compute_all_levels():
     """Find examples for different warning levels."""
-    from mulib_python.substitutions.primitives.sint import ConcSint
-    
     # Use 0/1 integers as booleans
     engine_on = free_int("engine_on", 0, 1)
     speed_high = free_int("speed_high", 0, 1)
     parking_brake = free_int("parking_brake", 0, 1)
-    
+
     # Constrain: engine off and no parking brake = MEDIUM warning
-    assume(engine_on == ConcSint(0))
-    assume(parking_brake == ConcSint(0))
-    
+    assume(engine_on == 0)
+    assume(parking_brake == 0)
+
     return {"warning": 2}  # MEDIUM
 
 

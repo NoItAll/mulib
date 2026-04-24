@@ -62,6 +62,20 @@ class Z3MulibAdapter:
     def _translate_impl(self, node: Any) -> z3.ExprRef:
         """Internal translation implementation."""
         ctx = self._ctx
+        # Prologue: accept raw Python primitives directly.  This makes the
+        # adapter robust when callers (or constraints that haven't coerced
+        # for some reason) pass a bare value through.  ``bool`` is checked
+        # before ``int`` because ``bool`` is a subclass of ``int`` in
+        # Python.
+        if node is True or node is False or isinstance(node, bool):
+            if self._treat_bools_as_ints:
+                return z3.IntVal(1 if node else 0, ctx=ctx)
+            return z3.BoolVal(bool(node), ctx=ctx)
+        if isinstance(node, int):
+            return z3.IntVal(node, ctx=ctx)
+        if isinstance(node, float):
+            return z3.RealVal(node, ctx=ctx)
+
         # Handle constraint literals
         if node is TRUE or (isinstance(node, _BoolLiteral) and node._value):
             return z3.BoolVal(True, ctx=ctx)

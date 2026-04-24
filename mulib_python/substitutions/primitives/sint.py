@@ -44,6 +44,11 @@ def _to_char(val: int) -> str:
     return chr(val & 0xFFFF)
 
 
+# Sentinel used by interning-guarded ``__init__`` methods to detect
+# already-initialised cached instances (cf. ``ConcSint.__init__``).
+_UNSET: object = object()
+
+
 # ---------------------------------------------------------------------------
 # Sint
 # ---------------------------------------------------------------------------
@@ -422,7 +427,25 @@ class ConcSint(Sint, ConcSnumber):
     _HIGH_CACHE = 127
     _CACHE: tuple["ConcSint", ...] = ()
 
+    def __new__(cls, value=_UNSET):
+        # Cache hit only for the exact ConcSint class (subclasses get fresh
+        # instances) and only once the cache has been populated below.
+        if cls is ConcSint and ConcSint._CACHE and value is not _UNSET:
+            try:
+                if ConcSint._LOW_CACHE <= value <= ConcSint._HIGH_CACHE:
+                    return ConcSint._CACHE[value - ConcSint._LOW_CACHE]
+            except TypeError:
+                # Non-numeric ``value`` — fall through to allocate so the
+                # __init__ raises a meaningful error.
+                pass
+        return object.__new__(cls)
+
     def __init__(self, value: int) -> None:
+        # Idempotent guard: when ``__new__`` returned a cached singleton,
+        # Python still re-runs ``__init__``.  Skip the work in that case so
+        # we don't re-hash and don't pay the per-call attribute cost.
+        if getattr(self, "_value", _UNSET) == value:
+            return
         # Don't call super().__init__() to avoid AbstractSnumber init
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", hash(value))
@@ -654,7 +677,21 @@ class ConcSbool(Sbool, ConcSnumber):
 
     __slots__ = ("_value", "_hash")
 
+    def __new__(cls, value=_UNSET):
+        if cls is ConcSbool and value is not _UNSET:
+            t = getattr(ConcSbool, "TRUE", None)
+            f = getattr(ConcSbool, "FALSE", None)
+            if t is not None and f is not None:
+                # Both singletons exist -> intern.
+                return t if value else f
+        return object.__new__(cls)
+
     def __init__(self, value: bool) -> None:
+        # Coerce to a true ``bool`` once, so callers passing ``1`` or
+        # ``"yes"`` get the canonical Python boolean stored.
+        value = bool(value)
+        if getattr(self, "_value", _UNSET) is value:
+            return
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", int(value))
         object.__setattr__(self, "_concolic", None)
@@ -845,8 +882,24 @@ class ConcSbyte(Sbyte, ConcSnumber):
 
     __slots__ = ("_value", "_hash")
 
+    # Bytes have a small fixed range [-128, 127]; cache the entire range.
+    _LOW_CACHE = -128
+    _HIGH_CACHE = 127
+    _CACHE: tuple["ConcSbyte", ...] = ()
+
+    def __new__(cls, value=_UNSET):
+        if cls is ConcSbyte and ConcSbyte._CACHE and value is not _UNSET:
+            try:
+                v = _to_signed_byte(value)
+            except TypeError:
+                return object.__new__(cls)
+            return ConcSbyte._CACHE[v - ConcSbyte._LOW_CACHE]
+        return object.__new__(cls)
+
     def __init__(self, value: int) -> None:
         value = _to_signed_byte(value)
+        if getattr(self, "_value", _UNSET) == value:
+            return
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", hash(value))
         object.__setattr__(self, "_concolic", None)
@@ -889,6 +942,15 @@ class ConcSbyte(Sbyte, ConcSnumber):
     def __hash__(self) -> int:
         return self._hash
 
+
+ConcSbyte._CACHE = tuple(
+    ConcSbyte.__new__(ConcSbyte) for _ in range(ConcSbyte._HIGH_CACHE - ConcSbyte._LOW_CACHE + 1)
+)
+for _i, _obj in enumerate(ConcSbyte._CACHE):
+    _val = _i + ConcSbyte._LOW_CACHE
+    object.__setattr__(_obj, "_value", _val)
+    object.__setattr__(_obj, "_hash", hash(_val))
+    object.__setattr__(_obj, "_concolic", None)
 
 ConcSbyte.ZERO = ConcSbyte(0)
 
@@ -974,8 +1036,25 @@ class ConcSchar(Schar, ConcSnumber):
 
     __slots__ = ("_value", "_hash")
 
+    # Cache the ASCII range; full Unicode (0..65535) would be too large.
+    _LOW_CACHE = 0
+    _HIGH_CACHE = 127
+    _CACHE: tuple["ConcSchar", ...] = ()
+
+    def __new__(cls, value=_UNSET):
+        if cls is ConcSchar and ConcSchar._CACHE and value is not _UNSET:
+            try:
+                v = value & 0xFFFF
+            except TypeError:
+                return object.__new__(cls)
+            if ConcSchar._LOW_CACHE <= v <= ConcSchar._HIGH_CACHE:
+                return ConcSchar._CACHE[v - ConcSchar._LOW_CACHE]
+        return object.__new__(cls)
+
     def __init__(self, value: int) -> None:
         value = value & 0xFFFF
+        if getattr(self, "_value", _UNSET) == value:
+            return
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", hash(value))
         object.__setattr__(self, "_concolic", None)
@@ -1018,6 +1097,15 @@ class ConcSchar(Schar, ConcSnumber):
     def __hash__(self) -> int:
         return self._hash
 
+
+ConcSchar._CACHE = tuple(
+    ConcSchar.__new__(ConcSchar) for _ in range(ConcSchar._HIGH_CACHE - ConcSchar._LOW_CACHE + 1)
+)
+for _i, _obj in enumerate(ConcSchar._CACHE):
+    _val = _i + ConcSchar._LOW_CACHE
+    object.__setattr__(_obj, "_value", _val)
+    object.__setattr__(_obj, "_hash", hash(_val))
+    object.__setattr__(_obj, "_concolic", None)
 
 ConcSchar.ZERO = ConcSchar(0)
 
@@ -1101,8 +1189,25 @@ class ConcSshort(Sshort, ConcSnumber):
 
     __slots__ = ("_value", "_hash")
 
+    # Full short range is [-32768, 32767]; only the small subset is cached.
+    _LOW_CACHE = -128
+    _HIGH_CACHE = 127
+    _CACHE: tuple["ConcSshort", ...] = ()
+
+    def __new__(cls, value=_UNSET):
+        if cls is ConcSshort and ConcSshort._CACHE and value is not _UNSET:
+            try:
+                v = _to_signed_short(value)
+            except TypeError:
+                return object.__new__(cls)
+            if ConcSshort._LOW_CACHE <= v <= ConcSshort._HIGH_CACHE:
+                return ConcSshort._CACHE[v - ConcSshort._LOW_CACHE]
+        return object.__new__(cls)
+
     def __init__(self, value: int) -> None:
         value = _to_signed_short(value)
+        if getattr(self, "_value", _UNSET) == value:
+            return
         object.__setattr__(self, "_value", value)
         object.__setattr__(self, "_hash", hash(value))
         object.__setattr__(self, "_concolic", None)
@@ -1145,6 +1250,15 @@ class ConcSshort(Sshort, ConcSnumber):
     def __hash__(self) -> int:
         return self._hash
 
+
+ConcSshort._CACHE = tuple(
+    ConcSshort.__new__(ConcSshort) for _ in range(ConcSshort._HIGH_CACHE - ConcSshort._LOW_CACHE + 1)
+)
+for _i, _obj in enumerate(ConcSshort._CACHE):
+    _val = _i + ConcSshort._LOW_CACHE
+    object.__setattr__(_obj, "_value", _val)
+    object.__setattr__(_obj, "_hash", hash(_val))
+    object.__setattr__(_obj, "_concolic", None)
 
 ConcSshort.ZERO = ConcSshort(0)
 

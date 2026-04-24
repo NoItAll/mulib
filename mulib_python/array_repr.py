@@ -111,17 +111,33 @@ class ArrayHistorySolverRepresentation(ArraySolverRepresentation):
         default_value: Any = None,
         initial_values: Optional[Dict[int, Any]] = None,
     ) -> None:
+        # Boundary coercion: callers may pass plain Python primitives
+        # (``5`` instead of ``ConcSint(5)``) for ``length``, ``default_value``,
+        # and the values inside ``initial_values``.  We route them through
+        # the element-type-aware coercer so the solver sees uniformly-typed
+        # operands.  Lazy import to avoid cycles.
+        from mulib_python.substitutions.primitives.coercion import (
+            to_sint, _value_coercer_for,
+        )
+        coerce_value = _value_coercer_for(element_type)
+
         self._array_id = array_id
         self._element_type = element_type
-        self._length = length
+        self._length = to_sint(length)
         # ConcSint(0) is the conservative neutral default for any solver
         # representation that can be translated through the Z3 adapter.
         # Subclasses (primitive / partner-class) override this with a
         # type-appropriate value.
-        self._default_value = default_value if default_value is not None else ConcSint(0)
-        self._initial_values: Dict[int, Any] = (
-            dict(initial_values) if initial_values else {}
-        )
+        if default_value is None:
+            self._default_value = ConcSint(0)
+        else:
+            self._default_value = coerce_value(default_value)
+        if initial_values:
+            self._initial_values = {
+                k: coerce_value(v) for k, v in initial_values.items()
+            }
+        else:
+            self._initial_values: Dict[int, Any] = {}
         self._history: List[ArrayOperation] = []
 
     @property

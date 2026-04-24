@@ -12,32 +12,30 @@ from mulib_python.api import free_int, assume, get_solutions
 
 def search_abs_mul():
     """Find inputs for abs(i0) * abs(i1) = target.
-    
+
     We explore different sign combinations by setting up constraints.
-    
+
     Returns
     -------
     dict
         Dictionary with input values and result.
     """
-    from mulib_python.substitutions.primitives.sint import ConcSint
-    
     # Create symbolic inputs with bounded ranges
     i0 = free_int("i0", -10, 10)
     i1 = free_int("i1", -10, 10)
-    
+
     # Constrain i0 to be negative and i1 to be positive for this path
-    assume(i0 < ConcSint(0))
-    assume(i1 > ConcSint(0))
-    
+    assume(i0 < 0)
+    assume(i1 > 0)
+
     # Compute abs - since i0 < 0 and i1 > 0:
     abs_i0 = -i0
     abs_i1 = i1
-    
+
     # Compute product and constrain it
     product = abs_i0 * abs_i1
-    assume(product == ConcSint(12))  # Find values where |i0| * |i1| = 12
-    
+    assume(product == 12)  # Find values where |i0| * |i1| = 12
+
     return {"i0": "i0", "i1": "i1"}
 
 
