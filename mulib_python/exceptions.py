@@ -34,3 +34,25 @@ class Fail(MulibException):
 
     Equivalent to calling ``Mulib.fail()`` in the Java library.
     """
+
+
+class IllegalTreeModificationException(MulibRuntimeException):
+    """Raised when an illegal modification is attempted on the search tree."""
+
+
+class IllegalTreeAccessException(MulibRuntimeException):
+    """Raised when an illegal access is attempted on the search tree."""
+
+
+class Backtrack(MulibException):
+    """Sentinel exception used internally to trigger backtracking."""
+    _instance = None
+    
+    def __new__(cls):
+        if cls._instance is None:
+            cls._instance = super().__new__(cls)
+        return cls._instance
+
+
+class ChoicePointExceededBudget(MulibException):
+    """Raised when a choice point exceeds its budget."""
