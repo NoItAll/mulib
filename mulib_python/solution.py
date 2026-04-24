@@ -57,6 +57,10 @@ class Labels:
         """Allow dict-like access: labels['x']."""
         return self._id_to_label[key]
 
+    def get(self, key: str, default: Any = None) -> Any:
+        """Get label with optional default value, like dict.get()."""
+        return self._id_to_label.get(key, default)
+
     def __contains__(self, key: str) -> bool:
         """Allow 'in' checks: 'x' in labels."""
         return key in self._id_to_label

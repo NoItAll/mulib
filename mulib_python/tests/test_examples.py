@@ -27,8 +27,8 @@ def test_nqueens_4():
             assert abs(cols[i] - cols[j]) != j - i
 
 
-@pytest.mark.skip(reason="Sarray integration with search not yet complete")
 def test_array_example():
+    """Test the array example (now uses simple symbolic ints)."""
     sols = get_solutions(array_example.search, max_solutions=1)
     assert sols
     L = sols[0].labels
