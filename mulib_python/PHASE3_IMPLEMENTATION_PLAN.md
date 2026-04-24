@@ -37,7 +37,7 @@ mulib_python/
 
 | File | Java equivalent | Purpose |
 |---|---|---|
-| `substitutions.py` | `Sint`, `Sbool`, `Sfloat`, `Slong`, `Sdouble`, `Sfloat`, `Sshort`, `Sbyte` | Leaf symbolic variables and concrete wrappers used by solver |
+| `substitutions.py` | `Sint`, `Sbool`, `Sfloat`, `Slong`, `Sdouble`, `Sshort`, `Sbyte` | Leaf symbolic variables and concrete wrappers used by solver |
 | `solution.py` | `Labels`, `StdLabels`, `Solution` | Immutable result containers |
 | `solver_manager.py` | `SolverManager` interface | Abstract base class defining the public API |
 | `incremental_state.py` | `IncrementalSolverState` | Backtracking-level bookkeeping; maps object IDs to representations |
