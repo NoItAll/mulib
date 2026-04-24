@@ -449,22 +449,34 @@ class ArrayConstraint(Constraint):
     def array_id(self) -> str:
         """Stable string identifier for the array.
 
-        Derived from :attr:`partner_class_object_id`: concrete IDs use their
-        integer value, symbolic leaves use their variable name, anything
-        else falls back to ``repr``.  Two constraints that share the same
-        ``partner_class_object_id`` therefore share the same ``array_id``.
+        Derived from :attr:`partner_class_object_id`:
+
+        * a concrete :class:`~mulib_python.substitutions.primitives.sint.ConcSint`
+          contributes its integer ``value``;
+        * a symbolic :class:`~mulib_python.substitutions.primitives.sint.SymSintLeaf`
+          contributes its variable ``id`` (already namespaced as ``Sint…``).
+
+        Two constraints that share the same ``partner_class_object_id``
+        therefore share the same ``array_id``.
+
+        Falling back to ``repr`` for arbitrary Expression nodes was a
+        footgun: two structurally distinct expressions can share a printed
+        form, which would alias them in the solver-state registry.  Such
+        expressions are therefore rejected explicitly.
         """
-        pid = self.partner_class_object_id
-        # Avoid a hard import cycle: only reach into the substitutions
-        # package lazily.
+        # Local import to avoid a hard import cycle at module load.
         from mulib_python.substitutions.primitives.sint import (
             ConcSint, SymSintLeaf,
         )
+        pid = self.partner_class_object_id
         if isinstance(pid, ConcSint):
-            return f"arr#{pid._value}"
+            return f"arr#c:{pid.value}"
         if isinstance(pid, SymSintLeaf):
-            return f"arr#{pid._id}"
-        return f"arr#{pid!r}"
+            return f"arr#s:{pid.id}"
+        raise TypeError(
+            f"array_id is only defined for ConcSint or SymSintLeaf "
+            f"partner_class_object_id values; got {type(pid).__name__}"
+        )
 
 
 class ArrayAccessConstraint(ArrayConstraint):
@@ -560,14 +572,19 @@ class ArrayInitializationConstraint(ArrayConstraint):
         object.__setattr__(self, "length", length)
         object.__setattr__(self, "default_value", default_value)
         # Freeze a copy of any provided mapping so the constraint stays
-        # immutable and hashable.
+        # immutable.  We hash via a tuple of items in *insertion order*
+        # rather than sorted order, because keys (array indices) are not
+        # required to be orderable in general — a future caller may pass
+        # symbolic-int keys or other non-comparable values.  Two
+        # ``initial_values`` mappings that compare equal may therefore have
+        # different hashes if their insertion orders differ; this is a
+        # deliberate trade-off (correct equality, conservative hashing).
         if initial_values is None:
             frozen_initials = None
             hash_initials: object = None
         else:
-            items = tuple(sorted(dict(initial_values).items()))
-            frozen_initials = dict(items)
-            hash_initials = items
+            frozen_initials = dict(initial_values)
+            hash_initials = tuple(frozen_initials.items())
         object.__setattr__(self, "initial_values", frozen_initials)
         object.__setattr__(
             self,

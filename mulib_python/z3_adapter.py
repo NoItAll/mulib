@@ -245,9 +245,19 @@ class Z3MulibAdapter:
             else_case = self.translate(node.else_case)
             return z3.If(cond, if_case, else_case, ctx=ctx)
 
-        # Skip array/partner-class constraints for now (handled by array_repr)
+        # Array / partner-class constraints are *not* representable as a
+        # single Z3 boolean formula: they update solver-side state (the
+        # array history) and must therefore be routed through
+        # ``Z3IncrementalSolverManager.add_array_constraint``.  Silently
+        # dropping them by returning ``BoolVal(True)`` previously made
+        # misrouted constraints (e.g. nested inside ``And``/``Or``) appear
+        # to "succeed", which is a footgun.  Fail loudly instead.
         if isinstance(node, (ArrayAccessConstraint, ArrayInitializationConstraint, PartnerClassObjectConstraint)):
-            return z3.BoolVal(True, ctx=ctx)
+            raise TypeError(
+                f"{type(node).__name__} cannot be translated as a plain Z3 "
+                f"boolean; route it through "
+                f"Z3IncrementalSolverManager.add_array_constraint instead."
+            )
 
         raise TypeError(f"Cannot translate {type(node).__name__}: {node!r}")
 

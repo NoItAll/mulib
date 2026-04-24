@@ -112,41 +112,43 @@ class Z3IncrementalSolverManager(SolverManager):
             # symbolic objects (partner classes).
             from mulib_python.array_repr import (
                 PrimitiveValuedArraySolverRepresentation,
-                PartnerClassArraySolverRepresentation,
+                SimplePartnerClassArraySolverRepresentation,
             )
 
             if ac.element_type in (int, bool, float):
-                rep = PrimitiveValuedArraySolverRepresentation(
-                    array_id=ac.array_id,
-                    element_type=ac.element_type,
-                    length=ac.length,
-                    default_value=ac.default_value,
-                    initial_values=ac.initial_values,
-                )
+                rep_cls = PrimitiveValuedArraySolverRepresentation
             else:
-                rep = PartnerClassArraySolverRepresentation(
-                    array_id=ac.array_id,
-                    element_type=ac.element_type,
-                    length=ac.length,
-                    default_value=ac.default_value,
-                    initial_values=ac.initial_values,
-                )
+                rep_cls = SimplePartnerClassArraySolverRepresentation
+            rep = rep_cls(
+                array_id=ac.array_id,
+                element_type=ac.element_type,
+                length=ac.length,
+                default_value=ac.default_value,
+                initial_values=ac.initial_values,
+            )
             self._state.current_object_states.register_array(ac.array_id, rep)
-        
+            # Initialisation does not add Z3 assertions, but it does change
+            # what subsequent SELECTs will produce, and can introduce new
+            # symbolic variables that the cached label map has never seen.
+            # Invalidate both caches to keep them coherent with the state.
+            self._model = None
+            self._label_cache.clear()
+
         elif isinstance(ac, ArrayAccessConstraint):
             # Generate SELECT/STORE constraints
             rep = self._state.current_object_states.get_array(ac.array_id)
             if rep is None:
                 raise ValueError(f"Array {ac.array_id} not initialized")
-            
+
             if ac.is_store:
                 constraints = rep.store(ac.index, ac.value, self._adapter)
             else:
                 constraints = rep.select(ac.index, ac.value, self._adapter)
-            
+
             for c in constraints:
                 self._solver.add(c)
             self._model = None
+            self._label_cache.clear()
 
     @_z3_locked
     def check_with_new_constraint(self, constraint: Constraint) -> bool:

@@ -1,464 +1,651 @@
-"""Tests for array representations and constraints."""
+"""Tests for the custom array theory.
+
+Every behavioural test in this file drives the constraints all the way
+through the Z3 solver via :class:`Z3IncrementalSolverManager` rather than
+inspecting internal data structures (`_history`, `_default_value`, …).
+That style catches both correctness bugs in the encoding and integration
+mistakes between the array-representation layer, the constraint AST and
+the solver manager.
+"""
 
 import pytest
+
 from mulib_python.array_repr import (
+    NULL_REFERENCE,
     ArrayHistorySolverRepresentation,
-    PrimitiveValuedArraySolverRepresentation,
-    SymbolicObjectStates,
     IncrementalSolverState,
+    PrimitiveValuedArraySolverRepresentation,
+    SimplePartnerClassArraySolverRepresentation,
+    SymbolicObjectStates,
+)
+from mulib_python.constraints import (
+    ArrayAccessConstraint,
+    ArrayInitializationConstraint,
+)
+from mulib_python.substitutions.primitives.sint import (
+    ConcSbool,
+    ConcSint,
+    SymSintLeaf,
 )
 from mulib_python.z3_adapter import Z3MulibAdapter
-from mulib_python.substitutions.primitives.sint import ConcSint, SymSintLeaf
+from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
 
 
-# =============================================================================
-# ArrayHistorySolverRepresentation Tests
-# =============================================================================
-
-def test_array_creation():
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr1",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    
-    assert rep.array_id == "arr1"
-    assert rep.get_default_value()._value == 0
-
-
-def test_array_store():
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    adapter = Z3MulibAdapter()
-    
-    # Store at index 0
-    constraints = rep.store(ConcSint(0), ConcSint(42), adapter)
-    
-    # STORE doesn't generate constraints (only SELECT does)
-    assert len(constraints) == 0
-
-
-def test_array_select():
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    adapter = Z3MulibAdapter()
-    
-    # SELECT before any STORE should return default
-    result = SymSintLeaf("r")
-    constraints = rep.select(ConcSint(0), result, adapter)
-    
-    # Should have a constraint that result equals default
-    assert len(constraints) >= 1
-
-
-def test_array_store_then_select():
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    adapter = Z3MulibAdapter()
-    
-    # Store 42 at index 0
-    rep.store(ConcSint(0), ConcSint(42), adapter)
-    
-    # Select at index 0 - should get 42
-    result = SymSintLeaf("r")
-    constraints = rep.select(ConcSint(0), result, adapter)
-    
-    # Should have a constraint relating result to stored value
-    assert len(constraints) >= 1
-
-
-def test_array_copy():
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    adapter = Z3MulibAdapter()
-    
-    # Store some values
-    rep.store(ConcSint(0), ConcSint(1), adapter)
-    rep.store(ConcSint(1), ConcSint(2), adapter)
-    
-    # Copy
-    copy = rep.copy()
-    
-    # Modify original
-    rep.store(ConcSint(2), ConcSint(3), adapter)
-    
-    # Copy should not have the third store
-    assert len(copy._history) == 2
-    assert len(rep._history) == 3
-
-
-# =============================================================================
-# PrimitiveValuedArraySolverRepresentation Tests
-# =============================================================================
-
-def test_primitive_array_bounds_check():
-    rep = PrimitiveValuedArraySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        check_bounds=True,
-    )
-    adapter = Z3MulibAdapter()
-    
-    # Select at index 5
-    result = SymSintLeaf("r")
-    constraints = rep.select(ConcSint(5), result, adapter)
-    
-    # Should have bounds check constraints
-    # 0 <= index < length
-    assert len(constraints) >= 1
-
-
-def test_primitive_array_no_bounds_check():
-    rep = PrimitiveValuedArraySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        check_bounds=False,
-    )
-    adapter = Z3MulibAdapter()
-    
-    # Select at index 5
-    result = SymSintLeaf("r")
-    constraints = rep.select(ConcSint(5), result, adapter)
-    
-    # Without bounds check, just the value constraint
-    assert len(constraints) >= 1
-
-
-def test_primitive_array_default_value():
-    from mulib_python.substitutions.primitives.sint import ConcSbool
-    
-    rep = PrimitiveValuedArraySolverRepresentation(
-        array_id="bool_arr",
-        element_type=bool,
-        length=ConcSint(10),
-    )
-    
-    # Default for bool should be FALSE
-    default = rep.get_default_value()
-    assert default is ConcSbool.FALSE
-
-
-# =============================================================================
-# SymbolicObjectStates Tests
-# =============================================================================
-
-def test_symbolic_object_states():
-    states = SymbolicObjectStates()
-    
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr1",
-        element_type=int,
-        length=ConcSint(10),
-    )
-    
-    states.register_array("arr1", rep)
-    
-    retrieved = states.get_array("arr1")
-    assert retrieved is rep
-    
-    assert states.get_array("nonexistent") is None
-
-
-def test_symbolic_object_states_copy():
-    states = SymbolicObjectStates()
-    
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr1",
-        element_type=int,
-        length=ConcSint(10),
-    )
-    
-    states.register_array("arr1", rep)
-    
-    copy = states.copy()
-    
-    # Modifying original should not affect copy
-    states.register_array("arr2", rep)
-    
-    assert "arr2" in states.arrays
-    assert "arr2" not in copy.arrays
-
-
-# =============================================================================
-# IncrementalSolverState Tests
-# =============================================================================
-
-def test_incremental_state_push_pop():
-    state = IncrementalSolverState()
-    
-    assert state.level == 0
-    
-    state.push(5)
-    assert state.level == 1
-    
-    state.push(10)
-    assert state.level == 2
-    
-    count = state.pop()
-    assert count == 10
-    assert state.level == 1
-
-
-def test_incremental_state_pop_all():
-    state = IncrementalSolverState()
-    
-    for i in range(5):
-        state.push(i)
-    
-    assert state.level == 5
-    
-    state.pop_all()
-    
-    assert state.level == 0
-
-
-def test_incremental_state_pop_empty():
-    state = IncrementalSolverState()
-    
-    with pytest.raises(RuntimeError):
-        state.pop()
-
-
-# =============================================================================
-# Integration with Z3 Solver
-# =============================================================================
-
-def test_array_select_with_z3():
-    """Test array operations with Z3 solver integration."""
-    import z3
-    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
-    
-    sm = Z3IncrementalSolverManager()
-    adapter = sm.adapter
-    
-    # Create array representation
-    rep = ArrayHistorySolverRepresentation(
-        array_id="arr",
-        element_type=int,
-        length=ConcSint(10),
-        default_value=ConcSint(0),
-    )
-    
-    # Store 42 at index 0
-    rep.store(ConcSint(0), ConcSint(42), adapter)
-    
-    # Select at index 0
-    result = SymSintLeaf("result")
-    constraints = rep.select(ConcSint(0), result, adapter)
-    
-    # Add constraints to solver
-    for c in constraints:
-        sm.solver.add(c)
-    
-    # Should be satisfiable
-    assert sm.is_satisfiable()
-    
-    # Result should be 42
-    label = sm.get_label(result)
-    assert label == 42
-
-
-# =============================================================================
-# PartnerClassArraySolverRepresentation Tests (arrays of symbolic objects)
-# =============================================================================
-
+# ---------------------------------------------------------------------------
+# Helpers
+# ---------------------------------------------------------------------------
 
 class _DummyPartnerClass:
     """Stand-in non-primitive type used to exercise partner-class arrays."""
 
 
-def test_partner_class_array_rejects_primitive_element_type():
-    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+def _add_constraints(sm: Z3IncrementalSolverManager, constraints) -> None:
+    for c in constraints:
+        sm.solver.add(c)
 
+
+def _select_value(
+    sm: Z3IncrementalSolverManager,
+    rep,
+    index,
+    var_name: str,
+):
+    """SELECT through ``rep`` into a fresh symbolic var and return its label."""
+    var = SymSintLeaf(var_name)
+    _add_constraints(sm, rep.select(index, var, sm.adapter))
+    assert sm.is_satisfiable()
+    return sm.get_label(var)
+
+
+# ---------------------------------------------------------------------------
+# ArrayHistorySolverRepresentation: end-to-end SELECT/STORE semantics
+# ---------------------------------------------------------------------------
+
+def test_history_array_select_returns_default_when_no_stores():
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(7),
+    )
+    assert _select_value(sm, rep, ConcSint(0), "v") == 7
+
+
+def test_history_array_select_returns_stored_value():
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+    )
+    rep.store(ConcSint(0), ConcSint(42), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(0), "v") == 42
+
+
+def test_history_array_select_at_unstored_index_returns_default():
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(99),
+    )
+    rep.store(ConcSint(0), ConcSint(1), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(5), "v") == 99
+
+
+def test_history_array_most_recent_store_wins_for_same_index():
+    """Multiple STOREs to the same index must yield the *latest* value."""
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+    )
+    rep.store(ConcSint(3), ConcSint(11), sm.adapter)
+    rep.store(ConcSint(3), ConcSint(22), sm.adapter)
+    rep.store(ConcSint(3), ConcSint(33), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(3), "v") == 33
+
+
+def test_history_array_initial_value_used_when_index_concrete():
+    """Before any STORE, a concrete index in ``initial_values`` returns it."""
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+        initial_values={5: ConcSint(123)},
+    )
+    assert _select_value(sm, rep, ConcSint(5), "v") == 123
+
+
+def test_history_array_initial_value_used_even_after_unrelated_stores():
+    """Regression: SELECT once consulted ``initial_values`` only when no STORE
+    had ever been recorded.  After a STORE at a *different* index, a SELECT
+    of an index that has an initial value must still see that initial value.
+    """
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+        initial_values={5: ConcSint(99)},
+    )
+    rep.store(ConcSint(0), ConcSint(1), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(5), "v") == 99
+
+
+def test_history_array_store_overrides_initial_value():
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+        initial_values={5: ConcSint(99)},
+    )
+    rep.store(ConcSint(5), ConcSint(7), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(5), "v") == 7
+
+
+def test_history_array_symbolic_index_picks_correct_store():
+    """A symbolic index must resolve to the matching STORE via the ITE chain."""
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+    )
+    rep.store(ConcSint(0), ConcSint(10), sm.adapter)
+    rep.store(ConcSint(1), ConcSint(20), sm.adapter)
+    rep.store(ConcSint(2), ConcSint(30), sm.adapter)
+
+    # Pin the symbolic index to 1 via a side constraint and verify SELECT.
+    idx = SymSintLeaf("idx")
+    sm.solver.add(sm.adapter.translate(idx) == 1)
+    assert _select_value(sm, rep, idx, "v_at_idx") == 20
+
+
+def test_history_array_copy_is_independent_under_z3():
+    sm = Z3IncrementalSolverManager()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10),
+        default_value=ConcSint(0),
+    )
+    rep.store(ConcSint(0), ConcSint(1), sm.adapter)
+    snapshot = rep.copy()
+
+    # Mutate the original after the snapshot is taken.
+    rep.store(ConcSint(1), ConcSint(99), sm.adapter)
+
+    # Each rep should observe its own history end-to-end through Z3.
+    sm_orig = Z3IncrementalSolverManager()
+    sm_snap = Z3IncrementalSolverManager()
+    assert _select_value(sm_orig, rep, ConcSint(1), "v_o") == 99
+    assert _select_value(sm_snap, snapshot, ConcSint(1), "v_s") == 0
+
+
+# ---------------------------------------------------------------------------
+# PrimitiveValuedArraySolverRepresentation
+# ---------------------------------------------------------------------------
+
+def test_primitive_array_default_for_int_is_zero():
+    sm = Z3IncrementalSolverManager()
+    rep = PrimitiveValuedArraySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10), check_bounds=False,
+    )
+    assert _select_value(sm, rep, ConcSint(3), "v") == 0
+
+
+def test_primitive_array_default_for_bool_is_false():
+    rep = PrimitiveValuedArraySolverRepresentation(
+        array_id="a", element_type=bool, length=ConcSint(4),
+    )
+    assert rep.get_default_value() is ConcSbool.FALSE
+
+
+def test_primitive_array_rejects_unknown_element_type():
+    """Pre-existing dirty fix: the parent silently used ConcSint(0) as the
+    default for any unknown element type, masking the misuse.  It must now
+    raise.
+    """
     with pytest.raises(ValueError):
-        PartnerClassArraySolverRepresentation(
-            array_id="bad",
-            element_type=int,
-            length=ConcSint(4),
+        PrimitiveValuedArraySolverRepresentation(
+            array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        )
+
+
+def test_primitive_array_bounds_check_unsat_on_negative_index():
+    sm = Z3IncrementalSolverManager()
+    rep = PrimitiveValuedArraySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10), check_bounds=True,
+    )
+    _add_constraints(
+        sm, rep.select(ConcSint(-1), SymSintLeaf("v"), sm.adapter)
+    )
+    assert not sm.is_satisfiable()
+
+
+def test_primitive_array_bounds_check_unsat_on_index_at_length():
+    sm = Z3IncrementalSolverManager()
+    rep = PrimitiveValuedArraySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10), check_bounds=True,
+    )
+    _add_constraints(
+        sm, rep.store(ConcSint(10), ConcSint(0), sm.adapter)
+    )
+    assert not sm.is_satisfiable()
+
+
+def test_primitive_array_no_bounds_check_allows_oob_select():
+    sm = Z3IncrementalSolverManager()
+    rep = PrimitiveValuedArraySolverRepresentation(
+        array_id="a", element_type=int, length=ConcSint(10), check_bounds=False,
+    )
+    # An out-of-bounds SELECT is satisfiable when bounds checking is off.
+    assert _select_value(sm, rep, ConcSint(99), "v") == 0
+
+
+# ---------------------------------------------------------------------------
+# SimplePartnerClassArraySolverRepresentation
+# ---------------------------------------------------------------------------
+
+@pytest.mark.parametrize("primitive", [int, bool, float])
+def test_partner_class_array_rejects_primitive_element_type(primitive):
+    with pytest.raises(ValueError):
+        SimplePartnerClassArraySolverRepresentation(
+            array_id="a", element_type=primitive, length=ConcSint(4),
         )
 
 
 def test_partner_class_array_default_is_null_sentinel():
-    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
-
-    rep = PartnerClassArraySolverRepresentation(
-        array_id="objs",
-        element_type=_DummyPartnerClass,
-        length=ConcSint(4),
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
     )
-
-    default = rep.get_default_value()
-    # Sentinel for null is ConcSint(-1) (matches Java's MINUS_ONE).
-    assert isinstance(default, ConcSint)
-    assert default._value == -1
+    assert rep.get_default_value() is NULL_REFERENCE
 
 
-def test_partner_class_array_store_none_coerced_to_null():
-    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
-
-    rep = PartnerClassArraySolverRepresentation(
-        array_id="objs",
-        element_type=_DummyPartnerClass,
-        length=ConcSint(4),
-    )
-    adapter = Z3MulibAdapter()
-
-    rep.store(ConcSint(0), None, adapter)
-
-    # The history must contain a STORE whose value is the null sentinel,
-    # not Python's None (which the Z3 adapter cannot translate).
-    stores = [op for op in rep._history if op.is_store]
-    assert len(stores) == 1
-    assert isinstance(stores[0].value, ConcSint)
-    assert stores[0].value._value == -1
-
-
-def test_partner_class_array_store_then_select_with_z3():
-    """End-to-end: storing object IDs and selecting them through Z3."""
-    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
-    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
-
+def test_partner_class_array_select_unstored_yields_null_sentinel():
     sm = Z3IncrementalSolverManager()
-    adapter = sm.adapter
-
-    rep = PartnerClassArraySolverRepresentation(
-        array_id="objs",
-        element_type=_DummyPartnerClass,
-        length=ConcSint(4),
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
     )
+    assert _select_value(sm, rep, ConcSint(0), "v") == -1
 
-    # Store a couple of object IDs (concrete Sints) and a None (-> null).
-    rep.store(ConcSint(0), ConcSint(101), adapter)
-    rep.store(ConcSint(1), ConcSint(202), adapter)
-    rep.store(ConcSint(2), None, adapter)
 
-    # Select each slot into a fresh symbolic variable and assert via Z3.
-    r0, r1, r2, r3 = (
-        SymSintLeaf("r0"), SymSintLeaf("r1"),
-        SymSintLeaf("r2"), SymSintLeaf("r3"),
+def test_partner_class_array_store_then_select_object_id():
+    sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
     )
-    for index, result in [(0, r0), (1, r1), (2, r2), (3, r3)]:
-        for c in rep.select(ConcSint(index), result, adapter):
-            sm.solver.add(c)
-
-    assert sm.is_satisfiable()
-    assert sm.get_label(r0) == 101
-    assert sm.get_label(r1) == 202
-    # Index 2 was stored as null -> sentinel -1.
-    assert sm.get_label(r2) == -1
-    # Index 3 was never stored -> default is also the null sentinel.
-    assert sm.get_label(r3) == -1
+    rep.store(ConcSint(2), ConcSint(101), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(2), "v") == 101
 
 
-def test_partner_class_array_copy_independent_history():
-    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
-
-    rep = PartnerClassArraySolverRepresentation(
-        array_id="objs",
-        element_type=_DummyPartnerClass,
-        length=ConcSint(4),
+def test_partner_class_array_store_none_yields_null_sentinel_via_z3():
+    """Storing ``None`` must be observable as ``-1`` through the solver, not
+    just by inspecting the history."""
+    sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
     )
-    adapter = Z3MulibAdapter()
+    rep.store(ConcSint(0), None, sm.adapter)
+    assert _select_value(sm, rep, ConcSint(0), "v") == -1
 
-    rep.store(ConcSint(0), ConcSint(7), adapter)
+
+def test_partner_class_array_select_with_null_sentinel_result_raises():
+    """Selecting *into* the null sentinel is a programming error and must
+    raise (matching Java's assertion in ``_select``)."""
+    sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
+    )
+    with pytest.raises(AssertionError):
+        rep.select(ConcSint(0), NULL_REFERENCE, sm.adapter)
+
+
+def test_partner_class_array_initial_value_with_none_is_coerced():
+    sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        initial_values={1: None, 2: ConcSint(77)},
+        check_bounds=False,
+    )
+    assert _select_value(sm, rep, ConcSint(1), "v1") == -1
+
+
+def test_partner_class_array_initial_value_returned_after_unrelated_store():
+    sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        initial_values={2: ConcSint(77)},
+        check_bounds=False,
+    )
+    rep.store(ConcSint(0), ConcSint(5), sm.adapter)
+    assert _select_value(sm, rep, ConcSint(2), "v") == 77
+
+
+def test_partner_class_array_copy_independent_through_z3():
+    sm_orig = Z3IncrementalSolverManager()
+    sm_snap = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
+    )
+    rep.store(ConcSint(0), ConcSint(7), sm_orig.adapter)
     snapshot = rep.copy()
+    rep.store(ConcSint(1), ConcSint(8), sm_orig.adapter)
 
-    # Mutate the original after the snapshot.
-    rep.store(ConcSint(1), ConcSint(8), adapter)
-
-    assert len(snapshot._history) == 1
-    assert len(rep._history) == 2
-    # The copy must be the partner-class subclass, not the primitive parent.
-    assert isinstance(snapshot, PartnerClassArraySolverRepresentation)
+    assert _select_value(sm_orig, rep, ConcSint(1), "vo") == 8
+    # Snapshot never saw the second store -> default is the null sentinel.
+    assert _select_value(sm_snap, snapshot, ConcSint(1), "vs") == -1
+    # Snapshot is the partner-class subclass after copy, not the parent.
+    assert isinstance(snapshot, SimplePartnerClassArraySolverRepresentation)
 
 
-def test_solver_manager_dispatches_partner_class_array():
-    """Z3IncrementalSolverManager picks the partner-class rep for object arrays."""
-    from mulib_python.array_repr import (
-        PartnerClassArraySolverRepresentation,
-        PrimitiveValuedArraySolverRepresentation,
+def test_partner_class_array_copy_preserves_check_bounds():
+    """``copy()`` must forward subclass-specific state (``_check_bounds``)
+    without requiring the subclass to override ``copy``."""
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
     )
-    from mulib_python.constraints import ArrayInitializationConstraint
-    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
+    snapshot = rep.copy()
+    assert snapshot._check_bounds is False
 
+
+def test_partner_class_array_symbolic_object_id_round_trip():
+    """A symbolic ``Sint`` (representing an object handle) stored at a
+    concrete index must come back via the model."""
     sm = Z3IncrementalSolverManager()
+    rep = SimplePartnerClassArraySolverRepresentation(
+        array_id="a", element_type=_DummyPartnerClass, length=ConcSint(4),
+        check_bounds=False,
+    )
+    obj = SymSintLeaf("obj")
+    sm.solver.add(sm.adapter.translate(obj) == 314)
+    rep.store(ConcSint(0), obj, sm.adapter)
+    assert _select_value(sm, rep, ConcSint(0), "v") == 314
 
-    # Object-typed array -> partner-class representation.
-    obj_init = ArrayInitializationConstraint(
-        partner_class_object_id=ConcSint(101),
+
+# ---------------------------------------------------------------------------
+# SymbolicObjectStates / IncrementalSolverState
+# ---------------------------------------------------------------------------
+
+def test_symbolic_object_states_register_and_get():
+    states = SymbolicObjectStates()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="arr1", element_type=int, length=ConcSint(10),
+    )
+    states.register_array("arr1", rep)
+    assert states.get_array("arr1") is rep
+    assert states.get_array("missing") is None
+
+
+def test_symbolic_object_states_copy_is_independent():
+    states = SymbolicObjectStates()
+    rep = ArrayHistorySolverRepresentation(
+        array_id="arr1", element_type=int, length=ConcSint(10),
+    )
+    states.register_array("arr1", rep)
+    snap = states.copy()
+    states.register_array("arr2", rep)
+    assert "arr2" in states.arrays and "arr2" not in snap.arrays
+
+
+def test_incremental_state_push_pop():
+    state = IncrementalSolverState()
+    assert state.level == 0
+    state.push(5)
+    state.push(10)
+    assert state.level == 2
+    assert state.pop() == 10
+    assert state.level == 1
+
+
+def test_incremental_state_pop_all():
+    state = IncrementalSolverState()
+    for i in range(5):
+        state.push(i)
+    state.pop_all()
+    assert state.level == 0
+
+
+def test_incremental_state_pop_empty_raises():
+    with pytest.raises(RuntimeError):
+        IncrementalSolverState().pop()
+
+
+# ---------------------------------------------------------------------------
+# Array constraint AST: equality / hashing
+# ---------------------------------------------------------------------------
+
+def test_array_init_constraint_equality_includes_default_value():
+    a = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4), default_value=ConcSint(0),
+    )
+    b = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4), default_value=ConcSint(7),
+    )
+    assert a != b
+    assert hash(a) != hash(b) or a == b  # different defaults -> not equal
+
+
+def test_array_init_constraint_equality_includes_initial_values():
+    a = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4),
+        initial_values={0: ConcSint(1)},
+    )
+    b = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4),
+        initial_values={0: ConcSint(2)},
+    )
+    assert a != b
+
+
+def test_array_init_constraint_equal_for_same_inputs():
+    a = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4),
+        initial_values={0: ConcSint(1), 2: ConcSint(3)},
+    )
+    b = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4),
+        initial_values={0: ConcSint(1), 2: ConcSint(3)},
+    )
+    assert a == b
+    assert hash(a) == hash(b)
+
+
+def test_array_init_constraint_is_hashable_with_initial_values():
+    """Sanity check: the frozen ``initial_values`` must not break hashing
+    (an earlier version sorted items, which would crash on non-orderable
+    keys)."""
+    c = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        value_type=int, length=ConcSint(4),
+        initial_values={3: ConcSint(1), 1: ConcSint(2), 2: ConcSint(3)},
+    )
+    {c}  # round-trip through a set proves it's hashable
+
+
+def test_array_id_uses_concrete_value():
+    c = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(42), index=ConcSint(0),
+        value_type=int, length=ConcSint(1),
+    )
+    assert c.array_id == "arr#c:42"
+
+
+def test_array_id_uses_symbolic_leaf_id():
+    leaf = SymSintLeaf("MyArr")
+    c = ArrayInitializationConstraint(
+        partner_class_object_id=leaf, index=ConcSint(0),
+        value_type=int, length=ConcSint(1),
+    )
+    assert c.array_id == "arr#s:MyArr"
+
+
+def test_array_id_distinguishes_concrete_and_symbolic_with_same_label():
+    """A concrete ``42`` and a symbolic leaf called ``42`` must not collide."""
+    c_conc = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(42), index=ConcSint(0),
+        value_type=int, length=ConcSint(1),
+    )
+    c_sym = ArrayInitializationConstraint(
+        partner_class_object_id=SymSintLeaf("42"), index=ConcSint(0),
+        value_type=int, length=ConcSint(1),
+    )
+    assert c_conc.array_id != c_sym.array_id
+
+
+def test_array_id_rejects_unsupported_expression_type():
+    """Anything that is not a ``ConcSint`` or a ``SymSintLeaf`` must be
+    rejected explicitly rather than being keyed by a possibly-colliding
+    ``repr``."""
+    sym_a, sym_b = SymSintLeaf("a"), SymSintLeaf("b")
+    composite = sym_a + sym_b  # produces a non-leaf Sint
+    c = ArrayInitializationConstraint(
+        partner_class_object_id=composite, index=ConcSint(0),
+        value_type=int, length=ConcSint(1),
+    )
+    with pytest.raises(TypeError):
+        c.array_id
+
+
+def test_array_access_constraint_is_store_property():
+    a = ArrayAccessConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        type=ArrayAccessConstraint.Type.STORE, value=ConcSint(0),
+    )
+    s = ArrayAccessConstraint(
+        partner_class_object_id=ConcSint(1), index=ConcSint(0),
+        type=ArrayAccessConstraint.Type.SELECT, value=ConcSint(0),
+    )
+    assert a.is_store is True
+    assert s.is_store is False
+
+
+# ---------------------------------------------------------------------------
+# Z3IncrementalSolverManager.add_array_constraint dispatch + integration
+# ---------------------------------------------------------------------------
+
+def _init(value_type, *, oid=ConcSint(1), length=ConcSint(4), **kwargs):
+    return ArrayInitializationConstraint(
+        partner_class_object_id=oid,
         index=ConcSint(0),
-        value_type=_DummyPartnerClass,
-        length=ConcSint(4),
+        value_type=value_type,
+        length=length,
+        **kwargs,
     )
-    sm.add_array_constraint(obj_init)
-    obj_rep = sm._state.current_object_states.get_array(obj_init.array_id)
-    assert isinstance(obj_rep, PartnerClassArraySolverRepresentation)
 
-    # Primitive-typed array -> primitive representation.
-    prim_init = ArrayInitializationConstraint(
-        partner_class_object_id=ConcSint(202),
-        index=ConcSint(0),
-        value_type=int,
-        length=ConcSint(4),
+
+def _store(oid, index, value):
+    return ArrayAccessConstraint(
+        partner_class_object_id=oid, index=index,
+        type=ArrayAccessConstraint.Type.STORE, value=value,
     )
-    sm.add_array_constraint(prim_init)
-    prim_rep = sm._state.current_object_states.get_array(prim_init.array_id)
-    assert type(prim_rep) is PrimitiveValuedArraySolverRepresentation
 
 
-def test_solver_manager_array_access_via_constraints():
-    """End-to-end: add init + STORE + SELECT constraints through the manager."""
-    from mulib_python.constraints import (
-        ArrayAccessConstraint, ArrayInitializationConstraint,
+def _select(oid, index, into):
+    return ArrayAccessConstraint(
+        partner_class_object_id=oid, index=index,
+        type=ArrayAccessConstraint.Type.SELECT, value=into,
     )
-    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
 
+
+def test_manager_dispatches_primitive_array_to_primitive_rep():
     sm = Z3IncrementalSolverManager()
-
-    array_ref = ConcSint(7)
-    init = ArrayInitializationConstraint(
-        partner_class_object_id=array_ref,
-        index=ConcSint(0),
-        value_type=_DummyPartnerClass,
-        length=ConcSint(3),
-    )
+    init = _init(int, oid=ConcSint(101))
     sm.add_array_constraint(init)
 
-    # STORE object id 99 at index 0.
-    sm.add_array_constraint(ArrayAccessConstraint(
-        partner_class_object_id=array_ref,
-        index=ConcSint(0),
-        type=ArrayAccessConstraint.Type.STORE,
-        value=ConcSint(99),
-    ))
+    rep = sm._state.current_object_states.get_array(init.array_id)
+    assert type(rep) is PrimitiveValuedArraySolverRepresentation
 
-    # SELECT into a fresh symbolic var.
-    result = SymSintLeaf("res")
-    sm.add_array_constraint(ArrayAccessConstraint(
-        partner_class_object_id=array_ref,
-        index=ConcSint(0),
-        type=ArrayAccessConstraint.Type.SELECT,
-        value=result,
-    ))
+
+def test_manager_dispatches_object_array_to_partner_class_rep():
+    sm = Z3IncrementalSolverManager()
+    init = _init(_DummyPartnerClass, oid=ConcSint(202))
+    sm.add_array_constraint(init)
+
+    rep = sm._state.current_object_states.get_array(init.array_id)
+    assert isinstance(rep, SimplePartnerClassArraySolverRepresentation)
+
+
+def test_manager_end_to_end_partner_class_store_select():
+    sm = Z3IncrementalSolverManager()
+    oid = ConcSint(7)
+    sm.add_array_constraint(_init(_DummyPartnerClass, oid=oid, length=ConcSint(3)))
+    sm.add_array_constraint(_store(oid, ConcSint(0), ConcSint(99)))
+
+    res = SymSintLeaf("res")
+    sm.add_array_constraint(_select(oid, ConcSint(0), res))
 
     assert sm.is_satisfiable()
-    assert sm.get_label(result) == 99
+    assert sm.get_label(res) == 99
+
+
+def test_manager_end_to_end_initial_values_through_constraint():
+    """`ArrayInitializationConstraint(initial_values=...)` must be honoured
+    end-to-end, including for indices never written to."""
+    sm = Z3IncrementalSolverManager()
+    oid = ConcSint(11)
+    sm.add_array_constraint(_init(
+        int, oid=oid, length=ConcSint(4),
+        initial_values={2: ConcSint(555)},
+    ))
+    res = SymSintLeaf("res")
+    sm.add_array_constraint(_select(oid, ConcSint(2), res))
+    assert sm.is_satisfiable()
+    assert sm.get_label(res) == 555
+
+
+def test_manager_invalidates_label_cache_on_init():
+    """A re-init at the same array_id must not return stale labels."""
+    sm = Z3IncrementalSolverManager()
+    oid = ConcSint(13)
+    sm.add_array_constraint(_init(int, oid=oid, length=ConcSint(4)))
+    sm.add_array_constraint(_store(oid, ConcSint(0), ConcSint(7)))
+    res1 = SymSintLeaf("r1")
+    sm.add_array_constraint(_select(oid, ConcSint(0), res1))
+    assert sm.get_label(res1) == 7
+
+    # Re-initialise; cache must be cleared so a new SELECT works.
+    sm.add_array_constraint(_init(int, oid=oid, length=ConcSint(4)))
+    res2 = SymSintLeaf("r2")
+    sm.add_array_constraint(_select(oid, ConcSint(0), res2))
+    # No STOREs on the fresh array -> default 0.
+    assert sm.get_label(res2) == 0
+
+
+def test_manager_raises_on_access_before_init():
+    sm = Z3IncrementalSolverManager()
+    with pytest.raises(ValueError):
+        sm.add_array_constraint(_store(ConcSint(99), ConcSint(0), ConcSint(0)))
+
+
+def test_manager_partner_class_array_oob_unsat():
+    """Bounds checks flow through partner-class arrays just like primitive ones."""
+    sm = Z3IncrementalSolverManager()
+    oid = ConcSint(21)
+    sm.add_array_constraint(_init(_DummyPartnerClass, oid=oid, length=ConcSint(2)))
+    sm.add_array_constraint(_store(oid, ConcSint(5), ConcSint(0)))
+    assert not sm.is_satisfiable()
+
+
+# ---------------------------------------------------------------------------
+# Z3MulibAdapter must refuse to translate misrouted array constraints.
+# ---------------------------------------------------------------------------
+
+def test_adapter_refuses_array_access_constraint():
+    adapter = Z3MulibAdapter()
+    ac = _store(ConcSint(1), ConcSint(0), ConcSint(0))
+    with pytest.raises(TypeError):
+        adapter.translate(ac)
+
+
+def test_adapter_refuses_array_initialization_constraint():
+    adapter = Z3MulibAdapter()
+    init = _init(int, oid=ConcSint(1))
+    with pytest.raises(TypeError):
+        adapter.translate(init)
