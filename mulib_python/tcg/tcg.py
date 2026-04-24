@@ -27,6 +27,9 @@ class TestCase:
     metadata : dict
         Additional metadata (path depth, constraints, etc.).
     """
+    # Tell pytest not to collect this dataclass as a test class.
+    __test__ = False
+
     inputs: Dict[str, Any]
     expected_output: Any
     description: str = ""
@@ -42,6 +45,9 @@ class TestCaseGenerator:
     Converts Solutions into TestCase objects that can be serialized
     or used directly in test frameworks.
     """
+
+    # Tell pytest not to collect this class as a test class.
+    __test__ = False
 
     def __init__(
         self,
