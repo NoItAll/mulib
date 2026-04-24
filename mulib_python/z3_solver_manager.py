@@ -2,7 +2,9 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, List, Optional, TYPE_CHECKING
+import functools
+import threading
+from typing import Any, Callable, Dict, List, Optional, TYPE_CHECKING
 
 import z3
 
@@ -20,6 +22,25 @@ if TYPE_CHECKING:
     pass
 
 
+# Z3's Python bindings share global C state; a process-wide reentrant lock
+# serializes all solver/adapter access so multiple threads can each drive
+# their own SymbolicExecution without corrupting Z3.  This mirrors the
+# ``syncObject`` used in the Java implementation
+# (``de.wwu.mulib.solving.solvers.Z3SolverManager``).
+_Z3_LOCK: threading.RLock = threading.RLock()
+
+
+def _z3_locked(method: Callable[..., Any]) -> Callable[..., Any]:
+    """Decorator that serializes a method behind :data:`_Z3_LOCK`."""
+
+    @functools.wraps(method)
+    def wrapper(self: Any, *args: Any, **kwargs: Any) -> Any:
+        with _Z3_LOCK:
+            return method(self, *args, **kwargs)
+
+    return wrapper
+
+
 class Z3IncrementalSolverManager(SolverManager):
     """Z3-based incremental solver manager.
 
@@ -32,15 +53,26 @@ class Z3IncrementalSolverManager(SolverManager):
         timeout_ms: Optional[int] = None,
         treat_bools_as_ints: bool = False,
     ) -> None:
-        self._solver = z3.Solver()
+        # Each manager owns its own Z3 context so that solver instances in
+        # different threads do not share C-level state.  This is the same
+        # design used by the Java mulib (one Context per SolverManager).
+        self._ctx: z3.Context = z3.Context()
+        self._solver = z3.Solver(ctx=self._ctx)
         if timeout_ms is not None:
             self._solver.set("timeout", timeout_ms)
-        
-        self._adapter = Z3MulibAdapter(treat_bools_as_ints=treat_bools_as_ints)
+
+        self._adapter = Z3MulibAdapter(
+            treat_bools_as_ints=treat_bools_as_ints, ctx=self._ctx
+        )
         self._level = 0
         self._state = IncrementalSolverState()
         self._model: Optional[z3.ModelRef] = None
         self._label_cache: Dict[int, Any] = {}
+
+    @property
+    def ctx(self) -> z3.Context:
+        """The Z3 context owned by this manager."""
+        return self._ctx
 
     @property
     def solver(self) -> z3.Solver:
@@ -52,12 +84,14 @@ class Z3IncrementalSolverManager(SolverManager):
         """Access the Z3 adapter."""
         return self._adapter
 
+    @_z3_locked
     def add_constraint(self, constraint: Constraint) -> None:
         """Add constraint to current scope."""
         z3_constraint = self._adapter.translate(constraint)
         self._solver.add(z3_constraint)
         self._model = None  # Invalidate cached model
 
+    @_z3_locked
     def add_constraint_after_new_backtracking_point(self, constraint: Constraint) -> None:
         """Open a new backtracking scope and add constraint."""
         self._solver.push()
@@ -67,6 +101,7 @@ class Z3IncrementalSolverManager(SolverManager):
         self._solver.add(z3_constraint)
         self._model = None
 
+    @_z3_locked
     def add_array_constraint(
         self, ac: ArrayAccessConstraint | ArrayInitializationConstraint
     ) -> None:
@@ -99,6 +134,7 @@ class Z3IncrementalSolverManager(SolverManager):
                 self._solver.add(c)
             self._model = None
 
+    @_z3_locked
     def check_with_new_constraint(self, constraint: Constraint) -> bool:
         """Check if adding constraint keeps the system satisfiable."""
         z3_constraint = self._adapter.translate(constraint)
@@ -108,6 +144,7 @@ class Z3IncrementalSolverManager(SolverManager):
         self._solver.pop()
         return result == z3.sat
 
+    @_z3_locked
     def is_satisfiable(self) -> bool:
         """Check if current constraint stack is satisfiable."""
         result = self._solver.check()
@@ -116,6 +153,7 @@ class Z3IncrementalSolverManager(SolverManager):
             return True
         return False
 
+    @_z3_locked
     def backtrack_once(self) -> None:
         """Remove most recent backtracking scope."""
         if self._level > 0:
@@ -124,16 +162,19 @@ class Z3IncrementalSolverManager(SolverManager):
             self._state.pop()
             self._model = None
 
+    @_z3_locked
     def backtrack(self, n: int) -> None:
         """Remove n most recent backtracking scopes."""
         for _ in range(n):
             self.backtrack_once()
 
+    @_z3_locked
     def backtrack_all(self) -> None:
         """Remove all backtracking scopes."""
         while self._level > 0:
             self.backtrack_once()
 
+    @_z3_locked
     def get_label(self, var: Any) -> Any:
         """Evaluate var in current model."""
         var_id = id(var)
@@ -148,6 +189,7 @@ class Z3IncrementalSolverManager(SolverManager):
         self._label_cache[var_id] = label
         return label
 
+    @_z3_locked
     def label_solution(
         self,
         return_value: Any,
@@ -172,6 +214,7 @@ class Z3IncrementalSolverManager(SolverManager):
         labels = Labels(id_to_var, id_to_label)
         return Solution(return_value=id_to_label["return"], labels=labels)
 
+    @_z3_locked
     def _concretize(self, value: Any) -> Any:
         """Convert a potentially symbolic value to a concrete one."""
         from mulib_python.substitutions.primitives.sint import (
@@ -199,18 +242,22 @@ class Z3IncrementalSolverManager(SolverManager):
         except TypeError:
             return value
 
+    @_z3_locked
     def reset_labels(self) -> None:
         """Clear the label cache."""
         self._label_cache.clear()
 
+    @_z3_locked
     def register_label_pair(self, search_repr: Any, label: Any) -> None:
         """Cache a label pair."""
         self._label_cache[id(search_repr)] = label
 
+    @_z3_locked
     def get_level(self) -> int:
         """Return current backtracking depth."""
         return self._level
 
+    @_z3_locked
     def get_up_to_n_solutions(
         self, initial_solution: Solution, n: int
     ) -> List[Solution]:
@@ -242,8 +289,7 @@ class Z3IncrementalSolverManager(SolverManager):
                 break
             
             self._solver.push()
-            self._solver.add(z3.Or(exclusion_clauses))
-            
+            self._solver.add(z3.Or(*exclusion_clauses))
             if self._solver.check() == z3.sat:
                 self._model = self._solver.model()
                 self.reset_labels()
@@ -269,15 +315,17 @@ class Z3IncrementalSolverManager(SolverManager):
         return solutions
 
     def _to_z3_value(self, value: Any) -> z3.ExprRef:
-        """Convert a Python value to a Z3 value."""
+        """Convert a Python value to a Z3 value in this manager's context."""
+        ctx = self._ctx
         if isinstance(value, bool):
-            return z3.BoolVal(value)
+            return z3.BoolVal(value, ctx=ctx)
         if isinstance(value, int):
-            return z3.IntVal(value)
+            return z3.IntVal(value, ctx=ctx)
         if isinstance(value, float):
-            return z3.RealVal(value)
-        return z3.IntVal(0)
+            return z3.RealVal(value, ctx=ctx)
+        return z3.IntVal(0, ctx=ctx)
 
+    @_z3_locked
     def shutdown(self) -> None:
         """Release solver resources."""
         self._solver = None
@@ -302,6 +350,7 @@ class Z3GlobalLearningSolverManager(Z3IncrementalSolverManager):
         self._global_constraints: List[Constraint] = []
         self._learned_facts: List[z3.ExprRef] = []
 
+    @_z3_locked
     def add_global_constraint(self, constraint: Constraint) -> None:
         """Add a constraint that applies globally (survives backtracking)."""
         z3_constraint = self._adapter.translate(constraint)
@@ -310,12 +359,14 @@ class Z3GlobalLearningSolverManager(Z3IncrementalSolverManager):
         self._solver.add(z3_constraint)
         self._model = None
 
+    @_z3_locked
     def learn_fact(self, fact: z3.ExprRef) -> None:
         """Add a learned Z3 fact that applies globally."""
         self._learned_facts.append(fact)
         self._solver.add(fact)
         self._model = None
 
+    @_z3_locked
     def backtrack_all(self) -> None:
         """Remove all backtracking scopes but keep global constraints."""
         super().backtrack_all()

@@ -5,9 +5,12 @@ Verifies that:
 2. The _se_context thread-local registry properly isolates threads
 3. Results from concurrent executions match sequential results
 
-NOTE: Z3 solver is not thread-safe by default. These tests verify the
-Python-level isolation, but actual concurrent execution may fail due
-to Z3 limitations. Tests requiring true concurrency are marked to skip.
+Z3's Python bindings share global C state, so the solver manager
+serializes solver access behind a process-wide lock
+(``mulib_python.z3_solver_manager._Z3_LOCK``).  Per-thread
+``SymbolicExecution`` objects remain independent; the lock only serializes
+the actual SMT calls.  This is the same approach as the Java
+implementation's ``syncObject``.
 """
 
 import pytest
@@ -17,10 +20,6 @@ from concurrent.futures import ThreadPoolExecutor, as_completed
 from mulib_python.api import free_int, assume, get_solutions
 from mulib_python.substitutions.primitives.sint import ConcSint
 from mulib_python.substitutions._se_context import _get_se
-
-
-# Skip message for Z3 thread safety issues
-Z3_THREAD_SKIP = "Z3 is not thread-safe; concurrent solver access fails"
 
 
 # =============================================================================
@@ -145,7 +144,6 @@ def test_se_context_isolated_per_sequential_thread():
 # Concurrent Thread Tests (Skip due to Z3 thread safety)
 # =============================================================================
 
-@pytest.mark.skip(reason=Z3_THREAD_SKIP)
 def test_two_threads_different_functions():
     """Two threads each running get_solutions on different functions concurrently."""
     results = {}
@@ -183,7 +181,6 @@ def test_two_threads_different_functions():
     assert results["b"][0].labels["x"] == 77
 
 
-@pytest.mark.skip(reason=Z3_THREAD_SKIP)
 def test_thread_pool_multiple_searches():
     """Use ThreadPoolExecutor to run multiple searches concurrently."""
     targets = [10, 20, 30, 40, 50]
@@ -207,7 +204,6 @@ def test_thread_pool_multiple_searches():
         assert results[target][0].labels["x"] == target
 
 
-@pytest.mark.skip(reason=Z3_THREAD_SKIP)
 def test_concurrent_results_match_sequential():
     """Results from concurrent execution must equal sequential results."""
     # First, get sequential results
@@ -244,7 +240,6 @@ def test_concurrent_results_match_sequential():
             assert conc_a + conc_b == n
 
 
-@pytest.mark.skip(reason=Z3_THREAD_SKIP)
 def test_many_concurrent_searches():
     """Run many searches concurrently to stress test isolation."""
     num_searches = 10
@@ -267,7 +262,6 @@ def test_many_concurrent_searches():
         assert sols[0].labels["x"] == target, f"Search {i} got wrong value"
 
 
-@pytest.mark.skip(reason=Z3_THREAD_SKIP)
 def test_repeated_concurrent_batches():
     """Run multiple batches of concurrent searches."""
     for batch in range(3):

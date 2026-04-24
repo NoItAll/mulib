@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import Any, Dict, TYPE_CHECKING
+from typing import Any, Dict, Optional, TYPE_CHECKING
 
 import z3
 
@@ -25,14 +25,27 @@ if TYPE_CHECKING:
 
 class Z3MulibAdapter:
     """Translates mulib AST nodes to Z3 expressions.
-    
-    Maintains a cache of translated expressions for efficiency.
+
+    Each adapter is bound to a single :class:`z3.Context`.  Threads that
+    need to solve concurrently each create their own adapter (and hence
+    their own Z3 context) so that Z3's per-context C state stays
+    thread-local.  This mirrors the Java implementation, which gives each
+    ``Z3SolverManager`` an independent ``Context``.
     """
 
-    def __init__(self, treat_bools_as_ints: bool = False) -> None:
+    def __init__(
+        self,
+        treat_bools_as_ints: bool = False,
+        ctx: Optional[z3.Context] = None,
+    ) -> None:
         self._cache: Dict[int, z3.ExprRef] = {}
         self._const_cache: Dict[str, z3.ExprRef] = {}
         self._treat_bools_as_ints = treat_bools_as_ints
+        self._ctx: z3.Context = ctx if ctx is not None else z3.Context()
+
+    @property
+    def ctx(self) -> z3.Context:
+        return self._ctx
 
     def clear_cache(self) -> None:
         """Clear the translation cache."""
@@ -40,7 +53,7 @@ class Z3MulibAdapter:
 
     def translate(self, node: Any) -> z3.ExprRef:
         """Translate a mulib node to a Z3 expression.
-        
+
         Note: We don't cache by id() because Python can reuse IDs after
         garbage collection, leading to stale cache hits.
         """
@@ -48,11 +61,12 @@ class Z3MulibAdapter:
 
     def _translate_impl(self, node: Any) -> z3.ExprRef:
         """Internal translation implementation."""
+        ctx = self._ctx
         # Handle constraint literals
         if node is TRUE or (isinstance(node, _BoolLiteral) and node._value):
-            return z3.BoolVal(True)
+            return z3.BoolVal(True, ctx=ctx)
         if node is FALSE or (isinstance(node, _BoolLiteral) and not node._value):
-            return z3.BoolVal(False)
+            return z3.BoolVal(False, ctx=ctx)
 
         # Handle concrete primitive values
         from mulib_python.substitutions.primitives.sint import (
@@ -64,17 +78,17 @@ class Z3MulibAdapter:
 
         if isinstance(node, ConcSbool):
             if self._treat_bools_as_ints:
-                return z3.IntVal(1 if node._value else 0)
-            return z3.BoolVal(node._value)
-        
+                return z3.IntVal(1 if node._value else 0, ctx=ctx)
+            return z3.BoolVal(node._value, ctx=ctx)
+
         if isinstance(node, (ConcSint, ConcSbyte, ConcSchar, ConcSshort)):
-            return z3.IntVal(node._value)
-        
+            return z3.IntVal(node._value, ctx=ctx)
+
         if isinstance(node, ConcSlong):
-            return z3.IntVal(node._value)
-        
+            return z3.IntVal(node._value, ctx=ctx)
+
         if isinstance(node, (ConcSdouble, ConcSfloat)):
-            return z3.RealVal(node._value)
+            return z3.RealVal(node._value, ctx=ctx)
 
         # Handle symbolic leaf variables
         from mulib_python.substitutions.primitives.sint import (
@@ -87,24 +101,24 @@ class Z3MulibAdapter:
         if isinstance(node, SymSboolLeaf):
             if node._id not in self._const_cache:
                 if self._treat_bools_as_ints:
-                    self._const_cache[node._id] = z3.Int(node._id)
+                    self._const_cache[node._id] = z3.Int(node._id, ctx=ctx)
                 else:
-                    self._const_cache[node._id] = z3.Bool(node._id)
+                    self._const_cache[node._id] = z3.Bool(node._id, ctx=ctx)
             return self._const_cache[node._id]
 
         if isinstance(node, (SymSintLeaf, SymSbyteLeaf, SymScharLeaf, SymSshortLeaf)):
             if node._id not in self._const_cache:
-                self._const_cache[node._id] = z3.Int(node._id)
+                self._const_cache[node._id] = z3.Int(node._id, ctx=ctx)
             return self._const_cache[node._id]
 
         if isinstance(node, SymSlongLeaf):
             if node._id not in self._const_cache:
-                self._const_cache[node._id] = z3.Int(node._id)
+                self._const_cache[node._id] = z3.Int(node._id, ctx=ctx)
             return self._const_cache[node._id]
 
         if isinstance(node, (SymSdoubleLeaf, SymSfloatLeaf)):
             if node._id not in self._const_cache:
-                self._const_cache[node._id] = z3.Real(node._id)
+                self._const_cache[node._id] = z3.Real(node._id, ctx=ctx)
             return self._const_cache[node._id]
 
         # Handle symbolic wrappers
@@ -117,35 +131,31 @@ class Z3MulibAdapter:
 
         if isinstance(node, SymSbool):
             return self.translate(node._represented_constraint)
-        
+
         if isinstance(node, (SymSint, SymSbyte, SymSchar, SymSshort)):
             return self.translate(node._represented_expression)
-        
+
         if isinstance(node, SymSlong):
             return self.translate(node._represented_expression)
-        
+
         if isinstance(node, (SymSdouble, SymSfloat)):
             return self.translate(node._represented_expression)
 
         # Handle expression nodes
         if isinstance(node, Sum):
             return self.translate(node.lhs) + self.translate(node.rhs)
-        
+
         if isinstance(node, Sub):
             return self.translate(node.lhs) - self.translate(node.rhs)
-        
+
         if isinstance(node, Mul):
             return self.translate(node.lhs) * self.translate(node.rhs)
-        
+
         if isinstance(node, Div):
             lhs = self.translate(node.lhs)
             rhs = self.translate(node.rhs)
-            # Check if this is integer or real division
-            if z3.is_int(lhs) and z3.is_int(rhs):
-                # Use Z3's integer division
-                return lhs / rhs
             return lhs / rhs
-        
+
         if isinstance(node, Mod):
             lhs = self.translate(node.lhs)
             rhs = self.translate(node.rhs)
@@ -153,7 +163,7 @@ class Z3MulibAdapter:
                 return lhs % rhs
             # For reals, we need to simulate mod
             return lhs - (lhs / rhs) * rhs
-        
+
         if isinstance(node, Neg):
             return -self.translate(node.expr)
 
@@ -162,27 +172,27 @@ class Z3MulibAdapter:
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
             return z3.BV2Int(lhs & rhs)
-        
+
         if isinstance(node, BitwiseOr):
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
             return z3.BV2Int(lhs | rhs)
-        
+
         if isinstance(node, BitwiseXor):
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
             return z3.BV2Int(lhs ^ rhs)
-        
+
         if isinstance(node, ShiftLeft):
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
             return z3.BV2Int(lhs << rhs)
-        
+
         if isinstance(node, ShiftRight):
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
             return z3.BV2Int(lhs >> rhs)
-        
+
         if isinstance(node, LogicalShiftRight):
             lhs = self._to_bv32(self.translate(node.lhs))
             rhs = self._to_bv32(self.translate(node.rhs))
@@ -192,24 +202,24 @@ class Z3MulibAdapter:
             cond = self.translate(node.condition)
             if_expr = self.translate(node.if_expr)
             else_expr = self.translate(node.else_expr)
-            return z3.If(cond, if_expr, else_expr)
+            return z3.If(cond, if_expr, else_expr, ctx=ctx)
 
         # Handle constraint nodes
         if isinstance(node, And):
             return z3.And(self.translate(node.lhs), self.translate(node.rhs))
-        
+
         if isinstance(node, Or):
             return z3.Or(self.translate(node.lhs), self.translate(node.rhs))
-        
+
         if isinstance(node, Not):
             return z3.Not(self.translate(node.constraint))
-        
+
         if isinstance(node, Xor):
             return z3.Xor(self.translate(node.lhs), self.translate(node.rhs))
-        
+
         if isinstance(node, Implication):
             return z3.Implies(self.translate(node.lhs), self.translate(node.rhs))
-        
+
         if isinstance(node, Equivalence):
             lhs = self.translate(node.lhs)
             rhs = self.translate(node.rhs)
@@ -217,27 +227,27 @@ class Z3MulibAdapter:
 
         if isinstance(node, Lt):
             return self.translate(node.lhs) < self.translate(node.rhs)
-        
+
         if isinstance(node, Lte):
             return self.translate(node.lhs) <= self.translate(node.rhs)
-        
+
         if isinstance(node, Eq):
             return self.translate(node.lhs) == self.translate(node.rhs)
 
         if isinstance(node, In):
             elem = self.translate(node.element)
             clauses = [elem == self.translate(s) for s in node.set]
-            return z3.Or(*clauses) if clauses else z3.BoolVal(False)
+            return z3.Or(*clauses) if clauses else z3.BoolVal(False, ctx=ctx)
 
         if isinstance(node, BoolIte):
             cond = self.translate(node.condition)
             if_case = self.translate(node.if_case)
             else_case = self.translate(node.else_case)
-            return z3.If(cond, if_case, else_case)
+            return z3.If(cond, if_case, else_case, ctx=ctx)
 
         # Skip array/partner-class constraints for now (handled by array_repr)
         if isinstance(node, (ArrayAccessConstraint, ArrayInitializationConstraint, PartnerClassObjectConstraint)):
-            return z3.BoolVal(True)
+            return z3.BoolVal(True, ctx=ctx)
 
         raise TypeError(f"Cannot translate {type(node).__name__}: {node!r}")
 

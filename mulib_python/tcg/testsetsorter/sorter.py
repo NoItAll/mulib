@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import abc
 import random
-from typing import Callable, List, TYPE_CHECKING
+from typing import Any, Callable, List, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from mulib_python.tcg.tcg import TestCase

@@ -92,9 +92,11 @@ def test_adapter_translate_bool():
 def test_adapter_extract_value():
     adapter = Z3MulibAdapter()
     import z3
-    
-    solver = z3.Solver()
-    x = z3.Int("x")
+
+    # Create the model in the adapter's own context so that extracted
+    # variables match.
+    solver = z3.Solver(ctx=adapter.ctx)
+    x = z3.Int("x", ctx=adapter.ctx)
     solver.add(x == 42)
     solver.check()
     model = solver.model()

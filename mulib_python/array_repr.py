@@ -138,7 +138,10 @@ class ArrayHistorySolverRepresentation(ArraySolverRepresentation):
             for store_idx, store_val in reversed(stores_at_index):
                 z3_store_idx = adapter.translate(store_idx)
                 z3_store_val = adapter.translate(store_val)
-                current_expr = z3.If(z3_index == z3_store_idx, z3_store_val, current_expr)
+                current_expr = z3.If(
+                    z3_index == z3_store_idx, z3_store_val, current_expr,
+                    ctx=adapter.ctx,
+                )
             
             constraints.append(z3_result == current_expr)
 
@@ -223,7 +226,7 @@ class PrimitiveValuedArraySolverRepresentation(ArrayHistorySolverRepresentation)
             z3_index = adapter.translate(index)
             z3_length = adapter.translate(self._length)
             # 0 <= index < length
-            constraints.append(z3_index >= z3.IntVal(0))
+            constraints.append(z3_index >= z3.IntVal(0, ctx=adapter.ctx))
             constraints.append(z3_index < z3_length)
 
         return constraints
@@ -240,7 +243,7 @@ class PrimitiveValuedArraySolverRepresentation(ArrayHistorySolverRepresentation)
             z3_index = adapter.translate(index)
             z3_length = adapter.translate(self._length)
             # 0 <= index < length
-            constraints.append(z3_index >= z3.IntVal(0))
+            constraints.append(z3_index >= z3.IntVal(0, ctx=adapter.ctx))
             constraints.append(z3_index < z3_length)
 
         return constraints
