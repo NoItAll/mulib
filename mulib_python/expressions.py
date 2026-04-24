@@ -97,12 +97,7 @@ class AbstractOperatorExpression(Expression):
         return self._hash
 
 
-# AbstractOperatorExpression uses __slots__ but also uses cached_property.
-# cached_property stores its result in the instance __dict__, which requires
-# the class to have a __dict__ (i.e. not *only* __slots__).  We therefore
-# intentionally omit "__dict__" from __slots__ suppression so that the
-# descriptor can function correctly, while still documenting the intended
-# attributes through __slots__.
+
 
 
 class Sum(AbstractOperatorExpression):
