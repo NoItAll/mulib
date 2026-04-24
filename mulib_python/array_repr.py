@@ -262,6 +262,98 @@ class PrimitiveValuedArraySolverRepresentation(ArrayHistorySolverRepresentation)
         return rep
 
 
+class PartnerClassArraySolverRepresentation(PrimitiveValuedArraySolverRepresentation):
+    """Array representation for arrays of symbolic objects.
+
+    Mirrors Java's
+    ``de.wwu.mulib.solving.object_representations.SimplePartnerClassArraySolverRepresentation``:
+    elements of the array are *identifiers* (concrete or symbolic ``Sint``)
+    of partner-class objects (or nested arrays).  A stored ``None`` is
+    coerced to the sentinel ``ConcSint(-1)`` (the ``MINUS_ONE`` constant
+    used in the Java implementation) to represent ``null``.
+
+    The element type must be a non-primitive class (in the Python port we
+    treat anything other than ``int``/``bool``/``float`` as a partner
+    class), which is asserted at construction time.
+    """
+
+    #: Sentinel value representing the ``null`` reference.  Lazily
+    #: initialized on first use so that the import of this module remains
+    #: light.
+    _NULL_SENTINEL: Any = None
+
+    def __init__(
+        self,
+        array_id: str,
+        element_type: type,
+        length: Any,
+        default_value: Any = None,
+        initial_values: Optional[Dict[int, Any]] = None,
+        check_bounds: bool = True,
+    ) -> None:
+        from mulib_python.substitutions.primitives.sint import ConcSint
+
+        if element_type in (int, bool, float):
+            raise ValueError(
+                "PartnerClassArraySolverRepresentation requires a non-primitive "
+                f"element type, got {element_type!r}"
+            )
+
+        if PartnerClassArraySolverRepresentation._NULL_SENTINEL is None:
+            PartnerClassArraySolverRepresentation._NULL_SENTINEL = ConcSint(-1)
+        null = PartnerClassArraySolverRepresentation._NULL_SENTINEL
+
+        if default_value is None:
+            default_value = null
+
+        # Coerce any None entries in the initial_values mapping to the null sentinel.
+        coerced_initial: Dict[int, Any] = {}
+        if initial_values:
+            for idx, val in initial_values.items():
+                coerced_initial[idx] = null if val is None else val
+
+        # Element type cannot be one of the primitive defaults handled by the
+        # parent; pass a benign primitive type so the parent's default-value
+        # lookup is bypassed (we provided default_value explicitly above).
+        super().__init__(
+            array_id=array_id,
+            element_type=element_type,
+            length=length,
+            default_value=default_value,
+            initial_values=coerced_initial,
+            check_bounds=check_bounds,
+        )
+
+    def store(
+        self, index: Any, value: Any, adapter: "Z3MulibAdapter"
+    ) -> List["z3.ExprRef"]:
+        """STORE that maps ``None`` to the null sentinel before recording."""
+        if value is None:
+            value = PartnerClassArraySolverRepresentation._NULL_SENTINEL
+        return super().store(index, value, adapter)
+
+    def select(
+        self, index: Any, result: Any, adapter: "Z3MulibAdapter"
+    ) -> List["z3.ExprRef"]:
+        """SELECT that ensures we never propagate Python ``None`` symbolically."""
+        if result is None:
+            result = PartnerClassArraySolverRepresentation._NULL_SENTINEL
+        return super().select(index, result, adapter)
+
+    def copy(self) -> "PartnerClassArraySolverRepresentation":
+        """Create a copy for backtracking."""
+        rep = PartnerClassArraySolverRepresentation(
+            array_id=self._array_id,
+            element_type=self._element_type,
+            length=self._length,
+            default_value=self._default_value,
+            initial_values=self._initial_values,
+            check_bounds=self._check_bounds,
+        )
+        rep._history = list(self._history)
+        return rep
+
+
 @dataclass
 class SymbolicObjectStates:
     """Tracks all symbolic arrays and objects for the solver."""

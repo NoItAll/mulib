@@ -107,16 +107,30 @@ class Z3IncrementalSolverManager(SolverManager):
     ) -> None:
         """Add an array-related constraint."""
         if isinstance(ac, ArrayInitializationConstraint):
-            # Register the array with our state
-            from mulib_python.array_repr import PrimitiveValuedArraySolverRepresentation
-            
-            rep = PrimitiveValuedArraySolverRepresentation(
-                array_id=ac.array_id,
-                element_type=ac.element_type,
-                length=ac.length,
-                default_value=ac.default_value,
-                initial_values=ac.initial_values,
+            # Register the array with our state.  The element type decides
+            # whether this is a primitive-valued array or an array of
+            # symbolic objects (partner classes).
+            from mulib_python.array_repr import (
+                PrimitiveValuedArraySolverRepresentation,
+                PartnerClassArraySolverRepresentation,
             )
+
+            if ac.element_type in (int, bool, float):
+                rep = PrimitiveValuedArraySolverRepresentation(
+                    array_id=ac.array_id,
+                    element_type=ac.element_type,
+                    length=ac.length,
+                    default_value=ac.default_value,
+                    initial_values=ac.initial_values,
+                )
+            else:
+                rep = PartnerClassArraySolverRepresentation(
+                    array_id=ac.array_id,
+                    element_type=ac.element_type,
+                    length=ac.length,
+                    default_value=ac.default_value,
+                    initial_values=ac.initial_values,
+                )
             self._state.current_object_states.register_array(ac.array_id, rep)
         
         elif isinstance(ac, ArrayAccessConstraint):

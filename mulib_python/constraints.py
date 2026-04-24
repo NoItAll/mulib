@@ -445,6 +445,27 @@ class ArrayConstraint(Constraint):
     def __hash__(self) -> int:
         return self._hash
 
+    @property
+    def array_id(self) -> str:
+        """Stable string identifier for the array.
+
+        Derived from :attr:`partner_class_object_id`: concrete IDs use their
+        integer value, symbolic leaves use their variable name, anything
+        else falls back to ``repr``.  Two constraints that share the same
+        ``partner_class_object_id`` therefore share the same ``array_id``.
+        """
+        pid = self.partner_class_object_id
+        # Avoid a hard import cycle: only reach into the substitutions
+        # package lazily.
+        from mulib_python.substitutions.primitives.sint import (
+            ConcSint, SymSintLeaf,
+        )
+        if isinstance(pid, ConcSint):
+            return f"arr#{pid._value}"
+        if isinstance(pid, SymSintLeaf):
+            return f"arr#{pid._id}"
+        return f"arr#{pid!r}"
+
 
 class ArrayAccessConstraint(ArrayConstraint):
     """Records a STORE or SELECT operation on a symbolic array.
@@ -494,6 +515,11 @@ class ArrayAccessConstraint(ArrayConstraint):
     def __hash__(self) -> int:
         return self._hash
 
+    @property
+    def is_store(self) -> bool:
+        """``True`` for STORE accesses, ``False`` for SELECT accesses."""
+        return self.type is ArrayAccessConstraint.Type.STORE
+
 
 class ArrayInitializationConstraint(ArrayConstraint):
     """Records the initialization of a symbolic array.
@@ -505,9 +531,20 @@ class ArrayInitializationConstraint(ArrayConstraint):
     length:
         An :class:`~mulib_python.expressions.Expression` representing the
         array length.
+    default_value:
+        Optional default value for indices that are never written to.  May
+        be ``None`` to let the solver representation pick a type-appropriate
+        default (e.g. ``0`` for ints, the null sentinel for partner-class
+        arrays).
+    initial_values:
+        Optional mapping ``{index: value}`` of values that the array is
+        known to hold at construction time.  ``None`` means "no fixed
+        initial values".
     """
 
-    __slots__ = ("value_type", "length", "_hash")
+    __slots__ = (
+        "value_type", "length", "default_value", "initial_values", "_hash",
+    )
 
     def __init__(
         self,
@@ -515,11 +552,36 @@ class ArrayInitializationConstraint(ArrayConstraint):
         index: "Expression",
         value_type: type,
         length: "Expression",
+        default_value: object = None,
+        initial_values: object = None,
     ) -> None:
         super().__init__(partner_class_object_id, index)
         object.__setattr__(self, "value_type", value_type)
         object.__setattr__(self, "length", length)
-        object.__setattr__(self, "_hash", hash((ArrayInitializationConstraint, partner_class_object_id, index, value_type, length)))
+        object.__setattr__(self, "default_value", default_value)
+        # Freeze a copy of any provided mapping so the constraint stays
+        # immutable and hashable.
+        if initial_values is None:
+            frozen_initials = None
+            hash_initials: object = None
+        else:
+            items = tuple(sorted(dict(initial_values).items()))
+            frozen_initials = dict(items)
+            hash_initials = items
+        object.__setattr__(self, "initial_values", frozen_initials)
+        object.__setattr__(
+            self,
+            "_hash",
+            hash((
+                ArrayInitializationConstraint,
+                partner_class_object_id,
+                index,
+                value_type,
+                length,
+                default_value,
+                hash_initials,
+            )),
+        )
 
     def __repr__(self) -> str:
         return (
@@ -536,10 +598,17 @@ class ArrayInitializationConstraint(ArrayConstraint):
             and self.index == other.index
             and self.value_type == other.value_type
             and self.length == other.length
+            and self.default_value == other.default_value
+            and self.initial_values == other.initial_values
         )
 
     def __hash__(self) -> int:
         return self._hash
+
+    @property
+    def element_type(self) -> type:
+        """Alias for :attr:`value_type` matching the solver-manager API."""
+        return self.value_type
 
 
 class PartnerClassObjectConstraint(Constraint):

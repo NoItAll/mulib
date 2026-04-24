@@ -275,3 +275,190 @@ def test_array_select_with_z3():
     # Result should be 42
     label = sm.get_label(result)
     assert label == 42
+
+
+# =============================================================================
+# PartnerClassArraySolverRepresentation Tests (arrays of symbolic objects)
+# =============================================================================
+
+
+class _DummyPartnerClass:
+    """Stand-in non-primitive type used to exercise partner-class arrays."""
+
+
+def test_partner_class_array_rejects_primitive_element_type():
+    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+
+    with pytest.raises(ValueError):
+        PartnerClassArraySolverRepresentation(
+            array_id="bad",
+            element_type=int,
+            length=ConcSint(4),
+        )
+
+
+def test_partner_class_array_default_is_null_sentinel():
+    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+
+    rep = PartnerClassArraySolverRepresentation(
+        array_id="objs",
+        element_type=_DummyPartnerClass,
+        length=ConcSint(4),
+    )
+
+    default = rep.get_default_value()
+    # Sentinel for null is ConcSint(-1) (matches Java's MINUS_ONE).
+    assert isinstance(default, ConcSint)
+    assert default._value == -1
+
+
+def test_partner_class_array_store_none_coerced_to_null():
+    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+
+    rep = PartnerClassArraySolverRepresentation(
+        array_id="objs",
+        element_type=_DummyPartnerClass,
+        length=ConcSint(4),
+    )
+    adapter = Z3MulibAdapter()
+
+    rep.store(ConcSint(0), None, adapter)
+
+    # The history must contain a STORE whose value is the null sentinel,
+    # not Python's None (which the Z3 adapter cannot translate).
+    stores = [op for op in rep._history if op.is_store]
+    assert len(stores) == 1
+    assert isinstance(stores[0].value, ConcSint)
+    assert stores[0].value._value == -1
+
+
+def test_partner_class_array_store_then_select_with_z3():
+    """End-to-end: storing object IDs and selecting them through Z3."""
+    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
+
+    sm = Z3IncrementalSolverManager()
+    adapter = sm.adapter
+
+    rep = PartnerClassArraySolverRepresentation(
+        array_id="objs",
+        element_type=_DummyPartnerClass,
+        length=ConcSint(4),
+    )
+
+    # Store a couple of object IDs (concrete Sints) and a None (-> null).
+    rep.store(ConcSint(0), ConcSint(101), adapter)
+    rep.store(ConcSint(1), ConcSint(202), adapter)
+    rep.store(ConcSint(2), None, adapter)
+
+    # Select each slot into a fresh symbolic variable and assert via Z3.
+    r0, r1, r2, r3 = (
+        SymSintLeaf("r0"), SymSintLeaf("r1"),
+        SymSintLeaf("r2"), SymSintLeaf("r3"),
+    )
+    for index, result in [(0, r0), (1, r1), (2, r2), (3, r3)]:
+        for c in rep.select(ConcSint(index), result, adapter):
+            sm.solver.add(c)
+
+    assert sm.is_satisfiable()
+    assert sm.get_label(r0) == 101
+    assert sm.get_label(r1) == 202
+    # Index 2 was stored as null -> sentinel -1.
+    assert sm.get_label(r2) == -1
+    # Index 3 was never stored -> default is also the null sentinel.
+    assert sm.get_label(r3) == -1
+
+
+def test_partner_class_array_copy_independent_history():
+    from mulib_python.array_repr import PartnerClassArraySolverRepresentation
+
+    rep = PartnerClassArraySolverRepresentation(
+        array_id="objs",
+        element_type=_DummyPartnerClass,
+        length=ConcSint(4),
+    )
+    adapter = Z3MulibAdapter()
+
+    rep.store(ConcSint(0), ConcSint(7), adapter)
+    snapshot = rep.copy()
+
+    # Mutate the original after the snapshot.
+    rep.store(ConcSint(1), ConcSint(8), adapter)
+
+    assert len(snapshot._history) == 1
+    assert len(rep._history) == 2
+    # The copy must be the partner-class subclass, not the primitive parent.
+    assert isinstance(snapshot, PartnerClassArraySolverRepresentation)
+
+
+def test_solver_manager_dispatches_partner_class_array():
+    """Z3IncrementalSolverManager picks the partner-class rep for object arrays."""
+    from mulib_python.array_repr import (
+        PartnerClassArraySolverRepresentation,
+        PrimitiveValuedArraySolverRepresentation,
+    )
+    from mulib_python.constraints import ArrayInitializationConstraint
+    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
+
+    sm = Z3IncrementalSolverManager()
+
+    # Object-typed array -> partner-class representation.
+    obj_init = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(101),
+        index=ConcSint(0),
+        value_type=_DummyPartnerClass,
+        length=ConcSint(4),
+    )
+    sm.add_array_constraint(obj_init)
+    obj_rep = sm._state.current_object_states.get_array(obj_init.array_id)
+    assert isinstance(obj_rep, PartnerClassArraySolverRepresentation)
+
+    # Primitive-typed array -> primitive representation.
+    prim_init = ArrayInitializationConstraint(
+        partner_class_object_id=ConcSint(202),
+        index=ConcSint(0),
+        value_type=int,
+        length=ConcSint(4),
+    )
+    sm.add_array_constraint(prim_init)
+    prim_rep = sm._state.current_object_states.get_array(prim_init.array_id)
+    assert type(prim_rep) is PrimitiveValuedArraySolverRepresentation
+
+
+def test_solver_manager_array_access_via_constraints():
+    """End-to-end: add init + STORE + SELECT constraints through the manager."""
+    from mulib_python.constraints import (
+        ArrayAccessConstraint, ArrayInitializationConstraint,
+    )
+    from mulib_python.z3_solver_manager import Z3IncrementalSolverManager
+
+    sm = Z3IncrementalSolverManager()
+
+    array_ref = ConcSint(7)
+    init = ArrayInitializationConstraint(
+        partner_class_object_id=array_ref,
+        index=ConcSint(0),
+        value_type=_DummyPartnerClass,
+        length=ConcSint(3),
+    )
+    sm.add_array_constraint(init)
+
+    # STORE object id 99 at index 0.
+    sm.add_array_constraint(ArrayAccessConstraint(
+        partner_class_object_id=array_ref,
+        index=ConcSint(0),
+        type=ArrayAccessConstraint.Type.STORE,
+        value=ConcSint(99),
+    ))
+
+    # SELECT into a fresh symbolic var.
+    result = SymSintLeaf("res")
+    sm.add_array_constraint(ArrayAccessConstraint(
+        partner_class_object_id=array_ref,
+        index=ConcSint(0),
+        type=ArrayAccessConstraint.Type.SELECT,
+        value=result,
+    ))
+
+    assert sm.is_satisfiable()
+    assert sm.get_label(result) == 99
